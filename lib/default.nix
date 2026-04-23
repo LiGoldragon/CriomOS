@@ -81,17 +81,21 @@ rec {
   # Axis is (clusterName, nodeName), NEVER a hostName. Consuming sites pass
   # both explicitly; there is no flat host namespace in CriomOS.
   #
-  # Final implementation calls `horizon-check` (Rust) via a derivation whose
-  # output is the typed enriched horizon JSON, consumed via IFD. The pure-Nix
-  # fallback (ported from legacy `mkHorizonModule.nix`) runs until then.
+  # Final implementation invokes `horizon-cli` (from inputs.horizon-rs)
+  # via an IFD derivation. `horizon-cli --format json` emits enriched
+  # horizon JSON (Nix has builtins.fromJSON; no fromNota exists) which
+  # is read back via builtins.readFile + builtins.fromJSON.
+  #
+  # Schema: /home/li/git/horizon-rs/docs/DESIGN.md.
+  # Tracked in bead CriomOS-lyc.
   #
   # Signature: { inputs, clusterName, nodeName } -> attrset
-  #   { cluster, node, exNodes, users, methods }
+  #   { cluster, node, exNodes, users }   # flat — no methods. nesting
   mkHorizon = _args: throw ''
-    criomos-lib.mkHorizon: not yet implemented.
+    criomos-lib.mkHorizon: not yet implemented (CriomOS-lyc).
 
-    Target: ingest inputs.<clusterName>.NodeProposal, validate, compute the
-    method DAG documented in docs/HORIZON.md, return enriched horizon for
-    (clusterName, nodeName).
+    Target: invoke horizon-cli (inputs.horizon-rs) via IFD against the
+    goldragon cluster proposal nota; read JSON output; return the
+    enriched horizon for (clusterName, nodeName).
   '';
 }

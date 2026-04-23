@@ -228,39 +228,55 @@ is stated as fact. Non‑boilerplate behavior is documented. Boilerplate is not.
 ## Node-Horizon Toggle Policy
 
 Any non-default NixOS switch must be driven by node-horizon data rather than
-local literals. The handling of `logind.settings.Login.HandleLidSwitch` in
-`nix/mkCriomOS/metal/default.nix` now reads a horizon-derived `behavesAs.center`
-boolean that is rooted in `horizon.node.typeIs.center`, ensuring the no-suspend
-behavior is explicitly center-driven. The example relies on the center/server
-semantics, where the central server nodes built for CriomOS ignore the lid switch
-while the general server population falls back to the default suspend action.
-When a new toggle requires horizon truth that is absent from the current schema,
-extend the CriomOS/CrioSphere schema (for example `capnp/criosphere.capnp`) so
-the node horizon exposes an optional or defaulted value, and consume that value
-directly instead of hardcoding the behavior inside a module.
+local literals. When a module needs to flip behavior per node, it reads the
+relevant boolean off the projected horizon (`horizon.node.typeIs.*`,
+`horizon.node.behavesAs.*`, `horizon.node.has*PubKey`, etc.) rather than
+hardcoding host names or local literals.
 
-## Operator Node/Network Truth Authority
+When a new toggle requires horizon truth absent from the current schema,
+extend the typed schema in `horizon-rs` (`/home/li/git/horizon-rs/lib/src/`)
+so the projected horizon exposes the new field, and consume that field
+directly. Schema changes are tracked as horizon-rs beads.
 
-**MUST UPDATE WHEN EDITING REPO:** When node or network behavior is touched, operators update the Maisiliym source (`datom.nix` / `NodeProposal.nodes.*`) first, then reread this guidance and `docs/AGENTS.md` before touching CriomOS artifacts. For deployment/build consumption, prefer the GitHub flake source `github:LiGoldragon/maisiliym`; do not rely on ad-hoc local checkout overrides in this lane.
+## Cluster Truth Authority
 
-### Edit authority
-- Maisiliym owns node/network truth inside `datom.nix` via `NodeProposal.nodes.*`. Any node name, role, connectivity, or identity change begins by editing the corresponding `NodeProposal` entry so horizon data exports the new truth before any CriomOS consumer is built or deployed.
-- Maintain the Maisiliym trust model (users, hardware assignments, disk layout) in the same `NodeProposal` block and test via the toparranged validation (`nix flake check` or the Maisiliym validation job) before downstream operators consume it.
-- For deployment/build consumption, operators and deploy agents should treat `github:LiGoldragon/maisiliym` as the canonical flake source. Local path overrides such as `/home/li/git/maisiliym` are historical/operator scratch only and are not the preferred deploy lane anymore.
+CriomOS is **network-neutral**: it does not enumerate clusters or nodes.
+The truth source is the consumer's pinned cluster proposal flake.
+
+For the LiGoldragon kriom, that source is
+[`goldragon`](https://github.com/LiGoldragon/goldragon) — its `datom.nix`
+(transitioning to `datom.nota`, tracked in beads `gold-lu7` / `gold-21l`)
+is exported via `flake.outputs.NodeProposal`. CriomOS discovers it
+through the `? NodeProposal` filter in `lib.discoverClusters`.
+
+### Edit flow
+
+- Edit cluster / node / user / trust truth in `goldragon/datom.nix`.
+  Any node name, role, connectivity, or identity change begins there.
+- `horizon-rs` validates the proposal and computes the enriched
+  horizon. Run `horizon-cli --cluster <C> --node <N> < datom.nota` (or
+  the Nix path while the conversion is pending) to see the projection
+  for a given viewpoint.
+- CriomOS consumes the projected horizon via `lib.mkHorizon`. Modules
+  read `horizon.node.*`, `horizon.exNodes.*`, `horizon.users.*` —
+  they never add their own literals.
 
 ### Build/deploy authority
-- CriomOS consumes that Maisiliym truth through horizon exports (see `nix/mkCrioZones/mkHorizonModule.nix` for the export wiring) and the network modules (`nix/mkCriomOS/network/default.nix`, `nix/mkCriomOS/network/unbound.nix`). Builders read `node.name`, `node.yggAddress`, and `exNodes` from horizon data rather than adding new literals.
-- Update horizon exports before adjusting CriomOS DNS, host tables, or kube provisioning. After the Maisiliym change lands, rerun the exact CriomOS attr build and deployment flow so unbound, DHCP, and activation regenerate from the fresh node truth.
-- Use flake-native commands only. Do not use `<nixpkgs>` / `NIX_PATH` style invocations in this repo; when you need environment packages, use flake registry references such as `nix shell nixpkgs#jq`.
-- Exact build commands:
-  - `nix build .#crioZones.maisiliym.ouranos.os --no-link --print-out-paths --refresh`
-  - `nix build .#crioZones.maisiliym.prometheus.os --no-link --print-out-paths --refresh`
-  - `nix build .#crioZones.maisiliym.ouranos.deployManifest --no-link --print-out-paths --refresh`
-  - `nix build .#crioZones.maisiliym.prometheus.deployManifest --no-link --print-out-paths --refresh`
-  - If an override is required for the Maisiliym source, use only `--override-input maisiliym github:LiGoldragon/maisiliym`.
-- Exact deployment flow:
-  - Use `criomos-deploy <cluster> <node>` to build fullOs on the target, set the system profile, and activate. Use `--boot` for kernel changes, `--commit <hash>` for a specific revision.
-  - Replace `<cluster>` and `<node>` with the Maisiliym cluster and node names (e.g. `criomos-deploy maisiliym prometheus`).
-  - To reload a user's compositor shell after deployment: `criomos-reload-shell <cluster> <node> <user>`.
-  - The deploy script builds via `github:LiGoldragon/CriomOS/<commit>#crioZones.<cluster>.<node>.fullOs` on the target node over SSH, using the current main commit by default.
-  - `ouranos`: can also deploy locally since criomos-deploy is in systemPackages.
+
+- Use flake-native commands only. No `<nixpkgs>` / `NIX_PATH`; reach
+  for `nix shell nixpkgs#jq` when you need a tool.
+- Build command shape:
+  - `nix build .#crioZones.<cluster>.<node>.os --no-link --print-out-paths --refresh`
+  - `nix build .#crioZones.<cluster>.<node>.deployManifest --no-link --print-out-paths --refresh`
+  - When iterating against a local goldragon checkout:
+    `--override-input goldragon github:LiGoldragon/goldragon` (or the
+    relevant cluster input name).
+- Deployment flow (`packages/criomos-deploy/`):
+  - `criomos-deploy <cluster> <node>` builds fullOs on the target,
+    sets the system profile, and activates. `--boot` for kernel
+    changes, `--commit <hash>` for a specific revision.
+  - `criomos-reload-shell <cluster> <node> <user>` reloads the
+    user's compositor shell after deployment.
+  - The deploy script builds via
+    `github:LiGoldragon/CriomOS/<commit>#crioZones.<cluster>.<node>.fullOs`
+    on the target node over SSH, using the current main commit by default.

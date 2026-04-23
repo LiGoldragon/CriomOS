@@ -34,9 +34,9 @@ The cluster/node axis lives in the horizon (external input), not the filesystem.
 - [`LiGoldragon/CriomOS-home`](https://github.com/LiGoldragon/CriomOS-home) — home
   profile. Own inputs (niri, noctalia, stylix, emacs, …). CriomOS
   consumes `homeModules.default`.
-- [`criome/horizon-rs`](https://github.com/criome/horizon-rs) — horizon
-  schema + method CLI (Rust). Single source of truth for types and the
-  method DAG.
+- [`LiGoldragon/horizon-rs`](https://github.com/LiGoldragon/horizon-rs) — horizon
+  schema + projection CLI (Rust). Single source of truth for the typed
+  schema and the projection logic.
 - [`LiGoldragon/clavifaber`](https://github.com/LiGoldragon/clavifaber) *(planned)* —
   GPG → X.509 WiFi PKI tool.
 - [`LiGoldragon/CriomOS-emacs`](https://github.com/LiGoldragon/CriomOS-emacs)

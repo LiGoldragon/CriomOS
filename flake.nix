@@ -13,11 +13,11 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Horizon schema + method computation (Rust). Consumed via flake output
-    # `packages.default`. CriomOS uses the pure-Nix fallback in lib/
-    # until horizon-check is complete.
-    horizon-check.url = "github:LiGoldragon/horizon-rs";
-    horizon-check.inputs.nixpkgs.follows = "nixpkgs";
+    # Horizon schema + projection (Rust). Provides the `horizon-cli`
+    # binary which CriomOS invokes via IFD in `lib.mkHorizon` to
+    # project the goldragon cluster proposal for (cluster, node).
+    horizon-rs.url = "github:LiGoldragon/horizon-rs";
+    horizon-rs.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
     # CriomOS consumes homeModules.default and home-manager configures it.
