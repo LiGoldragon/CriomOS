@@ -15,7 +15,7 @@ Read `docs/ROADMAP.md` for porting order and open tasks.
 - **Home lives in `CriomOS-home`.** Do not add `modules/home/` here.
   Consume home via `inputs.criomos-home.homeModules.*`.
 - **Horizon is external.** Schema + method logic live in `horizon-rs`
-  (Rust). Nix only consumes the enriched horizon TOML (camelCase fields).
+  (Rust). Nix only consumes the enriched horizon as nota (camelCase fields).
 - **No Rust crates in this repo.** Rust crates live in their own repos
   (e.g. `clavifaber`, `brightness-ctl`, `horizon-rs`) and are consumed
   as flake inputs. Never inline a Rust crate under `packages/`.
