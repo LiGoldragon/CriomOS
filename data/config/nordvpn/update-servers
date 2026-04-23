@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Refreshes data/config/nordvpn/servers-lock.json from the NordVPN API.
+#
+# Usage:
+#   nix shell nixpkgs#curl nixpkgs#jq -c ./data/config/nordvpn/update-servers
+#
+# Each entry in SERVERS is "country_id:limit:name_prefix". The API returns
+# the lowest-load WireGuard servers matching the filter. After running,
+# review the diff and commit.
+
+set -euo pipefail
+
+API="https://api.nordvpn.com/v1/servers/recommendations"
+FILTER="filters[servers_technologies][identifier]=wireguard_udp"
+LOCKFILE="$(dirname "$0")/servers-lock.json"
+
+# country_id : limit : two-letter-code
+COUNTRIES=(
+  "202:1:es"   # Spain (closest to Malaga)
+  "81:1:de"    # Germany
+  "153:1:nl"   # Netherlands
+  "227:1:gb"   # United Kingdom
+  "209:1:ch"   # Switzerland
+  "228:1:us"   # United States
+)
+
+fetch_servers() {
+  local entries="[]"
+
+  for spec in "${COUNTRIES[@]}"; do
+    IFS=: read -r cid limit code <<< "$spec"
+
+    result=$(curl -sf "${API}?${FILTER}&filters[country_id]=${cid}&limit=${limit}" \
+      | jq --arg code "$code" '[.[] | {
+          name: ($code + "-" + (.locations[0].country.city.name | ascii_downcase | gsub(" "; "-"))),
+          hostname: .hostname,
+          endpoint: (.station + ":51820"),
+          publicKey: (.technologies[] | select(.identifier == "wireguard_udp") | .metadata[0].value),
+          country: ($code | ascii_upcase),
+          city: .locations[0].country.city.name
+        }]')
+
+    entries=$(echo "$entries" "$result" | jq -s '.[0] + .[1]')
+  done
+
+  echo "$entries"
+}
+
+echo "Fetching NordVPN WireGuard servers..."
+servers=$(fetch_servers)
+count=$(echo "$servers" | jq length)
+echo "Got ${count} servers"
+
+jq -n \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --argjson servers "$servers" \
+  '{
+    generatedAt: $ts,
+    apiSource: "https://api.nordvpn.com/v1/servers/recommendations?filters[servers_technologies][identifier]=wireguard_udp",
+    dns: { primary: "103.86.96.100", secondary: "103.86.99.100" },
+    client: { address: "10.5.0.2/32", port: 51820 },
+    servers: $servers
+  }' > "$LOCKFILE"
+
+echo "Wrote ${LOCKFILE}"
+echo "Review with: jj diff"

@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-03-20T15:00:00Z",
+  "apiSource": "https://api.nordvpn.com/v1/servers/recommendations?filters[servers_technologies][identifier]=wireguard_udp",
+  "dns": {
+    "primary": "103.86.96.100",
+    "secondary": "103.86.99.100"
+  },
+  "client": {
+    "address": "10.5.0.2/32",
+    "port": 51820
+  },
+  "servers": [
+    {
+      "name": "es-madrid",
+      "hostname": "es150.nordvpn.com",
+      "endpoint": "185.183.106.19:51820",
+      "publicKey": "IF1FGVSzrUznFVZ+dymIz+6bdlCgsuiT/d6cyapN8lw=",
+      "country": "ES",
+      "city": "Madrid"
+    },
+    {
+      "name": "de-frankfurt",
+      "hostname": "de1159.nordvpn.com",
+      "endpoint": "212.23.215.20:51820",
+      "publicKey": "m0tej5P6pYfBivkJc8yRV4KqQXmM81AChLlzlsOSjSs=",
+      "country": "DE",
+      "city": "Frankfurt"
+    },
+    {
+      "name": "nl-amsterdam",
+      "hostname": "nl928.nordvpn.com",
+      "endpoint": "213.152.188.82:51820",
+      "publicKey": "5p4RkybdRU5uaDi90eu4KZPTFif0lKCg4Qp6t1c4F30=",
+      "country": "NL",
+      "city": "Amsterdam"
+    },
+    {
+      "name": "uk-london",
+      "hostname": "uk1999.nordvpn.com",
+      "endpoint": "195.206.183.250:51820",
+      "publicKey": "K53l2wOIHU3262sX5N/5kAvCvt4r55lNui30EbvaDlE=",
+      "country": "GB",
+      "city": "London"
+    },
+    {
+      "name": "ch-zurich",
+      "hostname": "ch407.nordvpn.com",
+      "endpoint": "185.7.34.176:51820",
+      "publicKey": "SqAWBSVdnUJ859Bz2Nyt82rlSebMwPgvwQxIb1DzyF8=",
+      "country": "CH",
+      "city": "Zurich"
+    },
+    {
+      "name": "us-newyork",
+      "hostname": "us9799.nordvpn.com",
+      "endpoint": "154.16.157.20:51820",
+      "publicKey": "0/x2PdBGfcIGr0ayFPFFjxcEEyhrlBRjR4kMcfwXJTU=",
+      "country": "US",
+      "city": "New York"
+    }
+  ]
+}
