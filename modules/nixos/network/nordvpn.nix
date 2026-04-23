@@ -9,7 +9,7 @@ let
   inherit (builtins) fromJSON readFile pathExists;
   inherit (lib) mkIf concatStringsSep map;
   inherit (horizon) node;
-  inherit (horizon.node.methods) hasNordvpnPrecriad;
+  inherit (horizon.node.methods) hasNordvpnPubKey;
   inherit (constants.fileSystem.nordvpn) privateKeyFile;
 
   /*
@@ -132,7 +132,7 @@ ${serverCleanupRules}
 in
 {
   config = lib.mkMerge [
-    (mkIf hasNordvpnPrecriad {
+    (mkIf hasNordvpnPubKey {
       systemd.services.nordvpn-connections = {
         description = "Generate NordVPN NetworkManager connections";
         wantedBy = [ "NetworkManager.service" ];
@@ -151,7 +151,7 @@ in
       ];
     })
 
-    (mkIf (!hasNordvpnPrecriad) {
+    (mkIf (!hasNordvpnPubKey) {
       /*
         When nordvpn is not yet enabled, prepare the key directory
         so operators can seed the private key. The directory is

@@ -55,6 +55,6 @@
 
 sync.remote: "git+ssh://git@github.com/LiGoldragon/CriomOS.git"
 
-dolt.shared-server: true
+dolt.shared-server: false
 
 export.auto: false

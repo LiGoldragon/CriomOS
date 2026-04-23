@@ -32,7 +32,7 @@ let
       };
 
       yggdrasil = {
-        preCriome = mkOption {
+        pubKey = mkOption {
           type = nullOr str;
           default = null;
         };
@@ -48,14 +48,7 @@ let
         };
       };
 
-      nixPreCriome = mkOption {
-        type = nullOr str;
-        default = null;
-      };
-
-      # Compatibility: maisiliym now emits this field name.
-      # Semantics are identical to nixPreCriome (raw signing key material).
-      nixSigningPublicKey = mkOption {
+      nixPubKey = mkOption {
         type = nullOr str;
         default = null;
       };
@@ -88,7 +81,7 @@ let
         default = { };
       };
 
-      preCriomes = mkOption {
+      pubKeys = mkOption {
         type = NodePreCriomeSpecies;
         default = { };
       };
@@ -103,7 +96,7 @@ let
         default = null;
       };
 
-      wireguardPreCriome = mkOption {
+      wireguardPubKey = mkOption {
         type = nullOr str;
         default = null;
       };

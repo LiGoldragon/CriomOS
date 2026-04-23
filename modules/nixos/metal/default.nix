@@ -17,9 +17,9 @@ let
   inherit (horizon.node.machine) model;
   inherit (horizon.node.methods)
     behavesAs
-    hasSshPrecriad
+    hasSshPubKey
     hasVideoOutput
-    hasYggPrecriad
+    hasYggPubKey
     sizedAtLeast
     chipIsIntel
     modelIsThinkpad

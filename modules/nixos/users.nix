@@ -15,13 +15,13 @@ let
     ;
 
   inherit (horizon) node users;
-  inherit (node.methods) adminSshPreCriomes behavesAs;
+  inherit (node.methods) adminSshPubKeys behavesAs;
 
   mkUser =
     attrName: user:
     let
       inherit (user) trust;
-      inherit (user.methods) sshCriomes;
+      inherit (user.methods) sshPubKeys;
 
     in
     optionalAttrs (trust > 0) {
@@ -30,7 +30,7 @@ let
       useDefaultShell = true;
       isNormalUser = true;
 
-      openssh.authorizedKeys.keys = sshCriomes;
+      openssh.authorizedKeys.keys = sshPubKeys;
 
       extraGroups =
         [ "audio" ]
@@ -56,7 +56,7 @@ let
 
   rootUserAkses = {
     root = {
-      openssh.authorizedKeys.keys = adminSshPreCriomes;
+      openssh.authorizedKeys.keys = adminSshPubKeys;
     };
   };
 

@@ -7,11 +7,11 @@
 }:
 let
   inherit (lib) optionalString;
-  inherit (horizon.node.methods) hasYggPrecriad;
+  inherit (horizon.node.methods) hasYggPubKey;
   inherit (constants.fileSystem.yggdrasil)
     preCriadJson
     subDirName
-    preCriomeJson
+    pubKeyJson
     interfaceName
     combinedConfigJson
     ;
@@ -43,7 +43,7 @@ let
 
   configFile = mkConfigFile yggdrasilConfig;
 
-  seedYggdrasil = !hasYggPrecriad;
+  seedYggdrasil = !hasYggPubKey;
 
   seedYggdrasilScript = pkgs.writeScript "createYggdrasilKeys.sh" ''
     if [[ ! -e ${preCriadJson} ]]; then
@@ -76,7 +76,7 @@ in
           ${pkgs.jq}/bin/jq --slurp add ${preCriadJson} ${configFile} > ${combinedConfigJson}
         '';
 
-        postStart = optionalString seedYggdrasil "${yggCtlExec} -json getself > ${preCriomeJson}";
+        postStart = optionalString seedYggdrasil "${yggCtlExec} -json getself > ${pubKeyJson}";
 
         serviceConfig = {
           ExecStart = ''

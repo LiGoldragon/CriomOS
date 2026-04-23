@@ -7,7 +7,7 @@
 let
   inherit (lib) mkIf;
   inherit (horizon) node;
-  inherit (horizon.node.methods) hasWifiCertPrecriad;
+  inherit (horizon.node.methods) hasWifiCertPubKey;
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
   inherit (constants.fileSystem.complex) keyFile;
 
@@ -47,7 +47,7 @@ let
 in
 {
   config = lib.mkMerge [
-    (mkIf hasWifiCertPrecriad {
+    (mkIf hasWifiCertPubKey {
       systemd.services.wifi-eap-connection = {
         description = "Deploy WiFi EAP-TLS connection (criome)";
         wantedBy = [ "NetworkManager.service" ];
@@ -82,7 +82,7 @@ in
       };
     })
 
-    (mkIf (!hasWifiCertPrecriad) {
+    (mkIf (!hasWifiCertPubKey) {
       systemd.services.wifi-eap-prepare = {
         description = "Prepare WiFi PKI certificate directory";
         wantedBy = [ "multi-user.target" ];

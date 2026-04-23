@@ -21,16 +21,16 @@ let
 
   inherit (pkdjz) exportJSON;
 
-  inherit (horizon.cluster.methods) trustedBuildPreCriomes;
+  inherit (horizon.cluster.methods) trustedBuildPubKeys;
   inherit (horizon) node;
   inherit (horizon.node.methods)
     cacheURLs
-    dispatchersSshPreCriomes
-    exNodesSshPreCriomes
+    dispatchersSshPubKeys
+    exNodesSshPubKeys
     sizedAtLeast
     isBuilder
     isNixCache
-    hasNixPreCriad
+    hasNixPubKey
     ;
 
   inherit (constants.fileSystem.nix) preCriad;
@@ -135,7 +135,7 @@ in
       connect-timeout = 5;
       fallback = true;
 
-      trusted-public-keys = trustedBuildPreCriomes;
+      trusted-public-keys = trustedBuildPubKeys;
       substituters = cacheURLs;
       trusted-binary-caches = cacheURLs;
 
@@ -143,7 +143,7 @@ in
     };
 
     sshServe.enable = true;
-    sshServe.keys = exNodesSshPreCriomes;
+    sshServe.keys = exNodesSshPubKeys;
 
     # Lowest priorities
     daemonCPUSchedPolicy = "idle";
@@ -187,7 +187,7 @@ in
         nixBuilder = {
           isNormalUser = true;
           useDefaultShell = true;
-          openssh.authorizedKeys.keys = dispatchersSshPreCriomes;
+          openssh.authorizedKeys.keys = dispatchersSshPubKeys;
         };
       });
   };

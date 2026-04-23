@@ -1,7 +1,7 @@
 {
   "database": "dolt",
   "backend": "dolt",
-  "dolt_mode": "server",
+  "dolt_mode": "embedded",
   "dolt_database": "CriomOS",
   "project_id": "5a5eb6f2-da89-40bb-9d9b-87bd8d45e0c2",
   "global_dolt_database": "beads_global"

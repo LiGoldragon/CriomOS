@@ -48,7 +48,7 @@ let
 
   clusterNames = attrNames preClusters;
 
-  preCriomeSubmodule = {
+  pubKeySubmodule = {
     options = {
       ssh = mkOption {
         type = str;
@@ -83,8 +83,8 @@ let
       default = "emacs";
     };
 
-    preCriomes = mkOption {
-      type = attrsOf (submodule preCriomeSubmodule);
+    pubKeys = mkOption {
+      type = attrsOf (submodule pubKeySubmodule);
     };
 
     keyboard = mkOption {

@@ -19,7 +19,7 @@ let
     ;
   inherit (horizon) node exNodes;
   inherit (horizon.node.methods)
-    hasWireguardPrecriad
+    hasWireguardPubKey
     wireguardUntrustedProxies
     ;
 
@@ -36,11 +36,11 @@ let
 
   mkNodePeer = name: node: {
     allowedIPs = [ node.nodeIp ];
-    publicKey = node.wireguardPreCriome;
+    publicKey = node.wireguardPubKey;
     endpoint = "wg.${node.criomeDomainName}:51820";
   };
 
-  validPreNodes = filterAttrs (n: v: v.methods.hasWireguardPrecriad) exNodes;
+  validPreNodes = filterAttrs (n: v: v.methods.hasWireguardPubKey) exNodes;
 
   nodePeers = mapAttrsToList mkNodePeer validPreNodes;
 

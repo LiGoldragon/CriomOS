@@ -60,7 +60,7 @@ let
       type = machineSpecies;
     };
 
-    yggPreCriome = mkOption {
+    yggPubKey = mkOption {
       type = nullOr str;
       default = null;
     };
@@ -80,7 +80,7 @@ let
       default = null;
     };
 
-    nixPreCriome = mkOption {
+    nixPubKey = mkOption {
       type = nullOr str;
       default = null;
     };
@@ -95,7 +95,7 @@ let
       default = null;
     };
 
-    wireguardPreCriome = mkOption {
+    wireguardPubKey = mkOption {
       type = nullOr str;
       default = null;
     };

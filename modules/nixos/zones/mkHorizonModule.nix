@@ -49,13 +49,13 @@ let
   metaTrust = inputCluster.trust.cluster;
 
   mkSshString =
-    preCriome:
-    if (preCriome == null) then
+    pubKey:
+    if (pubKey == null) then
       ""
     else
       concatStringsSep " " [
         "ssh-ed25519"
-        preCriome
+        pubKey
       ];
 
   mkNode =
@@ -64,7 +64,7 @@ let
       # (TODO typecheck)
       inputNode = inputNodes.${nodeName};
       inherit (inputNode) size species;
-      inherit (inputNode.preCriomes) yggdrasil;
+      inherit (inputNode.pubKeys) yggdrasil;
 
       speciesDatom =
         { datom, spec }:
@@ -119,7 +119,7 @@ let
         "fe80::${suffix}%${interface}";
 
       nodeIp = inputNode.nodeIp or null;
-      wireguardPreCriome = inputNode.wireguardPreCriome or null;
+      wireguardPubKey = inputNode.wireguardPubKey or null;
       nordvpn = inputNode.nordvpn or false;
       wifiCert = inputNode.wifiCert or false;
 
@@ -134,7 +134,7 @@ let
         inherit size species;
 
         name = nodeName;
-        inherit machine wireguardPreCriome nordvpn wifiCert nodeIp;
+        inherit machine wireguardPubKey nordvpn wifiCert nodeIp;
 
         linkLocalIps =
           if (hasAttr "linkLocalIps" inputNode) then (map mkLinkLocalIP inputNode.linkLocalIps) else [ ];
@@ -144,16 +144,13 @@ let
           inputCluster.trust.nodes.${nodeName}
         ];
 
-        ssh = mkSshString inputNode.preCriomes.ssh;
+        ssh = mkSshString inputNode.pubKeys.ssh;
 
-        yggPreCriome = yggdrasil.preCriome;
+        yggPubKey = yggdrasil.pubKey;
         yggAddress = yggdrasil.address;
         yggSubnet = yggdrasil.subnet;
 
-        nixPreCriome =
-          if inputNode.preCriomes.nixPreCriome != null && inputNode.preCriomes.nixPreCriome != ""
-          then inputNode.preCriomes.nixPreCriome
-          else inputNode.preCriomes.nixSigningPublicKey;
+        nixPubKey = inputNode.pubKeys.nixPubKey;
 
         criomeDomainName = concatStringsSep "." [
           nodeName
@@ -182,24 +179,24 @@ let
           isFullyTrusted = trust == 3;
           sizedAtLeast = mkSizeAtLeast size;
           isBuilder =
-            !typeIs.edge && isFullyTrusted && (sizedAtLeast.med || behavesAs.center) && hasBasePrecriads;
+            !typeIs.edge && isFullyTrusted && (sizedAtLeast.med || behavesAs.center) && hasBasePubKeys;
           isDispatcher = !behavesAs.center && isFullyTrusted && sizedAtLeast.min;
-          isNixCache = behavesAs.center && sizedAtLeast.min && hasBasePrecriads;
-          hasNixPreCriad = node.nixPreCriome != null && node.nixPreCriome != "";
-          hasYggPrecriad = yggAddress != null && yggAddress != "";
-          hasSshPrecriad = hasAttr "ssh" inputNode.preCriomes;
-          hasWireguardPrecriad = wireguardPreCriome != null;
-          hasNordvpnPrecriad = node.nordvpn;
-          hasWifiCertPrecriad = node.wifiCert;
+          isNixCache = behavesAs.center && sizedAtLeast.min && hasBasePubKeys;
+          hasNixPubKey = node.nixPubKey != null && node.nixPubKey != "";
+          hasYggPubKey = yggAddress != null && yggAddress != "";
+          hasSshPubKey = hasAttr "ssh" inputNode.pubKeys;
+          hasWireguardPubKey = wireguardPubKey != null;
+          hasNordvpnPubKey = node.nordvpn;
+          hasWifiCertPubKey = node.wifiCert;
 
-          hasBasePrecriads = hasNixPreCriad && hasYggPrecriad && hasSshPrecriad;
+          hasBasePubKeys = hasNixPubKey && hasYggPubKey && hasSshPubKey;
 
-          sshPrecriome = if !hasSshPrecriad then "" else mkSshString inputNode.preCriomes.ssh;
+          sshPubKeyLine = if !hasSshPubKey then "" else mkSshString inputNode.pubKeys.ssh;
 
-          nixPreCriome = optionalString hasNixPreCriad (
+          nixPubKey = optionalString hasNixPubKey (
             concatStringsSep ":" [
               criomeDomainName
-              node.nixPreCriome
+              node.nixPubKey
             ]
           );
 
@@ -253,14 +250,14 @@ let
         adminUserName:
         let
           adminUser = users.${adminUserName};
-          preCriomeNodeNames = attrNames adminUser.preCriomes;
+          pubKeyNodeNames = attrNames adminUser.pubKeys;
           isFullyTrustedNode = n: nodes.${n}.methods.isFullyTrusted;
-          fullyTrustedPreCriomeNames = filter isFullyTrustedNode preCriomeNodeNames;
+          fullyTrustedPubKeyNodeNames = filter isFullyTrustedNode pubKeyNodeNames;
           getSshString =
             n:
-            if (adminUser.preCriomes.${n}.ssh == null) then "" else (mkSshString adminUser.preCriomes.${n}.ssh);
+            if (adminUser.pubKeys.${n}.ssh == null) then "" else (mkSshString adminUser.pubKeys.${n}.ssh);
         in
-        map getSshString fullyTrustedPreCriomeNames;
+        map getSshString fullyTrustedPubKeyNodeNames;
 
       inherit (node.machine) model;
       thinkpadModels = [
@@ -283,11 +280,11 @@ let
         in
         map mkKacURL caches;
 
-      exNodesSshPreCriomes = map (n: exNodes.${n}.ssh) exNodeNames;
+      exNodesSshPubKeys = map (n: exNodes.${n}.ssh) exNodeNames;
 
-      dispatchersSshPreCriomes = map (n: exNodes.${n}.ssh) dispatchers;
+      dispatchersSshPubKeys = map (n: exNodes.${n}.ssh) dispatchers;
 
-      adminSshPreCriomes = unique (concatMap mkAdminUserPreCriomes adminUserNames);
+      adminSshPubKeys = unique (concatMap mkAdminUserPreCriomes adminUserNames);
 
       chipIsIntel = elem node.machine.arch [
         "x86-64"
@@ -308,7 +305,7 @@ let
     let
       inputUser = inputCluster.users.${userName};
 
-      tcekPreCriome = nodeName: preCriome: hasAttr nodeName nodes;
+      tcekPubKey = nodeName: pubKey: hasAttr nodeName nodes;
 
       user = {
         name = userName;
@@ -322,23 +319,23 @@ let
 
         trust = inputCluster.trust.users.${userName};
 
-        preCriomes = lib.filterAttrs tcekPreCriome inputUser.preCriomes;
+        pubKeys = lib.filterAttrs tcekPubKey inputUser.pubKeys;
 
         githubId = if (inputUser.githubId == null) then userName else inputUser.githubId;
 
       };
 
-      hasPreCriome = hasAttr node.name user.preCriomes;
+      hasPubKey = hasAttr node.name user.pubKeys;
 
       methods = {
-        inherit hasPreCriome;
+        inherit hasPubKey;
 
         sizedAtLeast = mkSizeAtLeast user.size;
 
         emailAddress = "${user.name}@${cluster.name}.criome.net";
         matrixID = "@${user.name}:${cluster.name}.criome.net";
 
-        gitSigningKey = if hasPreCriome then ("&" + user.preCriomes.${node.name}.keygrip) else null;
+        gitSigningKey = if hasPubKey then ("&" + user.pubKeys.${node.name}.keygrip) else null;
 
         useColemak = user.keyboard == "colemak";
         useFastRepeat = inputUser.fastRepeat or true;
@@ -353,11 +350,11 @@ let
           "unlimited"
         ];
 
-        sshCriomes = lib.mapAttrsToList (n: pk: mkSshString pk.ssh) user.preCriomes;
+        sshPubKeys = lib.mapAttrsToList (n: pk: mkSshString pk.ssh) user.pubKeys;
 
       }
-      // (lib.optionalAttrs hasPreCriome {
-        ssh = mkSshString user.preCriomes.${node.name}.ssh;
+      // (lib.optionalAttrs hasPubKey {
+        ssh = mkSshString user.pubKeys.${node.name}.ssh;
       });
 
     in
@@ -371,7 +368,7 @@ let
     name = clusterName;
 
     methods = {
-      trustedBuildPreCriomes = map (n: nodes.${n}.methods.nixPreCriome) nodeNames;
+      trustedBuildPubKeys = map (n: nodes.${n}.methods.nixPubKeyLine) nodeNames;
     };
   };
 

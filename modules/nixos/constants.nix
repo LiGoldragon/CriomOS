@@ -22,7 +22,7 @@ in
 
       runtimeDirectory = systemd.runtimeDirectory + "/" + subDirName;
 
-      preCriomeJson = runtimeDirectory + "/preCriome.json";
+      pubKeyJson = runtimeDirectory + "/pubKey.json";
       preCriadJson = stateDirectory + "/preCriad.json";
       combinedConfigJson = stateDirectory + "/combinedConfig.json";
 
