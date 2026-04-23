@@ -19,10 +19,10 @@ whichever clusters it cares about:
 
 ```nix
 # in a consumer flake:
-inputs.maisiliym.url = "github:LiGoldragon/maisiliym";
+inputs.goldragon.url = "github:LiGoldragon/goldragon";
 inputs.criomos.url = "github:LiGoldragon/CriomOS";
-# → crioZones.maisiliym.<node>.* is available, without CriomOS knowing
-#   anything about maisiliym.
+# → crioZones.goldragon.<node>.* is available, without CriomOS knowing
+#   anything about goldragon.
 ```
 
 Blueprint's `hosts/<name>/` convention is deliberately **not** used: it bakes

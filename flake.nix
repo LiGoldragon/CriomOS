@@ -32,7 +32,7 @@
     # Cluster / NodeProposal inputs are NOT pinned here — they are declared
     # only by consumers (or by CI). A cluster is anything whose flake exposes
     # a `NodeProposal` attr. Example consumers declare:
-    #   maisiliym.url = "github:LiGoldragon/maisiliym";
+    #   goldragon.url = "github:LiGoldragon/goldragon";
     # CriomOS discovers every such input at eval time via a custom
     # `crioZones` output layered on top of blueprint's standard outputs.
   };

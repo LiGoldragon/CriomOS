@@ -9,7 +9,7 @@ usage() {
   echo "With three args, runs remotely via SSH."
   echo ""
   echo "Examples:"
-  echo "  criomos-reload-shell maisiliym zeus bird"
+  echo "  criomos-reload-shell goldragon zeus bird"
   echo "  criomos-reload-shell li"
   exit 1
 }

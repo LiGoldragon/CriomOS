@@ -13,11 +13,11 @@ usage() {
   echo "                  Useful when <node> has a slow connection or weak CPU."
   echo ""
   echo "Examples:"
-  echo "  criomos-deploy maisiliym zeus"
-  echo "  criomos-deploy maisiliym zeus --boot"
-  echo "  criomos-deploy maisiliym prometheus --commit abc123"
-  echo "  criomos-deploy maisiliym zeus --via local"
-  echo "  criomos-deploy maisiliym zeus --via ouranos.maisiliym.criome"
+  echo "  criomos-deploy goldragon zeus"
+  echo "  criomos-deploy goldragon zeus --boot"
+  echo "  criomos-deploy goldragon prometheus --commit abc123"
+  echo "  criomos-deploy goldragon zeus --via local"
+  echo "  criomos-deploy goldragon zeus --via ouranos.goldragon.criome"
   exit 1
 }
 
