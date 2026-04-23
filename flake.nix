@@ -25,6 +25,10 @@
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
 
+    # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
+    brightness-ctl.url = "github:LiGoldragon/brightness-ctl";
+    brightness-ctl.inputs.nixpkgs.follows = "nixpkgs";
+
     # Cluster / NodeProposal inputs are NOT pinned here — they are declared
     # only by consumers (or by CI). A cluster is anything whose flake exposes
     # a `NodeProposal` attr. Example consumers declare:

@@ -3,6 +3,7 @@
   horizon,
   config,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -30,7 +31,7 @@ let
 
   enableWaydroid = sizedAtLeast.max && behavesAs.edge;
 
-  brightnessCtl = pkgs.callPackage ../../brightness-ctl.nix { };
+  brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
 
   batteryCtl = pkgs.writeShellScriptBin "battery-ctl" ''
     usage() { echo "usage: battery-ctl care | full | status"; exit 1; }
