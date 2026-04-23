@@ -8,6 +8,13 @@ Before making changes:
 4. Read `/home/li/.claude/projects/-home-li-git-CriomOS/memory/MEMORY.md` and
    relevant memory files.
 
+## Rust style
+
+Any Rust written in this repo (`packages/brightness-ctl/`, `packages/clavifaber.nix`-consumed crate, future tools) follows
+[`~/git/tools-documentation/rust/style.md`](../tools-documentation/rust/style.md):
+methods on types, typed newtypes for domain values, single-object I/O,
+manual `Error` enums (no thiserror/anyhow), trait-domain rule.
+
 ## Hard architectural rules
 
 - **Network-neutral.** CriomOS does NOT know the names of clusters or
