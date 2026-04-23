@@ -1,10 +1,14 @@
 # Agent Bootstrap — CriomOS
 
+## First thing
+
+Run `bd list --status open` to see what's already on the table.
+
 Before making changes:
 
 1. Read `docs/ROADMAP.md` — porting order and open tasks.
 2. Read the design essay at `../criomos-archive/proposals/CRIOMOS-NEXT.md`.
-3. Read `docs/HORIZON.md` for the method schema.
+3. Read `../horizon-rs/docs/DESIGN.md` for the horizon schema.
 4. Read `/home/li/.claude/projects/-home-li-git-CriomOS/memory/MEMORY.md` and
    relevant memory files.
 
@@ -13,7 +17,7 @@ Before making changes:
 Any Rust written in this repo (`packages/brightness-ctl/`, `packages/clavifaber.nix`-consumed crate, future tools) follows
 [`~/git/tools-documentation/rust/style.md`](../tools-documentation/rust/style.md):
 methods on types, typed newtypes for domain values, single-object I/O,
-manual `Error` enums (no thiserror/anyhow), trait-domain rule.
+`thiserror`-derived `Error` enums (no `anyhow`, no `eyre`), trait-domain rule.
 
 ## Hard architectural rules
 
@@ -24,7 +28,7 @@ manual `Error` enums (no thiserror/anyhow), trait-domain rule.
 - **Home lives in `CriomOS-home`.** Do not add `modules/home/` here. Consume
   home via `inputs.criomos-home.homeModules.*`.
 - **Horizon is external.** Schema + method logic live in `horizon-rs` (Rust).
-  Nix only consumes enriched horizon JSON.
+  Nix only consumes the enriched horizon TOML (camelCase fields).
 
 ## Hard process rules (inherited from legacy CriomOS/AGENTS.md)
 
