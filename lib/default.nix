@@ -2,62 +2,32 @@ _:
 
 # criomos-lib — Sema-style namespace of helpers. Keep names flat. No
 # type-suffixed names.
+#
+# Most magnitude / list helpers that used to live here are now derived
+# fields on horizon-rs Node / User (horizon.node.size.atLeastMed etc.),
+# so the library is intentionally small.
 
 let
   inherit (builtins)
     fromJSON
-    functionArgs
-    head
-    intersectAttrs
     readFile
-    sort
-    tail
     toJSON
     ;
 in
-rec {
-
-  # ─── List helpers ────────────────────────────────────────────────────
-
-  lowestOf = list: head (sort (a: b: a < b) list);
-  highestOf = list: tail (sort (a: b: a < b) list);
+{
 
   # ─── JSON helpers ────────────────────────────────────────────────────
 
   importJSON = filePath: fromJSON (readFile filePath);
 
-  # Call a lambda with only the args it asks for, drawn from a closure.
-  callWith =
-    lambda: closure:
-    let
-      required = functionArgs lambda;
-      present = intersectAttrs required closure;
-    in
-    lambda present;
-
-  # ─── Magnitude ladder ────────────────────────────────────────────────
-
-  # 0 None / 1 Min / 2 Med / 3 Max. Matches horizon-rs Magnitude.
-  mkSizeAtLeast = size: {
-    min = size >= 1;
-    med = size >= 2;
-    max = size == 3;
-  };
-
-  matchSize =
-    size: ifNon: ifMin: ifMed: ifMax:
-    let
-      s = mkSizeAtLeast size;
-    in
-    if s.max then ifMax
-    else if s.med then ifMed
-    else if s.min then ifMin
-    else ifNon;
-
-  # ─── Settings merge ──────────────────────────────────────────────────
-
   # Deep-merge a nix-declared JSON object into a mutable settings file.
   # Nix-declared keys win; user-added keys are preserved.
+  #
+  # KNOWN LIMITATION: jq's `*` operator is a *shallow* merge — nested
+  # objects get replaced wholesale. User edits inside nested keys
+  # (e.g. VSCodium's `"[python]": { ... }`) are lost. Replacement is
+  # tracked as CriomOS-bb5 (criomos-cfg side-repo with proper 3-way
+  # merge + drift reporting).
   mkJsonMerge =
     { lib, pkgs, file, nixSettings }:
     let
