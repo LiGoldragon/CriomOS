@@ -207,11 +207,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777071301,
-        "narHash": "sha256-N9NXlPvLc3mxOdXMgKGT+8/PgMnSkNGelSt4YSAXOIo=",
+        "lastModified": 1777072742,
+        "narHash": "sha256-uS7NNkxY15J9S4LRPNuqRYKKTrzznoWyok6bJ9xEhhg=",
         "owner": "LiGoldragon",
         "repo": "brightness-ctl",
-        "rev": "cbc0185e090db9d9cdbafa04b775ce7499bb544b",
+        "rev": "2954540df7142fe24b97fb13bcecca262fa5e567",
         "type": "github"
       },
       "original": {
@@ -230,11 +230,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777071257,
-        "narHash": "sha256-3jKvuRB/nxOP9i6lPXlDI+0Or4KuyQxF/+xRg0RW9TU=",
+        "lastModified": 1777072739,
+        "narHash": "sha256-y8SJpQW2+3Eds9IFzM59tojiFUqjg8aYHwI7yRORMlc=",
         "owner": "LiGoldragon",
         "repo": "clavifaber",
-        "rev": "65aa9b7ae9b7571a369fd0c13a97d648a34cc9cd",
+        "rev": "f2125ffba7cd0c428e206de3d1aedb2dfd732321",
         "type": "github"
       },
       "original": {
