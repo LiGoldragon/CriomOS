@@ -100,7 +100,91 @@ override path makes nix include it in the narHash, breaking the
 cache property even when content is identical. Lojix must write the
 override dir as a plain dir, never `git init` it.
 
-## 4. About FOD as an alternative
+## 4. Portable horizon — content-addressed archive
+
+`path:` URIs only work on the machine where lojix ran. For
+distributed builds (one machine generates the horizon, another
+consumes it), the override needs to be fetchable.
+
+### Mechanism
+
+Nix supports `tarball+<url>?narHash=sha256-...` as a flake input
+URI. The `narHash` query parameter is the SRI form of the unpacked
+narHash (the same hash that `path:` inputs compute intrinsically).
+Nix fetches the tarball, unpacks, validates against the narHash, and
+either rejects (mismatch) or uses (match). Same hash → same store
+path → eval/build cache hits across all machines that share a binary
+cache or have already evaluated that horizon.
+
+### Lojix flow
+
+1. Project horizon, write `flake.nix` + `horizon.json` to a temp dir
+   (no `.git`).
+2. Compute narHash:
+   `nix hash path --type sha256 --sri <dir>` → `sha256-EP9cznN…`.
+3. Convert to nix32 and take the **first 6 chars** as a short
+   collision-resistant prefix:
+   `nix hash convert --to nix32 --hash-algo sha256 sha256-EP9cznN…`
+   → `13k2sfnamn2qgm36hr0bd61wlblq7aaxzsp2iyxhpja9fg75rzqh` →
+   short = `13k2sf`. (6 nix32 chars ≈ 30 bits ≈ 1B combos —
+   collision-safe for per-(cluster,node)-per-deploy horizons over
+   any realistic lifetime; the full narHash stays in the URI query
+   for actual verification, so a collision in the prefix would only
+   cause an accidental overwrite of the upload, not a security
+   problem.)
+4. Tar+gzip the dir as `<cluster>-<node>-<short>.tar.gz` — e.g.
+   `goldragon-tiger-13k2sf.tar.gz`. The tar bytes themselves don't
+   need to be deterministic — only the unpacked contents do, since
+   nix re-computes the narHash on extraction.
+5. Upload to the publish target (TBD — see open questions).
+6. Emit the override URI:
+   `tarball+<url>/horizon-<nix32>.tar.gz?narHash=sha256-EP9cznN…`.
+
+### Consumer (any machine)
+
+```
+nixos-rebuild switch \
+  --flake github:LiGoldragon/CriomOS#target \
+  --override-input horizon \
+    "tarball+https://horizons.example/horizon-<nix32>.tar.gz?narHash=sha256-EP9cznN..."
+```
+
+### Measured (this session)
+
+```
+nix hash path --type sha256 --sri /tmp/horizon-tiger
+  → sha256-EP9cznNJyQu7j+Lq35U6mC7Kg2kLZGhGfVjYqqzTYo4=
+
+tar -C /tmp/horizon-tiger -czf /tmp/horizon-<nix32>.tar.gz .
+
+nix eval --raw .#horizonProbe.cluster.name \
+  --override-input horizon "tarball+file:///tmp/horizon-<nix32>.tar.gz?narHash=sha256-EP9cznN..."
+  → goldragon                                    # success
+
+nix eval --raw .#horizonProbe.cluster.name \
+  --override-input horizon "tarball+file:///...?narHash=sha256-AAAA..."
+  → error: NAR hash mismatch in input ...        # rejected
+```
+
+The narHash from `nix hash path` on the source dir is the same
+narHash nix computes on the unpacked tarball — verified by both
+the success and the mismatch error above.
+
+### Where to upload
+
+The mechanism is upload-target-agnostic. Candidates:
+
+| Target | Pros | Cons |
+|---|---|---|
+| GitHub releases on a `goldragon-horizons` repo | free, durable, immutable, browsable | release-create rate limits; needs a token |
+| S3 / R2 / B2 bucket | cheap, scalable, content-addressed paths trivial | needs cloud account + creds |
+| nix binary cache (cachix, attic, self-hosted) | re-uses nix-native distribution | overkill for ~3KB horizons; binary caches optimise build outputs not source |
+| HTTP server on a node in the kriom (e.g. `https://prometheus.goldragon.criome/horizons/`) | self-hosted; same trust domain | requires the kriom to be up; chicken-and-egg for first deploy |
+
+The mechanism is identical across these — only the URL prefix
+changes. Decision deferred (see open questions).
+
+## 5. About FOD as an alternative
 
 Content-addressed path inputs (the approach above) work via nix's
 intrinsic narHashing. An explicit FOD wrapper is **not required**
@@ -133,7 +217,7 @@ without nix needing to scan the dir.
 For v1: stick with the simple wrapper (no FOD). Revisit if the
 narHash-of-dir approach surfaces edge cases.
 
-## 5. lojix orchestrator — design
+## 6. lojix orchestrator — design
 
 **Name**: `lojix`. The legacy `lojix` repo (current contents:
 3-file scaffold post the 2026 reset to "battery-included aski
@@ -160,19 +244,20 @@ goldragon/datom.nota
         ▼  HorizonProjector actor (horizon-lib in-process; NOT subprocess)
    Horizon (typed Rust)
         │
-        ▼  HorizonArtifact actor (writes the override-input dir)
-   <override-dir>/
-     ├─ flake.nix     (constant template)
-     └─ horizon.json  (serde_json::to_string_pretty)
+        ▼  HorizonArtifact actor (writes dir, computes narHash, tars,
+        │                         optionally uploads)
+   <override-dir>/                  + horizon-<nix32>.tar.gz @ <upload-url>
+     ├─ flake.nix                     (with narHash known)
+     └─ horizon.json
         │
         ▼  NixBuilder actor (spawns nix; streams stdout/stderr)
    nixos-rebuild --flake github:LiGoldragon/CriomOS#target
-                 --override-input horizon path:<override-dir>
+                 --override-input horizon "<path or tarball+url?narHash=...>"
                  <action>
         │
         ▼  BuildOutcome (success | failure with diagnostics)
         │
-        ▼  HorizonArtifact actor: optional Cleanup
+        ▼  HorizonArtifact actor: optional Cleanup (local), retain remote
 ```
 
 ### Actors (per Mentci style: ractor for orchestration, methods on
@@ -208,6 +293,12 @@ pub enum ProjectMsg {
 // artifact.rs
 pub struct ArtifactRequest {
     pub horizon: Horizon,
+    pub publish: Option<PublishTarget>,   // None = local path:; Some = upload + tarball URI
+}
+pub struct HorizonArtifact {
+    pub local_dir:    PathBuf,            // contains flake.nix + horizon.json
+    pub nar_hash_sri: NarHashSri,         // sha256-...= form
+    pub override_uri: OverrideUri,        // path:<dir>  or  tarball+<url>?narHash=...
 }
 pub enum ArtifactMsg {
     Materialize(ArtifactRequest, RpcReplyPort<Result<HorizonArtifact, Error>>),
@@ -218,7 +309,7 @@ pub enum ArtifactMsg {
 pub enum BuildAction { Eval, Build, Boot, Switch, Test }
 pub struct BuildRequest {
     pub criomos_flake: FlakeRef,        // default: github:LiGoldragon/CriomOS
-    pub artifact:      HorizonArtifact, // path the override-input points at
+    pub artifact:      HorizonArtifact, // override_uri picks path: or tarball:
     pub action:        BuildAction,
 }
 pub enum BuildMsg {
@@ -301,7 +392,7 @@ coordinator re-issues the message that failed (idempotent for all
 except `NixBuilder` `Switch`, which may have left partial state and
 must surface to the operator).
 
-## 6. Bead changes
+## 7. Bead changes
 
 **Closed today (superseded by new architecture):**
 - [`CriomOS-cal`](../.beads/) (P0) — crioZones.nix design dropped.
@@ -328,36 +419,47 @@ must surface to the operator).
     smallest module port to make `nix eval ...drvPath` actually
     succeed end-to-end — P1
 
-## 7. Open questions
+## 8. Open questions
 
-1. **Override path stability.** True ephemeral (TempDir, gone after
-   run) is simplest but means you can't re-evaluate / debug after the
-   fact. Stable alternative: write to
-   `~/.cache/lojix/<cluster>/<node>/` and atomically replace on each
-   run — still cache-correct (nix narHashes the contents, not the
-   path); plays nicer with `nixos-rebuild` rollback; gives an
-   inspectable artifact. **Suggest stable.**
+1. **Where to publish horizon archives.** See §4 — GitHub releases
+   on a `goldragon-horizons` repo, S3/R2/B2 bucket, kriom-hosted
+   HTTP, or a nix binary cache. Top recommendation: GitHub releases
+   on a dedicated `goldragon-horizons` repo (immutable, free,
+   browsable, and the URL pattern is stable). Confirm before lojix
+   wires the publish action.
 
-2. **System-tuple derivation.** Currently in CriomOS `flake.nix`
+2. **Local-only mode.** For dev iteration on a single machine, lojix
+   should support a `--no-publish` flag that emits a `path:` URI
+   instead of `tarball+`. Same cache property locally; skips upload.
+
+3. **Override path stability (when local).** True ephemeral
+   (TempDir, gone after run) is simplest but means you can't
+   re-evaluate / debug after the fact. Stable alternative: write to
+   `~/.cache/lojix/<cluster>/<node>/<6char>/` (path encodes the
+   horizon's short hash). Cache-correct either way; the stable form
+   gives an inspectable artifact and survives a kill -9. **Suggest
+   stable.**
+
+4. **System-tuple derivation.** Currently in CriomOS `flake.nix`
    inline (`{ X86_64Linux = "x86_64-linux"; … }.${horizon.node.system}`).
    Could move to lojix and have it set the `system` argument
    explicitly via a wrapper, but then CriomOS needs *some* signal of
    target system anyway. Inline-in-CriomOS is fine.
 
-3. **horizon-lib as path dep vs git dep in lojix's Cargo.toml.**
+5. **horizon-lib as path dep vs git dep in lojix's Cargo.toml.**
    During co-development, path dep speeds iteration. For releases,
    git dep with pinned commit. Suggest git dep default; developers
    override locally with `[patch."https://github.com/..."]` or
    workspace.
 
-4. **FOD escalation trigger.** When does the simple wrapper stop
-   being sufficient? Likely if we observe non-deterministic narHash
-   for byte-identical content (some path metadata leaking through),
-   or if we want CriomOS to consume the horizon as a
-   build-time-resolved derivation rather than a parsed value. Revisit
-   only when an actual problem surfaces.
+6. **FOD escalation trigger.** When does `tarball+narHash` stop
+   being sufficient? Likely never for the horizon use-case; FOD's
+   only edge would be if we wanted the horizon itself to be a
+   buildable derivation that nix can fetch through binary cache
+   protocols (rather than HTTP). Revisit only if a real need
+   surfaces.
 
-## 8. What an agent picking up tomorrow should do
+## 9. What an agent picking up tomorrow should do
 
 If the design above is accepted: archive legacy `lojix` →
 `lojix-archive` (local + GitHub), scaffold the new `lojix` repo
