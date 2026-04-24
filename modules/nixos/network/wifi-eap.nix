@@ -7,7 +7,7 @@
 let
   inherit (lib) mkIf;
   inherit (horizon) node;
-  inherit (horizon.node.methods) hasWifiCertPubKey;
+  inherit (horizon.node) hasWifiCertPubKey;
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
   inherit (constants.fileSystem.complex) keyFile;
 

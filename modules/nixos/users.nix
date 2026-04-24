@@ -15,13 +15,13 @@ let
     ;
 
   inherit (horizon) node users;
-  inherit (node.methods) adminSshPubKeys behavesAs;
+  inherit (node) adminSshPubKeys behavesAs;
 
   mkUser =
     attrName: user:
     let
       inherit (user) trust;
-      inherit (user.methods) sshPubKeys;
+      inherit (user) sshPubKeys;
 
     in
     optionalAttrs (trust > 0) {

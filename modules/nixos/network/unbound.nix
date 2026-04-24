@@ -19,7 +19,7 @@ let
     ;
   inherit (lib) filter mapAttrsToList concatMapStringsSep lowPrio;
   inherit (horizon) cluster node exNodes;
-  inherit (horizon.node.methods) behavesAs;
+  inherit (horizon.node) behavesAs;
 
   tailnetBaseDomain = "tailnet.${cluster.name}.criome";
   headscaleEnabled = config.services.headscale.enable;
@@ -86,7 +86,7 @@ let
   mkPrimaryRecords = entry:
     let
       address = mkPrimaryAddress entry;
-      alias = entry.methods.nixCacheDomain;
+      alias = entry.nixCacheDomain;
       aliasRecords =
         if alias == null || alias == "" || address == null then
           []

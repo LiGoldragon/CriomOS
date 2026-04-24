@@ -16,7 +16,7 @@ let
     ;
   inherit (horizon.node) typeIs;
   inherit (horizon.node.machine) model;
-  inherit (horizon.node.methods)
+  inherit (horizon.node)
     behavesAs
     hasSshPubKey
     hasVideoOutput

@@ -6,7 +6,7 @@
 }:
 let
   inherit (lib) mkIf optionals;
-  inherit (horizon.node.methods) sizedAtLeast;
+  inherit (horizon.node) sizedAtLeast;
 
   minPackages = optionals sizedAtLeast.min (
     with pkgs;

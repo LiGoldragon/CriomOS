@@ -6,7 +6,7 @@
 }:
 let
   inherit (lib) mkIf;
-  inherit (horizon.node.methods) behavesAs;
+  inherit (horizon.node) behavesAs;
 
   hotplugSubnet = "10.47.0";
 

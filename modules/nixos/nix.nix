@@ -21,9 +21,9 @@ let
 
   inherit (pkdjz) exportJSON;
 
-  inherit (horizon.cluster.methods) trustedBuildPubKeys;
+  inherit (horizon.cluster) trustedBuildPubKeys;
   inherit (horizon) node;
-  inherit (horizon.node.methods)
+  inherit (horizon.node)
     cacheURLs
     dispatchersSshPubKeys
     exNodesSshPubKeys

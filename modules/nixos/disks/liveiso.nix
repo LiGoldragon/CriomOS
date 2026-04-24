@@ -7,7 +7,7 @@
 let
   inherit (lib) mkOverride;
   inherit (horizon) node;
-  inherit (horizon.node.methods) behavesAs;
+  inherit (horizon.node) behavesAs;
 
   criomosVersion = "unversioned"; # TODO
 

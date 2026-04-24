@@ -18,7 +18,7 @@ let
     filterAttrs
     ;
   inherit (horizon) node exNodes;
-  inherit (horizon.node.methods)
+  inherit (horizon.node)
     hasWireguardPubKey
     wireguardUntrustedProxies
     ;
@@ -40,7 +40,7 @@ let
     endpoint = "wg.${node.criomeDomainName}:51820";
   };
 
-  validPreNodes = filterAttrs (n: v: v.methods.hasWireguardPubKey) exNodes;
+  validPreNodes = filterAttrs (n: v: v.hasWireguardPubKey) exNodes;
 
   nodePeers = mapAttrsToList mkNodePeer validPreNodes;
 

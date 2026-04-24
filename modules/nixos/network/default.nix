@@ -11,7 +11,7 @@ let
     name: node:
     let
       inherit (node) criomeDomainName nodeIp yggAddress;
-      inherit (node.methods) isNixCache nixCacheDomain;
+      inherit (node) isNixCache nixCacheDomain;
 
       mkPreNodeHost = linkLocalIP: [ ("wg." + criomeDomainName) ];
 

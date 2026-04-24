@@ -22,7 +22,7 @@ let
   inherit (pkdjz) exportJSON;
   inherit (pkgs) mksh;
   inherit (horizon) exNodes;
-  inherit (horizon.node.methods)
+  inherit (horizon.node)
     sizedAtLeast
     useColemak
     behavesAs
