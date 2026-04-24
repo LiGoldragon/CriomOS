@@ -15,6 +15,7 @@
     ./network/networkd.nix
     ./network/yggdrasil.nix
     ./network/wireguard.nix
+    ./network/wifi-eap.nix
   ];
 
   networking.hostName = horizon.node.name;
