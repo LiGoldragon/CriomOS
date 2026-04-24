@@ -1,12 +1,12 @@
 {
   lib,
   horizon,
-  config,
   constants,
   ...
 }:
 let
-  inherit (horizon.node) typeIs;
+  inherit (lib) mkIf;
+  inherit (horizon.node) behavesAs;
   inherit (horizon.node.machine) model;
   # WiFi PKI paths — uncomment when EAP-TLS is deployed
   # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
@@ -47,6 +47,8 @@ in
   imports = [
     ./wifi-pki.nix
   ];
+
+  config = mkIf behavesAs.router {
 
   boot.kernel.sysctl = {
     "net.ipv4.conf.all.forwarding" = true;
@@ -212,5 +214,7 @@ in
         };
       };
     };
+  };
+
   };
 }

@@ -22,6 +22,7 @@
     ./edge/default.nix
     ./userHomes.nix
     ./metal/default.nix
+    ./router/default.nix
   ];
 
   networking.hostName = horizon.node.name;
