@@ -19,13 +19,12 @@ let
   inherit (horizon.cluster) trustedBuildPubKeys;
   inherit (horizon) node;
   inherit (horizon.node)
-    cacheURLs
+    cacheUrls
     dispatchersSshPubKeys
     exNodesSshPubKeys
     sizedAtLeast
     isBuilder
     isNixCache
-    hasNixPubKey
     ;
 
   inherit (constants.network.nix) serve;
@@ -104,8 +103,8 @@ in
       fallback = true;
 
       trusted-public-keys = trustedBuildPubKeys;
-      substituters = cacheURLs;
-      trusted-binary-caches = cacheURLs;
+      substituters = cacheUrls;
+      trusted-binary-caches = cacheUrls;
 
       auto-optimise-store = true;
     };

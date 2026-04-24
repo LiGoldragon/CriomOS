@@ -82,7 +82,7 @@ in
     };
 
     systemPackages =
-    let criomos-deploy = pkgs.callPackage ../criomos-deploy.nix { };
+    let criomos-deploy = pkgs.callPackage ../../packages/criomos-deploy { };
     in with pkgs; [
       openssh
       ntfs3g
@@ -161,7 +161,7 @@ in
 
   };
 
-  system.stateVersion = "25.05";
+  system.stateVersion = "26.05";
 
   users = {
     defaultUserShell = "/run/current-system/sw/bin/zsh";

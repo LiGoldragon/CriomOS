@@ -49,12 +49,17 @@
       pkgs    = inputs.pkgs.pkgs;
       system  = inputs.system.system;
 
+      constants = import ./modules/nixos/constants.nix;
+      criomos-lib = import ./lib { };
+
       target = inputs.nixpkgs.lib.nixosSystem {
         # `system` is derived from `pkgs.stdenv.hostPlatform.system`
         # when `pkgs` is supplied; passing it explicitly would set
         # `nixpkgs.system`, which `readOnlyPkgs` has removed.
         inherit pkgs;
-        specialArgs = { inherit horizon system inputs; };
+        specialArgs = {
+          inherit horizon system inputs constants criomos-lib;
+        };
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
           inputs.self.nixosModules.criomos
