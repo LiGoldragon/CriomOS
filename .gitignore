@@ -3,3 +3,6 @@
 .dolt/
 *.db
 .beads-credential-key
+
+# Local sibling-repo symlinks (developer convenience; not part of the flake)
+/repos/
