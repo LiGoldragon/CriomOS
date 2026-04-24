@@ -6,7 +6,7 @@
 }:
 let
   inherit (lib) mkIf optionals;
-  inherit (horizon.node) size;
+  inherit (horizon.node) size behavesAs;
 
   minPackages = optionals size.atLeastMin (
     with pkgs;
@@ -27,7 +27,7 @@ let
   maxPackages = with pkgs; [ ];
 
 in
-{
+mkIf behavesAs.edge {
 
   hardware = {
     bluetooth.enable = true;

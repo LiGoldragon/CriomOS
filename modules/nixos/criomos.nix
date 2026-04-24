@@ -19,6 +19,7 @@
     ./network/headscale.nix
     ./network/unbound.nix
     ./network/nordvpn.nix
+    ./edge/default.nix
   ];
 
   networking.hostName = horizon.node.name;
