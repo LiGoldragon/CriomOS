@@ -18,6 +18,7 @@
     ./network/wifi-eap.nix
     ./network/headscale.nix
     ./network/unbound.nix
+    ./network/nordvpn.nix
   ];
 
   networking.hostName = horizon.node.name;
