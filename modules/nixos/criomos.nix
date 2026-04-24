@@ -11,6 +11,7 @@
     ./complex.nix
     ./llm.nix
     ./users.nix
+    ./network/tailscale.nix
   ];
 
   networking.hostName = horizon.node.name;
