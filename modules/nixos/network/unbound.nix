@@ -105,7 +105,6 @@ in
   systemd.services.unbound.after = lib.optionals behavesAs.router [ "systemd-networkd.service" ];
 
   services.unbound = {
-    # enable = (!typeIs.edge); # bootstrap
     enable = true;
     settings = {
       server = {
