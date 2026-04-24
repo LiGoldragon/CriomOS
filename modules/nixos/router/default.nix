@@ -46,6 +46,7 @@ in
 {
   imports = [
     ./wifi-pki.nix
+    ./yggdrasil.nix
   ];
 
   config = mkIf behavesAs.router {

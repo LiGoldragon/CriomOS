@@ -1,6 +1,10 @@
-{ lib, ... }:
+{ lib, horizon, ... }:
 
-{
+let
+  inherit (lib) mkIf;
+  inherit (horizon.node) behavesAs;
+in
+mkIf behavesAs.router {
   networking = {
     nftables = {
       tables.yggdrasil-local = {
