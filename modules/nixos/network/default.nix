@@ -40,6 +40,7 @@ in
     ./nordvpn.nix
     ./wifi-eap.nix
     ./networkd.nix
+    ./wireguard.nix
   ];
 
   networking = {
