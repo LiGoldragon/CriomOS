@@ -14,13 +14,9 @@ let
     optionalString
     optionalAttrs
     ;
-  inherit (horizon.node) typeIs;
   inherit (horizon.node.machine) model;
   inherit (horizon.node)
     behavesAs
-    hasSshPubKey
-    hasVideoOutput
-    hasYggPubKey
     size
     chipIsIntel
     modelIsThinkpad
@@ -184,6 +180,7 @@ let
   intelMediaDriverModels = [
     "ThinkPadT14Gen5Intel"
     "ThinkPadT14Gen2Intel"
+    "ThinkPadE15Gen2Intel"
   ];
 
   gpuUsesMediaDriver = isGenericModel || builtins.elem model intelMediaDriverModels;
@@ -219,7 +216,7 @@ let
       [ ];
 
 in
-{
+mkIf behavesAs.bareMetal {
   hardware = {
     cpu.intel.updateMicrocode = chipIsIntel;
 
@@ -278,7 +275,7 @@ in
 
     kernelParams =
       lib.concatLists [
-        (if computerIs.rpi3B then [
+        (if computerIs.rpi3b then [
           "cma=32M"
           "console=ttyS0,115200n8"
           "console=ttyAMA0,11520n8"
@@ -384,7 +381,7 @@ in
       [ lm_sensors ]
       ++ optionals chipIsIntel intelUtils
       ++ optionals size.atLeastMax [ v4l-utils ]
-      ++ optionals enableWaydroid waydroidPackages
+      ++ optionals isLargeEdge waydroidPackages
       ++ optional modelIsThinkpad batteryCtl
       ;
 

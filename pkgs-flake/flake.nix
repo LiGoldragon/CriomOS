@@ -9,6 +9,7 @@
   outputs = { self, nixpkgs, system }: {
     pkgs = import nixpkgs {
       system = system.system;
+      config.allowUnfree = true;
     };
   };
 }
