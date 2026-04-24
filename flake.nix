@@ -2,7 +2,11 @@
   description = "CriomOS — NixOS platform consuming three content-addressed flake inputs from lojix: `system` (the target tuple), `pkgs` (a stable wrapper flake that imports nixpkgs for that system), and `horizon` (the per-deploy projected horizon JSON). Each axis caches independently in nix's flake-eval cache: pkgs eval is reused across deploys with the same system, horizon changes don't touch pkgs.";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
+    # Pinned to a known-good rev with a hot local /nix/store cache.
+    # criomos-archive's older rev (9b008d60, July 2025) is unusable —
+    # home-manager 2026 dropped support for that lib (no `lib.genAttrs'`).
+    # b12141ef (April 18 2026) is what we built against all session.
+    nixpkgs.url = "github:NixOS/nixpkgs/b12141ef619e0a9c1c84dc8c684040326f27cdcc";
 
     blueprint.url = "github:numtide/blueprint";
     blueprint.inputs.nixpkgs.follows = "nixpkgs";
