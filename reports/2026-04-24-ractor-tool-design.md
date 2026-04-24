@@ -138,7 +138,7 @@ cache or have already evaluated that horizon.
    nix re-computes the narHash on extraction.
 5. Upload to the publish target (TBD — see open questions).
 6. Emit the override URI:
-   `tarball+<url>/horizon-<nix32>.tar.gz?narHash=sha256-EP9cznN…`.
+   `tarball+<url>/goldragon-tiger-13k2sf.tar.gz?narHash=sha256-EP9cznN…`.
 
 ### Consumer (any machine)
 
@@ -146,7 +146,7 @@ cache or have already evaluated that horizon.
 nixos-rebuild switch \
   --flake github:LiGoldragon/CriomOS#target \
   --override-input horizon \
-    "tarball+https://horizons.example/horizon-<nix32>.tar.gz?narHash=sha256-EP9cznN..."
+    "tarball+https://horizons.example/goldragon-tiger-13k2sf.tar.gz?narHash=sha256-EP9cznN..."
 ```
 
 ### Measured (this session)
@@ -155,10 +155,10 @@ nixos-rebuild switch \
 nix hash path --type sha256 --sri /tmp/horizon-tiger
   → sha256-EP9cznNJyQu7j+Lq35U6mC7Kg2kLZGhGfVjYqqzTYo4=
 
-tar -C /tmp/horizon-tiger -czf /tmp/horizon-<nix32>.tar.gz .
+tar -C /tmp/horizon-tiger -czf /tmp/goldragon-tiger-13k2sf.tar.gz .
 
 nix eval --raw .#horizonProbe.cluster.name \
-  --override-input horizon "tarball+file:///tmp/horizon-<nix32>.tar.gz?narHash=sha256-EP9cznN..."
+  --override-input horizon "tarball+file:///tmp/goldragon-tiger-13k2sf.tar.gz?narHash=sha256-EP9cznN..."
   → goldragon                                    # success
 
 nix eval --raw .#horizonProbe.cluster.name \
@@ -246,7 +246,7 @@ goldragon/datom.nota
         │
         ▼  HorizonArtifact actor (writes dir, computes narHash, tars,
         │                         optionally uploads)
-   <override-dir>/                  + horizon-<nix32>.tar.gz @ <upload-url>
+   <override-dir>/                  + <cluster>-<node>-<6char>.tar.gz @ <upload-url>
      ├─ flake.nix                     (with narHash known)
      └─ horizon.json
         │
