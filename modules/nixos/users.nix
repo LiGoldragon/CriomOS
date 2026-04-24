@@ -18,13 +18,11 @@ let
   inherit (node) adminSshPubKeys behavesAs;
 
   mkUser =
-    attrName: user:
+    _attrName: user:
     let
-      inherit (user) trust;
-      inherit (user) sshPubKeys;
-
+      inherit (user) trust sshPubKeys;
     in
-    optionalAttrs (trust > 0) {
+    optionalAttrs trust.is.min {
       name = user.name;
 
       useDefaultShell = true;
@@ -35,10 +33,10 @@ let
       extraGroups =
         [ "audio" ]
         ++ (optional (config.programs.sway.enable == true) "sway")
-        ++ (optionals (trust >= 2) (
+        ++ (optionals trust.is.med (
           [ "video" ] ++ (optional (config.networking.networkmanager.enable == true) "networkmanager")
         ))
-        ++ (optionals (trust >= 3) [
+        ++ (optionals trust.is.max [
           "adbusers"
           "nixdev"
           "systemd-journal"
@@ -49,7 +47,7 @@ let
           "libvirtd"
         ]);
 
-      linger = trust >= 3 && behavesAs.center;
+      linger = trust.is.max && behavesAs.center;
     };
 
   mkUserUsers = mapAttrs mkUser users;

@@ -10,6 +10,7 @@
     ./nix.nix
     ./complex.nix
     ./llm.nix
+    ./users.nix
   ];
 
   networking.hostName = horizon.node.name;

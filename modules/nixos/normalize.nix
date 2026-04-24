@@ -20,7 +20,7 @@ let
   inherit (pkgs) mksh;
   inherit (horizon) exNodes;
   inherit (horizon.node)
-    sizedAtLeast
+    size
     useColemak
     behavesAs
     hasVideoOutput
@@ -60,7 +60,7 @@ in
         "btrfs"
         "ntfs"
       ]
-      ++ (optional sizedAtLeast.min "exfat")
+      ++ (optional size.is.min "exfat")
     );
   };
 
@@ -103,7 +103,7 @@ in
       pulseaudioFull
       networkmanager_strongswan
     ])
-    ++ (optionals (sizedAtLeast.min && !behavesAs.iso) [
+    ++ (optionals (size.is.min && !behavesAs.iso) [
       git
       curl
       jq
@@ -125,7 +125,7 @@ in
   nixpkgs.overlays = mkOverride 0 [ ];
 
   networking.networkmanager = {
-    enable = sizedAtLeast.min && !behavesAs.router && !behavesAs.iso && !behavesAs.center;
+    enable = size.is.min && !behavesAs.router && !behavesAs.iso && !behavesAs.center;
   };
 
   programs = {

@@ -22,7 +22,7 @@ let
     cacheUrls
     dispatchersSshPubKeys
     exNodesSshPubKeys
-    sizedAtLeast
+    size
     isBuilder
     isNixCache
     ;
@@ -119,8 +119,8 @@ in
     extraOptions = ''
       flake-registry = ${nixFlakeRegistryJson}
       experimental-features = nix-command flakes recursive-nix
-      keep-derivations = ${boolToString sizedAtLeast.med}
-      keep-outputs = ${boolToString sizedAtLeast.max}
+      keep-derivations = ${boolToString size.is.med}
+      keep-outputs = ${boolToString size.is.max}
 
       # !include <path>:  include without an error for missing file.
       !include nixTokens

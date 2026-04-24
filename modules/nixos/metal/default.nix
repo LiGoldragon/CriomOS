@@ -21,7 +21,7 @@ let
     hasSshPubKey
     hasVideoOutput
     hasYggPubKey
-    sizedAtLeast
+    size
     chipIsIntel
     modelIsThinkpad
     useColemak
@@ -29,7 +29,7 @@ let
     ;
 
 
-  enableWaydroid = sizedAtLeast.max && behavesAs.edge;
+  enableWaydroid = size.is.max && behavesAs.edge;
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
 
@@ -153,7 +153,7 @@ let
   ];
 
   # TODO - sort out different `sizedatleast` sets
-  printingDriversPkgs = lib.optionals sizedAtLeast.max (
+  printingDriversPkgs = lib.optionals size.is.max (
     with pkgs;
     [
       gutenprint # Drivers for many different printers from many different vendors.
@@ -233,13 +233,13 @@ in
     graphics.extraPackages = optionals treatAsIntel intelGpuDrivers;
   };
 
-  location.provider = if sizedAtLeast.min then "geoclue2" else "manual";
+  location.provider = if size.is.min then "geoclue2" else "manual";
 
   boot = {
     extraModulePackages =
       [ ]
       ++ (optional modelIsThinkpad config.boot.kernelPackages.acpi_call)
-      ++ (optional sizedAtLeast.max config.boot.kernelPackages.v4l2loopback);
+      ++ (optional size.is.max config.boot.kernelPackages.v4l2loopback);
 
     initrd = {
       availableKernelModules = [
@@ -251,7 +251,7 @@ in
     kernelModules = [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu");
 
     extraModprobeConfig = (
-      optionalString sizedAtLeast.max ''
+      optionalString size.is.max ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
       ''
     ) + (
@@ -382,7 +382,7 @@ in
       with pkgs;
       [ lm_sensors ]
       ++ optionals chipIsIntel intelUtils
-      ++ optionals sizedAtLeast.max [ v4l-utils ]
+      ++ optionals size.is.max [ v4l-utils ]
       ++ optionals enableWaydroid waydroidPackages
       ++ optional modelIsThinkpad batteryCtl
       ;
@@ -397,7 +397,7 @@ in
     fwupd.enable = true;
 
     geoclue2 = {
-      enable = sizedAtLeast.min;
+      enable = size.is.min;
       enableDemoAgent = lib.mkOverride 0 true;
       geoProviderUrl = "https://beacondb.net/v1/geolocate";
       appConfig.redshift = {
@@ -411,12 +411,12 @@ in
     };
 
     localtimed = {
-      enable = sizedAtLeast.min;
+      enable = size.is.min;
     };
 
     printing = {
       enable = true;
-      cups-pdf.enable = sizedAtLeast.min;
+      cups-pdf.enable = size.is.min;
       drivers = printingDriversPkgs;
     };
 
@@ -517,8 +517,8 @@ in
   };
 
   virtualisation = {
-    libvirtd.enable = (sizedAtLeast.max && behavesAs.edge);
+    libvirtd.enable = (size.is.max && behavesAs.edge);
     waydroid.enable = enableWaydroid;
-    spiceUSBRedirection.enable = sizedAtLeast.max;
+    spiceUSBRedirection.enable = size.is.max;
   };
 }
