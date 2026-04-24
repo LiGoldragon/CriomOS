@@ -320,11 +320,11 @@
         "stylix": "stylix"
       },
       "locked": {
-        "lastModified": 1777028829,
-        "narHash": "sha256-pDf/9tJE0azwi7o57Vy6QCnJfqU8uXiLPLxcGpyl5M0=",
+        "lastModified": 1777071697,
+        "narHash": "sha256-IKNjZuwkiltCtIUG5FxPPP5ZYzkZa6uKMpPnT5AFvKY=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "d0893a1e7dfd98fd7bc6095e5d59820e2f3e7459",
+        "rev": "7e3451768dd8acf2a2edb052b90b51c26f7977f9",
         "type": "github"
       },
       "original": {
@@ -716,17 +716,17 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1776548001,
-        "narHash": "sha256-ZSK0NL4a1BwVbbTBoSnWgbJy9HeZFXLYQizjb2DPF24=",
+        "lastModified": 1776877367,
+        "narHash": "sha256-EHq1/OX139R1RvBzOJ0aMRT3xnWyqtHBRUBuO1gFzjI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+        "rev": "0726a0ecb6d4e08f6adced58726b95db924cef57",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
-        "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
         "type": "github"
       }
     },
