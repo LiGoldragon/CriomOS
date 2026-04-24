@@ -13,6 +13,7 @@ let
     concatStringsSep
     ;
   inherit (lib)
+    mkIf
     mapAttrsToList
     filterAttrs
     ;
@@ -46,7 +47,7 @@ let
   privateKeyFile = "/etc/wireguard/privateKey";
 
 in
-{
+mkIf hasWireguardPubKey {
   networking = {
     wireguard = {
       enable = true;
