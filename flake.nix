@@ -54,7 +54,7 @@
         # when `pkgs` is supplied; passing it explicitly would set
         # `nixpkgs.system`, which `readOnlyPkgs` has removed.
         inherit pkgs;
-        specialArgs = { inherit horizon system; };
+        specialArgs = { inherit horizon system inputs; };
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
           inputs.self.nixosModules.criomos

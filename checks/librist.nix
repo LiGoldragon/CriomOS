@@ -30,7 +30,7 @@ let
   receiverReorderBuffer = 60;
   receiverCongestionControl = 1;
   receiverStreamID = 1000;
-  receiverInputUrl = "rist:$receiverIpAndPort//?cname=${receiverCName}&bandwidth=${toString receiverBandwidth}&buffer-min=${toString receiverMinBuffer}&buffer-max=${toString receiverMaxBuffer}&rtt-min=${toString receiverMinRtt}&rtt-max=${toString receiverMaxRtt}&reorder-buffer=${toString receiverReorderBuffer}&congestion-control${receiverCongestionControl}=?stream-id=${receiverStreamID}";
+  receiverInputUrl = "rist:${receiverIpAndPort}//?cname=${receiverCName}&bandwidth=${toString receiverBandwidth}&buffer-min=${toString receiverMinBuffer}&buffer-max=${toString receiverMaxBuffer}&rtt-min=${toString receiverMinRtt}&rtt-max=${toString receiverMaxRtt}&reorder-buffer=${toString receiverReorderBuffer}&congestion-control${receiverCongestionControl}=?stream-id=${receiverStreamID}";
 
   receiverOutputUrl = "udp://192.168.x.x:8192?stream-id=1000";
 
@@ -42,7 +42,7 @@ in
     --profile 1 --verbose-level 4
   '';
 
-  simpleReceiver = writeScriptBin "" ''
+  simpleReceiver = writeScriptBin "simpleRistSenderTest" ''
     #!${mksh}/bin/mksh
 
     receiverIpAndPort="$1"
