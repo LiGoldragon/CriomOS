@@ -1,25 +1,17 @@
 { flake, inputs, ... }:
 
 # nixosModules.criomos — top aggregate.
-#
-# Empty on purpose. Split modules will be imported here as they land:
-#   ./normalize.nix
-#   ./nix.nix
-#   ./complex.nix
-#   ./users.nix
-#   ./metal
-#   ./edge.nix
-#   ./router
-#   ./llm.nix
-#   ./network
-#   ./disks
-#
-# Consuming hosts do `imports = [ flake.nixosModules.criomos ];` and pass
-# `horizon` via `_module.args`.
 
 { config, lib, horizon ? null, ... }:
 {
-  imports = [ ];
+  imports = [
+    ./disks/preinstalled.nix
+  ];
 
-  config = { };
+  networking.hostName = horizon.node.name;
+
+  # Pin to the nixpkgs release that the pkgs-flake was instantiated
+  # against. Will become a CriomOS-level enum (bleeding-edge / stable
+  # / testing) once we abstract the nixpkgs revs.
+  system.stateVersion = "26.05";
 }
