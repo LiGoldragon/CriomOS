@@ -1,5 +1,5 @@
 {
-  description = "CriomOS — NixOS platform consuming a single (cluster, node) horizon as a content-addressed flake input. The orchestrator (lojix) produces the horizon and overrides this input; nix's eval/build cache hits across runs whenever the horizon content is identical.";
+  description = "CriomOS — NixOS platform consuming three content-addressed flake inputs from lojix: `system` (the target tuple), `pkgs` (a stable wrapper flake that imports nixpkgs for that system), and `horizon` (the per-deploy projected horizon JSON). Each axis caches independently in nix's flake-eval cache: pkgs eval is reused across deploys with the same system, horizon changes don't touch pkgs.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
@@ -22,9 +22,21 @@
     brightness-ctl.url = "github:LiGoldragon/brightness-ctl";
     brightness-ctl.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Horizon — the projected (cluster, node) view. Default stub
-    # throws on access; lojix overrides at deploy time. Same content
-    # → same store path → eval/build cache hits.
+    # System tuple — lojix produces a tiny content-addressed flake
+    # whose only output is `system = "x86_64-linux"` (or aarch64).
+    system.url = "path:./stubs/no-system";
+
+    # Pkgs flake — instantiates nixpkgs for the given (nixpkgs-rev,
+    # system) tuple. Lives in this repo at ./pkgs-flake; consumed via
+    # path: so its eval cache is keyed independently. nixpkgs and
+    # system are propagated via `follows`, so the pkgs flake sees
+    # the same revisions CriomOS does without having to be regenerated.
+    pkgs.url = "path:./pkgs-flake";
+    pkgs.inputs.nixpkgs.follows = "nixpkgs";
+    pkgs.inputs.system.follows = "system";
+
+    # Horizon — the projected (cluster, node) view. lojix overrides
+    # per deploy.
     horizon.url = "path:./stubs/no-horizon";
   };
 
@@ -34,25 +46,31 @@
       blueprintOutputs = inputs.blueprint { inherit inputs; };
 
       horizon = inputs.horizon.horizon;
-
-      systemFor = horizonSystem:
-        {
-          X86_64Linux  = "x86_64-linux";
-          Aarch64Linux = "aarch64-linux";
-        }.${horizonSystem};
+      pkgs    = inputs.pkgs.pkgs;
+      system  = inputs.system.system;
 
       target = inputs.nixpkgs.lib.nixosSystem {
-        system = systemFor horizon.node.system;
-        specialArgs = { inherit horizon; };
-        modules = [ inputs.self.nixosModules.criomos ];
+        # `system` is derived from `pkgs.stdenv.hostPlatform.system`
+        # when `pkgs` is supplied; passing it explicitly would set
+        # `nixpkgs.system`, which `readOnlyPkgs` has removed.
+        inherit pkgs;
+        specialArgs = { inherit horizon system; };
+        modules = [
+          inputs.nixpkgs.nixosModules.readOnlyPkgs
+          inputs.self.nixosModules.criomos
+        ];
       };
     in
     blueprintOutputs // {
       nixosConfigurations.target = target;
 
       # For cache-property testing — exposes the parsed horizon
-      # without going through nixosSystem evaluation. Same horizon
-      # input → same value → eval cache hit.
+      # without going through nixosSystem evaluation.
       horizonProbe = horizon;
+
+      # Likewise for the pkgs axis — cheap probe that forces a
+      # pkgs evaluation through the pkgs-flake input. Same `system`
+      # input → cached across deploys.
+      pkgsProbe = pkgs.stdenv.hostPlatform.system;
     };
 }

@@ -743,6 +743,25 @@
         "type": "github"
       }
     },
+    "pkgs": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "system": [
+          "system"
+        ]
+      },
+      "locked": {
+        "path": "./pkgs-flake",
+        "type": "path"
+      },
+      "original": {
+        "path": "./pkgs-flake",
+        "type": "path"
+      },
+      "parent": []
+    },
     "root": {
       "inputs": {
         "blueprint": "blueprint",
@@ -751,7 +770,9 @@
         "home-manager": "home-manager",
         "horizon": "horizon",
         "nixpkgs": "nixpkgs_2",
-        "rust-overlay": "rust-overlay_2"
+        "pkgs": "pkgs",
+        "rust-overlay": "rust-overlay_2",
+        "system": "system"
       }
     },
     "rust-analyzer-src": {
@@ -887,6 +908,17 @@
         "repo": "substack-cli",
         "type": "github"
       }
+    },
+    "system": {
+      "locked": {
+        "path": "./stubs/no-system",
+        "type": "path"
+      },
+      "original": {
+        "path": "./stubs/no-system",
+        "type": "path"
+      },
+      "parent": []
     },
     "systems": {
       "locked": {
