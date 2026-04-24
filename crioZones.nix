@@ -1,27 +1,24 @@
-{ inputs }:
-
-# crioZones.<cluster>.<node>.{ os, fullOs, vm, home.<user>, deployManifest }
-#
-# This is CriomOS's non-standard output. It does NOT enumerate hosts.
-# A "cluster" is any flake input whose outputs expose a `NodeProposal` attr.
-# CriomOS is network-neutral: the clusters it serves are entirely
-# determined by which inputs the consumer (or CI) has declared.
-#
-# Shape (once wired):
-#   crioZones = mapAttrs mkClusterZones (discoverClusters inputs);
-#   discoverClusters = filterAttrs (_: v: v ? NodeProposal) inputs;
-#   mkClusterZones   = clusterName: clusterInput:
-#     mapAttrs (mkNode clusterName clusterInput) clusterInput.NodeProposal.nodes;
-#   mkNode = clusterName: clusterInput: nodeName: _:
-#     let horizon = lib.mkHorizon { inherit inputs clusterName nodeName; };
-#     in {
-#       os             = …evalNixos… ;
-#       fullOs         = …with users… ;
-#       vm             = …qemu VM… ;
-#       home.<user>    = …home-manager per user… ;
-#       deployManifest = …JSON manifest… ;
-#     };
-#
-# Empty during Phase 0 scaffold.
-
 { }
+
+# Intentionally empty.
+#
+# Earlier design enumerated `crioZones.<cluster>.<node>.*` from any
+# flake input that exposed a `NodeProposal` attr. That model is
+# superseded.
+#
+# New model: CriomOS knows nothing about clusters. A separate Rust
+# orchestrator tool (see /home/li/git/CriomOS/reports/2026-04-24-ractor-tool-design.md)
+# projects goldragon's `datom.nota` via `horizon-cli --format json`,
+# writes the resulting JSON into a generated wrapper flake, and
+# invokes `nixos-rebuild` against that wrapper. The wrapper flake
+# constructs the nixosSystem itself, passing `horizon` as a
+# specialArg and including `inputs.criomos.nixosModules.criomos` as
+# the platform module aggregate.
+#
+# CriomOS exposes:
+#   - lib.mkHorizon         — JSON reader (lib/default.nix)
+#   - nixosModules.criomos  — the platform module aggregate (auto-derived
+#                             by blueprint from modules/nixos/criomos.nix)
+#
+# This file is kept as a tombstone so future readers find the design
+# note instead of reaching for the old enumerate-clusters model.
