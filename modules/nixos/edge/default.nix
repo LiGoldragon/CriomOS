@@ -8,7 +8,7 @@ let
   inherit (lib) mkIf optionals;
   inherit (horizon.node) size;
 
-  minPackages = optionals size.is.min (
+  minPackages = optionals size.atLeastMin (
     with pkgs;
     [
       adwaita-icon-theme
@@ -31,13 +31,13 @@ in
 
   hardware = {
     bluetooth.enable = true;
-    graphics.enable32Bit = size.is.max;
+    graphics.enable32Bit = size.atLeastMax;
   };
 
   environment = {
     systemPackages =
       with pkgs;
-      minPackages ++ (optionals size.is.med medPackages ++ (optionals size.is.max maxPackages));
+      minPackages ++ (optionals size.atLeastMed medPackages ++ (optionals size.atLeastMax maxPackages));
 
     gnome.excludePackages = with pkgs; [
       gnome-software
@@ -45,16 +45,16 @@ in
   };
 
   programs = {
-    browserpass.enable = size.is.max;
+    browserpass.enable = size.atLeastMax;
 
     dconf.enable = true;
-    droidcam.enable = size.is.max;
+    droidcam.enable = size.atLeastMax;
     evolution.enable = true;
 
-    firejail.enable = size.is.med;
+    firejail.enable = size.atLeastMed;
 
     regreet = {
-      enable = size.is.min;
+      enable = size.atLeastMin;
       settings = {
         GTK = {
           application_prefer_dark_theme = true;
@@ -91,32 +91,32 @@ in
 
   services = {
     displayManager.sessionPackages = [ pkgs.niri ];
-    avahi.enable = size.is.min;
+    avahi.enable = size.atLeastMin;
 
-    blueman.enable = size.is.min;
+    blueman.enable = size.atLeastMin;
 
     power-profiles-daemon.enable = false;
-    upower.enable = size.is.min;
+    upower.enable = size.atLeastMin;
 
-    dbus.packages = mkIf size.is.min [ pkgs.gcr ];
+    dbus.packages = mkIf size.atLeastMin [ pkgs.gcr ];
 
-    gvfs.enable = size.is.min;
+    gvfs.enable = size.atLeastMin;
 
     gnome = {
-      at-spi2-core.enable = size.is.min;
-      core-apps.enable = size.is.min;
-      evolution-data-server.enable = size.is.min;
-      gnome-keyring.enable = size.is.min;
-      gnome-online-accounts.enable = size.is.min;
-      gnome-settings-daemon.enable = size.is.min;
+      at-spi2-core.enable = size.atLeastMin;
+      core-apps.enable = size.atLeastMin;
+      evolution-data-server.enable = size.atLeastMin;
+      gnome-keyring.enable = size.atLeastMin;
+      gnome-online-accounts.enable = size.atLeastMin;
+      gnome-settings-daemon.enable = size.atLeastMin;
     };
 
-    tumbler.enable = size.is.med;
+    tumbler.enable = size.atLeastMed;
 
     pulseaudio.enable = false;
 
     keyd = {
-      enable = size.is.min;
+      enable = size.atLeastMin;
       keyboards.laptop = {
         ids = [ "0001:0001" ];
         extraConfig = ''

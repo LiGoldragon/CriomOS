@@ -60,7 +60,7 @@ in
         "btrfs"
         "ntfs"
       ]
-      ++ (optional size.is.min "exfat")
+      ++ (optional size.atLeastMin "exfat")
     );
   };
 
@@ -103,7 +103,7 @@ in
       pulseaudioFull
       networkmanager_strongswan
     ])
-    ++ (optionals (size.is.min && !behavesAs.iso) [
+    ++ (optionals (size.atLeastMin && !behavesAs.iso) [
       git
       curl
       jq
@@ -125,7 +125,7 @@ in
   nixpkgs.overlays = mkOverride 0 [ ];
 
   networking.networkmanager = {
-    enable = size.is.min && !behavesAs.router && !behavesAs.iso && !behavesAs.center;
+    enable = size.atLeastMin && !behavesAs.router && !behavesAs.iso && !behavesAs.center;
   };
 
   programs = {

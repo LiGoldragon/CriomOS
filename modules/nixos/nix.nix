@@ -119,8 +119,8 @@ in
     extraOptions = ''
       flake-registry = ${nixFlakeRegistryJson}
       experimental-features = nix-command flakes recursive-nix
-      keep-derivations = ${boolToString size.is.med}
-      keep-outputs = ${boolToString size.is.max}
+      keep-derivations = ${boolToString size.atLeastMed}
+      keep-outputs = ${boolToString size.atLeastMax}
 
       # !include <path>:  include without an error for missing file.
       !include nixTokens

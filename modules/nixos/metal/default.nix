@@ -29,7 +29,7 @@ let
     ;
 
 
-  enableWaydroid = size.is.max && behavesAs.edge;
+  enableWaydroid = size.atLeastMax && behavesAs.edge;
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
 
@@ -153,7 +153,7 @@ let
   ];
 
   # TODO - sort out different `sizedatleast` sets
-  printingDriversPkgs = lib.optionals size.is.max (
+  printingDriversPkgs = lib.optionals size.atLeastMax (
     with pkgs;
     [
       gutenprint # Drivers for many different printers from many different vendors.
@@ -233,13 +233,13 @@ in
     graphics.extraPackages = optionals treatAsIntel intelGpuDrivers;
   };
 
-  location.provider = if size.is.min then "geoclue2" else "manual";
+  location.provider = if size.atLeastMin then "geoclue2" else "manual";
 
   boot = {
     extraModulePackages =
       [ ]
       ++ (optional modelIsThinkpad config.boot.kernelPackages.acpi_call)
-      ++ (optional size.is.max config.boot.kernelPackages.v4l2loopback);
+      ++ (optional size.atLeastMax config.boot.kernelPackages.v4l2loopback);
 
     initrd = {
       availableKernelModules = [
@@ -251,7 +251,7 @@ in
     kernelModules = [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu");
 
     extraModprobeConfig = (
-      optionalString size.is.max ''
+      optionalString size.atLeastMax ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
       ''
     ) + (
@@ -382,7 +382,7 @@ in
       with pkgs;
       [ lm_sensors ]
       ++ optionals chipIsIntel intelUtils
-      ++ optionals size.is.max [ v4l-utils ]
+      ++ optionals size.atLeastMax [ v4l-utils ]
       ++ optionals enableWaydroid waydroidPackages
       ++ optional modelIsThinkpad batteryCtl
       ;
@@ -397,7 +397,7 @@ in
     fwupd.enable = true;
 
     geoclue2 = {
-      enable = size.is.min;
+      enable = size.atLeastMin;
       enableDemoAgent = lib.mkOverride 0 true;
       geoProviderUrl = "https://beacondb.net/v1/geolocate";
       appConfig.redshift = {
@@ -411,12 +411,12 @@ in
     };
 
     localtimed = {
-      enable = size.is.min;
+      enable = size.atLeastMin;
     };
 
     printing = {
       enable = true;
-      cups-pdf.enable = size.is.min;
+      cups-pdf.enable = size.atLeastMin;
       drivers = printingDriversPkgs;
     };
 
@@ -517,8 +517,8 @@ in
   };
 
   virtualisation = {
-    libvirtd.enable = (size.is.max && behavesAs.edge);
+    libvirtd.enable = (size.atLeastMax && behavesAs.edge);
     waydroid.enable = enableWaydroid;
-    spiceUSBRedirection.enable = size.is.max;
+    spiceUSBRedirection.enable = size.atLeastMax;
   };
 }

@@ -22,7 +22,7 @@ let
     let
       inherit (user) trust sshPubKeys;
     in
-    optionalAttrs trust.is.min {
+    optionalAttrs trust.atLeastMin {
       name = user.name;
 
       useDefaultShell = true;
@@ -33,10 +33,10 @@ let
       extraGroups =
         [ "audio" ]
         ++ (optional (config.programs.sway.enable == true) "sway")
-        ++ (optionals trust.is.med (
+        ++ (optionals trust.atLeastMed (
           [ "video" ] ++ (optional (config.networking.networkmanager.enable == true) "networkmanager")
         ))
-        ++ (optionals trust.is.max [
+        ++ (optionals trust.atLeastMax [
           "adbusers"
           "nixdev"
           "systemd-journal"
@@ -47,7 +47,7 @@ let
           "libvirtd"
         ]);
 
-      linger = trust.is.max && behavesAs.center;
+      linger = trust.atLeastMax && behavesAs.center;
     };
 
   mkUserUsers = mapAttrs mkUser users;
