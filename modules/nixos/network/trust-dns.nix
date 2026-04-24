@@ -1,14 +1,12 @@
 {
   lib,
+  pkgs,
   horizon,
-  pkdjz,
   ...
 }:
 
 let
-  inherit (pkdjz) trust-dns;
-
-  trustDnsEksek = "${trust-dns}/bin/named";
+  trustDnsEksek = "${pkgs.trust-dns}/bin/named";
 
   nodeZone = {
     zone = criomeDomainName;

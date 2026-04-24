@@ -1,15 +1,11 @@
 {
   lib,
-  criomos-lib,
-  pkdjz,
   pkgs,
-  hob,
   horizon,
-  world,
+  inputs,
   constants,
   ...
 }:
-with builtins;
 let
   inherit (lib)
     boolToString
@@ -17,9 +13,8 @@ let
     optionals
     optional
     optionalAttrs
+    filterAttrs
     ;
-
-  inherit (pkdjz) exportJSON;
 
   inherit (horizon.cluster) trustedBuildPubKeys;
   inherit (horizon) node;
@@ -33,72 +28,45 @@ let
     hasNixPubKey
     ;
 
-  inherit (constants.fileSystem.nix) preCriad;
   inherit (constants.network.nix) serve;
 
-  optionalNixpkgsRef = optionalAttrs (hob.nixpkgs ? ref) { inherit (hob.nixpkgs) ref; };
-
-  flakeEntriesOverrides = {
-    lib = {
-      owner = "nix-community";
-      repo = "nixpkgs.lib";
+  # Build a flake-registry entry from a locked input's `sourceInfo`.
+  # The `inputs.<name>` value gets `sourceInfo.{type,owner,repo,rev}`
+  # populated when the input is locked (i.e. for any github:/git+/...
+  # input present in flake.lock). Same nixpkgs pin → same entry.
+  mkFlakeEntry = name: input: {
+    from = {
+      id = name;
+      type = "indirect";
     };
-
-    nixpkgs = {
-      owner = "criome";
-      repo = "nixpkgs";
-      inherit (hob.nixpkgs) rev;
-    }
-    // optionalNixpkgsRef;
-
-    nixpkgs-master = {
-      owner = "NixOS";
-      repo = "nixpkgs";
+    to = filterAttrs (_: v: v != null && v != "") {
+      type = input.sourceInfo.type or "github";
+      owner = input.sourceInfo.owner or null;
+      repo = input.sourceInfo.repo or null;
+      rev = input.sourceInfo.rev or null;
     };
-
   };
 
-  mkFlakeEntriesListFromSet =
-    entriesMap:
-    let
-      mkFlakeEntry = name: value: {
-        from = {
-          id = name;
-          type = "indirect";
-        };
-        to = {
-          repo = name;
-          type = "github";
-        } // value;
-      };
-    in
-    mapAttrsToList mkFlakeEntry entriesMap;
-
-  criomOSFlakeEntries = mkFlakeEntriesListFromSet flakeEntriesOverrides;
-
-  nixOSFlakeEntries =
-    let
-      nixOSFlakeRegistry = criomos-lib.importJSON world.pkdjz.flake-registry;
-    in
-    nixOSFlakeRegistry.flakes;
-
-  filterOutRegistry =
-    entry:
-    let
-      flakeName = entry.from.id;
-      flakeOverrideNames = attrNames flakeEntriesOverrides;
-      entryIsOverridden = elem flakeName flakeOverrideNames;
-    in
-    !entryIsOverridden;
-
-  filteredNixosFlakeEntries = filter filterOutRegistry nixOSFlakeEntries;
+  # The set of inputs we expose as flake-registry pins on deployed
+  # nodes. Roughly: things a user would `nix run`/`nix develop`
+  # against on the node and want to share the rev CriomOS was built
+  # with.
+  registered = {
+    inherit (inputs)
+      nixpkgs
+      home-manager
+      brightness-ctl
+      criomos-home
+      ;
+  };
 
   nixFlakeRegistry = {
-    flakes = criomOSFlakeEntries ++ filteredNixosFlakeEntries;
+    flakes = mapAttrsToList mkFlakeEntry registered;
     version = 2;
   };
 
-  nixFlakeRegistryJson = exportJSON "nixFlakeRegistry.json" nixFlakeRegistry;
+  nixFlakeRegistryJson = pkgs.writeText "criomos-flake-registry.json"
+    (builtins.toJSON nixFlakeRegistry);
 
 in
 {
@@ -130,7 +98,7 @@ in
         "nix-serve"
       ];
 
-      build-cores = node.nbOfBuildCores;
+      build-cores = node.buildCores;
 
       connect-timeout = 5;
       fallback = true;
@@ -155,7 +123,7 @@ in
       keep-derivations = ${boolToString sizedAtLeast.med}
       keep-outputs = ${boolToString sizedAtLeast.max}
 
-      # !include <path>:  include without an error for missing file. 
+      # !include <path>:  include without an error for missing file.
       !include nixTokens
     '';
 

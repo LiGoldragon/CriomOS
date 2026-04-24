@@ -3,8 +3,6 @@
   horizon,
   pkgs,
   lib,
-  world,
-  pkdjz,
   ...
 }:
 let
@@ -19,7 +17,6 @@ let
     ;
 
   concatSep = lib.concatStringsSep;
-  inherit (pkdjz) exportJSON;
   inherit (pkgs) mksh;
   inherit (horizon) exNodes;
   inherit (horizon.node)
@@ -31,7 +28,7 @@ let
 
   hasAudioOutput = hasVideoOutput;
 
-  jsonHorizonFail = exportJSON "horizon.json" horizon;
+  jsonHorizonFail = pkgs.writeText "horizon.json" (builtins.toJSON horizon);
 
   criomosShell = mksh + mksh.shellPath;
 
@@ -39,7 +36,7 @@ let
     n: node:
     concatSep " " [
       node.criomeDomainName
-      node.ssh
+      node.sshPubKeyLine
     ];
 
   sshKnownHosts = concatSep "\n" (mapAttrsToList mkNodeKnownHost exNodes);
@@ -100,7 +97,6 @@ in
       vim
       htop
     ] else [
-      world.skrips.root
       tcpdump
       librist
       ifmetric

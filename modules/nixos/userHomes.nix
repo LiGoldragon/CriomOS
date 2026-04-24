@@ -1,18 +1,12 @@
 {
   horizon,
-  world,
-  homeModules,
-  criomos-lib,
-  constants,
   inputs,
   ...
 }:
 let
   inherit (builtins) mapAttrs;
-  inherit (world) pkdjz;
 
-  mkUserConfig = name: user: {
-    imports = [ inputs.niri-flake.homeModules.config ];
+  mkUserConfig = _name: user: {
     _module.args = {
       inherit user;
     };
@@ -23,16 +17,9 @@ in
   home-manager = {
     backupFileExtension = "backup";
     extraSpecialArgs = {
-      inherit
-        pkdjz
-        world
-        horizon
-        criomos-lib
-        constants
-        inputs
-        ;
+      inherit horizon inputs;
     };
-    sharedModules = homeModules;
+    sharedModules = [ inputs.criomos-home.homeModules.default ];
     useGlobalPkgs = true;
     users = mapAttrs mkUserConfig horizon.users;
   };

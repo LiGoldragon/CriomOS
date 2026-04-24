@@ -3,7 +3,6 @@
   pkgs,
   horizon,
   constants,
-  pkdjz,
   ...
 }:
 let
