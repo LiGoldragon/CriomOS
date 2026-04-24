@@ -200,17 +200,18 @@
     "brightness-ctl": {
       "inputs": {
         "blueprint": "blueprint_2",
+        "crane": "crane",
+        "fenix": "fenix",
         "nixpkgs": [
           "nixpkgs"
-        ],
-        "rust-overlay": "rust-overlay"
+        ]
       },
       "locked": {
-        "lastModified": 1776959117,
-        "narHash": "sha256-Wz8nO/oYet9bEUIwF4288vrEyZDCL3gxpDJzoUcylb4=",
+        "lastModified": 1777071301,
+        "narHash": "sha256-N9NXlPvLc3mxOdXMgKGT+8/PgMnSkNGelSt4YSAXOIo=",
         "owner": "LiGoldragon",
         "repo": "brightness-ctl",
-        "rev": "548e9ff6efbc170696d6aa4e0db25fdb2a0f165d",
+        "rev": "cbc0185e090db9d9cdbafa04b775ce7499bb544b",
         "type": "github"
       },
       "original": {
@@ -222,17 +223,18 @@
     "clavifaber": {
       "inputs": {
         "blueprint": "blueprint_3",
+        "crane": "crane_2",
+        "fenix": "fenix_2",
         "nixpkgs": [
           "nixpkgs"
-        ],
-        "rust-overlay": "rust-overlay_2"
+        ]
       },
       "locked": {
-        "lastModified": 1776959276,
-        "narHash": "sha256-W+m+4kUeelWJiQoJRVI4lyCyNT48qTFo2vUR0Vib2hc=",
+        "lastModified": 1777071257,
+        "narHash": "sha256-3jKvuRB/nxOP9i6lPXlDI+0Or4KuyQxF/+xRg0RW9TU=",
         "owner": "LiGoldragon",
         "repo": "clavifaber",
-        "rev": "4dfa4493fe184cdd5e8a83894f9957a6f755df55",
+        "rev": "65aa9b7ae9b7571a369fd0c13a97d648a34cc9cd",
         "type": "github"
       },
       "original": {
@@ -257,6 +259,36 @@
       }
     },
     "crane_2": {
+      "locked": {
+        "lastModified": 1776635034,
+        "narHash": "sha256-OEOJrT3ZfwbChzODfIH4GzlNTtOFuZFWPtW7jIeR8xU=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "dc7496d8ea6e526b1254b55d09b966e94673750f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_3": {
+      "locked": {
+        "lastModified": 1776635034,
+        "narHash": "sha256-OEOJrT3ZfwbChzODfIH4GzlNTtOFuZFWPtW7jIeR8xU=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "dc7496d8ea6e526b1254b55d09b966e94673750f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_4": {
       "locked": {
         "lastModified": 1774313767,
         "narHash": "sha256-hy0XTQND6avzGEUFrJtYBBpFa/POiiaGBr2vpU6Y9tY=",
@@ -304,12 +336,56 @@
     "fenix": {
       "inputs": {
         "nixpkgs": [
+          "brightness-ctl",
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1777018861,
+        "narHash": "sha256-l+dfxHtTq1jQM53xgYudV8ciECFmJ72PcRAqRS4ys04=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "7b33c6466f781cd699fe250c5b69dc4193da67a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
+    "fenix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "clavifaber",
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src_2"
+      },
+      "locked": {
+        "lastModified": 1777018861,
+        "narHash": "sha256-l+dfxHtTq1jQM53xgYudV8ciECFmJ72PcRAqRS4ys04=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "7b33c6466f781cd699fe250c5b69dc4193da67a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
+    "fenix_3": {
+      "inputs": {
+        "nixpkgs": [
           "criomos-home",
           "mentci-tools",
           "substack-cli",
           "nixpkgs"
         ],
-        "rust-analyzer-src": "rust-analyzer-src"
+        "rust-analyzer-src": "rust-analyzer-src_3"
       },
       "locked": {
         "lastModified": 1776673701,
@@ -325,14 +401,14 @@
         "type": "github"
       }
     },
-    "fenix_2": {
+    "fenix_4": {
       "inputs": {
         "nixpkgs": [
           "criomos-home",
           "pi-mentci",
           "nixpkgs"
         ],
-        "rust-analyzer-src": "rust-analyzer-src_2"
+        "rust-analyzer-src": "rust-analyzer-src_4"
       },
       "locked": {
         "lastModified": 1774596377,
@@ -745,8 +821,8 @@
     },
     "pi-mentci": {
       "inputs": {
-        "crane": "crane_2",
-        "fenix": "fenix_2",
+        "crane": "crane_4",
+        "fenix": "fenix_4",
         "flake-utils": "flake-utils_2",
         "mentci-user-src": "mentci-user-src",
         "nixpkgs": [
@@ -816,11 +892,45 @@
         "horizon": "horizon",
         "nixpkgs": "nixpkgs_2",
         "pkgs": "pkgs",
-        "rust-overlay": "rust-overlay_3",
+        "rust-overlay": "rust-overlay",
         "system": "system"
       }
     },
     "rust-analyzer-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776800521,
+        "narHash": "sha256-f8YJfwAOsLFpIoqZuX3yF69UvMLrkx7iVzMH1pJU7cM=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "8954b66d43225e62c92e8bbcc8500191b5cceb1e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
+      }
+    },
+    "rust-analyzer-src_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776800521,
+        "narHash": "sha256-f8YJfwAOsLFpIoqZuX3yF69UvMLrkx7iVzMH1pJU7cM=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "8954b66d43225e62c92e8bbcc8500191b5cceb1e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
+      }
+    },
+    "rust-analyzer-src_3": {
       "flake": false,
       "locked": {
         "lastModified": 1776636258,
@@ -837,7 +947,7 @@
         "type": "github"
       }
     },
-    "rust-analyzer-src_2": {
+    "rust-analyzer-src_4": {
       "flake": false,
       "locked": {
         "lastModified": 1774569884,
@@ -855,48 +965,6 @@
       }
     },
     "rust-overlay": {
-      "inputs": {
-        "nixpkgs": [
-          "brightness-ctl",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777000482,
-        "narHash": "sha256-CZ5FKUSA8FCJf0h9GWdPJXoVVDL9H5yC74GkVc5ubIM=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "403c09094a877e6c4816462d00b1a56ff8198e06",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_2": {
-      "inputs": {
-        "nixpkgs": [
-          "clavifaber",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777000482,
-        "narHash": "sha256-CZ5FKUSA8FCJf0h9GWdPJXoVVDL9H5yC74GkVc5ubIM=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "403c09094a877e6c4816462d00b1a56ff8198e06",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_3": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -952,8 +1020,8 @@
     },
     "substack-cli": {
       "inputs": {
-        "crane": "crane",
-        "fenix": "fenix",
+        "crane": "crane_3",
+        "fenix": "fenix_3",
         "flake-utils": "flake-utils",
         "nixpkgs": [
           "criomos-home",
