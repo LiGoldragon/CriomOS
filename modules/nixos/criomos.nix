@@ -13,6 +13,7 @@
     ./users.nix
     ./network/tailscale.nix
     ./network/networkd.nix
+    ./network/yggdrasil.nix
   ];
 
   networking.hostName = horizon.node.name;
