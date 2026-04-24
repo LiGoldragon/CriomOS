@@ -8,6 +8,8 @@
     ./disks/preinstalled.nix
     ./normalize.nix
     ./nix.nix
+    ./complex.nix
+    ./llm.nix
   ];
 
   networking.hostName = horizon.node.name;

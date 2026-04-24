@@ -1,12 +1,13 @@
 {
   pkgs,
+  inputs,
   constants,
   ...
 }:
 let
   inherit (constants.fileSystem.complex) dir;
 
-  clavifaber = pkgs.callPackage ../clavifaber.nix { };
+  clavifaber = inputs.clavifaber.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
 in
 {

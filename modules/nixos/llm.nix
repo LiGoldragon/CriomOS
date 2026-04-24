@@ -17,7 +17,7 @@ let
     toString
     ;
 
-  llamaCppPackage = pkgs.callPackage ../llama-cpp-prometheus.nix { inherit pkgs; };
+  llamaCppPackage = pkgs.callPackage ../../packages/llama-cpp-prometheus.nix { inherit pkgs; };
 
   nodeName = horizon.node.name;
 
