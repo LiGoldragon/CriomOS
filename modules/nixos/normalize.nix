@@ -24,6 +24,7 @@ let
     useColemak
     behavesAs
     hasVideoOutput
+    enableNetworkManager
     ;
 
   hasAudioOutput = hasVideoOutput;
@@ -125,7 +126,7 @@ in
   nixpkgs.overlays = mkOverride 0 [ ];
 
   networking.networkmanager = {
-    enable = size.atLeastMin && !behavesAs.router && !behavesAs.iso && !behavesAs.center;
+    enable = enableNetworkManager;
   };
 
   programs = {

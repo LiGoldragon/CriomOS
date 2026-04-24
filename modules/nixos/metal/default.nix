@@ -26,10 +26,11 @@ let
     modelIsThinkpad
     useColemak
     computerIs
+    isLargeEdge
+    handleLidSwitch
+    handleLidSwitchExternalPower
+    handleLidSwitchDocked
     ;
-
-
-  enableWaydroid = size.atLeastMax && behavesAs.edge;
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
 
@@ -450,12 +451,9 @@ in
     };
 
     logind.settings.Login = {
-      HandleLidSwitch = if behavesAs.center then "ignore" else "suspend";
-      HandleLidSwitchExternalPower =
-        if behavesAs.center then "ignore"
-        else if behavesAs.lowPower then "suspend"
-        else "lock";
-      HandleLidSwitchDocked = if behavesAs.edge then "lock" else "ignore";
+      HandleLidSwitch = handleLidSwitch;
+      HandleLidSwitchExternalPower = handleLidSwitchExternalPower;
+      HandleLidSwitchDocked = handleLidSwitchDocked;
     };
 
     thinkfan = mkIf modelIsThinkpad {
@@ -517,8 +515,8 @@ in
   };
 
   virtualisation = {
-    libvirtd.enable = (size.atLeastMax && behavesAs.edge);
-    waydroid.enable = enableWaydroid;
+    libvirtd.enable = isLargeEdge;
+    waydroid.enable = isLargeEdge;
     spiceUSBRedirection.enable = size.atLeastMax;
   };
 }

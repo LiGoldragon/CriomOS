@@ -9,13 +9,12 @@ let
     mapAttrs
     ;
   inherit (lib)
-    optionals
     optional
     optionalAttrs
     ;
 
   inherit (horizon) node users;
-  inherit (node) adminSshPubKeys behavesAs;
+  inherit (node) adminSshPubKeys;
 
   mkUser =
     _attrName: user:
@@ -30,24 +29,16 @@ let
 
       openssh.authorizedKeys.keys = sshPubKeys;
 
+      # horizon-rs gives us the trust-derived list (audio + atLeastMed:video
+      # + atLeastMax:[adbusers,…]); add nixos-module-context groups here.
       extraGroups =
-        [ "audio" ]
+        user.extraGroups
         ++ (optional (config.programs.sway.enable == true) "sway")
-        ++ (optionals trust.atLeastMed (
-          [ "video" ] ++ (optional (config.networking.networkmanager.enable == true) "networkmanager")
-        ))
-        ++ (optionals trust.atLeastMax [
-          "adbusers"
-          "nixdev"
-          "systemd-journal"
-          "dialout"
-          "plugdev"
-          "power"
-          "storage"
-          "libvirtd"
-        ]);
+        ++ (optional (
+          trust.atLeastMed && config.networking.networkmanager.enable == true
+        ) "networkmanager");
 
-      linger = trust.atLeastMax && behavesAs.center;
+      linger = user.enableLinger;
     };
 
   mkUserUsers = mapAttrs mkUser users;
