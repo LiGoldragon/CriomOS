@@ -20,6 +20,7 @@
     ./network/unbound.nix
     ./network/nordvpn.nix
     ./edge/default.nix
+    ./userHomes.nix
   ];
 
   networking.hostName = horizon.node.name;

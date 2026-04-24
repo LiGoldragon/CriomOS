@@ -67,6 +67,7 @@
         };
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
+          inputs.home-manager.nixosModules.home-manager
           inputs.self.nixosModules.criomos
         ];
       };

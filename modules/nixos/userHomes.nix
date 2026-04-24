@@ -10,6 +10,7 @@ let
     _module.args = {
       inherit user;
     };
+    home.stateVersion = "26.05";
   };
 
 in
