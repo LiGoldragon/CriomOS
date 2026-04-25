@@ -1,17 +1,15 @@
 {
   lib,
   pkgs,
-  config,
   horizon,
   ...
 }:
 let
+  inherit (lib) mkIf;
+  inherit (horizon.node) behavesAs;
   inherit (builtins)
     concatStringsSep
-    filter
     fromJSON
-    head
-    length
     map
     readFile
     toString
@@ -93,7 +91,7 @@ let
   serviceName = "${nodeName}-llama-router";
 
 in
-{
+mkIf behavesAs.largeAi {
   users.users.llama = {
     isSystemUser = true;
     description = "llama runtime user";
