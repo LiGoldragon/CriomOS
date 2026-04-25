@@ -176,16 +176,6 @@ let
 
   isGenericModel = model == "all-x86-64";
 
-  unknownIntelGpuError = if isGenericModel then [] else throw "Model ${model} missing in Intel GPU drivers lists";
-
-  intelMediaDriverModels = [
-    "ThinkPadT14Gen5Intel"
-    "ThinkPadT14Gen2Intel"
-    "ThinkPadE15Gen2Intel"
-  ];
-
-  gpuUsesMediaDriver = isGenericModel || builtins.elem model intelMediaDriverModels;
-
   amdGpuModels = [
     "GMKtec EVO-X2"
   ];
@@ -200,19 +190,26 @@ let
     "ThinkPadX250"
   ];
 
-  intelMediaDrivers = with pkgs; [
-    intel-media-driver
-    intel-compute-runtime
-    vpl-gpu-rt
-  ];
+  # Codec driver decision per Li 2026-04-25 + agent research:
+  # - intel-media-driver (~80MB) is the modern iHD VAAPI backend. Always
+  #   install on Intel iGPU systems; software fallback is silent if
+  #   VAAPI isn't engaged.
+  # - vpl-gpu-rt (~500MB) is the modern VPL runtime — only useful at
+  #   Gen 12+ (Tiger Lake / Alder Lake / Meteor Lake / newer); add only
+  #   when wantsHwVideoAccel is set AND the iGPU is new enough.
+  # - intel-compute-runtime (~100MB OpenCL) is essentially niche on
+  #   Intel iGPUs (Darktable disables by default; Blender doesn't
+  #   support); dropped from default closure pending a real consumer.
+  chipGen = horizon.node.machine.chipGen;
+  igpuIsModern = chipGen != null && chipGen >= 12;
+  wantsHwVideoAccel = horizon.node.wantsHwVideoAccel;
 
   intelGpuDrivers =
     if gpuUsesVaapi then
       [ pkgs.intel-vaapi-driver ]
-    else if gpuUsesMediaDriver then
-      intelMediaDrivers
     else if treatAsIntel then
-      unknownIntelGpuError
+      [ pkgs.intel-media-driver ]
+      ++ optionals (wantsHwVideoAccel && igpuIsModern) [ pkgs.vpl-gpu-rt ]
     else
       [ ];
 
