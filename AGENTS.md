@@ -70,6 +70,48 @@ deleted, not wrapped in a "this is wrong now" banner. The git history
 keeps the trace; the live reports/ dir reflects current truth.
 Numbers don't get reused — gaps are fine.
 
+## Report hygiene — don't restate-to-refute
+
+When a frame has been **decisively rejected** (a bd memory, an
+AGENTS.md rule, or a chat correction): do not re-present it as a
+candidate in subsequent reports just to refute it. State only the
+correct frame.
+
+When a previous report's premise is **wrong**: delete it and write a
+clean successor that states only the correct view. Do not append
+corrections, do not banner, do not restate-to-refute.
+
+Rejected frames are recorded once — in a bd memory or as an AGENTS.md
+rule — and only as one-line entries. Forensic narratives ("here's how
+this contamination crept in") are not reports — their lessons land in
+bd memories as one-liners; the forensic narrative itself goes too.
+
+## Report rollover at the soft cap
+
+**Soft cap: ~12 active reports** in `reports/`. When the count
+exceeds this, run a rollover pass before adding the next report. For
+each existing report, decide one of:
+
+1. **Roll into a new consolidated report.** Multiple reports covering
+   the same evolving thread fold into a single forward-pointing
+   successor. The successor supersedes the old reports; the old ones
+   are deleted (no banner).
+
+2. **Implement.** If the report's substance can be expressed as an
+   `AGENTS.md` rule, as code (skeleton-as-design in the relevant
+   module), or as a `docs/` contract, move it to the right home and
+   delete the report.
+
+3. **Delete.** If the report's content is already absorbed elsewhere
+   or its premise has been refuted, delete it.
+
+The choice is made by reading each report against the author's intent
+— no mechanical rule. When unclear, ask Li.
+
+The cap is **soft** in that it triggers a rollover pass, not an
+instant rejection; it is **firm** in that the pass must run before the
+next new report lands.
+
 ## Session-response style — substance goes in reports
 
 If your final-session response would be more than minimal (a few lines),
