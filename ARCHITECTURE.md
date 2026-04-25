@@ -6,7 +6,7 @@ nexus daemons run as the user-space layer.
 
 CriomOS is **the consumer of lojix**, not a member of the criome
 runtime. lojix-deploy (currently
-[lojix](https://github.com/LiGoldragon/lojix)) materialises
+[lojix-cli](https://github.com/LiGoldragon/lojix-cli)) materialises
 CriomOS configurations.
 
 ## Role
@@ -14,7 +14,7 @@ CriomOS configurations.
 A coherent platform target: the sema-ecosystem assumes a Unix
 filesystem, systemd, a working nix-store, blake3 in scope, etc.
 CriomOS provides those guarantees and folds in project-specific
-modules (criomed service, nexusd service, lojix-store
+modules (criomed service, nexus service, lojix-store
 mountpoint, …).
 
 ## What this repo defines
@@ -34,7 +34,7 @@ The host OS as nix flakes. Detailed design lives in
 - The criomed daemon, lojixd daemon, or any sema-ecosystem
   binary.
 - The deploy CLI — that's
-  [lojix](https://github.com/LiGoldragon/lojix) (transitional).
+  [lojix-cli](https://github.com/LiGoldragon/lojix-cli) (transitional).
 
 ## Status
 
