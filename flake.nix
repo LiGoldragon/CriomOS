@@ -13,10 +13,15 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Shared helpers + cross-repo data (importJSON, mkJsonMerge,
+    # data/largeAI/llm.json). Consumed by both CriomOS and CriomOS-home.
+    criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
+
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
     criomos-home.url = "github:LiGoldragon/CriomOS-home";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
+    criomos-home.inputs.criomos-lib.follows = "criomos-lib";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
     brightness-ctl.url = "github:LiGoldragon/brightness-ctl";
@@ -55,7 +60,7 @@
       system  = inputs.system.system;
 
       constants = import ./modules/nixos/constants.nix;
-      criomos-lib = import ./lib { };
+      criomos-lib = inputs.criomos-lib.lib;
 
       target = inputs.nixpkgs.lib.nixosSystem {
         # `system` is derived from `pkgs.stdenv.hostPlatform.system`

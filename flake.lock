@@ -291,6 +291,9 @@
     "criomos-home": {
       "inputs": {
         "blueprint": "blueprint_4",
+        "criomos-lib": [
+          "criomos-lib"
+        ],
         "home-manager": [
           "home-manager"
         ],
@@ -304,16 +307,31 @@
         "stylix": "stylix"
       },
       "locked": {
-        "lastModified": 1777117604,
-        "narHash": "sha256-yutudnDiDsrldZBfPq01kJLHSOm7iELZvgwl2IRl1bg=",
+        "lastModified": 1777127631,
+        "narHash": "sha256-aWA6X0LRQY6mSa0Q+Q1qDcj8tjkG/ZHh+U4X+39+nA0=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "55abf29af7a03c1fc7dacdc992a6ff9ed5a78518",
+        "rev": "afd538e8ef4a89581e20c539579865a1c430db4c",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
+        "type": "github"
+      }
+    },
+    "criomos-lib": {
+      "locked": {
+        "lastModified": 1777127525,
+        "narHash": "sha256-XIzbj3o66yZFxPDyUUa8OvolDv0wIWCgbh2wy711i7Y=",
+        "owner": "LiGoldragon",
+        "repo": "CriomOS-lib",
+        "rev": "68cd54456432ac0220252c4a073259b6db859b08",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "CriomOS-lib",
         "type": "github"
       }
     },
@@ -755,6 +773,7 @@
         "brightness-ctl": "brightness-ctl",
         "clavifaber": "clavifaber",
         "criomos-home": "criomos-home",
+        "criomos-lib": "criomos-lib",
         "home-manager": "home-manager",
         "horizon": "horizon",
         "nixpkgs": "nixpkgs_2",

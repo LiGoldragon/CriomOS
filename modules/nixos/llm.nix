@@ -2,6 +2,7 @@
   lib,
   pkgs,
   horizon,
+  inputs,
   ...
 }:
 let
@@ -19,8 +20,7 @@ let
 
   nodeName = horizon.node.name;
 
-  # Unified config — single source of truth for all LLM services
-  configPath = ../../data/config/largeAI/llm.json;
+  configPath = inputs.criomos-lib + "/data/largeAI/llm.json";
   cfg = fromJSON (readFile configPath);
 
   serverPort = cfg.serverPort;
