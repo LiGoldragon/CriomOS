@@ -1,7 +1,8 @@
-# Closure shrinkage — decisions on the audit
+# Closure shrinkage — decisions
 
-Captures the close-out decisions on the [0013-closure-bloat-audit.md](0013-closure-bloat-audit.md)
-recommendations.
+Authoritative decisions on the closure-bloat trim — what landed in
+horizon-rs + CriomOS, the rejected per-user opt-in framing, and the
+explicit `atLeastMax` exception list.
 
 ## What landed (already pushed)
 
