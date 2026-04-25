@@ -159,13 +159,13 @@ non-router by accident), no test catches it.
 Per the "delete wrong reports — don't banner them" rule. Reports that
 are now superseded by later work:
 
-- [reports/2026-04-24-ecosystem-audit.md](reports/2026-04-24-ecosystem-audit.md)
+- [reports/0001-ecosystem-audit.md](reports/0001-ecosystem-audit.md)
   — first ecosystem-wide audit; superseded by
-  [reports/2026-04-24-post-compact-audit.md](reports/2026-04-24-post-compact-audit.md)
+  [reports/0009-post-compact-audit.md](reports/0009-post-compact-audit.md)
   and the later ones.
-- [reports/2026-04-24-nix-rewrite-and-pkgs-input.md](reports/2026-04-24-nix-rewrite-and-pkgs-input.md)
+- [reports/0003-nix-rewrite-and-pkgs-input.md](reports/0003-nix-rewrite-and-pkgs-input.md)
   — explicitly superseded by
-  [reports/2026-04-24-3flake-implemented.md](reports/2026-04-24-3flake-implemented.md)
+  [reports/0004-3flake-implemented.md](reports/0004-3flake-implemented.md)
   (its own header notes the wrong initial pkgs-as-flake interpretation).
 
 These two should be removed in the next housekeeping pass.

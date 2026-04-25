@@ -1,6 +1,6 @@
 # 2026-04-24 — three-flake architecture implemented
 
-Followup to [reports/2026-04-24-nix-rewrite-and-pkgs-input.md](2026-04-24-nix-rewrite-and-pkgs-input.md).
+Followup to [reports/0003-nix-rewrite-and-pkgs-input.md](0003-nix-rewrite-and-pkgs-input.md).
 That report's §4 described an earlier (wrong) interpretation of the
 proposal. The user clarified, I tested, and the corrected design is
 now implemented across CriomOS and lojix.
@@ -94,13 +94,13 @@ propagates to from CriomOS.
 
 - **Tarball / portable artifacts.** Today both overrides are local
   `path:` URIs. For cross-machine deploys the publish step (per
-  [§4 of 2026-04-24-ractor-tool-design.md](2026-04-24-ractor-tool-design.md))
+  [§4 of 0002-ractor-tool-design.md](0002-ractor-tool-design.md))
   still needs to land — `tarball+url?narHash=…` for both system and
   horizon, with the deterministic-naming convention. Tracked as
   [`lojix-d56`](../repos/lojix/.beads/) (P1).
 - **The module rewrite ([CriomOS-52j](../.beads/)).** Still the
   largest remaining piece. Plan in
-  [reports/2026-04-24-nix-rewrite-and-pkgs-input.md §3](2026-04-24-nix-rewrite-and-pkgs-input.md).
+  [reports/0003-nix-rewrite-and-pkgs-input.md §3](0003-nix-rewrite-and-pkgs-input.md).
 - **Real perf measurement.** Cache benefits are theoretical until
   modules access pkgs.X heavily. Re-measure after CriomOS-52j.
 

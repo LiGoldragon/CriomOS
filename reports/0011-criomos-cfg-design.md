@@ -160,4 +160,4 @@ is straightforward once the merge core is solid.
 
 - [JSON Merge Patch RFC 7396](https://datatracker.ietf.org/doc/html/rfc7396)
 - [JSON Patch RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)
-- Prior-art audit: [reports/2026-04-24-criomos-lib-dry-audit.md §3](2026-04-24-criomos-lib-dry-audit.md)
+- Prior-art audit: [reports/0010-criomos-lib-dry-audit.md §3](0010-criomos-lib-dry-audit.md)

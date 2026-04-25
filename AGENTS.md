@@ -52,16 +52,23 @@ ecosystem, copy the same shim.
 | Where | What | Example |
 |---|---|---|
 | `docs/*.md` | **Prose / contracts only.** No long code blocks. Architectural rules, guidelines, roadmap, invariants. | `docs/GUIDELINES.md`, `docs/ROADMAP.md` |
-| `reports/NNNN-MM-DD-*.md` | **Concrete shapes + decision records.** Type sketches, audit findings, research syntheses, design proposals, migration journeys, end-of-session snapshots. | `reports/2026-04-25-closure-bloat-audit.md` |
+| `reports/NNNN-*.md` | **Concrete shapes + decision records.** Type sketches, audit findings, research syntheses, design proposals, migration journeys, end-of-session snapshots. Numbered incrementally — see below. | `reports/0013-closure-bloat-audit.md` |
 | the modules themselves | **Implementation.** Nix code, packages, tests. | `modules/nixos/normalize.nix` |
 
 If a layer rule is violated, rewrite: move type sketches out of `docs/`
 into a report; move runnable code out of reports into the appropriate
 module. Architecture stays slim so it remains readable in one pass.
 
+**Reports are numbered incrementally** — `0001-*.md`, `0002-*.md`, …
+When adding a new report, take the next available integer (highest
+existing number + 1) and zero-pad to four digits. No date in the
+filename — there will be many reports per day. Date metadata, if
+needed, goes in the report body, not the path.
+
 **Delete wrong reports — don't banner them.** Superseded reports get
 deleted, not wrapped in a "this is wrong now" banner. The git history
 keeps the trace; the live reports/ dir reflects current truth.
+Numbers don't get reused — gaps are fine.
 
 ## Session-response style — substance goes in reports
 

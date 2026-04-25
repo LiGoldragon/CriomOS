@@ -8,9 +8,9 @@ to cold-open the project.
 
 - **3-flake architecture** (system + pkgs + horizon as content-addressed
   flake inputs) is **shipped and verified**. lojix produces all 3
-  inputs; CriomOS consumes them. See [2026-04-24-3flake-implemented.md](2026-04-24-3flake-implemented.md).
+  inputs; CriomOS consumes them. See [0004-3flake-implemented.md](0004-3flake-implemented.md).
 - **horizon-rs schema** is operationally complete. Recent refactor:
-  `Mg` struct (Magnitude + AtLeast bundled). See [2026-04-24-mg-refactor.md](2026-04-24-mg-refactor.md).
+  `Mg` struct (Magnitude + AtLeast bundled). See [0007-mg-refactor.md](0007-mg-refactor.md).
 - **CriomOS module rewrite** is mostly done:
   - `world` / `pkdjz` / `hob` ghost args **gone** from active code
     (only `emacs/emacs/default.nix` in CriomOS-home retains
@@ -117,7 +117,7 @@ Across repos, the path-to-real-deploy:
 ## Open questions / decisions pending
 
 1. **`Mg.is` vs `Mg.atLeast` naming** — see
-   [2026-04-24-mg-refactor.md](2026-04-24-mg-refactor.md). Filed
+   [0007-mg-refactor.md](0007-mg-refactor.md). Filed
    as a bead.
 2. **CriomOS-home aggregate wiring** (Phase A in the home rewrite
    track) — when to start? Could be done in parallel with CriomOS
@@ -135,20 +135,20 @@ Across repos, the path-to-real-deploy:
 
 Other reports in this dir (in chronological order):
 
-- `2026-04-24-ecosystem-audit.md` — first ecosystem-wide audit.
-- `2026-04-24-ractor-tool-design.md` — lojix actor architecture
+- `0001-ecosystem-audit.md` — first ecosystem-wide audit.
+- `0002-ractor-tool-design.md` — lojix actor architecture
   design (with cache-property analysis).
-- `2026-04-24-3flake-implemented.md` — system + pkgs + horizon
+- `0004-3flake-implemented.md` — system + pkgs + horizon
   3-flake architecture, implemented.
-- `2026-04-24-nix-rewrite-and-pkgs-input.md` — superseded by
+- `0003-nix-rewrite-and-pkgs-input.md` — superseded by
   3flake-implemented (kept for history; §4 had wrong initial
   pkgs-as-flake-input interpretation).
-- `2026-04-24-architecture-deep-audit.md` — 4-agent forensic
+- `0005-architecture-deep-audit.md` — 4-agent forensic
   audit; basis for the bead set being worked through now.
-- `2026-04-24-world-hob-removal.md` — canonical replacement plan
+- `0006-world-hob-removal.md` — canonical replacement plan
   for the legacy ghost-arg layer; mostly executed.
-- `2026-04-24-mg-refactor.md` — the Mg struct refactor.
-- This file (`2026-04-24-rewrite-status.md`) — end-of-session
+- `0007-mg-refactor.md` — the Mg struct refactor.
+- This file (`0008-rewrite-status.md`) — end-of-session
   snapshot.
 
 ## How to resume
@@ -165,5 +165,5 @@ To pick this up after compact:
    path:/home/li/git/CriomOS` is the canonical regression test.
    Should produce a real toplevel.drvPath in stdout.
 4. Phase 8 next step: add `./network` to `criomos.nix` imports
-   and iterate. The pattern is in `2026-04-24-rewrite-status.md`
+   and iterate. The pattern is in `0008-rewrite-status.md`
    §"What's wired in criomos.nix today".
