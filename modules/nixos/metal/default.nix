@@ -22,7 +22,6 @@ let
     modelIsThinkpad
     useColemak
     computerIs
-    isLargeEdge
     handleLidSwitch
     handleLidSwitchExternalPower
     handleLidSwitchDocked
@@ -149,8 +148,10 @@ let
     python3Packages.pyclip
   ];
 
-  # TODO - sort out different `sizedatleast` sets
-  printingDriversPkgs = lib.optionals size.atLeastMax (
+  # Operator opt-in via horizon.node.wantsPrinting (default false). The
+  # bundle is ~300-500 MB (hplip, samsung, epson) — only worth installing
+  # on nodes that actually have a printer reachable.
+  printingDriversPkgs = lib.optionals horizon.node.wantsPrinting (
     with pkgs;
     [
       gutenprint # Drivers for many different printers from many different vendors.
@@ -237,7 +238,7 @@ mkIf behavesAs.bareMetal {
     extraModulePackages =
       [ ]
       ++ (optional modelIsThinkpad config.boot.kernelPackages.acpi_call)
-      ++ (optional size.atLeastMax config.boot.kernelPackages.v4l2loopback);
+      ++ (optional size.atLeastLarge config.boot.kernelPackages.v4l2loopback);
 
     initrd = {
       availableKernelModules = [
@@ -249,7 +250,7 @@ mkIf behavesAs.bareMetal {
     kernelModules = [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu");
 
     extraModprobeConfig = (
-      optionalString size.atLeastMax ''
+      optionalString size.atLeastLarge ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
       ''
     ) + (
@@ -380,8 +381,8 @@ mkIf behavesAs.bareMetal {
       with pkgs;
       [ lm_sensors ]
       ++ optionals chipIsIntel intelUtils
-      ++ optionals size.atLeastMax [ v4l-utils ]
-      ++ optionals isLargeEdge waydroidPackages
+      ++ optionals size.atLeastLarge [ v4l-utils ]
+      ++ optionals (size.atLeastMax && behavesAs.edge) waydroidPackages
       ++ optional modelIsThinkpad batteryCtl
       ;
 
@@ -511,8 +512,11 @@ mkIf behavesAs.bareMetal {
   };
 
   virtualisation = {
-    libvirtd.enable = isLargeEdge;
-    waydroid.enable = isLargeEdge;
-    spiceUSBRedirection.enable = size.atLeastMax;
+    # libvirtd + waydroid: Max-tier per Li (heavy: ~100MB libvirt,
+    # ~2GB waydroid). isLargeEdge now means atLeastLarge so these go
+    # inline gated on Max + edge instead.
+    libvirtd.enable = size.atLeastMax && behavesAs.edge;
+    waydroid.enable = size.atLeastMax && behavesAs.edge;
+    spiceUSBRedirection.enable = size.atLeastLarge;
   };
 }

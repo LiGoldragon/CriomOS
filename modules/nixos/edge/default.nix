@@ -31,13 +31,13 @@ mkIf behavesAs.edge {
 
   hardware = {
     bluetooth.enable = true;
-    graphics.enable32Bit = size.atLeastMax;
+    graphics.enable32Bit = size.atLeastLarge;
   };
 
   environment = {
     systemPackages =
       with pkgs;
-      minPackages ++ (optionals size.atLeastMed medPackages ++ (optionals size.atLeastMax maxPackages));
+      minPackages ++ (optionals size.atLeastMed medPackages ++ (optionals size.atLeastLarge maxPackages));
 
     gnome.excludePackages = with pkgs; [
       gnome-software
@@ -45,13 +45,12 @@ mkIf behavesAs.edge {
   };
 
   programs = {
-    browserpass.enable = size.atLeastMax;
+    browserpass.enable = size.atLeastLarge;
 
     dconf.enable = true;
-    droidcam.enable = size.atLeastMax;
-    evolution.enable = true;
-
-    firejail.enable = size.atLeastMed;
+    droidcam.enable = size.atLeastLarge;
+    # evolution.enable: Max-tier per Li (heavy ~250MB email client).
+    evolution.enable = size.atLeastMax;
 
     regreet = {
       enable = size.atLeastMin;
