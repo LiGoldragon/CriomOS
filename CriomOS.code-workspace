@@ -1,0 +1,17 @@
+{
+  "folders": [
+    { "name": "CriomOS", "path": "." },
+    { "name": "CriomOS-home", "path": "repos/CriomOS-home" },
+    { "name": "CriomOS-lib", "path": "repos/CriomOS-lib" },
+    { "name": "CriomOS-emacs", "path": "repos/CriomOS-emacs" },
+    { "name": "criomos-archive", "path": "repos/criomos-archive" }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.jj": true,
+      "**/result": true,
+      "**/result-*": true,
+      "**/target": true
+    }
+  }
+}
