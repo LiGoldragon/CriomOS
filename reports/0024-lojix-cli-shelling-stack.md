@@ -91,17 +91,67 @@ for parsing, and emits `BuildEvent` messages to a single
 This stack is what `colmena`, `deploy-rs`, and modern `nixos-rebuild`
 workflows converge on, minus the ad-hoc shell glue.
 
-## Migration order (when lojix is ready to grow)
+## Migration order — current status
 
-1. Wrap the existing `tokio::process` calls in `process-wrap` for
-   kill cascades — one-line change, no behaviour shift.
-2. Add `openssh` for remote builds. Reuse the existing
-   `NixInvocation::run` shape; the only branch is local vs remote
-   `Session::command()`.
-3. Convert `BuildSupervisor` to a parent ractor actor + per-target
-   `NodeBuildActor`. Use `JoinSet` to await many.
-4. Add `indicatif::MultiProgress` + `tracing-indicatif` last — once
-   parallel jobs exist, you'll want it; before then it's clutter.
+| Step | Status | Notes |
+|---|---|---|
+| 1. `tokio::process` + `process-wrap` (kill cascade) | **DONE** ([lojix-cli 0b085794](https://github.com/LiGoldragon/lojix-cli/commit/0b085794)) | Live-streaming preserved (stderr=inherit, stdout=piped); ProcessGroup + KillOnDrop wrappers reap nix children on Ctrl-C / future-drop. |
+| 2. Remote builds via `openssh` | **STUBBED** ([54f50b1c](https://github.com/LiGoldragon/lojix-cli/commit/54f50b1c)) | `BuildLocation::Remote { host }` enum variant added; run() returns `NotImplemented`. Wire openssh + branch when **lojixd is ready** — see "Reconsidering remote" below. |
+| 3. Per-target ractor + `JoinSet` | **DEFERRED** | UX win, not a throughput win — see "Why 3+4 are deferred" below. |
+| 4. `indicatif::MultiProgress` + `tracing-indicatif` | **DEFERRED** | Only meaningful once Step 3 lands. |
 
-Each step ships independently and lights up a new capability without
-forcing the next.
+## Why 3+4 are deferred
+
+`nix-daemon` is a single shared service that already parallelizes:
+
+- `nix.settings.max-jobs = N` — N derivations build simultaneously
+- `nix.settings.cores = M` — each derivation gets M CPU cores
+- All `nix` clients connect to one daemon via Unix socket. Run two
+  `nix build A` + `nix build B` simultaneously → both queue at the
+  same daemon, share max-jobs, get scheduled together.
+
+So Steps 3+4 buy almost entirely **UX/coordination**, not build
+throughput:
+
+- ✅ Single output stream with per-node prefixing (vs scrolling 5
+  terminals).
+- ✅ One Ctrl-C kills everything (vs hunting 5 processes).
+- ✅ Unified success/fail summary (vs comparing exit codes).
+- ✅ Shared horizon cache writes (avoid races between concurrent
+  lojix invocations to the same `~/.cache/lojix/horizon/...` path).
+- ❌ No throughput improvement — the daemon already saturates
+  max-jobs whether you launch 1 or 5 lojix processes.
+
+Trigger to revisit: when the desired UX becomes
+**"`lojix build --cluster goldragon` builds every node and shows me
+a dashboard."** Until then, one `lojix build --node X` per shell is
+fine, and the daemon does the right thing.
+
+## Reconsidering remote (lojixd-era)
+
+Before adopting `openssh` from lojix-cli for Step 2, also weigh
+nix's **built-in remote-builder dispatch**:
+
+- `nix.settings.builders` (or `nix.buildMachines` in NixOS) lets
+  `nix-daemon` itself offload derivations to remote builders over
+  SSH. Transparent to clients — `nix build` doesn't need to know.
+- This means "remote build" via lojix can mean two different things:
+  1. **Build *for* a remote node** (cross-build a closure on local
+     hardware via `nix-daemon`'s remote-builder support, then deploy)
+     → no openssh needed in lojix-cli; configure `buildMachines`.
+  2. **Build *on* a remote node** (run `nix build` on host X
+     directly via SSH, e.g. for arch-native builds)
+     → `openssh` from lojix-cli is the right tool.
+- `nixos-rebuild --target-host X --build-host Y` already covers
+  many of these patterns natively.
+
+Decide which case lojixd actually wants before wiring openssh —
+the simpler path may be "configure buildMachines once, lojix stays
+local-only."
+
+## Each step ships independently
+
+The original property holds: kill-cascade landed without forcing
+remote/parallel/multi-progress. Remote stub landed without forcing
+parallel. When parallel arrives, multi-progress arrives. No step
+forces the next.
