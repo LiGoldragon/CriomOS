@@ -55,15 +55,7 @@ but the verbatim-imported modules under
 where a field is read but always returns null/false. Worth a
 walkthrough before depending on a deploy.
 
-### 4. prometheus FOD realisation — one build run
-The `llm.nix` model-fetch FODs are gated behind `behavesAs.largeAi`
-so only prometheus pulls them. They've been gated correctly; what
-hasn't happened is a real build that actually fetches the GLM/llama
-models and produces the systemd service path. ~2-4 hrs first build,
-then cached. Do this on prometheus itself or via a remote builder —
-not on ouranos.
-
-### 5. balboa — environmental, defer or builder
+### 4. balboa — environmental, defer or builder
 balboa is a rock64 SD-card edge node (Arm64). New CriomOS doesn't
 have an aarch64 builder configured. Two paths:
 - **Defer**: balboa keeps booting from its last archive-built image
@@ -109,8 +101,9 @@ Cheapest ordered path:
    after ouranos). These are headless / low-touch nodes — verify
    via SSH that they boot + their services come up.
 
-5. **Build prometheus** (~3-4 hrs first time). FOD realisation
-   surfaces any model-fetch issues. Once green, deploy.
+5. **Build + deploy prometheus**. FODs already realised on the box
+   (model files exist in /nix/store with matching hashes), so no
+   fetch needed — same shape as tiger/zeus.
 
 6. **balboa**: defer indefinitely OR set up aarch64 builder.
    Either way, archive is no longer needed for the other 4 nodes.
