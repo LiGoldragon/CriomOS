@@ -50,7 +50,7 @@ The three orchestration axes evaluate and cache independently:
 | input | what it is | when it changes |
 |---|---|---|
 | [`system`](stubs/no-system/) | tiny flake whose only output is a system tuple (`x86_64-linux`, `aarch64-linux`) | per supported arch |
-| [`pkgs`](pkgs-flake/) | wrapper that instantiates nixpkgs for a given system | per (nixpkgs-rev, system) |
+| [`pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) | wrapper that instantiates nixpkgs for a given system, plus overlays | per (nixpkgs-rev, system, overlays) |
 | [`horizon`](stubs/no-horizon/) | the projected per-(cluster, node) view | per deploy |
 
 Each is content-addressed. Identical input → eval-cache hit. The
@@ -69,6 +69,9 @@ defaults to a stub that throws — overrides are required at build time
 - [`LiGoldragon/CriomOS-lib`](https://github.com/LiGoldragon/CriomOS-lib) —
   shared helpers (`importJSON`, `mkJsonMerge`) + cross-repo data
   (`data/largeAI/llm.json`). Consumed by both CriomOS and CriomOS-home.
+- [`LiGoldragon/CriomOS-pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) —
+  the `pkgs` axis of the 3-flake architecture. Own repo so CriomOS
+  edits don't invalidate the pkgs eval cache.
 - [`LiGoldragon/horizon-rs`](https://github.com/LiGoldragon/horizon-rs) —
   horizon schema + projection logic (Rust). Single source of truth
   for the typed schema.
@@ -98,7 +101,6 @@ CriomOS-specific:
   home-manager activations.
 - `stubs/{no-system,no-horizon}/` — default stub inputs (overridden
   by lojix-cli).
-- `pkgs-flake/` — the `pkgs` axis, consumed via `path:./pkgs-flake`.
 - `data/` — cross-flake data files referenced from modules.
 
 No `modules/home/` here — it lives in `CriomOS-home`. No `hosts/` —

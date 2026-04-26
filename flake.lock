@@ -758,14 +758,18 @@
         ]
       },
       "locked": {
-        "path": "./pkgs-flake",
-        "type": "path"
+        "lastModified": 1777241638,
+        "narHash": "sha256-6kcItIjDDjsEPsk1ATnhgaQW0BphKHUJs5xCH7/1614=",
+        "owner": "LiGoldragon",
+        "repo": "CriomOS-pkgs",
+        "rev": "50d8627a1fae248a42363e5dcfee3755fb3e3f63",
+        "type": "github"
       },
       "original": {
-        "path": "./pkgs-flake",
-        "type": "path"
-      },
-      "parent": []
+        "owner": "LiGoldragon",
+        "repo": "CriomOS-pkgs",
+        "type": "github"
+      }
     },
     "root": {
       "inputs": {

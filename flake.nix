@@ -37,11 +37,11 @@
     system.url = "path:./stubs/no-system";
 
     # Pkgs flake — instantiates nixpkgs for the given (nixpkgs-rev,
-    # system) tuple. Lives in this repo at ./pkgs-flake; consumed via
-    # path: so its eval cache is keyed independently. nixpkgs and
-    # system are propagated via `follows`, so the pkgs flake sees
-    # the same revisions CriomOS does without having to be regenerated.
-    pkgs.url = "path:./pkgs-flake";
+    # system) tuple, plus our overlays. Its own repo so CriomOS source
+    # edits don't invalidate the pkgs eval cache (root-flake-keyed).
+    # nixpkgs + system propagate via `follows` so the pkgs flake sees
+    # the same revisions CriomOS does.
+    pkgs.url = "github:LiGoldragon/CriomOS-pkgs";
     pkgs.inputs.nixpkgs.follows = "nixpkgs";
     pkgs.inputs.system.follows = "system";
 
