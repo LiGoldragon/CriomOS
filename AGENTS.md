@@ -59,6 +59,17 @@ If a layer rule is violated, rewrite: move type sketches out of `docs/`
 into a report; move runnable code out of reports into the appropriate
 module. Architecture stays slim so it remains readable in one pass.
 
+**Reports are NOT durable documentation.** They are point-in-time
+records — audits, decision records, migration journeys, session
+snapshots, research syntheses. Durable architectural guidance —
+"how this thing works", "why X is gated by Y", "the rule for Z",
+"the design rationale behind A" — belongs in `docs/`, in the
+relevant repo's `ARCHITECTURE.md`, in `AGENTS.md`, or in code
+comments. When a report contains durable substance, *implement it*
+(move to the right home) rather than leaving it in `reports/`.
+This is the same principle as the rollover rule's "implement"
+option — except it applies at write-time too, not just at rollover.
+
 **Reports are numbered incrementally** — `0001-*.md`, `0002-*.md`, …
 When adding a new report, take the next available integer (highest
 existing number + 1) and zero-pad to four digits. No date in the
