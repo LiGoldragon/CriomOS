@@ -61,24 +61,33 @@ simultaneously.
 
 ### Dispatcher (ouranos)
 
+All values come from `horizon` — nothing hardcoded. `Node.builder_configs`
+is already a `Vec<BuilderConfig>` populated by horizon-rs from the
+cluster's `is_builder` ex-nodes. Each `BuilderConfig` carries
+`{ host_name, ssh_user, ssh_key, supported_features, system,
+systems, max_jobs }`. **Missing today**: `public_host_key` — needs
+to be added to `BuilderConfig` (sourced from each builder's
+`SshPubKeyLine`, which horizon already projects).
+
 ```nix
-nix.distributedBuilds = true;
-nix.settings.builders-use-substitutes = true;
+{ horizon, lib, ... }:
+lib.mkIf horizon.node.isDispatcher {
+  nix.distributedBuilds = true;
+  nix.settings.builders-use-substitutes = true;
 
-nix.buildMachines = [{
-  hostName        = "prometheus.maisiliym.criome";
-  sshUser         = "nix-ssh";
-  sshKey          = "/etc/ssh/ssh_host_ed25519_key";
-  protocol        = "ssh-ng";
-  systems         = [ "x86_64-linux" ];
-  maxJobs         = 16;             # 32-core box, 16 jobs × 2 cores each
-  speedFactor     = 10;
-  supportedFeatures = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
-  publicHostKey   = "<base64 of prom's ssh_host_ed25519_key.pub>";
-}];
+  nix.buildMachines = map (b: {
+    inherit (b)
+      hostName sshUser sshKey supportedFeatures system systems maxJobs;
+    protocol      = "ssh-ng";
+    speedFactor   = 10;
+    publicHostKey = b.publicHostKey;   # ← needs horizon-rs schema add
+  }) horizon.node.builderConfigs;
 
-programs.ssh.knownHosts."prometheus.maisiliym.criome".publicKey =
-  "<contents of prom's ssh_host_ed25519_key.pub>";
+  programs.ssh.knownHosts = lib.listToAttrs (map (b: {
+    name = b.hostName;
+    value.publicKey = b.publicHostKeyLine;   # decoded form
+  }) horizon.node.builderConfigs);
+}
 ```
 
 Field semantics ([nix-remote-build.nix
@@ -101,21 +110,25 @@ Laptop becomes pure orchestrator.
 
 ### Builder (prometheus)
 
-```nix
-nix.sshServe = {
-  enable    = true;
-  protocol  = "ssh-ng";
-  write     = true;          # required: lets client upload .drv inputs
-  trusted   = true;          # adds nix-ssh to trusted-users
-  keys      = [
-    "ssh-ed25519 AAAA...== root@ouranos"   # ouranos's host pubkey
-  ];
-};
+`horizon.node.dispatchersSshPubKeys` is already a list of
+`SshPubKeyLine` for every ex-node that is `isDispatcher`.
 
-nix.settings.system-features = [
-  "nixos-test" "benchmark" "big-parallel" "kvm" "gccarch-znver5"
-];
-services.openssh.enable = true;
+```nix
+{ horizon, lib, ... }:
+lib.mkIf horizon.node.isBuilder {
+  nix.sshServe = {
+    enable    = true;
+    protocol  = "ssh-ng";
+    write     = true;
+    trusted   = true;
+    keys      = horizon.node.dispatchersSshPubKeys;
+  };
+
+  nix.settings.systemFeatures = [
+    "nixos-test" "benchmark" "big-parallel" "kvm"
+  ];
+  services.openssh.enable = true;
+}
 ```
 
 What `nix.sshServe.enable = true` actually does ([nix-ssh-serve.nix
@@ -149,24 +162,33 @@ What `nix.sshServe.enable = true` actually does ([nix-ssh-serve.nix
 
 ## Implementation in new criomos
 
-Where things live:
+Most plumbing already exists in horizon-rs:
 
-- `modules/nixos/nix.nix` — already has the nix block. Add:
-  - dispatcher branch: gated on `behavesAs.dispatcher` (need to
-    add this to horizon-rs Node) or just on a per-node flag
-  - builder branch: gated on `behavesAs.builder` (same)
-- horizon-rs `Node`: needs new derived `behavesAs.dispatcher` and
-  `behavesAs.builder` fields, OR a `wantsRemoteBuilds` flag that
-  enables both for now
-- `nix.sshServe.keys` needs ouranos's host pubkey on prom — comes
-  from goldragon datom.nota's per-node `NodePubKeys` (already
-  carries SSH host pubkeys). Wire the cluster's pubkeys into
-  `sshServe.keys` filtered by `behavesAs.dispatcher`
-- `nix.buildMachines.<n>.publicHostKey` needs prom's host pubkey
-  on ouranos — same source, filtered by `behavesAs.builder`
+| Need | Field | Status |
+|---|---|---|
+| dispatcher gate | `Node.is_dispatcher` | ✅ exists |
+| builder gate | `Node.is_builder` | ✅ exists |
+| builder list (nix.buildMachines source) | `Node.builder_configs: Vec<BuilderConfig>` | ✅ exists |
+| dispatcher pubkeys (nix.sshServe.keys) | `Node.dispatchers_ssh_pub_keys` | ✅ exists |
+| viewpoint node's own SSH pubkey | `Node.ssh_pub_key_line` | ✅ exists |
+| **builder's SSH host pubkey** for `publicHostKey` | needs `BuilderConfig.public_host_key` | ❌ ADD |
+| triggers from cluster proposal | per-node `is_builder` derivation rule | confirm — likely needs explicit gate |
 
-This mirrors archive's `exNodesSshPreCriomes` pattern but with the
-trusted+publicHostKey fixes that archive lacked.
+One horizon-rs schema addition: `BuilderConfig.public_host_key:
+SshPubKeyLine` (and `public_host_key_b64` if we want the base64
+form pre-computed for `nix.buildMachines.<n>.publicHostKey`'s
+expected format). Sourced from the ex-node's existing
+`pub_keys.ssh` field — pure derivation, no new input.
+
+Where the new criomos modules go:
+
+- `modules/nixos/nix.nix` — extend with the two `mkIf` branches
+  shown above (dispatcher / builder)
+- horizon-rs — add `BuilderConfig.public_host_key`, bump
+- CriomOS-pkgs / lojix-cli — irrelevant to this change
+
+Mirrors archive's `exNodesSshPreCriomes` pattern but with the
+trusted+publicHostKey fixes archive lacked.
 
 ## Sources
 
