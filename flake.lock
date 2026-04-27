@@ -201,29 +201,6 @@
         "type": "github"
       }
     },
-    "blueprint_6": {
-      "inputs": {
-        "nixpkgs": [
-          "criomos-home",
-          "mentci-tools",
-          "nixpkgs"
-        ],
-        "systems": "systems_7"
-      },
-      "locked": {
-        "lastModified": 1776249299,
-        "narHash": "sha256-Dt9t1TGRmJFc0xVYhttNBD6QsAgHOHCArqGa0AyjrJY=",
-        "owner": "numtide",
-        "repo": "blueprint",
-        "rev": "56131e8628f173d24a27f6d27c0215eff57e40dd",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "blueprint",
-        "type": "github"
-      }
-    },
     "brightness-ctl": {
       "inputs": {
         "blueprint": "blueprint_2",
@@ -390,6 +367,7 @@
     },
     "criomos-home": {
       "inputs": {
+        "beads": "beads",
         "blueprint": "blueprint_4",
         "claude-code-vsix": "claude-code-vsix",
         "codex-cli": "codex-cli",
@@ -400,21 +378,21 @@
           "home-manager"
         ],
         "llm-agents": "llm-agents",
-        "mentci-tools": "mentci-tools",
         "niri-flake": "niri-flake",
         "nixpkgs": [
           "nixpkgs"
         ],
         "noctalia": "noctalia",
         "stylix": "stylix",
+        "substack-cli": "substack-cli",
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777310029,
-        "narHash": "sha256-nCNclV57w/YW3TYMypjksDLMAYIAPM5wAa0p78qu4Wc=",
+        "lastModified": 1777315066,
+        "narHash": "sha256-q6B6lkg9aANbRQNRI2iQ+92aLQXK9M4mjbRKePPpMuw=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "1286785359b0fe2a227c4a97824da57d7dab4fd2",
+        "rev": "a6a38dbf9292614988b62d90e70fc01acccf0f91",
         "type": "github"
       },
       "original": {
@@ -486,7 +464,6 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "mentci-tools",
           "substack-cli",
           "nixpkgs"
         ],
@@ -586,7 +563,7 @@
     },
     "flake-utils_2": {
       "inputs": {
-        "systems": "systems_8"
+        "systems": "systems_9"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -707,30 +684,6 @@
         "type": "github"
       }
     },
-    "mentci-tools": {
-      "inputs": {
-        "beads": "beads",
-        "blueprint": "blueprint_6",
-        "nixpkgs": [
-          "criomos-home",
-          "nixpkgs"
-        ],
-        "substack-cli": "substack-cli"
-      },
-      "locked": {
-        "lastModified": 1777018934,
-        "narHash": "sha256-g+XzU4PUCNwx1N4AQ9dLCjKezat0KWvxiaRB4kV7qls=",
-        "owner": "LiGoldragon",
-        "repo": "mentci-tools",
-        "rev": "986cb2f76e7861d824691a59313b4ad258f6614a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "mentci-tools",
-        "type": "github"
-      }
-    },
     "niri-flake": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -798,11 +751,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777261032,
-        "narHash": "sha256-J9Hai2fJUd3nE/JhfwDPvi0mgzoIttKZqyxXH4a+zRQ=",
+        "lastModified": 1777347800,
+        "narHash": "sha256-FO6FRay5PfvJX7Ux4qTCvPfvb/1w5DFbbvHe2bjwNXw=",
         "owner": "nix-community",
         "repo": "nix-vscode-extensions",
-        "rev": "9b6d532b8c6840e9e4e23e1c4f661b5ff4df4512",
+        "rev": "de5f0ef30d7c677a06b064d6b390fcddd2bcc503",
         "type": "github"
       },
       "original": {
@@ -888,7 +841,7 @@
           "noctalia",
           "nixpkgs"
         ],
-        "systems": "systems_9",
+        "systems": "systems_7",
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
@@ -1056,7 +1009,7 @@
           "nixpkgs"
         ],
         "nur": "nur",
-        "systems": "systems_10",
+        "systems": "systems_8",
         "tinted-kitty": "tinted-kitty",
         "tinted-schemes": "tinted-schemes",
         "tinted-tmux": "tinted-tmux",
@@ -1083,16 +1036,15 @@
         "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "criomos-home",
-          "mentci-tools",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1776975280,
-        "narHash": "sha256-IoYZUhU6EWMPJmuuqPB6SVknhx+bhz4C3jitTV6De2A=",
+        "lastModified": 1777300695,
+        "narHash": "sha256-bJeuF2UTB/HWWUOv2VlyOqd+jhc7C3bnsA6g1AkMsqM=",
         "owner": "LiGoldragon",
         "repo": "substack-cli",
-        "rev": "1d89734d54327688b64dba6c1be8b2076988f9f7",
+        "rev": "93908ddfa7c6f3ef1477fd65b7ab8d7fa7c14444",
         "type": "github"
       },
       "original": {
@@ -1113,21 +1065,6 @@
       "parent": []
     },
     "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_10": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
@@ -1219,16 +1156,16 @@
     },
     "systems_7": {
       "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "lastModified": 1689347949,
+        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
         "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "repo": "default-linux",
+        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
         "type": "github"
       },
       "original": {
         "owner": "nix-systems",
-        "repo": "default",
+        "repo": "default-linux",
         "type": "github"
       }
     },
@@ -1249,16 +1186,16 @@
     },
     "systems_9": {
       "locked": {
-        "lastModified": 1689347949,
-        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
         "owner": "nix-systems",
-        "repo": "default-linux",
-        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
         "type": "github"
       },
       "original": {
         "owner": "nix-systems",
-        "repo": "default-linux",
+        "repo": "default",
         "type": "github"
       }
     },
