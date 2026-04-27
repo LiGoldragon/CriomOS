@@ -126,8 +126,7 @@ in
     # build dispatch, not just substitution). `trusted = true`
     # adds nix-ssh to trusted-users so the daemon will actually
     # *build* on its behalf instead of refusing with privilege
-    # errors (the most common breakage when this is omitted —
-    # see reports/0025).
+    # errors (the most common breakage when this is omitted).
     #
     # `keys` carries the **dispatcher** nodes' SSH host pubkeys
     # (sourced from `horizon.node.dispatchersSshPubKeys` — the

@@ -72,9 +72,6 @@ five common breakages with causes, deploy-verification commands.
   session: `ssh`, `nixPreCriome`, `nixSigningPublicKey` populated
   alongside the existing `yggdrasil` sub-block.
 
-**Snapshot of the deploy**:
-[`reports/0026-distributed-builds-deployed.md`](0026-distributed-builds-deployed.md).
-
 ### New CriomOS (parallel to archive, not deployed)
 
 **Start**:
@@ -217,7 +214,7 @@ End-to-end test: dispatch a `runCommand` from ouranos with
   - **Step 3**: per-target `NodeBuildActor` ractor + `JoinSet` for parallel multi-node builds. Defer rationale: nix-daemon already parallelises locally via `max-jobs`; client-side parallelism is UX-only (single output stream, unified Ctrl-C). Trigger to wire: `lojix build --cluster goldragon` one-shot dashboard.
   - **Step 4**: `indicatif::MultiProgress` + `tracing-indicatif`. Conditional on Step 3.
   - Durable plan in [`lojix-cli/ARCHITECTURE.md`](https://github.com/LiGoldragon/lojix-cli/blob/main/ARCHITECTURE.md) §"Build orchestration model".
-- **`BuildLocation::Remote` stub** — landed but unimplemented. Pending the lojix daemon (no implementation, just an extension point with `Error::NotImplemented` + comments pointing at `openssh::Session::command()` + reports/0024).
+- **`BuildLocation::Remote` stub** — landed but unimplemented. Pending the lojix daemon (no implementation, just an extension point with `Error::NotImplemented` + comments pointing at `openssh::Session::command()`).
 
 ### Other open beads
 
