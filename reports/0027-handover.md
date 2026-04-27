@@ -5,13 +5,6 @@ Comprehensive picker-up document for the work that landed across the
 this report first, then follow the per-area pointers into durable
 docs.
 
-> **Report cap note:** with this report, `reports/` is at 13, one
-> over the ~12 soft cap. A rollover pass should run before the next
-> new report — candidates to delete: 0020 (old compact-prep), 0021
-> (next-step research, mostly executed), 0022 (trim+extract, mostly
-> in commit history now), 0023 (archive-retirement, mostly executed),
-> 0024 / 0025 (research with durable parts already in code/ARCHITECTURE).
-
 ## What this session accomplished
 
 The headline win: **distributed builds work in production archive**
