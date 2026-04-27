@@ -125,6 +125,16 @@ in
   # Overlays are bad - force them off
   nixpkgs.overlays = mkOverride 0 [ ];
 
+  # readOnlyPkgs makes `nixpkgs.{config,overlays}` no-ops for the main
+  # pkgs (which we supply externally from CriomOS-pkgs with allowUnfree
+  # already true), but home-manager's per-user pkgs evaluation still
+  # consults the nixos-level `nixpkgs.config` for unfree gating. Forcing
+  # allowUnfree here avoids the 'Refusing to evaluate
+  # vscode-extension-anthropic-claude-code ... has an unfree license'
+  # error that fires inside home-manager-bird's vscode extensions
+  # eval — the error message itself points at this option.
+  nixpkgs.config.allowUnfree = mkOverride 0 true;
+
   networking.networkmanager = {
     enable = enableNetworkManager;
   };
