@@ -286,6 +286,18 @@
         "type": "github"
       }
     },
+    "claude-code-vsix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-sJEsDsFwS9omFqmtXQduTOuvQsscYUgQ6s3zNr6kWaY=",
+        "type": "file",
+        "url": "https://open-vsx.org/api/anthropic/claude-code/linux-x64/2.1.120/file/anthropic.claude-code-2.1.120@linux-x64.vsix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://open-vsx.org/api/anthropic/claude-code/linux-x64/2.1.120/file/anthropic.claude-code-2.1.120@linux-x64.vsix"
+      }
+    },
     "clavifaber": {
       "inputs": {
         "blueprint": "blueprint_3",
@@ -379,6 +391,7 @@
     "criomos-home": {
       "inputs": {
         "blueprint": "blueprint_4",
+        "claude-code-vsix": "claude-code-vsix",
         "codex-cli": "codex-cli",
         "criomos-lib": [
           "criomos-lib"
@@ -397,11 +410,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777309464,
-        "narHash": "sha256-Vgs52tztZAQP1dVeNAgoR6CN9VY6Wza3bxDWZVEReIM=",
+        "lastModified": 1777309811,
+        "narHash": "sha256-975O3BMYEVEV7NJeLMBjgBixMjrRdjuUmougODT9Vpo=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "f4795fdf90f8520baed30b1f4b45206bbfe6e8bb",
+        "rev": "71b56c9d7d46a94200909be4ed80aa9465516c09",
         "type": "github"
       },
       "original": {
