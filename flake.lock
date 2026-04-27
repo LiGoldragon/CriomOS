@@ -397,11 +397,11 @@
         "stylix": "stylix"
       },
       "locked": {
-        "lastModified": 1777306618,
-        "narHash": "sha256-jeFZiyS4Jl3MVqNAZQ2oF5FQrtBLggJsW3QjhN9g43k=",
+        "lastModified": 1777308732,
+        "narHash": "sha256-ORNvZEYOCy2o7DZh1tz9CM/Xjmn7lOpzrIyqjZSJF+Y=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "59e707a777b07a32890d1c48a8eba2c17e0b1ff2",
+        "rev": "c8566ef4e15aa5504e623a21300e0ef3cc22ecce",
         "type": "github"
       },
       "original": {
