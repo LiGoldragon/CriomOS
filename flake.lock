@@ -394,14 +394,15 @@
           "nixpkgs"
         ],
         "noctalia": "noctalia",
-        "stylix": "stylix"
+        "stylix": "stylix",
+        "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777308830,
-        "narHash": "sha256-eXMRIJQXzp3eB6hXYGg28KEEk7sdZRsHmwHfX3IvdE0=",
+        "lastModified": 1777309046,
+        "narHash": "sha256-ykl7ZV24r9bxVL7eUdMN3w1AY/LdeqklVADt09OFBhA=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9ff9d065e4e6551bd0ccd54dad344196528005b7",
+        "rev": "edde59e7bb7f6774bf85580aee3ea9a6334f2896",
         "type": "github"
       },
       "original": {
@@ -1355,6 +1356,18 @@
         "owner": "numtide",
         "repo": "treefmt-nix",
         "type": "github"
+      }
+    },
+    "visualjj-vsix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-tGiPgoXeVnOUGA1H94XgXv+VLrF3whV3Fvb6kdiz97I=",
+        "type": "file",
+        "url": "https://open-vsx.org/api/visualjj/visualjj/linux-x64/0.28.1/file/visualjj.visualjj-0.28.1@linux-x64.vsix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://open-vsx.org/api/visualjj/visualjj/linux-x64/0.28.1/file/visualjj.visualjj-0.28.1@linux-x64.vsix"
       }
     },
     "xwayland-satellite-stable": {
