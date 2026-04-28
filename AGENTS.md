@@ -148,6 +148,21 @@ for the long version.
 `bd prime` auto-runs at session start (`PreCompact` and `SessionStart`
 hooks in `.claude/settings.json`) and gives current state.
 
+## Memory — agent-agnostic only
+
+**Never write Claude-specific memories** (no `~/.claude/projects/.../memory/*.md`,
+no `MEMORY.md` index file). Memory has two homes, both agent-agnostic:
+
+- **Short rules / facts** — `bd remember "<one-liner>"`. Cross-session,
+  searchable via `bd memories <keyword>`. Same store across Claude /
+  Codex / any other agent that speaks bd.
+- **Longer references** — `docs/` in the relevant repo, or `AGENTS.md`
+  for cross-cutting agent conventions.
+
+If a tool-specific memory dir exists from prior sessions, migrate its
+content (descriptions → `bd remember`; bodies that are durable
+references → `docs/`) and delete the dir.
+
 ## Blueprint specifics
 
 - Per-system files (`packages/*`, `devshell.nix`, `checks/*`) receive
