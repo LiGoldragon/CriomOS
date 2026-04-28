@@ -27,6 +27,25 @@ Read `docs/ROADMAP.md` for porting order and open tasks.
 - **No Rust crates in this repo.** Rust crates live in their own repos
   (e.g. `clavifaber`, `brightness-ctl`, `horizon-rs`) and are consumed
   as flake inputs. Never inline a Rust crate under `packages/`.
+- **No stateful installation, ever.** Every application that runs on a
+  CriomOS system must enter the system as a Nix derivation — packaged
+  upstream in nixpkgs, in a flake input, or in this ecosystem's own
+  `packages/`. Never `pip install`, `uv add`, `cargo install`,
+  `go install`, `npm install -g`, `gem install`, distro package
+  managers, language-runtime version managers (`pyenv`, `rustup`,
+  `nvm`, `asdf`), `curl | sh` installers, or any tool that mutates
+  per-user, per-machine, or per-shell state outside a Nix profile.
+  If a tool isn't yet packaged, package it before installing — for
+  Python that means `uv2nix` / `pyproject-nix` consuming a committed
+  `uv.lock`, not a runtime `pip install`. The stateful escape hatch
+  is forbidden because it produces machines that aren't reproducible
+  from the flake alone, which defeats the whole point of CriomOS.
+  This rule has no exceptions for "just for testing" or "just for
+  this one tool" — testing happens in `nix shell` / `nix run`, which
+  leaves no trace. The only acceptable mutation outside Nix is data
+  the application owns at runtime (browser bookmarks, editor
+  buffers, shell history) — never the application itself or its
+  dependencies.
 
 ## Hard process rules
 
