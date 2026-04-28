@@ -1,6 +1,7 @@
 {
   horizon,
   inputs,
+  constants,
   ...
 }:
 let
@@ -23,7 +24,7 @@ in
     # see CriomOS-home/flake.nix). Passing CriomOS's `inputs` here
     # would shadow that via specialArgs precedence.
     extraSpecialArgs = {
-      inherit horizon;
+      inherit horizon constants;
     };
     sharedModules = [ inputs.criomos-home.homeModules.default ];
     useGlobalPkgs = true;
