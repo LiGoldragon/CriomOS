@@ -1,16 +1,55 @@
 {
   "folders": [
-    { "name": "CriomOS",          "path": "." },
-    { "name": "CriomOS-home",     "path": "repos/CriomOS-home" },
-    { "name": "CriomOS-lib",      "path": "repos/CriomOS-lib" },
-    { "name": "CriomOS-emacs",    "path": "repos/CriomOS-emacs" },
-    { "name": "criomos-archive",  "path": "repos/criomos-archive" },
-    { "name": "horizon-rs",       "path": "repos/horizon-rs" },
-    { "name": "lojix-cli",        "path": "repos/lojix-cli" },
-    { "name": "brightness-ctl",   "path": "repos/brightness-ctl" },
-    { "name": "clavifaber",       "path": "repos/clavifaber" },
-    { "name": "mentci-tools",     "path": "repos/mentci-tools" },
-    { "name": "goldragon",        "path": "repos/goldragon" }
+    {
+      "name": "CriomOS",
+      "path": "."
+    },
+    {
+      "name": "CriomOS-home",
+      "path": "repos/CriomOS-home"
+    },
+    {
+      "name": "CriomOS-lib",
+      "path": "repos/CriomOS-lib"
+    },
+    {
+      "name": "CriomOS-emacs",
+      "path": "repos/CriomOS-emacs"
+    },
+    {
+      "name": "criomos-archive",
+      "path": "repos/criomos-archive"
+    },
+    {
+      "name": "horizon-rs",
+      "path": "repos/horizon-rs"
+    },
+    {
+      "name": "lojix-cli",
+      "path": "repos/lojix-cli"
+    },
+    {
+      "name": "brightness-ctl",
+      "path": "repos/brightness-ctl"
+    },
+    {
+      "name": "clavifaber",
+      "path": "repos/clavifaber"
+    },
+    {
+      "name": "mentci-tools",
+      "path": "repos/mentci-tools"
+    },
+    {
+      "name": "goldragon",
+      "path": "repos/goldragon"
+    },
+    {
+      "path": "../hexis"
+    },
+    {
+      "path": "../tools-documentation"
+    }
   ],
   "settings": {
     "files.exclude": {
