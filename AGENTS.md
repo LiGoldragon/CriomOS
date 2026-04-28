@@ -6,7 +6,7 @@ Cross-project rules and curated tool docs live in
 [`repos/tools-documentation/`](repos/tools-documentation/) (symlinked to
 `~/git/tools-documentation/`). Start there for: jj workflow + always-push
 rule, Rust style, the canonical crane+fenix Nix packaging layout, and
-basic-usage docs for jj / bd / dolt / nix.
+basic-usage docs for jj / bd / dolt / nix / lojix-cli.
 
 ## First thing
 
