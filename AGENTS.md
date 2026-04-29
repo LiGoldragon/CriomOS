@@ -56,6 +56,16 @@ Read `docs/ROADMAP.md` for porting order and open tasks.
 - Never run `switch-to-configuration switch` in a chroot.
 - Never SIGHUP niri.
 - SSH keys only — no password auth, ever.
+- **Never call a paid LLM API without explicit permission.** Cloud
+  inference (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`,
+  any vendor key in `gopass`) costs the user real money per token.
+  "Test it" / "try it" / "feel free to test" never authorises paid
+  API calls — those mean local-only testing. The order of operations
+  for any task that needs an LLM endpoint is: (1) use the local model
+  hosted on prom; (2) if prom is unreachable or the model is
+  unsuitable, ask the user before reaching for any paid key. This
+  applies to every wrapper around inference too — `browser-use`,
+  `aider`, `goose`, anything that calls out per step.
 
 ## AGENTS.md / CLAUDE.md convention
 
