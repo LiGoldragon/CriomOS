@@ -51,7 +51,20 @@ Read `docs/ROADMAP.md` for porting order and open tasks.
 
 - Jujutsu only. Never `git` CLI.
 - Push before building; build from origin with `--refresh`.
-- Never put Nix store paths in conversation context — capture in shell vars.
+- Never put Nix store paths in conversation context — capture in
+  shell vars (`X=$(nix build … --print-out-paths --no-link)`) and
+  reference `$X`. A `/nix/store/<hash>-<name>` literal in the chat
+  log freezes a build artefact into the conversation forever; the
+  hash drifts with every input bump and the next run reads stale
+  context as if it were authoritative. The discipline is uniform:
+  **store paths live in shell variables, never in prose, code
+  blocks the user reads, or commit messages**.
+- For one-shot invocations of a nix-built tool, prefer `nix run
+  <flake>#<attr> -- <args>` over `nix build … && <store-path>/bin/<tool> …`.
+  `nix run` resolves the store path internally and never surfaces
+  it. Reach for `nix build` only when the store path itself is
+  load-bearing (closure introspection, manual `nix copy`, etc.) —
+  and even then capture it in a shell var.
 - Never use `<nixpkgs>` / `NIX_PATH`; use flake attrs or `nix shell nixpkgs#jq`.
 - Never run `switch-to-configuration switch` in a chroot.
 - Never SIGHUP niri.
