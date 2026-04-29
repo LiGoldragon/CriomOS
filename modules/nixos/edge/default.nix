@@ -47,7 +47,6 @@ mkIf behavesAs.edge {
   programs = {
     browserpass.enable = size.atLeastLarge;
 
-    dconf.enable = true;
     droidcam.enable = size.atLeastLarge;
     # evolution.enable: Max-tier per Li (heavy ~250MB email client).
     evolution.enable = size.atLeastMax;

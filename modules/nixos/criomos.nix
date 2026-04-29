@@ -19,4 +19,13 @@
     ./metal/default.nix
     ./router/default.nix
   ];
+
+  # dconf-service is enabled cluster-wide so the system D-Bus always
+  # has `ca.desrt.dconf` registered. home-manager's dconfSettings
+  # activation (which stylix populates regardless of host role) then
+  # succeeds on every node; on headless boxes the keys are written
+  # but unread (no GTK/portal app reads them). The marginal cost is
+  # one small daemon — cheaper than duplicating the headless-vs-edge
+  # predicate on both system and home sides.
+  programs.dconf.enable = true;
 }
