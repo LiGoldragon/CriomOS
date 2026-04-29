@@ -422,16 +422,17 @@
           "nixpkgs"
         ],
         "noctalia": "noctalia",
+        "pi-src": "pi-src",
         "stylix": "stylix",
         "substack-cli": "substack-cli",
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777408434,
-        "narHash": "sha256-CxqM5BDq4hcae+YwS55sIUv9DPRiqnEv075VTTCtCBg=",
+        "lastModified": 1777468867,
+        "narHash": "sha256-rq8YE+gBBMSqLaBHW8p/kE1CiVAYsdR2xQR8fPmRuoQ=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9cebd425db5ee1526231a07f709f776ca819ff15",
+        "rev": "e018d14e3dba11738ecf540ef1147ea0615674a4",
         "type": "github"
       },
       "original": {
@@ -968,6 +969,23 @@
       "original": {
         "owner": "nix-community",
         "repo": "NUR",
+        "type": "github"
+      }
+    },
+    "pi-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777397609,
+        "narHash": "sha256-XZUnKk+B9kWn51kRfMkfInYCz+5hVuWQBvgOm9PO9bo=",
+        "owner": "badlogic",
+        "repo": "pi-mono",
+        "rev": "6b48e4ac6b4c0cd766ce61928a3fc4c304283adb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "badlogic",
+        "ref": "v0.70.6",
+        "repo": "pi-mono",
         "type": "github"
       }
     },
