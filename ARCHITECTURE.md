@@ -1,11 +1,11 @@
 # ARCHITECTURE — CriomOS
 
 The host OS for the sema ecosystem. NixOS-based. Boots into a
-pre-configured environment where criome, lojix, and sundry
+pre-configured environment where criome, forge, and sundry
 nexus daemons run as the user-space layer.
 
-CriomOS is **the consumer of lojix**, not a member of the criome
-runtime. lojix-deploy (currently
+CriomOS is **the consumer of forge**, not a member of the criome
+runtime. forge-deploy (currently
 [lojix-cli](https://github.com/LiGoldragon/lojix-cli)) materialises
 CriomOS configurations.
 
@@ -14,7 +14,7 @@ CriomOS configurations.
 A coherent platform target: the sema-ecosystem assumes a Unix
 filesystem, systemd, a working nix-store, blake3 in scope, etc.
 CriomOS provides those guarantees and folds in project-specific
-modules (criome service, nexus service, lojix-store
+modules (criome service, nexus service, arca
 mountpoint, …).
 
 ## What this repo defines
@@ -31,7 +31,7 @@ The host OS as nix flakes. Detailed design lives in
 ## What this repo does not define
 
 - Sema, signal, or any application-layer record kind.
-- The criome daemon, lojix daemon, or any sema-ecosystem
+- The criome daemon, forge daemon, or any sema-ecosystem
   binary.
 - The deploy CLI — that's
   [lojix-cli](https://github.com/LiGoldragon/lojix-cli) (transitional).
