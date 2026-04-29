@@ -54,7 +54,6 @@ Read `docs/ROADMAP.md` for porting order and open tasks.
 - Never put Nix store paths in conversation context — capture in shell vars.
 - Never use `<nixpkgs>` / `NIX_PATH`; use flake attrs or `nix shell nixpkgs#jq`.
 - Never run `switch-to-configuration switch` in a chroot.
-- Never live-activate home-manager generations with compositor/input changes.
 - Never SIGHUP niri.
 - SSH keys only — no password auth, ever.
 
