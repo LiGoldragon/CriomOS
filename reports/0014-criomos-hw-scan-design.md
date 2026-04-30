@@ -23,7 +23,7 @@ DMI and prints values the operator pastes into the proposal.
 
 Single-binary Rust CLI in its own git repo
 (`github:LiGoldragon/criomos-hw-scan`), packaged via crane + fenix per
-[tools-documentation/rust/nix-packaging.md](../../tools-documentation/rust/nix-packaging.md).
+[lore/rust/nix-packaging.md](../../lore/rust/nix-packaging.md).
 
 Two output modes:
 

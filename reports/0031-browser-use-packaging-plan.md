@@ -169,7 +169,7 @@ This puts `browser-use` (CLI) on PATH, alongside the Python env's
 
 ## Anti-patterns checked
 
-Per `tools-documentation/nix/basic-usage.md` and CriomOS `AGENTS.md`:
+Per `lore/nix/basic-usage.md` and CriomOS `AGENTS.md`:
 
 - ✅ No `pip install` / `cargo install` / `npm install -g` —
   uv2nix produces a pure Nix derivation.

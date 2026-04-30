@@ -3,8 +3,8 @@
 ## Tool references
 
 Cross-project rules and curated tool docs live in
-[`repos/tools-documentation/`](repos/tools-documentation/) (symlinked to
-`~/git/tools-documentation/`). Start there for: jj workflow + always-push
+[`repos/lore/`](repos/lore/) (symlinked to
+`~/git/lore/`). Start there for: jj workflow + always-push
 rule, Rust style, the canonical crane+fenix Nix packaging layout, and
 basic-usage docs for jj / bd / dolt / nix / lojix-cli.
 
@@ -185,7 +185,7 @@ summarises does.
 `bd` (beads) tracks short items: open issues, tasks, workflow state. One
 line per item. Designs, audits, research syntheses, end-of-session
 snapshots go in `reports/` as files. See
-[bd/basic-usage.md §"bd vs files"](repos/tools-documentation/bd/basic-usage.md#bd-vs-files--when-each-is-the-right-home)
+[bd/basic-usage.md §"bd vs files"](repos/lore/bd/basic-usage.md#bd-vs-files--when-each-is-the-right-home)
 for the long version.
 
 `bd prime` auto-runs at session start (`PreCompact` and `SessionStart`

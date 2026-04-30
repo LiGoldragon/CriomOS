@@ -64,8 +64,8 @@ v0.1 is **functionally complete** for the local-single-file reconcile path:
 plan + reconciler-integration). `nix flake check` green.
 
 Style-guide consequence: **`## No ZST method holders`** rule landed in
-[`tools-documentation/rust/style.md`](https://github.com/LiGoldragon/tools-documentation/blob/main/rust/style.md)
-([`ca54c835`](https://github.com/LiGoldragon/tools-documentation/commit/ca54c835)) — bans
+[`lore/rust/style.md`](https://github.com/LiGoldragon/lore/blob/main/rust/style.md)
+([`ca54c835`](https://github.com/LiGoldragon/lore/commit/ca54c835)) — bans
 `pub struct Foo;` with inherent methods doing real work as concealed
 free-functions. Triggered the Reconciler/Supervisor refactor in hexis
 ([`4f850bbc`](https://github.com/LiGoldragon/hexis/commit/4f850bbc)):
@@ -134,9 +134,9 @@ documentation surfaced 5 small drifts (all fixed in the same arc):
 - `lojix-cli/Cargo.toml` missing `license-file` + `repository` — added; `LICENSE.md` (License of Non-Authority) copied from brightness-ctl.
 - `lojix-cli/src/build.rs` `BuildLocation::Remote` doc-comment said "currently only Local is wired" — confusing now that ssh-root *is* wired (different code path); clarified.
 
-### Doc: tools-documentation/lojix-cli/basic-usage.md
+### Doc: lore/lojix-cli/basic-usage.md
 
-New agent-facing usage doc ([`1d1f5a0f`](https://github.com/LiGoldragon/tools-documentation/commit/1d1f5a0f)):
+New agent-facing usage doc ([`1d1f5a0f`](https://github.com/LiGoldragon/lore/commit/1d1f5a0f)):
 five-action matrix, ssh-root behaviour, `--criomos` rev-pinning rule,
 dbus-broker switch-inhibitor caveat, recovery via systemd-boot menu,
 common patterns, pitfalls. Tone matches `jj/basic-usage.md` etc.
@@ -204,10 +204,10 @@ then call `<path>/bin/lojix-cli ...`.
   deleted on migration; substance survives in those two docs.
 - **lojix-cli** — code at [`github:LiGoldragon/lojix-cli`](https://github.com/LiGoldragon/lojix-cli);
   internal architecture in `ARCHITECTURE.md`; **agent-facing usage
-  rules in [`tools-documentation/lojix-cli/basic-usage.md`](https://github.com/LiGoldragon/tools-documentation/blob/main/lojix-cli/basic-usage.md)** —
+  rules in [`lore/lojix-cli/basic-usage.md`](https://github.com/LiGoldragon/lore/blob/main/lojix-cli/basic-usage.md)** —
   start here for any deploy work.
-- **No ZST method holders rule** — [`tools-documentation/rust/style.md`
-  § "No ZST method holders"](https://github.com/LiGoldragon/tools-documentation/blob/main/rust/style.md).
+- **No ZST method holders rule** — [`lore/rust/style.md`
+  § "No ZST method holders"](https://github.com/LiGoldragon/lore/blob/main/rust/style.md).
   Diagnostic shape: ZST + inherent methods doing real work →
   the noun is missing; step back, find the data-bearing type.
 - **Chrome integration call site** — [`CriomOS-home/modules/home/profiles/max/default.nix`](https://github.com/LiGoldragon/CriomOS-home/blob/main/modules/home/profiles/max/default.nix#L52-L82).

@@ -188,7 +188,7 @@ deleted and a clean replacement written that reflects:
 - the dispatcher-side survive-disconnect requirement (still
   unmet)
 
-### 12. `tools-documentation/lojix-cli/basic-usage.md` doesn't mention `--builder` or `--action boot-once`
+### 12. `lore/lojix-cli/basic-usage.md` doesn't mention `--builder` or `--action boot-once`
 
 Both are now first-class features. The agent-facing doc still
 lists the original five actions and no `--builder`. Worth a quick
@@ -235,7 +235,7 @@ implementing.
    survive-dispatcher-disconnect. The unmet original requirement.
 3. Delete `reports/0033`, write a clean successor that matches
    the actual landed design.
-4. Update `tools-documentation/lojix-cli/basic-usage.md` —
+4. Update `lore/lojix-cli/basic-usage.md` —
    `--builder`, `--action boot-once`, the boot-once ↔ boot EFI
    reconciliation gotcha (until #1 lands).
 5. (lower priority) Consider a real reachability probe for
