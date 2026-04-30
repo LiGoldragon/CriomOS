@@ -92,32 +92,32 @@ behavior.
 The config should name targets, not "profiles", to avoid colliding
 with Home Manager/Nix profiles.
 
-Suggested first schema:
+Nota records in this ecosystem are positional. The file should decode
+directly into one top-level record; the record name is the Rust type
+used by the decoder, not syntax written into the file. Nested records
+are positional too. Enum variants are the only named constructors.
+
+Suggested first wire shape:
 
 ```nota
-(LojixConfig
-  default
-  [
-    (Entry default (TargetConfig
-      goldragon
-      ouranos
-      "/home/li/git/goldragon/datom.nota"
-      (CriomOSRef
-        "github:LiGoldragon/CriomOS"
-        None)
-      None
-      (HomeTarget li)))
+default
+[
+  (Entry default
+    (goldragon
+     ouranos
+     "/home/li/git/goldragon/datom.nota"
+     "github:LiGoldragon/CriomOS"
+     None
+     (Home li)))
 
-    (Entry ouranos-system (TargetConfig
-      goldragon
-      ouranos
-      "/home/li/git/goldragon/datom.nota"
-      (CriomOSRef
-        "github:LiGoldragon/CriomOS"
-        None)
-      None
-      SystemTarget))
-  ])
+  (Entry ouranos-system
+    (goldragon
+     ouranos
+     "/home/li/git/goldragon/datom.nota"
+     "github:LiGoldragon/CriomOS"
+     None
+     System))
+]
 ```
 
 The corresponding Rust concepts:
@@ -132,7 +132,7 @@ struct TargetConfig {
     cluster: ClusterName,
     node: NodeName,
     source: ProposalSource,
-    criomos: CriomOSRef,
+    criomos: FlakeRef,
     builder: Option<NodeName>,
     target: DeployTarget,
 }
@@ -528,4 +528,3 @@ lojix-cli: load deploy defaults from local config file
 ```
 
 Keep the bead short; this report carries the design detail.
-
