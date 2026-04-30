@@ -92,35 +92,13 @@ behavior.
 The config should name targets, not "profiles", to avoid colliding
 with Home Manager/Nix profiles.
 
-Nota records in this ecosystem are positional. The file should decode
-directly into one top-level record; the record name is the Rust type
-used by the decoder, not syntax written into the file. Nested records
-are positional too. Enum variants are the only named constructors.
+Nota is positional. Do not design the user-facing file by writing an
+invented pseudo-Nota example in a report. Define the Rust schema first,
+derive/implement `NotaRecord` and `NotaEnum`, then add a golden
+encoder test that emits the exact wire form. That emitted form is the
+documentation example.
 
-Suggested first wire shape:
-
-```nota
-default
-[
-  (Entry default
-    (goldragon
-     ouranos
-     "/home/li/git/goldragon/datom.nota"
-     "github:LiGoldragon/CriomOS"
-     None
-     (Home li)))
-
-  (Entry ouranos-system
-    (goldragon
-     ouranos
-     "/home/li/git/goldragon/datom.nota"
-     "github:LiGoldragon/CriomOS"
-     None
-     System))
-]
-```
-
-The corresponding Rust concepts:
+The Rust concepts:
 
 ```rust
 struct LojixConfig {
@@ -145,6 +123,10 @@ enum DeployTarget {
 
 `TargetAlias` can be a small local newtype. `UserName` already exists
 in `horizon-lib`.
+
+The field order in `LojixConfig` and `TargetConfig` is the wire
+contract. If the order is wrong, change the Rust schema and regenerate
+the golden fixture; do not "fix" the nota file with names.
 
 ### CLI UX
 
