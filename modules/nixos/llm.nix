@@ -24,42 +24,52 @@ let
   cfg = fromJSON (readFile configPath);
 
   serverPort = cfg.serverPort;
-  apiKey = cfg.apiKey;
 
   runtimeUser = "llama";
   runtimeHome = "/var/lib/llama";
+  apiKeyFile = "${runtimeHome}/api-key";
 
   # Resolve model source to a store path (file or directory of shards)
-  mkModelStorePath = spec:
-    let source = spec.source; in
-    if source.kind == "multi-shard"
-    then
+  mkModelStorePath =
+    spec:
+    let
+      source = spec.source;
+    in
+    if source.kind == "multi-shard" then
       let
         fetched = map (shard: {
-          drv = pkgs.fetchurl { url = shard.url; sha256 = shard.sha256; };
+          drv = pkgs.fetchurl {
+            url = shard.url;
+            sha256 = shard.sha256;
+          };
           inherit (shard) filename;
         }) source.shards;
-      in pkgs.runCommand "model-${spec.modelId}" {} (
-        "mkdir -p $out\n"
-        + concatStringsSep "\n" (map (s: "ln -s ${s.drv} $out/${s.filename}") fetched)
+      in
+      pkgs.runCommand "model-${spec.modelId}" { } (
+        "mkdir -p $out\n" + concatStringsSep "\n" (map (s: "ln -s ${s.drv} $out/${s.filename}") fetched)
       )
-    else if source.kind == "fetchurl"
-    then
+    else if source.kind == "fetchurl" then
       # Single-file model — place in a directory so router sees it by filename
-      let drv = pkgs.fetchurl { url = source.url; sha256 = source.sha256; }; in
-      pkgs.runCommand "model-${spec.modelId}" {} ''
+      let
+        drv = pkgs.fetchurl {
+          url = source.url;
+          sha256 = source.sha256;
+        };
+      in
+      pkgs.runCommand "model-${spec.modelId}" { } ''
         mkdir -p $out
         ln -s ${drv} $out/${source.filename}
       ''
-    else throw "Unknown source kind: ${source.kind}";
+    else
+      throw "Unknown source kind: ${source.kind}";
 
   # Build the models-dir: a directory of subdirectories, one per model
   # Router mode uses subdirectory name as model name
-  modelsDir = pkgs.runCommand "llm-models-dir" {} (
+  modelsDir = pkgs.runCommand "llm-models-dir" { } (
     "mkdir -p $out\n"
-    + concatStringsSep "\n" (map (spec:
-      "ln -s ${mkModelStorePath spec} $out/${spec.modelId}"
-    ) cfg.models)
+    + concatStringsSep "\n" (
+      map (spec: "ln -s ${mkModelStorePath spec} $out/${spec.modelId}") cfg.models
+    )
   );
 
   # Generate presets.ini for per-model config
@@ -75,20 +85,43 @@ let
     ""
   ];
 
-  mkModelPreset = spec:
+  mkModelPreset =
+    spec:
     let
       lines = [
         "[${spec.modelId}]"
         "ctx-size = ${toString spec.ctxSize}"
-      ] ++ lib.optional (spec.loadOnStartup or false) "load-on-startup = true";
-    in concatStringsSep "\n" lines + "\n";
+      ]
+      ++ lib.optional (spec.loadOnStartup or false) "load-on-startup = true";
+    in
+    concatStringsSep "\n" lines + "\n";
 
   presetsIni = pkgs.writeText "llm-presets.ini" (
-    globalPreset
-    + concatStringsSep "\n" (map mkModelPreset cfg.models)
+    globalPreset + concatStringsSep "\n" (map mkModelPreset cfg.models)
   );
 
   serviceName = "${nodeName}-llama-router";
+
+  llamaStart = pkgs.writeShellScript "llama-router-start" ''
+    set -eu
+
+    api_key_args=()
+    if [ -s ${apiKeyFile} ]; then
+      api_key_args=(--api-key-file ${apiKeyFile})
+    fi
+
+    exec ${llamaCppPackage}/bin/llama-server \
+      --host :: \
+      --port ${toString serverPort} \
+      "''${api_key_args[@]}" \
+      --models-dir ${modelsDir} \
+      --models-preset ${presetsIni} \
+      --models-max ${toString cfg.router.modelsMax} \
+      --no-webui \
+      ${lib.optionalString (
+        cfg.router ? sleepIdleSeconds
+      ) "--sleep-idle-seconds ${toString cfg.router.sleepIdleSeconds}"}
+  '';
 
 in
 mkIf behavesAs.largeAi {
@@ -98,15 +131,19 @@ mkIf behavesAs.largeAi {
     home = runtimeHome;
     createHome = false;
     group = "llama";
-    extraGroups = [ "video" "render" ];
+    extraGroups = [
+      "video"
+      "render"
+    ];
     password = "*";
   };
-  users.groups.llama = {};
+  users.groups.llama = { };
 
   networking.firewall.allowedTCPPorts = [ serverPort ];
 
   systemd.tmpfiles.rules = [
     "d /var/lib/llama 0755 llama llama - -"
+    "f ${apiKeyFile} 0600 llama llama - -"
   ];
 
   systemd.services.${serviceName} = {
@@ -123,16 +160,7 @@ mkIf behavesAs.largeAi {
         "HSA_OVERRIDE_GFX_VERSION=11.5.1"
       ];
 
-      ExecStart = concatStringsSep " " ([
-        "${llamaCppPackage}/bin/llama-server"
-        "--host ::"
-        "--port ${toString serverPort}"
-        "--api-key ${apiKey}"
-        "--models-dir ${modelsDir}"
-        "--models-preset ${presetsIni}"
-        "--models-max ${toString cfg.router.modelsMax}"
-        "--no-webui"
-      ] ++ lib.optional (cfg.router ? sleepIdleSeconds) "--sleep-idle-seconds ${toString cfg.router.sleepIdleSeconds}");
+      ExecStart = llamaStart;
 
       Restart = "on-failure";
       RestartSec = 5;

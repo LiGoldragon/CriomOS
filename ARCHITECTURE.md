@@ -26,7 +26,8 @@ The host OS as nix flakes. Detailed design lives in
 - `docs/NIX_GUIDELINES.md` — nix idioms specific to this OS.
 - `docs/ROADMAP.md` — feature staging.
 
-`crioZones.nix` and `data/` carry the configuration substrate.
+The configuration substrate is the lojix-projected `horizon` input plus
+the NixOS modules in this repo.
 
 ## What this repo does not define
 

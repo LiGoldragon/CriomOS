@@ -241,42 +241,33 @@ directly. Schema changes are tracked as horizon-rs beads.
 ## Cluster Truth Authority
 
 CriomOS is **network-neutral**: it does not enumerate clusters or nodes.
-The truth source is the consumer's pinned cluster proposal flake.
+The truth source is the lojix-projected horizon input.
 
-For the LiGoldragon kriom, that source is
-[`goldragon`](https://github.com/LiGoldragon/goldragon) — its `datom.nix`
-(transitioning to `datom.nota`, tracked in beads `gold-lu7` / `gold-21l`)
-is exported via `flake.outputs.NodeProposal`. CriomOS discovers it
-through the `? NodeProposal` filter in `lib.discoverClusters`.
+For the LiGoldragon kriom, lojix reads `goldragon/datom.nota`, projects
+it through `horizon-rs`, writes content-addressed `horizon` and `system`
+flake inputs, and invokes this repo's single system surface:
+`nixosConfigurations.target`.
 
 ### Edit flow
 
-- Edit cluster / node / user / trust truth in `goldragon/datom.nix`.
+- Edit cluster / node / user / trust truth in `goldragon/datom.nota`.
   Any node name, role, connectivity, or identity change begins there.
 - `horizon-rs` validates the proposal and computes the enriched
-  horizon. Run `horizon-cli --cluster <C> --node <N> < datom.nota` (or
-  the Nix path while the conversion is pending) to see the projection
-  for a given viewpoint.
-- CriomOS consumes the projected horizon via `lib.mkHorizon`. Modules
-  read `horizon.node.*`, `horizon.exNodes.*`, `horizon.users.*` —
-  they never add their own literals.
+  horizon. Use `lojix-cli eval` / `lojix-cli build` when checking the
+  projected view against CriomOS.
+- CriomOS modules read `horizon.node.*`, `horizon.exNodes.*`, and
+  `horizon.users.*`; they never add node or cluster literals.
 
 ### Build/deploy authority
 
 - Use flake-native commands only. No `<nixpkgs>` / `NIX_PATH`; reach
-  for `nix shell nixpkgs#jq` when you need a tool.
-- Build command shape:
-  - `nix build .#crioZones.<cluster>.<node>.os --no-link --print-out-paths --refresh`
-  - `nix build .#crioZones.<cluster>.<node>.deployManifest --no-link --print-out-paths --refresh`
-  - When iterating against a local goldragon checkout:
-    `--override-input goldragon github:LiGoldragon/goldragon` (or the
-    relevant cluster input name).
-- Deployment flow (`packages/criomos-deploy/`):
-  - `criomos-deploy <cluster> <node>` builds fullOs on the target,
-    sets the system profile, and activates. `--boot` for kernel
-    changes, `--commit <hash>` for a specific revision.
-  - `criomos-reload-shell <cluster> <node> <user>` reloads the
-    user's compositor shell after deployment.
-  - The deploy script builds via
-    `github:LiGoldragon/CriomOS/<commit>#crioZones.<cluster>.<node>.fullOs`
-    on the target node over SSH, using the current main commit by default.
+  for `nix run nixpkgs#jq -- ...` when you need a tool.
+- Push before building. Lojix consumes a pinned GitHub revision; unpushed
+  local commits are invisible.
+- Public system surface:
+  `github:LiGoldragon/CriomOS/<rev>#nixosConfigurations.target.config.system.build.toplevel`.
+- Normal build/deploy entry point:
+  `lojix-cli build|eval|deploy --cluster <C> --node <N> --source <proposal> --criomos github:LiGoldragon/CriomOS/<rev>`.
+- Prefer `lojix-cli deploy --action boot` for first-touch deploys. Use
+  `boot-once` for headless/riskier nodes, and `switch` only when live
+  activation is intended.

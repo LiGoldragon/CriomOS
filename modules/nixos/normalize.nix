@@ -83,35 +83,39 @@ in
     };
 
     systemPackages =
-    let criomos-deploy = pkgs.callPackage ../../packages/criomos-deploy { };
-    in with pkgs; [
-      openssh
-      ntfs3g
-      fuse
-      criomos-deploy
-    ]
-    ++ (if behavesAs.iso then [
-      btrfs-progs
-      dosfstools
-      parted
-      nmap
-      vim
-      htop
-    ] else [
-      tcpdump
-      librist
-      ifmetric
-      pulseaudioFull
-      networkmanager_strongswan
-    ])
-    ++ (optionals (size.atLeastMin && !behavesAs.iso) [
-      git
-      curl
-      jq
-      htop
-      pciutils
-      usbutils
-    ]);
+      with pkgs;
+      [
+        openssh
+        ntfs3g
+        fuse
+      ]
+      ++ (
+        if behavesAs.iso then
+          [
+            btrfs-progs
+            dosfstools
+            parted
+            nmap
+            vim
+            htop
+          ]
+        else
+          [
+            tcpdump
+            librist
+            ifmetric
+            pulseaudioFull
+            networkmanager_strongswan
+          ]
+      )
+      ++ (optionals (size.atLeastMin && !behavesAs.iso) [
+        git
+        curl
+        jq
+        htop
+        pciutils
+        usbutils
+      ]);
 
     interactiveShellInit = optionalString useColemak "stty -ixon";
     sessionVariables = (
@@ -155,7 +159,6 @@ in
 
     udev = {
       extraRules = ''
-        # What is this for?
         ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", GROUP="dialout", MODE="0660"
       '';
     };

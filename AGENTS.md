@@ -12,14 +12,16 @@ basic-usage docs for jj / bd / dolt / nix / lojix-cli.
 
 Run `bd list --status open` to see what's already on the table.
 
-Read `docs/ROADMAP.md` for porting order and open tasks.
+Read `docs/ROADMAP.md` for the bead-first tracking rule.
 
 ## Hard architectural rules
 
 - **Network-neutral.** CriomOS does NOT know the names of clusters or
-  nodes. Any input with a `NodeProposal` attr is a cluster; every node
-  in that proposal gets `crioZones.<cluster>.<node>.*`. Never introduce
-  `hosts/<name>/` or any filesystem-keyed enumeration of live networks.
+  nodes. It exposes one public system surface:
+  `nixosConfigurations.target`. Cluster and node identity enter only
+  through the lojix-projected `horizon` and `system` flake inputs.
+  Never reintroduce `NodeProposal` discovery, `crioZones.*`, `hosts/<name>/`,
+  or any filesystem-keyed enumeration of live networks.
 - **Home lives in `CriomOS-home`.** Do not add `modules/home/` here.
   Consume home via `inputs.criomos-home.homeModules.*`.
 - **Horizon is external.** Schema + method logic live in `horizon-rs`
@@ -210,6 +212,7 @@ references → `docs/`) and delete the dir.
   `{ pkgs, inputs, flake, system, perSystem, pname, ... }`.
 - `modules/nixos/<name>.nix` surfaces as `nixosModules.<name>` and
   `modules.nixos.<name>`.
-- `lib/default.nix` surfaces as `lib`.
-- Custom outputs (like `crioZones`) are merged into blueprint's return
-  value in `flake.nix`.
+- CriomOS intentionally does not expose `lib/default.nix`, `hosts/`, or
+  `crioZones.*`. Lojix projects cluster proposals outside this repo and
+  overrides the `horizon` / `system` inputs for
+  `nixosConfigurations.target`.

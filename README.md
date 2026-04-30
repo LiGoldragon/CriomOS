@@ -5,9 +5,7 @@ separate orchestrator (`lojix-cli`) that projects a cluster proposal
 into a per-(cluster, node) horizon and invokes nix against this repo.
 
 **Status:** active. The previous repo is archived at
-[`criomos-archive`](../criomos-archive/) (carries the historical
-multi-cluster `crioZones` mechanism; superseded — see
-[`crioZones.nix`](crioZones.nix) tombstone).
+[`criomos-archive`](../criomos-archive/).
 
 ## How it's used
 
@@ -101,8 +99,6 @@ CriomOS-specific:
   home-manager activations.
 - `stubs/{no-system,no-horizon}/` — default stub inputs (overridden
   by lojix-cli).
-- `data/` — cross-flake data files referenced from modules.
-
 No `modules/home/` here — it lives in `CriomOS-home`. No `hosts/` —
 network-neutral.
 
