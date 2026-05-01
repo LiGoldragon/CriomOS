@@ -59,6 +59,77 @@ The hardcoded system attr path is the key limitation. The projection
 and artifact phases are already reusable for home deploys; the build
 target and activation target are not.
 
+## Nota-Native Invocation
+
+### Canonical Input Shape
+
+In the spirit of Nota, `lojix-cli` should accept Nota requests
+directly as its primary interface, rather than centering Clap
+subcommands forever.
+
+Reasons:
+
+- `lojix-cli` already depends on `nota-codec`.
+- `goldragon/datom.nota` is already the ecosystem's operator-facing
+  data format.
+- The same typed request can be passed inline or stored on disk.
+- Avoids inventing a second user-facing command grammar that then has
+  to be mirrored into Nota later.
+
+Recommended dispatch rule:
+
+- if the first argv begins with `(`, join argv tokens with spaces and
+  decode the whole input as Nota;
+- otherwise, treat the first argv as a file path, read it, and decode
+  the file contents as Nota;
+- if no argv is provided, fall back to the default config path.
+
+Examples:
+
+```sh
+lojix-cli '(Deploy goldragon ouranos "/home/li/git/goldragon/datom.nota" System Boot)'
+lojix-cli ~/.config/lojix/default.nota
+lojix-cli
+```
+
+Inline Nota still requires ordinary shell quoting, because spaces are
+shell separators.
+
+The operational value of this shape is that "config file" stops being
+a separate concept. A local file is just a persisted Nota request
+using the same wire format as the inline CLI form.
+
+### Typed Request
+
+Model the top-level CLI payload as one typed enum that is decodable
+from Nota:
+
+```rust
+enum LojixRequest {
+    Eval(TargetRequest),
+    Build(TargetRequest),
+    Deploy(SystemDeployRequest),
+    Home(HomeDeployRequest),
+}
+```
+
+`main.rs` should stop treating Clap subcommands as the canonical API.
+Its first job becomes "obtain request text, then decode Nota":
+
+```rust
+let input = match std::env::args_os().nth(1) {
+    None => read_default_request()?,
+    Some(arg) if arg.to_string_lossy().starts_with('(') => join_args_as_nota(),
+    Some(path) => std::fs::read_to_string(path)?,
+};
+
+let mut decoder = nota_codec::Decoder::nota(&input);
+let request = LojixRequest::decode(&mut decoder)?;
+```
+
+Keep the existing Clap interface temporarily as a compatibility path,
+but make the Nota-native interface the architectural center.
+
 ## Local Config File
 
 ### Format
@@ -75,17 +146,20 @@ Reasons:
 - Avoids adding another configuration grammar and dependency for the
   transitional CLI.
 
+If the CLI becomes Nota-native, the on-disk file should usually be a
+`LojixRequest`, not a separate config grammar.
+
 ### Location
 
 Resolution order:
 
-1. Explicit `--config <path>`.
+1. Explicit path passed as the first non-inline argv.
 2. `LOJIX_CONFIG`.
 3. `$XDG_CONFIG_HOME/lojix/config.nota`.
 4. `~/.config/lojix/config.nota`.
 
-If no config file exists, the CLI can keep the current explicit-flag
-behavior.
+If no config file exists, the CLI can keep the current compatibility
+subcommand behavior.
 
 ### Shape
 
@@ -130,28 +204,25 @@ the golden fixture; do not "fix" the nota file with names.
 
 ### CLI UX
 
-Keep existing commands working, but make args optional when config can
-fill them:
+Canonical UX should be one of:
 
 ```sh
-lojix-cli eval
-lojix-cli build
-lojix-cli deploy --action boot
-lojix-cli deploy --target ouranos-system --action boot
-lojix-cli home build
-lojix-cli home deploy
-lojix-cli home deploy --target default --user li
+lojix-cli '(Deploy goldragon ouranos "/home/li/git/goldragon/datom.nota" System Boot)'
+lojix-cli ~/.config/lojix/default.nota
+lojix-cli
 ```
 
-Recommended command split:
+Compatibility UX can remain temporarily:
 
-- `lojix-cli system eval|build|deploy`
-- `lojix-cli home eval|build|deploy`
-- keep legacy `eval|build|deploy` as aliases for `system ...` during
-  the transition.
+```sh
+lojix-cli system eval
+lojix-cli system deploy --action boot
+lojix-cli home build --user li
+```
 
-This is clearer than `deploy --home-only` because system and home have
-different activation semantics. A boolean flag would hide that.
+If compatibility commands remain, map them into the same
+`LojixRequest` typed model internally rather than letting two
+independent interfaces drift apart.
 
 ### Override Precedence
 
