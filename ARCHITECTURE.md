@@ -44,6 +44,6 @@ CANON. Active host platform.
 ## Cross-cutting context
 
 - CriomOS membership in the workspace:
-  [mentci/docs/workspace-manifest.md](https://github.com/LiGoldragon/mentci/blob/main/docs/workspace-manifest.md)
+  [workspace/docs/workspace-manifest.md](https://github.com/LiGoldragon/workspace/blob/main/docs/workspace-manifest.md)
 - Project-wide architecture:
   [criome/ARCHITECTURE.md](https://github.com/LiGoldragon/criome/blob/main/ARCHITECTURE.md)
