@@ -57,8 +57,8 @@ works, no surprise FFI / build-time deps surfaced.
 
 ## Why hand-rolled `buildPythonApplication` is not viable
 
-The current Python precedent in this ecosystem is
-[`mentci-tools/packages/linkup.nix`](https://github.com/LiGoldragon/mentci-tools/blob/main/packages/linkup.nix):
+The current Python precedent in this ecosystem is the prior
+`linkup.nix` packaging:
 `pkgs.python3.pkgs.buildPythonApplication` with `dependencies = with
 python.pkgs; [ httpx pydantic ]` — 2 deps, all in nixpkgs.
 

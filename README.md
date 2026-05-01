@@ -61,9 +61,8 @@ defaults to a stub that throws — overrides are required at build time
 
 ## Sibling repos
 
-- [`LiGoldragon/CriomOS-home`](https://github.com/LiGoldragon/CriomOS-home) —
-  home profile. Own inputs (niri, noctalia, stylix, mentci-tools, …).
-  CriomOS consumes `homeModules.default`.
+- `LiGoldragon/CriomOS-home` — home profile. Own inputs
+  (niri, noctalia, stylix, …). CriomOS consumes `homeModules.default`.
 - [`LiGoldragon/CriomOS-lib`](https://github.com/LiGoldragon/CriomOS-lib) —
   shared helpers (`importJSON`, `mkJsonMerge`) + cross-repo data
   (`data/largeAI/llm.json`). Consumed by both CriomOS and CriomOS-home.
