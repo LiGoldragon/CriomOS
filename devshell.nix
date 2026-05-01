@@ -16,6 +16,7 @@ let
     "horizon-rs"
     # transitional / adjacent
     "lojix-cli"
+    "lojix-cli-v2"
     "brightness-ctl"
     "clavifaber"
     "goldragon"
