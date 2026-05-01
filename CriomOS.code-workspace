@@ -5,20 +5,16 @@
       "path": "."
     },
     {
+      "name": "lore",
+      "path": "repos/lore"
+    },
+    {
       "name": "CriomOS-home",
       "path": "repos/CriomOS-home"
     },
     {
-      "name": "CriomOS-lib",
-      "path": "repos/CriomOS-lib"
-    },
-    {
       "name": "CriomOS-emacs",
       "path": "repos/CriomOS-emacs"
-    },
-    {
-      "name": "criomos-archive",
-      "path": "repos/criomos-archive"
     },
     {
       "name": "horizon-rs",
@@ -43,12 +39,6 @@
     {
       "name": "goldragon",
       "path": "repos/goldragon"
-    },
-    {
-      "path": "../hexis"
-    },
-    {
-      "path": "../lore"
     }
   ],
   "settings": {

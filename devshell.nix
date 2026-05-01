@@ -4,6 +4,36 @@ let
     (inputs.rust-overlay.lib.mkRustBin { } pkgs).stable.latest.default.override {
       extensions = [ "rust-src" "rust-analyzer" "clippy" ];
     };
+
+  # Sibling repos under ~/git/ exposed as symlinks in ./repos/
+  # at devshell entry. Multi-root workspace (CriomOS.code-workspace)
+  # gives editors the same view via additional folders.
+  linkedRepos = [
+    "lore"
+    # CriomOS cluster
+    "CriomOS-home"
+    "CriomOS-emacs"
+    "horizon-rs"
+    # transitional / adjacent
+    "lojix-cli"
+    "brightness-ctl"
+    "clavifaber"
+    "mentci-tools"
+    "goldragon"
+  ];
+
+  linkSiblingRepos = ''
+    mkdir -p repos
+    # Remove stale symlinks before re-creating
+    find repos -maxdepth 1 -type l -exec rm {} \;
+    ${pkgs.lib.concatMapStringsSep "\n" (name: ''
+      if [ -d "$HOME/git/${name}" ]; then
+        ln -sfn "$HOME/git/${name}" "repos/${name}"
+      else
+        echo "warn: $HOME/git/${name} not found; skipping symlink" >&2
+      fi
+    '') linkedRepos}
+  '';
 in
 pkgs.mkShell {
   packages = [
@@ -11,4 +41,8 @@ pkgs.mkShell {
     pkgs.jq
     rustToolchain
   ];
+
+  shellHook = ''
+    ${linkSiblingRepos}
+  '';
 }

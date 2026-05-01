@@ -5,9 +5,15 @@ pre-configured environment where criome, forge, and sundry
 nexus daemons run as the user-space layer.
 
 CriomOS is **the consumer of forge**, not a member of the criome
-runtime. forge-deploy (currently
-[lojix-cli](https://github.com/LiGoldragon/lojix-cli)) materialises
+runtime. forge-deploy (currently `lojix-cli`) materialises
 CriomOS configurations.
+
+This repo doubles as the **CriomOS-cluster meta-repo** — it
+hosts the multi-root editor workspace + symlink farm under
+`repos/` that exposes lore + the CriomOS-cluster siblings
+(CriomOS-home, CriomOS-emacs, horizon-rs) and the transitional
+deploy crates (lojix-cli, brightness-ctl, clavifaber). `nix
+develop` / direnv entry refreshes the symlinks.
 
 ## Role
 
@@ -43,7 +49,7 @@ CANON. Active host platform.
 
 ## Cross-cutting context
 
-- CriomOS membership in the workspace:
-  [workspace/docs/workspace-manifest.md](https://github.com/LiGoldragon/workspace/blob/main/docs/workspace-manifest.md)
-- Project-wide architecture:
-  [criome/ARCHITECTURE.md](https://github.com/LiGoldragon/criome/blob/main/ARCHITECTURE.md)
+- Workspace contract: lore's `AGENTS.md` (symlinked at `repos/lore/`).
+- Project-wide architecture: criome's `ARCHITECTURE.md`.
+- CriomOS membership in the broader workspace:
+  workspace's `docs/workspace-manifest.md`.
