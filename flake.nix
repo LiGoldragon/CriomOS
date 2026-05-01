@@ -32,6 +32,10 @@
     clavifaber.url = "github:LiGoldragon/clavifaber";
     clavifaber.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Gas City — multi-agent orchestration SDK. Consumed in devshell.nix.
+    gascity.url = "github:LiGoldragon/gascity-nix";
+    gascity.inputs.nixpkgs.follows = "nixpkgs";
+
     # System tuple — lojix produces a tiny content-addressed flake
     # whose only output is `system = "x86_64-linux"` (or aarch64).
     system.url = "path:./stubs/no-system";

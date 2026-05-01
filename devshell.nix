@@ -40,6 +40,15 @@ pkgs.mkShell {
     pkgs.nixfmt-rfc-style
     pkgs.jq
     rustToolchain
+
+    # Gas City + the tools `gc` shells out to at runtime.
+    inputs.gascity.packages.${pkgs.stdenv.hostPlatform.system}.default
+    pkgs.tmux
+    pkgs.dolt
+    pkgs.beads
+    pkgs.lsof
+    pkgs.procps      # pgrep
+    pkgs.util-linux  # flock
   ];
 
   shellHook = ''
