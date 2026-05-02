@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "annas-mcp": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1771799301,
+        "narHash": "sha256-XicM7tU5jD8B8n7JJDQ/84koBiLb8XF4+WBQ4LCUoRU=",
+        "owner": "LiGoldragon",
+        "repo": "annas-mcp",
+        "rev": "5a2b9c50e87de5639fa6057e0ff911dcccbbd962",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "ref": "v0.0.5",
+        "repo": "annas-mcp",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -386,6 +403,7 @@
     },
     "criomos-home": {
       "inputs": {
+        "annas-mcp": "annas-mcp",
         "blueprint": "blueprint_4",
         "claude-code-vsix": "claude-code-vsix",
         "codex-cli": "codex-cli",
@@ -409,11 +427,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777716238,
-        "narHash": "sha256-bexdTa+RRgPi7nPl+WAlApeMMW7LORLEZmSvl6dY9o0=",
+        "lastModified": 1777725072,
+        "narHash": "sha256-Sg29Zx4bR60IJo1Prj5PIhbioWCQVp2dSSmFZmWL2no=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "1fea96ff6d08f4256421462bf8efcc0645bcb3b7",
+        "rev": "3489ccac2bff376d3b95c38ed2678c4d5e61e0d6",
         "type": "github"
       },
       "original": {
