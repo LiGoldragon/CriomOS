@@ -252,7 +252,6 @@
           "llm-agents",
           "flake-parts"
         ],
-        "import-tree": "import-tree",
         "nixpkgs": [
           "criomos-home",
           "llm-agents",
@@ -270,11 +269,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1776192490,
-        "narHash": "sha256-5gYQNEs0/vDkHhg63aHS5g0IwG/8HNvU1Vr00cElofk=",
+        "lastModified": 1777369708,
+        "narHash": "sha256-1xW7cRZNsFNPQD+cE0fwnLVStnDth0HSoASEIFeT7uI=",
         "owner": "nix-community",
         "repo": "bun2nix",
-        "rev": "6ef9f144616eedea90b364bb408ef2e1de7b310a",
+        "rev": "e659e1cc4b8e1b21d0aa85f1c481f9db61ecfa98",
         "type": "github"
       },
       "original": {
@@ -287,13 +286,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-sJEsDsFwS9omFqmtXQduTOuvQsscYUgQ6s3zNr6kWaY=",
+        "narHash": "sha256-9mNNMO0Hp8C6+YBeyvkIogNcDWgQkaENiiGP/0ZSMLw=",
         "type": "file",
-        "url": "https://open-vsx.org/api/anthropic/claude-code/linux-x64/2.1.120/file/anthropic.claude-code-2.1.120@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/anthropic/claude-code/linux-x64/2.1.126/file/anthropic.claude-code-2.1.126@linux-x64.vsix"
       },
       "original": {
         "type": "file",
-        "url": "https://open-vsx.org/api/anthropic/claude-code/linux-x64/2.1.120/file/anthropic.claude-code-2.1.120@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/anthropic/claude-code/linux-x64/2.1.126/file/anthropic.claude-code-2.1.126@linux-x64.vsix"
       }
     },
     "clavifaber": {
@@ -328,11 +327,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777054843,
-        "narHash": "sha256-aiuiKK6xJu5inj/RTmSl9S3jDC6RzNsKfNJ700MRPNY=",
+        "lastModified": 1777661972,
+        "narHash": "sha256-VmcoQGZ3BNFlsI2jKUQH33MvEgkU6pvdxq4tofVLgmo=",
         "owner": "sadjow",
         "repo": "codex-cli-nix",
-        "rev": "fc382bef14dcb9873769bdcb4d3b943ef2606489",
+        "rev": "828b885b1be90991a2bd1087f2afd722476bfaed",
         "type": "github"
       },
       "original": {
@@ -427,11 +426,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777725072,
-        "narHash": "sha256-Sg29Zx4bR60IJo1Prj5PIhbioWCQVp2dSSmFZmWL2no=",
+        "lastModified": 1777765691,
+        "narHash": "sha256-qmuFZtUumzZQbTZewddlfQMnqsr4oNJuDh0S4qKwnik=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "3489ccac2bff376d3b95c38ed2678c4d5e61e0d6",
+        "rev": "6e910f3ead0bb064cf23a9126575085bbdcfda26",
         "type": "github"
       },
       "original": {
@@ -581,11 +580,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775087534,
-        "narHash": "sha256-91qqW8lhL7TLwgQWijoGBbiD4t7/q75KTi8NxjVmSmA=",
+        "lastModified": 1777678872,
+        "narHash": "sha256-EPIFsulyon7Z1vLQq5Fk64GR8L7cQsT+IPhcsukVbgk=",
         "owner": "hercules-ci",
         "repo": "flake-parts",
-        "rev": "3107b77cd68437b9a76194f0f7f9c55f2329ca5b",
+        "rev": "5250617bffd85403b14dbf43c3870e7f255d2c16",
         "type": "github"
       },
       "original": {
@@ -780,21 +779,6 @@
       },
       "parent": []
     },
-    "import-tree": {
-      "locked": {
-        "lastModified": 1763762820,
-        "narHash": "sha256-ZvYKbFib3AEwiNMLsejb/CWs/OL/srFQ8AogkebEPF0=",
-        "owner": "vic",
-        "repo": "import-tree",
-        "rev": "3c23749d8013ec6daa1d7255057590e9ca726646",
-        "type": "github"
-      },
-      "original": {
-        "owner": "vic",
-        "repo": "import-tree",
-        "type": "github"
-      }
-    },
     "llm-agents": {
       "inputs": {
         "blueprint": "blueprint_6",
@@ -808,11 +792,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1777266861,
-        "narHash": "sha256-cdSr2nIz4I+ysG1gAZxbKQo+f79vCCKfQCdiRYnyPec=",
+        "lastModified": 1777698621,
+        "narHash": "sha256-AmiRSWOXXJyB/rBRZZKwJWRfM5O+xGO4Pe8V+XFd6Kc=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "c8f7c7882804510f2b807021cac0a69c1aeb4829",
+        "rev": "a2cd1d9eda4a84d713153f718c8583e1a4c89983",
         "type": "github"
       },
       "original": {
