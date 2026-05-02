@@ -2,7 +2,16 @@
 
 # nixosModules.criomos — top aggregate.
 
-{ ... }:
+{
+  lib,
+  deployment ? {
+    includeHome = true;
+  },
+  ...
+}:
+let
+  includeHome = deployment.includeHome or true;
+in
 {
   imports = [
     ./disks/preinstalled.nix
@@ -16,7 +25,11 @@
     # headscale, nordvpn, wifi-eap, networkd, wireguard,
     # plus networking.hosts entries from horizon.exNodes
     ./edge/default.nix
+  ]
+  ++ lib.optionals includeHome [
     ./userHomes.nix
+  ]
+  ++ [
     ./metal/default.nix
     ./router/default.nix
   ];

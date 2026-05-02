@@ -4,7 +4,7 @@ You **MUST** read AGENTS.md at `github:ligoldragon/lore` — the workspace contr
 
 ## Repo role
 
-NixOS-based host OS for the sema ecosystem. Network-neutral system surface (`nixosConfigurations.target`) consumed by lojix-projected `horizon` and `system` flake inputs.
+NixOS-based host OS for the sema ecosystem. Network-neutral system surface (`nixosConfigurations.target`) consumed by lojix-projected `horizon`, `system`, and `deployment` flake inputs.
 
 This repo doubles as the **CriomOS-cluster meta-repo** — `repos/` symlinks the cluster siblings (CriomOS-home, CriomOS-emacs, horizon-rs, lojix-cli, …) and lore. `CriomOS.code-workspace` mirrors the same set for the editor.
 
@@ -12,7 +12,7 @@ First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-fi
 
 ## Hard architectural rules
 
-- **Network-neutral.** CriomOS holds no cluster or node names. The single public system surface is `nixosConfigurations.target`. Cluster + node identity enter through the lojix-projected `horizon` and `system` flake inputs.
+- **Network-neutral.** CriomOS holds no cluster or node names. The single public system surface is `nixosConfigurations.target`. Cluster + node identity enter through the lojix-projected `horizon` and `system` flake inputs; deploy-kind intent enters through the `deployment` input.
 - **Home lives in `CriomOS-home`.** This repo consumes home via `inputs.criomos-home.homeModules.*`.
 - **Horizon is external.** Schema + method logic live in `horizon-rs` (Rust). Nix consumes the enriched horizon as nota (camelCase fields).
 - **Rust crates live in their own repos** (`clavifaber`, `brightness-ctl`, `horizon-rs`, …) and are consumed as flake inputs.
@@ -52,4 +52,4 @@ If a tool-specific memory dir exists from prior sessions, migrate its content (d
 
 - Per-system files (`packages/*`, `devshell.nix`, `checks/*`) receive `{ pkgs, inputs, flake, system, perSystem, pname, ... }`.
 - `modules/nixos/<name>.nix` surfaces as `nixosModules.<name>` and `modules.nixos.<name>`.
-- CriomOS exposes `nixosConfigurations.target` only — no `lib/default.nix`, `hosts/`, or `crioZones.*`. Lojix projects cluster proposals outside this repo and overrides the `horizon` / `system` inputs.
+- CriomOS exposes `nixosConfigurations.target` only — no `lib/default.nix`, `hosts/`, or `crioZones.*`. Lojix projects cluster proposals outside this repo and overrides the `horizon` / `system` / `deployment` inputs.

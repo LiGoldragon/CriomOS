@@ -455,6 +455,17 @@
         "type": "github"
       }
     },
+    "deployment": {
+      "locked": {
+        "path": "./stubs/default-deployment",
+        "type": "path"
+      },
+      "original": {
+        "path": "./stubs/default-deployment",
+        "type": "path"
+      },
+      "parent": []
+    },
     "fenix": {
       "inputs": {
         "nixpkgs": [
@@ -1043,6 +1054,7 @@
         "clavifaber": "clavifaber",
         "criomos-home": "criomos-home",
         "criomos-lib": "criomos-lib",
+        "deployment": "deployment",
         "home-manager": "home-manager",
         "horizon": "horizon",
         "nixpkgs": "nixpkgs",

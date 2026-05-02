@@ -2,7 +2,8 @@
 
 NixOS platform — modules + module aggregate. Deploys are driven by a
 separate orchestrator (`lojix-cli`) that projects a cluster proposal
-into a per-(cluster, node) horizon and invokes nix against this repo.
+into a per-(cluster, node) horizon and invokes nix against this repo
+with deployment-shape inputs.
 
 **Status:** active. The previous repo is archived at
 [`criomos-archive`](../criomos-archive/).
@@ -16,10 +17,10 @@ entry point:
    [`goldragon/datom.nota`](../goldragon/datom.nota)) and a node name.
 2. Projects the proposal via `horizon-lib` (in-process Rust) into a
    per-(cluster, node) horizon JSON.
-3. Writes a small horizon flake at
-   `~/.cache/lojix/horizon/<cluster>/<node>/`.
+3. Writes small override flakes for the horizon, system tuple, and
+   deployment shape.
 4. Invokes nix against `github:LiGoldragon/CriomOS` with
-   `--override-input horizon path:<that-cache-dir>`.
+   those override inputs.
 
 User-facing form:
 
@@ -29,7 +30,9 @@ lojix build|eval|deploy --cluster <C> --node <N> --source <C>/datom.nota
 
 CriomOS exposes one configuration —
 `nixosConfigurations.target.config.system.build.toplevel`. The
-`horizon` input override picks which (cluster, node) it materialises.
+`horizon` input override picks which (cluster, node) it materialises;
+the `deployment` input picks the operation shape, such as normal
+system+home vs home-off system evaluation.
 
 ## Network-neutral by construction
 
@@ -41,23 +44,25 @@ Blueprint's `hosts/<name>/` convention is deliberately **not** used: it
 bakes host identity into the platform repo, contradicting
 network-neutrality.
 
-## 3-flake architecture
+## Input Axes
 
-The three orchestration axes evaluate and cache independently:
+The orchestration axes evaluate and cache independently:
 
 | input | what it is | when it changes |
 |---|---|---|
 | [`system`](stubs/no-system/) | tiny flake whose only output is a system tuple (`x86_64-linux`, `aarch64-linux`) | per supported arch |
 | [`pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) | wrapper that instantiates nixpkgs for a given system, plus overlays | per (nixpkgs-rev, system, overlays) |
 | [`horizon`](stubs/no-horizon/) | the projected per-(cluster, node) view | per deploy |
+| [`deployment`](stubs/default-deployment/) | operation shape, currently `includeHome` | per deploy kind |
 
 Each is content-addressed. Identical input → eval-cache hit. The
 `pkgs` axis caches across deploys with the same nixpkgs+system;
-`horizon` changes don't invalidate `pkgs`.
+`horizon` and `deployment` changes don't invalidate `pkgs`.
 
 `system` and `pkgs` default to local stubs in this repo. `horizon`
-defaults to a stub that throws — overrides are required at build time
-(lojix-cli does this automatically).
+defaults to a stub that throws; `deployment` defaults to historical
+home-enabled behavior. Lojix overrides the inputs that are specific to
+the requested deploy.
 
 ## Sibling repos
 
@@ -67,7 +72,7 @@ defaults to a stub that throws — overrides are required at build time
   shared helpers (`importJSON`, `mkJsonMerge`) + cross-repo data
   (`data/largeAI/llm.json`). Consumed by both CriomOS and CriomOS-home.
 - [`LiGoldragon/CriomOS-pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) —
-  the `pkgs` axis of the 3-flake architecture. Own repo so CriomOS
+  the `pkgs` axis. Own repo so CriomOS
   edits don't invalidate the pkgs eval cache.
 - [`LiGoldragon/horizon-rs`](https://github.com/LiGoldragon/horizon-rs) —
   horizon schema + projection logic (Rust). Single source of truth
@@ -96,8 +101,8 @@ CriomOS-specific:
 - `modules/nixos/criomos.nix` — the platform module aggregate.
 - `modules/nixos/userHomes.nix` — wraps CriomOS-home for per-user
   home-manager activations.
-- `stubs/{no-system,no-horizon}/` — default stub inputs (overridden
-  by lojix-cli).
+- `stubs/{no-system,no-horizon,default-deployment}/` — default
+  orchestration inputs.
 No `modules/home/` here — it lives in `CriomOS-home`. No `hosts/` —
 network-neutral.
 

@@ -1,5 +1,5 @@
 {
-  description = "CriomOS — NixOS platform consuming three content-addressed flake inputs from lojix: `system` (the target tuple), `pkgs` (a stable wrapper flake that imports nixpkgs for that system), and `horizon` (the per-deploy projected horizon JSON). Each axis caches independently in nix's flake-eval cache: pkgs eval is reused across deploys with the same system, horizon changes don't touch pkgs.";
+  description = "CriomOS — NixOS platform consuming content-addressed flake inputs from lojix: `system` (the target tuple), `pkgs` (a stable wrapper flake that imports nixpkgs for that system), `horizon` (the per-deploy projected horizon JSON), and `deployment` (operation shape such as home-enabled vs home-off). Each axis caches independently in nix's flake-eval cache: pkgs eval is reused across deploys with the same system; horizon/deployment changes don't touch pkgs.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
@@ -48,6 +48,10 @@
     # Horizon — the projected (cluster, node) view. lojix overrides
     # per deploy.
     horizon.url = "path:./stubs/no-horizon";
+
+    # Deployment shape — lojix overrides per request. The default keeps
+    # the historical full system+home target.
+    deployment.url = "path:./stubs/default-deployment";
   };
 
   outputs =
@@ -56,8 +60,10 @@
       blueprintOutputs = inputs.blueprint { inherit inputs; };
 
       horizon = inputs.horizon.horizon;
-      pkgs    = inputs.pkgs.pkgs;
-      system  = inputs.system.system;
+      pkgs = inputs.pkgs.pkgs;
+      system = inputs.system.system;
+      deployment = inputs.deployment.deployment or { includeHome = true; };
+      includeHome = deployment.includeHome or true;
 
       constants = import ./modules/nixos/constants.nix;
       criomos-lib = inputs.criomos-lib.lib;
@@ -68,16 +74,28 @@
         # `nixpkgs.system`, which `readOnlyPkgs` has removed.
         inherit pkgs;
         specialArgs = {
-          inherit horizon system inputs constants criomos-lib;
+          inherit
+            horizon
+            system
+            deployment
+            inputs
+            constants
+            criomos-lib
+            ;
         };
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
+        ]
+        ++ inputs.nixpkgs.lib.optionals includeHome [
           inputs.home-manager.nixosModules.home-manager
+        ]
+        ++ [
           inputs.self.nixosModules.criomos
         ];
       };
     in
-    blueprintOutputs // {
+    blueprintOutputs
+    // {
       nixosConfigurations.target = target;
 
       # For cache-property testing — exposes the parsed horizon

@@ -245,7 +245,8 @@ The truth source is the lojix-projected horizon input.
 
 For the LiGoldragon kriom, lojix reads `goldragon/datom.nota`, projects
 it through `horizon-rs`, writes content-addressed `horizon` and `system`
-flake inputs, and invokes this repo's single system surface:
+flake inputs plus a deployment-shape input, and invokes this repo's
+single system surface:
 `nixosConfigurations.target`.
 
 ### Edit flow
