@@ -13,8 +13,8 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Shared helpers + cross-repo data (importJSON, mkJsonMerge,
-    # data/largeAI/llm.json). Consumed by both CriomOS and CriomOS-home.
+    # Shared constants, helpers, and cross-repo data. Consumed by both
+    # CriomOS and CriomOS-home.
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
@@ -65,8 +65,8 @@
       deployment = inputs.deployment.deployment or { includeHome = true; };
       includeHome = deployment.includeHome or true;
 
-      constants = import ./modules/nixos/constants.nix;
       criomos-lib = inputs.criomos-lib.lib;
+      constants = criomos-lib.constants;
 
       target = inputs.nixpkgs.lib.nixosSystem {
         # `system` is derived from `pkgs.stdenv.hostPlatform.system`

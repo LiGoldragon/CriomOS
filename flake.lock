@@ -426,11 +426,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777730422,
-        "narHash": "sha256-7gLesWaMn/sVtyGt4hBxdk4r/42GMY/2FwfwONM+J+E=",
+        "lastModified": 1777795577,
+        "narHash": "sha256-yBMPAyWr7EGj2ol59WOrTXIEDyzCZnX5PTiRuLolMqw=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "bc4aaf9cc275f8df78327c77af23a5ee4a7bc35b",
+        "rev": "874737827db2052e1480149970dccf0743d7d4c8",
         "type": "github"
       },
       "original": {
@@ -441,11 +441,11 @@
     },
     "criomos-lib": {
       "locked": {
-        "lastModified": 1777764061,
-        "narHash": "sha256-Xszrf+hOosHOWZ/AJP7ID1ZhCLOpO9NLFOjV9gS3A1c=",
+        "lastModified": 1777795535,
+        "narHash": "sha256-tOO1vjnfhx7FUMK4fD3PaSmhpFgH2Ukwui12ZpNNgQI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-lib",
-        "rev": "7234e7b065c71440b89ddc3fbe4c4547d7392e9a",
+        "rev": "bf3528bb98b8f0e83ca35b667d8f26b8e15dcdb2",
         "type": "github"
       },
       "original": {
