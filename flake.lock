@@ -426,11 +426,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777795577,
-        "narHash": "sha256-yBMPAyWr7EGj2ol59WOrTXIEDyzCZnX5PTiRuLolMqw=",
+        "lastModified": 1777798313,
+        "narHash": "sha256-0xNq0xzhLCLcPWXN0uKvDARibSecLp+LlCLm1mEetA8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "874737827db2052e1480149970dccf0743d7d4c8",
+        "rev": "c247824e55e5d15d10559dd343f7229121a1a83b",
         "type": "github"
       },
       "original": {
@@ -872,11 +872,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777347800,
-        "narHash": "sha256-FO6FRay5PfvJX7Ux4qTCvPfvb/1w5DFbbvHe2bjwNXw=",
+        "lastModified": 1777779939,
+        "narHash": "sha256-N5NFIxm6k6ytPNJ1siGdVC9jXhuxDKI6rQqdcdsDU7k=",
         "owner": "nix-community",
         "repo": "nix-vscode-extensions",
-        "rev": "de5f0ef30d7c677a06b064d6b390fcddd2bcc503",
+        "rev": "0a4df668a98c27125096ba12257925e0d598dd4d",
         "type": "github"
       },
       "original": {
@@ -887,15 +887,15 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1776877367,
-        "narHash": "sha256-EHq1/OX139R1RvBzOJ0aMRT3xnWyqtHBRUBuO1gFzjI=",
-        "owner": "NixOS",
+        "lastModified": 1777578337,
+        "narHash": "sha256-Ad49moKWeXtKBJNy2ebiTQUEgdLyvGmTeykAQ9xM+Z4=",
+        "owner": "LiGoldragon",
         "repo": "nixpkgs",
-        "rev": "0726a0ecb6d4e08f6adced58726b95db924cef57",
+        "rev": "15f4ee454b1dce334612fa6843b3e05cf546efab",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
+        "owner": "LiGoldragon",
         "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
@@ -1018,11 +1018,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777309441,
-        "narHash": "sha256-yGMBP069fGPDE1Fi/IawNnX9zdR40vrSUgHuwv9C6e8=",
+        "lastModified": 1777798290,
+        "narHash": "sha256-1Lo2vf/PAR4NAlGy8pYSartg5yQi32aDh6QP5pCcvuc=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-pkgs",
-        "rev": "2de80bcd4b7693b7e33a7af0b15aa77d09ebb40b",
+        "rev": "71520176660df3d284485d72e70969fae04f64ab",
         "type": "github"
       },
       "original": {
