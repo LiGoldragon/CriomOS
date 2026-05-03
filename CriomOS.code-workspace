@@ -35,9 +35,6 @@
     {
       "name": "goldragon",
       "path": "repos/goldragon"
-    },
-    {
-      "path": "repos/lojix-cli-v2"
     }
   ],
   "settings": {

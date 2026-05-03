@@ -1,9 +1,12 @@
 { pkgs, inputs, ... }:
 let
-  rustToolchain =
-    (inputs.rust-overlay.lib.mkRustBin { } pkgs).stable.latest.default.override {
-      extensions = [ "rust-src" "rust-analyzer" "clippy" ];
-    };
+  rustToolchain = (inputs.rust-overlay.lib.mkRustBin { } pkgs).stable.latest.default.override {
+    extensions = [
+      "rust-src"
+      "rust-analyzer"
+      "clippy"
+    ];
+  };
 
   # Sibling repos under ~/git/ exposed as symlinks in ./repos/
   # at devshell entry. Multi-root workspace (CriomOS.code-workspace)
@@ -14,9 +17,8 @@ let
     "CriomOS-home"
     "CriomOS-emacs"
     "horizon-rs"
-    # transitional / adjacent
+    # adjacent
     "lojix-cli"
-    "lojix-cli-v2"
     "brightness-ctl"
     "clavifaber"
     "goldragon"
