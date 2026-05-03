@@ -426,11 +426,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1777798313,
-        "narHash": "sha256-0xNq0xzhLCLcPWXN0uKvDARibSecLp+LlCLm1mEetA8=",
+        "lastModified": 1777799662,
+        "narHash": "sha256-EE9noAA/kZLmgXmPAJupFtShpTa+10OzmwaUm4TQ3nI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c247824e55e5d15d10559dd343f7229121a1a83b",
+        "rev": "956d05aefd89ff3f0316c32c8ee2ca7f0043ed9f",
         "type": "github"
       },
       "original": {
@@ -887,16 +887,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1777578337,
-        "narHash": "sha256-Ad49moKWeXtKBJNy2ebiTQUEgdLyvGmTeykAQ9xM+Z4=",
+        "lastModified": 1776877367,
+        "narHash": "sha256-EHq1/OX139R1RvBzOJ0aMRT3xnWyqtHBRUBuO1gFzjI=",
         "owner": "LiGoldragon",
         "repo": "nixpkgs",
-        "rev": "15f4ee454b1dce334612fa6843b3e05cf546efab",
+        "rev": "0726a0ecb6d4e08f6adced58726b95db924cef57",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "nixos-unstable",
+        "ref": "main",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -1018,11 +1018,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777798290,
-        "narHash": "sha256-1Lo2vf/PAR4NAlGy8pYSartg5yQi32aDh6QP5pCcvuc=",
+        "lastModified": 1777799651,
+        "narHash": "sha256-mdLEfxeAT5nAkD54jrsA3CL9YQ2kNzN6aduikYUKagg=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-pkgs",
-        "rev": "71520176660df3d284485d72e70969fae04f64ab",
+        "rev": "8e880ce19f94c73591108b8d46ca7ad0e65c554b",
         "type": "github"
       },
       "original": {
