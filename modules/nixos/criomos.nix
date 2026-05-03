@@ -17,7 +17,6 @@ in
     ./disks/preinstalled.nix
     ./normalize.nix
     ./nix.nix
-    ./lojix-input-archive.nix
     ./complex.nix
     ./llm.nix
     ./users.nix
