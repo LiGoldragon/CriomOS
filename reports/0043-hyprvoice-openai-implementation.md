@@ -162,7 +162,7 @@ The module should own:
 - `xdg.configFile."hyprvoice/config.toml".text`
 - `systemd.user.services.hyprvoice`
 - the niri keybinding
-- the OpenAI API key wrapper
+- an OpenAI API key wrapper used only by the daemon process
 
 The initial config should be conservative:
 
@@ -188,9 +188,39 @@ enabled = false
 ```
 
 Do not put the OpenAI key in `config.toml`. Hyprvoice resolves
-`OPENAI_API_KEY`, so use a wrapper that reads the key from `gopass` at runtime
-and then `exec`s Hyprvoice. This matches the existing `CriomOS-home` pattern
-used for Linkup and keeps secret bytes out of the Nix store.
+`OPENAI_API_KEY`, so use a service-only wrapper that reads the key from
+`gopass` at runtime and then `exec`s `hyprvoice serve`. This matches the
+existing `CriomOS-home` gopass pattern and keeps secret bytes out of the Nix
+store.
+
+The package binary itself must remain unwrapped. Client commands such as
+`hyprvoice toggle`, `hyprvoice status`, `hyprvoice cancel`, and the niri binding
+only talk to the daemon over Hyprvoice IPC; they do not need the OpenAI key and
+should not receive it. Commands that can intentionally call provider APIs, such
+as `hyprvoice test-models`, can get a separate explicit wrapper later if real
+provider testing becomes part of the workflow.
+
+The service wrapper should be private to the Home Manager module, not a general
+package on PATH:
+
+```nix
+hyprvoiceServe = pkgs.writeShellScript "hyprvoice-serve" ''
+  set -eu
+
+  if [ -z "''${OPENAI_API_KEY:-}" ]; then
+    OPENAI_API_KEY="$(${pkgs.gopass}/bin/gopass show -o openai/api-key)"
+    export OPENAI_API_KEY
+  fi
+
+  exec ${hyprvoice}/bin/hyprvoice serve
+'';
+```
+
+Then the user service runs only that private script:
+
+```nix
+systemd.user.services.hyprvoice.Service.ExecStart = "${hyprvoiceServe}";
+```
 
 The systemd user service needs the graphical session environment. CriomOS-home
 already has a niri startup helper that imports display variables into the user
