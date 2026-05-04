@@ -214,7 +214,7 @@ in
 
   services.nix-serve = {
     enable = isNixCache;
-    bindAddress = "[::]";
+    bindAddress = "";
     port = 80;
     secretKeyFile = "/var/lib/nix-serve/nix-secret-key";
   };
