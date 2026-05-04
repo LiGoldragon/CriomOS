@@ -3,7 +3,6 @@
   pkgs,
   horizon,
   inputs,
-  constants,
   ...
 }:
 let
@@ -11,6 +10,7 @@ let
     boolToString
     listToAttrs
     mapAttrsToList
+    mkIf
     optionals
     optional
     optionalAttrs
@@ -28,8 +28,6 @@ let
     isDispatcher
     isNixCache
     ;
-
-  inherit (constants.network.nix) serve;
 
   # Build a flake-registry entry from a locked input's `sourceInfo`.
   # The `inputs.<name>` value gets `sourceInfo.{type,owner,repo,rev}`
@@ -66,8 +64,9 @@ let
     version = 2;
   };
 
-  nixFlakeRegistryJson = pkgs.writeText "criomos-flake-registry.json"
-    (builtins.toJSON nixFlakeRegistry);
+  nixFlakeRegistryJson = pkgs.writeText "criomos-flake-registry.json" (
+    builtins.toJSON nixFlakeRegistry
+  );
 
 in
 {
@@ -75,7 +74,6 @@ in
     firewall = {
       allowedTCPPorts =
         optionals isNixCache [
-          serve.ports.external
           80
         ]
         ++ optional (node.name == "prometheus") 11436;
@@ -156,7 +154,15 @@ in
     # + speedFactor here as policy.
     distributedBuilds = isDispatcher;
     buildMachines = map (b: {
-      inherit (b) hostName sshUser sshKey supportedFeatures system systems maxJobs;
+      inherit (b)
+        hostName
+        sshUser
+        sshKey
+        supportedFeatures
+        system
+        systems
+        maxJobs
+        ;
       protocol = "ssh-ng";
       speedFactor = 10;
       publicHostKey = b.publicHostKey;
@@ -181,10 +187,12 @@ in
   # connect to. Without these, nix-daemon (no-TTY root context)
   # cannot answer the first-connection host-trust prompt and the
   # build silently hangs.
-  programs.ssh.knownHosts = listToAttrs (map (b: {
-    name = b.hostName;
-    value.publicKey = b.publicHostKeyLine;
-  }) (optionals isDispatcher builderConfigs));
+  programs.ssh.knownHosts = listToAttrs (
+    map (b: {
+      name = b.hostName;
+      value.publicKey = b.publicHostKeyLine;
+    }) (optionals isDispatcher builderConfigs)
+  );
 
   users = {
     groups = {
@@ -202,5 +210,17 @@ in
         group = "nix-serve";
       };
     };
+  };
+
+  services.nix-serve = {
+    enable = isNixCache;
+    bindAddress = "[::]";
+    port = 80;
+    secretKeyFile = "/var/lib/nix-serve/nix-secret-key";
+  };
+
+  systemd.services.nix-serve.serviceConfig = mkIf isNixCache {
+    AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+    CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
   };
 }
