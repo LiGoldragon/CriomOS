@@ -14,7 +14,7 @@ let
     ;
 
   inherit (horizon) node users;
-  inherit (node) adminSshPubKeys;
+  inherit (node) adminSshPubKeys behavesAs;
 
   mkUser =
     _attrName: user:
@@ -33,6 +33,7 @@ let
       # + atLeastMax:[adbusers,…]); add nixos-module-context groups here.
       extraGroups =
         user.extraGroups
+        ++ (optional behavesAs.edge "uinput")
         ++ (optional (config.programs.sway.enable == true) "sway")
         ++ (optional (
           trust.atLeastMed && config.networking.networkmanager.enable == true
@@ -52,6 +53,7 @@ let
 in
 {
   users = {
+    groups.uinput = { };
     users = mkUserUsers // rootUserAkses;
   };
 }

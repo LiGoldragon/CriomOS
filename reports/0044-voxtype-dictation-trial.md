@@ -5,6 +5,7 @@ Research date: 2026-05-05.
 This follows [`0043-hyprvoice-openai-implementation.md`](0043-hyprvoice-openai-implementation.md).
 Initial implementation avoided paid STT calls. After reviewing the wider
 Linux/Niri dictation landscape, do not treat Voxtype as the final destination.
+Active implementation moved to [`0045-whisrs-dictation-implementation.md`](0045-whisrs-dictation-implementation.md).
 
 ## Hyprvoice Decision
 

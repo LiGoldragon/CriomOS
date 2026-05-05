@@ -244,7 +244,8 @@ mkIf behavesAs.bareMetal {
       ];
     };
 
-    kernelModules = [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu");
+    kernelModules =
+      [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu") ++ (optional (size.atLeastMin && behavesAs.edge) "uinput");
 
     extraModprobeConfig = (
       optionalString size.atLeastLarge ''
@@ -421,6 +422,9 @@ mkIf behavesAs.bareMetal {
     udev.extraRules = ''
       # Battery charge threshold — grant group write so unprivileged users can toggle
       SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
+      # whisrs virtual-keyboard injection
+      KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
+      KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
       # USBasp - USB programmer for Atmel AVR controllers
       SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
       # Pro-micro kp-boot-bootloader - Ergodone keyboard
