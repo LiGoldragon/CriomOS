@@ -2,6 +2,11 @@
 
 Research date: 2026-05-05.
 
+Superseded for the output-tool decision by
+[`0044-voxtype-dictation-trial.md`](0044-voxtype-dictation-trial.md).
+The Hyprvoice package still exists as a fallback, but the next trial path is
+Voxtype.
+
 This follows [`0042-linux-stt-typing-options.md`](0042-linux-stt-typing-options.md)
 and narrows the implementation target to Hyprvoice with OpenAI speech-to-text.
 No paid STT or LLM API call was made while researching or validating this.
