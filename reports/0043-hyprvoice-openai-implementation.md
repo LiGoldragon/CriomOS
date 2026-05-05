@@ -17,6 +17,7 @@ Hyprvoice `v1.0.2` already exposes the useful surface: a user daemon,
 PipeWire microphone capture, OpenAI `whisper-1`, `gpt-4o-transcribe`,
 `gpt-4o-mini-transcribe`, `gpt-4o-realtime-preview`, optional LLM cleanup,
 keywords, and text injection through `ydotool`, `wtype`, or clipboard.
+CriomOS intentionally does not use clipboard insertion for dictation.
 
 For CriomOS/niri, the implementation should be:
 
@@ -27,8 +28,8 @@ For CriomOS/niri, the implementation should be:
 3. Enable the NixOS `ydotoold` service from `CriomOS` only on edge/graphical
    hosts.
 4. Configure initial transcription as OpenAI `gpt-4o-transcribe`, LLM cleanup
-   disabled, injection backends `["ydotool", "clipboard"]`, and no `wtype`
-   until niri-specific testing says it is stable.
+   disabled, injection backends `["ydotool"]`, and no `wtype` until
+   niri-specific testing says it is stable.
 
 The important shape is that Hyprvoice is a user-session application. The
 package and service belong near the home-manager profile; only privileged
@@ -51,11 +52,11 @@ items are accepted tradeoffs rather than blockers:
    environment variables are exposed via manager APIs and propagate down the
    process tree. This is acceptable for the chosen upstream-style first pass,
    but not for a future least-privilege credential boundary.
-3. **`ydotool type` may not be enough for the target text.** Upstream
-   `ydotool` has open issues around non-QWERTY layouts and accented characters.
-   The first implementation accepts this as a testable risk; if it fails on
-   Colemak plus Sanskrit/IAST or other Unicode text, the insertion path moves to
-   the deferred paste-first repair.
+3. **`ydotool type` is not enough for the target text under Colemak.** Upstream
+   `ydotool` types key positions that are interpreted by niri's configured
+   layout; the first live test turned "this is a test..." into Colemak-mapped
+   garbage. Clipboard insertion is not an acceptable fallback. The forward path
+   is a layout-aware keyboard injection backend.
 4. **The proposed TOML is incomplete.** Hyprvoice `v1.0.2` does not apply
    recording defaults when loading a hand-written config. Omitting `[recording]`
    leaves zero sample rate, channels, and buffer sizes; the initial validation
@@ -156,25 +157,25 @@ patch.
 
 ### Text Insertion
 
-The first upstream-style insertion path is `ydotool type` with clipboard
-fallback. If that fails on Colemak or Unicode/IAST text, the stricter repair is
-paste-first rather than `ydotool type`.
-Under that stricter repair, `ydotool` remains useful for small control chords,
-but not for typing arbitrary transcript text under Colemak and Unicode
-vocabulary.
+The first live test proved the layout problem: with niri configured for
+Colemak, `ydotool type` sent QWERTY positions that niri interpreted through the
+Colemak layout. The result was unreadable. CriomOS must not paper over this by
+copying transcripts into the clipboard or triggering paste.
 
-Patch Hyprvoice with a backend such as `clipboard-paste`:
+The acceptable repair is a keyboard-injection path that understands the active
+layout:
 
-1. Save the current clipboard when possible with `wl-paste`.
-2. Copy transcript text with `wl-copy`.
-3. Trigger paste with a configurable command, initially `ydotool key ctrl+v`.
-4. Optionally restore the previous clipboard after a short delay.
+1. Prefer a layout-aware backend such as `dotool`, configured with
+   `DOTOOL_XKB_LAYOUT=us` and `DOTOOL_XKB_VARIANT=colemak`, if it behaves
+   correctly under niri.
+2. If no existing tool satisfies this, patch Hyprvoice with a dedicated
+   layout-aware backend rather than a clipboard-based backend.
+3. Keep `ydotool` available for explicit key chords where key positions are the
+   desired abstraction.
 
-This sends text through the clipboard as Unicode text and uses the synthetic
-keyboard only for the paste shortcut. If that is not stable enough, add a
-`dotool` backend. `dotool` is in nixpkgs, has a long-running daemon/client
-shape, and supports XKB layout selection through `DOTOOL_XKB_LAYOUT` and
-`DOTOOL_XKB_VARIANT`; it also requires careful `/dev/uinput` access design.
+`dotool` is in nixpkgs, has a long-running daemon/client shape, and supports
+XKB layout selection through `DOTOOL_XKB_LAYOUT` and `DOTOOL_XKB_VARIANT`; it
+also requires careful `/dev/uinput` access design.
 
 `wtype` stays excluded from the first trial because the niri-specific issues in
 the previous report are about focus/input correctness, not just packaging.
@@ -203,7 +204,7 @@ streaming = false
 threads = 0
 
 [injection]
-backends = ["ydotool", "clipboard"]
+backends = ["ydotool"]
 ydotool_timeout = "5s"
 wtype_timeout = "5s"
 clipboard_timeout = "3s"
@@ -216,9 +217,9 @@ type = "desktop"
 enabled = false
 ```
 
-If `ydotool` fails the target Unicode/IAST typing cases, add the deferred
-`clipboard-paste` backend and make `["clipboard-paste", "clipboard"]` the
-default.
+The live Colemak test failed, so the next implementation step is replacing the
+text backend with a layout-aware keyboard injection path. Clipboard insertion is
+excluded.
 
 ### Config Ownership
 
@@ -294,14 +295,14 @@ The runtime calls external programs by name:
 - `pw-record` and `pw-cli` from PipeWire for audio capture and checks.
 - `ydotool` and `ydotoold` for compositor-independent typing.
 - `wtype` for Wayland typing.
-- `wl-copy` for clipboard fallback.
+- `wl-copy` only if a future non-dictation command explicitly needs it.
 - `notify-send` for desktop notifications.
 - `whisper-cli` only when using the local `whisper-cpp` provider.
 
 The Nix package should wrap `hyprvoice` with a `PATH` containing at least
-`pipewire`, `wl-clipboard`, `libnotify`, and `ydotool`. Add `wtype`,
-`whisper-cpp`, or `dotool` only when the configured backend/provider actually
-uses them. Relying on the ambient user PATH would make the service brittle.
+`pipewire`, `libnotify`, and `ydotool`. Add `wtype`, `whisper-cpp`, `dotool`,
+or `wl-clipboard` only when the configured backend/provider actually uses them.
+Relying on the ambient user PATH would make the service brittle.
 
 Local validation:
 
@@ -324,7 +325,6 @@ equivalent blueprint-discovered package path:
   fetchFromGitHub,
   makeWrapper,
   pipewire,
-  wl-clipboard,
   libnotify,
   ydotool,
 }:
@@ -355,7 +355,6 @@ buildGoModule {
       --prefix PATH : ${
         lib.makeBinPath [
           pipewire
-          wl-clipboard
           libnotify
           ydotool
         ]
@@ -371,10 +370,9 @@ buildGoModule {
 }
 ```
 
-`wtype`, `whisper-cpp`, and `dotool` can be omitted from the wrapper at first
-because the first trial is OpenAI plus `ydotool`/clipboard insertion. Keeping
-tools in the wrapper before the module config uses them makes dependency
-failures less legible, not more.
+`wtype`, `whisper-cpp`, `dotool`, and `wl-clipboard` can be omitted from the
+wrapper until the module config uses them. Keeping tools in the wrapper before
+the module config uses them makes dependency failures less legible, not more.
 
 ## System Surface
 
@@ -436,7 +434,7 @@ streaming = false
 threads = 0
 
 [injection]
-backends = ["ydotool", "clipboard"]
+backends = ["ydotool"]
 ydotool_timeout = "5s"
 wtype_timeout = "5s"
 clipboard_timeout = "3s"
@@ -534,8 +532,7 @@ be the first trial.
 niri issues around `wtype`, and Hyprvoice does not need `wtype` for the first
 trial.
 
-The upstream-style first backend is `ydotool`, with clipboard as fallback. It
-depends on:
+The first backend is `ydotool`. It depends on:
 
 - the NixOS `ydotoold` service running;
 - the user being in the configured `ydotool` group after a new login;
@@ -544,12 +541,12 @@ depends on:
   niri/Colemak layout.
 
 The clipboard backend in Hyprvoice `v1.0.2` only calls `wl-copy`. It copies the
-transcript; it does not type text or trigger paste. Treat it as a recovery path,
-not as the main typing backend.
+transcript; it does not type text or trigger paste. CriomOS excludes it for
+dictation because it mutates clipboard state instead of solving keyboard
+injection.
 
-`ydotool type` is the acceptance path for the first implementation. If it fails
-on mixed layout or Unicode dictation, move to the deferred `clipboard-paste`
-repair.
+`ydotool type` failed the live Colemak test. The next path is layout-aware
+keyboard injection, not clipboard insertion.
 
 ## Implementation Order
 
@@ -564,9 +561,11 @@ repair.
 5. Build and deploy through the normal lojix/CriomOS path, then log out and
    back in so the group membership and user manager environment are fresh.
 6. Test local behavior without paid APIs: service startup, toggle IPC,
-   microphone capture failure reporting, clipboard fallback, and
-   `ydotool type` ASCII smoke behavior.
-7. Only after explicit permission, run real OpenAI transcription tests against
+   microphone capture failure reporting, and `ydotool type` ASCII smoke
+   behavior.
+7. Replace `ydotool type` with a layout-aware injection backend before treating
+   dictation as accepted under Colemak.
+8. Only after explicit permission, run real OpenAI transcription tests against
    `gpt-4o-transcribe`.
 
 ## Sources Checked
