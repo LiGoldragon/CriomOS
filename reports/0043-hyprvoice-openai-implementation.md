@@ -102,9 +102,11 @@ trim the trailing newline, keep the result in memory, and still sanitize every
 non-provider child process. This keeps secret bytes out of the Nix store, out of
 the user service environment, and out of unrelated subprocess environments.
 
-The Home Manager module should render `gopass` as an absolute Nix package path
-in the generated TOML, or otherwise ensure the daemon wrapper PATH contains
-`gopass`; the secret itself still comes from `gopass openai/api-key`.
+This preserves the requested shape: the secret source is still
+`gopass openai/api-key`. Nix should contain only the command path and arguments,
+never the secret value. The Home Manager module should render `gopass` as an
+absolute Nix package path in the generated TOML, or otherwise ensure the daemon
+wrapper PATH contains `gopass`.
 
 The source patch shape is:
 
@@ -439,8 +441,10 @@ type = "desktop"
 enabled = false
 ```
 
-Do not put the OpenAI key in the Nix-owned `config.toml`. The durable repair is
-to patch Hyprvoice so the OpenAI provider can read:
+Because this plan makes Home Manager own the durable Hyprvoice config, that
+config must stay non-secret. This is a guardrail for the module design, not a
+claim that the key should ever be placed in Nix. The durable repair is to patch
+Hyprvoice so the OpenAI provider can read the key from `gopass`:
 
 ```toml
 [providers.openai]
