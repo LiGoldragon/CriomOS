@@ -51,8 +51,6 @@ mkIf behavesAs.edge {
     # evolution.enable: Max-tier per Li (heavy ~250MB email client).
     evolution.enable = size.atLeastMax;
 
-    ydotool.enable = size.atLeastMin;
-
     regreet = {
       enable = size.atLeastMin;
       settings = {

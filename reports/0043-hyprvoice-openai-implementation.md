@@ -17,8 +17,10 @@ Hyprvoice `v1.0.2` already exposes the useful surface: a user daemon,
 PipeWire microphone capture, OpenAI `whisper-1`, `gpt-4o-transcribe`,
 `gpt-4o-mini-transcribe`, `gpt-4o-realtime-preview`, optional LLM cleanup,
 keywords, and text injection through `ydotool`, `wtype`, or clipboard.
-CriomOS keeps clipboard support available, but it is not the repair for broken
-self-insertion.
+CriomOS uses Hyprvoice's upstream `wtype` backend for the first unpatched
+self-insertion trial on niri. Clipboard support remains available as an
+explicit secondary backend, but it is not the acceptance path for typed
+dictation.
 
 For CriomOS/niri, the implementation should be:
 
@@ -26,15 +28,15 @@ For CriomOS/niri, the implementation should be:
 2. Add a Home Manager `dictation` module that owns Hyprvoice config, the
    user service, the private gopass-backed daemon wrapper, and the niri toggle
    binding.
-3. Enable the NixOS `ydotoold` service from `CriomOS` only on edge/graphical
-   hosts.
+3. Avoid any current NixOS-level input daemon or group dependency for
+   dictation; `wtype` uses Wayland's virtual-keyboard protocol.
 4. Configure initial transcription as OpenAI `gpt-4o-transcribe`, LLM cleanup
-   disabled, injection backends `["ydotool", "clipboard"]`, and no `wtype` until
-   niri-specific testing says it is stable.
+   disabled, injection backends `["wtype", "clipboard"]`, and no `ydotool` in
+   the dictation text path.
 
 The important shape is that Hyprvoice is a user-session application. The
-package and service belong near the home-manager profile; only privileged
-uinput support belongs in CriomOS.
+package and service belong near the home-manager profile. There is no
+privileged CriomOS system surface for the current `wtype` path.
 
 ## Audit Findings
 
@@ -57,8 +59,8 @@ items are accepted tradeoffs rather than blockers:
    `ydotool` types key positions that are interpreted by niri's configured
    layout; the first live test turned "this is a test..." into Colemak-mapped
    garbage. Clipboard can remain an explicit backend, but it is not an
-   acceptable answer to broken self-insertion. The forward path is a
-   layout-aware keyboard injection backend.
+   acceptable answer to broken self-insertion. The active unpatched repair path
+   is the upstream Hyprvoice `wtype` backend.
 4. **The proposed TOML is incomplete.** Hyprvoice `v1.0.2` does not apply
    recording defaults when loading a hand-written config. Omitting `[recording]`
    leaves zero sample rate, channels, and buffer sizes; the initial validation
@@ -67,10 +69,10 @@ items are accepted tradeoffs rather than blockers:
    `xdg.configFile."hyprvoice/config.toml".text` makes the config a Nix-owned
    symlink. That is correct only if Hyprvoice's interactive `configure` and
    `onboarding` flows are deliberately out of scope.
-6. **The service startup environment is racy.** Importing `WAYLAND_DISPLAY`,
-   `XDG_RUNTIME_DIR`, and `YDOTOOL_SOCKET` into the user manager helps only for
-   services started after the import. A service started at `default.target` can
-   keep a stale or missing graphical environment.
+6. **The service startup environment is racy.** Importing `WAYLAND_DISPLAY` and
+   `XDG_RUNTIME_DIR` into the user manager helps only for services started after
+   the import. A service started at `default.target` can keep a stale or missing
+   graphical environment.
 7. **The report trusted upstream docs where the tag disagrees.** Hyprvoice
    `v1.0.2` documentation describes `hyprvoice test-models`, but the tagged CLI
    does not expose that command. Provider smoke tests therefore need a different
@@ -164,25 +166,36 @@ Colemak, `ydotool type` sent QWERTY positions that niri interpreted through the
 Colemak layout. The result was unreadable. CriomOS must not paper over this by
 treating clipboard copy or paste as the fix for self-insertion.
 
-The acceptable repair is a keyboard-injection path that understands the active
-layout:
+The researched correction is to use Hyprvoice as it is actually shaped before
+carrying a local patch. Hyprvoice `v1.0.2` constructs an ordered backend chain
+from `["ydotool", "wtype", "clipboard"]` names; `wtype` and `clipboard` are
+upstream backends, while `dotool` is not. The `wtype` backend invokes
+`wtype -- <text>`, and `wtype` uploads a generated XKB keymap for the text
+before sending virtual-keyboard events. That is the upstream typing path that
+can avoid the `ydotool` physical-key/layout failure.
 
-1. Prefer a layout-aware backend such as `dotool`, configured with
-   `DOTOOL_XKB_LAYOUT=us` and `DOTOOL_XKB_VARIANT=colemak`, if it behaves
-   correctly under niri.
-2. If no existing tool satisfies this, patch Hyprvoice with a dedicated
-   layout-aware backend rather than redefining clipboard copy as typing.
+The acceptable first repair is therefore a keyboard-injection path that types
+the intended text:
+
+1. Use Hyprvoice's upstream `wtype` backend first. `wtype` sends text through
+   the Wayland virtual-keyboard protocol and uploads a generated keymap for the
+   text being typed.
+2. Keep `wtype` in the Hyprvoice package wrapper so the user service sees it.
 3. Keep clipboard support available for workflows that explicitly want the
    transcript copied.
-4. Keep `ydotool` available for explicit key chords where key positions are the
-   desired abstraction.
+4. Do not make the current dictation path depend on `ydotoold`, an input group,
+   or a local `dotool` patch.
 
-`dotool` is in nixpkgs, has a long-running daemon/client shape, and supports
-XKB layout selection through `DOTOOL_XKB_LAYOUT` and `DOTOOL_XKB_VARIANT`; it
-also requires careful `/dev/uinput` access design.
+The live niri session accepts `wtype ""`, which verifies that the compositor
+exposes the virtual-keyboard path without injecting text.
 
-`wtype` stays excluded from the first trial because the niri-specific issues in
-the previous report are about focus/input correctness, not just packaging.
+This is still a trial, not a proven durable answer. Current upstream niri issues
+show `wtype` can make the focused app stop receiving real keyboard input and
+can produce gibberish when focus changes. If those bugs reproduce in the live
+Colemak dictation test, unpatched Hyprvoice has no remaining correct
+self-insertion backend for this environment. The next honest choices would be:
+propose/add upstream `dotool` support, or switch to a dictation tool that
+already has a layout-aware fallback chain.
 
 ### Complete Config
 
@@ -208,9 +221,9 @@ streaming = false
 threads = 0
 
 [injection]
-# ydotool is the typing path; clipboard remains available as a secondary
-# backend, but it is not the fix for layout-broken self-insertion.
-backends = ["ydotool", "clipboard"]
+# wtype uses Wayland virtual-keyboard text injection; clipboard remains
+# available as the explicit non-typing backend.
+backends = ["wtype", "clipboard"]
 ydotool_timeout = "5s"
 wtype_timeout = "5s"
 clipboard_timeout = "3s"
@@ -223,10 +236,9 @@ type = "desktop"
 enabled = false
 ```
 
-The live Colemak test failed, so the next implementation step is replacing the
-typing backend with a layout-aware keyboard injection path. Clipboard insertion
-may remain available as a separate backend, but it is not the self-insertion
-fix.
+The live Colemak test failed with `ydotool`, so the first unpatched
+implementation uses `wtype` for typing. Clipboard insertion remains available as
+a separate backend, but it is not the self-insertion fix.
 
 ### Config Ownership
 
@@ -251,8 +263,8 @@ The niri module already has a session environment sync helper. Replace the
 separate first startup command with a small session bootstrap script that:
 
 1. imports `DISPLAY`, `WAYLAND_DISPLAY`, `XDG_CURRENT_DESKTOP`,
-   `XDG_SESSION_TYPE`, `XDG_RUNTIME_DIR`, and `YDOTOOL_SOCKET` into systemd and
-   D-Bus activation environments;
+   `XDG_SESSION_TYPE`, and `XDG_RUNTIME_DIR` into systemd and D-Bus activation
+   environments;
 2. starts or restarts `hyprvoice.service`.
 
 That makes Hyprvoice receive the same graphical/session environment that niri is
@@ -261,19 +273,12 @@ actually using. If CriomOS later uses `niri.service` directly, install
 
 ### System Surface
 
-Enable uinput tooling only for edge hosts:
+The current `wtype` dictation path needs no system-level input daemon and no
+extra user group. `wtype` is a user-session Wayland client.
 
-```nix
-mkIf behavesAs.edge {
-  programs.ydotool.enable = size.atLeastMin;
-}
-```
-
-Keep the user group extension in `modules/nixos/users.nix` using
-`config.programs.ydotool.group`, as originally proposed. If `dotool` becomes
-part of the insertion path, add an explicit access decision for `/dev/uinput`;
-do not silently add every user to the broad `input` group without a short
-report update.
+If a future backend deliberately uses `/dev/uinput`, that system surface
+belongs in CriomOS and must be justified by the configured backend. It should
+not be present merely because Hyprvoice also has an optional `ydotool` backend.
 
 ### OpenAI Surface
 
@@ -300,16 +305,17 @@ entry point is `./cmd/hyprvoice`. Upstream release CI builds a Linux binary with
 The runtime calls external programs by name:
 
 - `pw-record` and `pw-cli` from PipeWire for audio capture and checks.
-- `ydotool` and `ydotoold` for compositor-independent typing.
-- `wtype` for Wayland typing.
+- `ydotool` and `ydotoold` only if the configured backend asks for
+  compositor-independent key-position typing.
+- `wtype` for the current Wayland typing path.
 - `wl-copy` for the explicit clipboard backend.
 - `notify-send` for desktop notifications.
 - `whisper-cli` only when using the local `whisper-cpp` provider.
 
 The Nix package should wrap `hyprvoice` with a `PATH` containing at least
-`pipewire`, `libnotify`, `ydotool`, and `wl-clipboard`. Add `wtype`,
-`whisper-cpp`, or `dotool` only when the configured backend/provider actually
-uses them.
+`pipewire`, `libnotify`, `wtype`, and `wl-clipboard`. Add `ydotool`,
+`dotool`, or `whisper-cpp` only when the configured backend/provider actually
+uses it.
 Relying on the ambient user PATH would make the service brittle.
 
 Local validation:
@@ -334,7 +340,7 @@ equivalent blueprint-discovered package path:
   makeWrapper,
   pipewire,
   libnotify,
-  ydotool,
+  wtype,
   wl-clipboard,
 }:
 
@@ -365,7 +371,7 @@ buildGoModule {
         lib.makeBinPath [
           pipewire
           libnotify
-          ydotool
+          wtype
           wl-clipboard
         ]
       }
@@ -380,36 +386,20 @@ buildGoModule {
 }
 ```
 
-`wtype`, `whisper-cpp`, and `dotool` can be omitted from the wrapper until the
+`ydotool`, `dotool`, and `whisper-cpp` can be omitted from the wrapper until the
 module config uses them. Keeping tools in the wrapper before the module config
 uses them makes dependency failures less legible, not more.
 
 ## System Surface
 
-`ydotool` needs uinput access. NixOS already has `programs.ydotool.enable`,
-which creates a system `ydotoold` service, a group, the `YDOTOOL_SOCKET`
-environment variable, and the `ydotool` package.
+`wtype` uses the Wayland virtual-keyboard protocol and does not need a NixOS
+uinput group. The current Hyprvoice dictation path therefore has no CriomOS
+system-layer change.
 
-CriomOS should enable it at the system layer only for edge/graphical hosts:
-
-```nix
-mkIf behavesAs.edge {
-  programs.ydotool.enable = size.atLeastMin;
-}
-```
-
-`modules/nixos/users.nix` should then add the configured group through the
-existing horizon-driven user construction:
-
-```nix
-extraGroups =
-  user.extraGroups
-  ++ optional config.programs.ydotool.enable config.programs.ydotool.group
-  ++ ...;
-```
-
-This preserves the repo's network-neutral rule: no local user name, node name,
-or cluster name is introduced.
+If a later backend deliberately uses `ydotool` or `dotool`, the corresponding
+`/dev/uinput` service/group belongs in CriomOS, gated by edge/graphical profile
+and wired through horizon-built users without naming a local user, node, or
+cluster.
 
 ## Home Surface
 
@@ -444,9 +434,9 @@ streaming = false
 threads = 0
 
 [injection]
-# ydotool is the typing path; clipboard remains available as a secondary
-# backend, but it is not the fix for layout-broken self-insertion.
-backends = ["ydotool", "clipboard"]
+# wtype uses Wayland virtual-keyboard text injection; clipboard remains
+# available as the explicit non-typing backend.
+backends = ["wtype", "clipboard"]
 ydotool_timeout = "5s"
 wtype_timeout = "5s"
 clipboard_timeout = "3s"
@@ -477,7 +467,6 @@ hyprvoiceServe = pkgs.writeShellScript "hyprvoice-serve" ''
 
   OPENAI_API_KEY="$(${pkgs.gopass}/bin/gopass show -o openai/api-key)"
   export OPENAI_API_KEY
-  export YDOTOOL_SOCKET="''${YDOTOOL_SOCKET:-/run/ydotoold/socket}"
 
   exec ${hyprvoice}/bin/hyprvoice serve
 '';
@@ -491,9 +480,9 @@ systemd.user.services.hyprvoice.Service.ExecStart = "${hyprvoiceServe}";
 
 The systemd user service needs the graphical session environment. CriomOS-home
 already has a niri startup helper that imports display variables into the user
-manager; extend that helper to include `XDG_RUNTIME_DIR` and `YDOTOOL_SOCKET`.
-Start or restart `hyprvoice.service` from that same niri session bootstrap after
-the import, rather than installing it under generic `default.target`.
+manager; extend that helper to include `XDG_RUNTIME_DIR`. Start or restart
+`hyprvoice.service` from that same niri session bootstrap after the import,
+rather than installing it under generic `default.target`.
 
 ## Niri Binding
 
@@ -540,32 +529,34 @@ be the first trial.
 
 ## Injection Risks
 
-`wtype` is the riskier backend on niri. The prior STT report already found open
-niri issues around `wtype`, and Hyprvoice does not need `wtype` for the first
-trial.
+`wtype` is the least-patchy upstream typing backend left after the Colemak
+`ydotool` failure. It is also risky on niri: current upstream niri issues still
+describe wrong characters and focused-app keyboard breakage after `wtype`.
 
-The first backend is `ydotool`. It depends on:
+The first backend is `wtype`. It depends on:
 
-- the NixOS `ydotoold` service running;
-- the user being in the configured `ydotool` group after a new login;
-- `YDOTOOL_SOCKET` being visible to the Hyprvoice user service;
-- the virtual keyboard layout producing the intended text under the configured
-  niri/Colemak layout.
+- `wtype` being in the Hyprvoice wrapper PATH;
+- `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` being visible to the Hyprvoice user
+  service;
+- niri exposing the virtual-keyboard protocol.
 
 The clipboard backend in Hyprvoice `v1.0.2` only calls `wl-copy`. It copies the
 transcript; it does not type text or trigger paste. CriomOS can keep that
 backend available, but it cannot be the acceptance path for self-insertion.
 With Hyprvoice's ordered backend chain, clipboard only runs after an earlier
-backend returns an error; it will not catch the Colemak failure because
-`ydotool type` returns success after sending the wrong physical key positions.
+backend returns an error; it did not catch the Colemak failure because
+`ydotool type` returned success after sending the wrong physical key positions.
 Hyprvoice does not expose per-toggle backend selection in this release, so
 "both" means an ordered backend chain. If CriomOS later wants a separate
 clipboard dictation shortcut alongside a typing shortcut, use a second
 configuration/daemon profile or patch Hyprvoice with per-request backend
 selection.
 
-`ydotool type` failed the live Colemak test. The next path for self-insertion
-is layout-aware keyboard injection, not clipboard insertion.
+`ydotool type` failed the live Colemak test. The current path for
+self-insertion is Hyprvoice's upstream `wtype` backend. If the niri `wtype`
+bugs reproduce, do not silently demote self-insertion to clipboard copy; choose
+between adding/proposing layout-aware upstream typing support or switching
+tools.
 
 ## Implementation Order
 
@@ -573,18 +564,14 @@ is layout-aware keyboard injection, not clipboard insertion.
    with `CI=true` and all cloud API key variables unset.
 2. Add the `dictation` Home Manager module with the complete OpenAI batch
    config and private gopass-backed daemon wrapper.
-3. Gate `programs.ydotool` in CriomOS to edge/graphical hosts and extend
-   horizon-built users with the configured ydotool group.
-4. Add the niri `Mod+V` toggle binding and start/restart the daemon from the
+3. Add the niri `Mod+V` toggle binding and start/restart the daemon from the
    niri session bootstrap after importing session environment variables.
-5. Build and deploy through the normal lojix/CriomOS path, then log out and
-   back in so the group membership and user manager environment are fresh.
-6. Test local behavior without paid APIs: service startup, toggle IPC,
-   microphone capture failure reporting, and `ydotool type` ASCII smoke
-   behavior.
-7. Replace `ydotool type` with a layout-aware injection backend before treating
-   dictation as accepted under Colemak.
-8. Only after explicit permission, run real OpenAI transcription tests against
+4. Build and deploy through the normal lojix/CriomOS path.
+5. Test local behavior without paid APIs: service startup, toggle IPC,
+   microphone capture failure reporting, and `wtype` ASCII smoke behavior.
+6. Treat dictation as accepted under Colemak only after the upstream `wtype`
+   backend types the intended text in the live niri session.
+7. Only after explicit permission, run real OpenAI transcription tests against
    `gpt-4o-transcribe`.
 
 ## Sources Checked
@@ -602,10 +589,24 @@ is layout-aware keyboard injection, not clipboard insertion.
 - Hyprvoice source files inspected for child processes, config loading, and
   insertion behavior:
   <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/recording/recording.go>,
+  <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/injection/injection.go>,
+  <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/injection/wtype.go>,
   <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/injection/ydotool.go>,
   <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/injection/clipboard.go>,
   <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/config/load.go>,
   <https://github.com/LeonardoTrapani/hyprvoice/blob/v1.0.2/internal/config/defaults.go>
+- `wtype` source and docs:
+  <https://github.com/atx/wtype/blob/master/main.c>,
+  <https://github.com/atx/wtype/blob/master/README.md>
+- niri `wtype` issue checks:
+  <https://github.com/niri-wm/niri/issues/2280>,
+  <https://github.com/niri-wm/niri/issues/2314>,
+  <https://github.com/niri-wm/niri/issues/1546>,
+  <https://github.com/niri-wm/niri/issues/3394>
+- Voxtype docs for the existing `wtype`/`dotool`/`ydotool`/clipboard fallback
+  shape:
+  <https://github.com/peteonrails/voxtype/blob/main/README.md>,
+  <https://github.com/peteonrails/voxtype/blob/main/docs/USER_MANUAL.md>
 - Go `os/exec.Cmd` environment behavior:
   <https://pkg.go.dev/os/exec#Cmd>
 - systemd service environment and credentials documentation:
@@ -620,8 +621,6 @@ is layout-aware keyboard injection, not clipboard insertion.
   <https://platform.openai.com/docs/pricing>
 - OpenAI `gpt-4o-transcribe` model page:
   <https://developers.openai.com/api/docs/models/gpt-4o-transcribe>
-- NixOS `ydotool` module source:
-  <https://raw.githubusercontent.com/NixOS/nixpkgs/master/nixos/modules/programs/ydotool.nix>
 - `ydotool` non-QWERTY issue:
   <https://github.com/ReimuNotMoe/ydotool/issues/43>
 - `ydotool` accented character issue:

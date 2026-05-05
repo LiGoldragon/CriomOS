@@ -34,7 +34,6 @@ let
       extraGroups =
         user.extraGroups
         ++ (optional (config.programs.sway.enable == true) "sway")
-        ++ (optional config.programs.ydotool.enable config.programs.ydotool.group)
         ++ (optional (
           trust.atLeastMed && config.networking.networkmanager.enable == true
         ) "networkmanager");
