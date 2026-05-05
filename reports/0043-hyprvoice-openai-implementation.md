@@ -28,9 +28,11 @@ For CriomOS/niri, the implementation should be:
 2. Add a Home Manager `dictation` module that owns Hyprvoice config, the
    user service, the private gopass-backed daemon wrapper, and the niri toggle
    binding.
-3. Avoid any current NixOS-level input daemon or group dependency for
+3. Redact upstream transcript-content logs in the packaged Hyprvoice build so
+   dictation text is not persisted in the user journal.
+4. Avoid any current NixOS-level input daemon or group dependency for
    dictation; `wtype` uses Wayland's virtual-keyboard protocol.
-4. Configure initial transcription as OpenAI `gpt-4o-transcribe`, LLM cleanup
+5. Configure initial transcription as OpenAI `gpt-4o-transcribe`, LLM cleanup
    disabled, injection backends `["wtype", "clipboard"]`, and no `ydotool` in
    the dictation text path.
 
@@ -82,8 +84,8 @@ items are accepted tradeoffs rather than blockers:
 
 ### Secret Boundary
 
-This section is not part of the first implementation. It records the repair path
-if CriomOS later decides that Hyprvoice's common env-key model is too broad.
+This section records the remaining credential-boundary repair path if CriomOS
+later decides that Hyprvoice's common env-key model is too broad.
 
 There is no shell-only wrapper that gives the OpenAI key strictly to Hyprvoice
 and guarantees Hyprvoice's children do not inherit it. In Go, an `exec.Cmd` with
@@ -97,7 +99,8 @@ The strict repair would be a small local Hyprvoice patch:
   `DEEPGRAM_API_KEY`) before spawning non-provider executables.
 - Use that helper for `pw-record`, `pw-cli`, `ydotool`, `wtype`, `wl-copy`,
   `notify-send`, `whisper-cli`, and dependency probes.
-- Remove or gate logs that print full transcript text.
+- Keep the local transcript-log redaction patch or upstream an equivalent
+  debug/privacy option.
 - Add a provider credential source that is not process-wide environment, such
   as `api_key_command` or `$CREDENTIALS_DIRECTORY/openai-api-key`.
 
@@ -157,7 +160,34 @@ is a private runtime config wrapper:
 
 That temporary path avoids child environment leakage but still leaves the key in
 a same-user-readable runtime file. The stricter durable path is the Hyprvoice
-patch.
+credential patch.
+
+### Transcript Logs
+
+Hyprvoice upstream `v1.0.2` logs transcript content directly with Go's standard
+`log.Printf` calls. The OpenAI batch adapter logs the returned transcript, the
+simple transcriber logs the completed transcript, and the pipeline logs the
+final text before injection. This is upstream behavior, not something created by
+the CriomOS service wrapper.
+
+The CriomOS service wrapper does make the behavior more visible and durable:
+when Hyprvoice runs as a user systemd service, those standard logs are captured
+by the user journal. Hyprvoice's own packaged systemd unit also runs
+`hyprvoice serve`, so the same upstream log calls would be captured by a normal
+systemd deployment unless that unit redirected or suppressed output.
+
+CriomOS-home carries a package patch that keeps operational diagnostics while
+redacting transcript content:
+
+- API/transcriber logs keep audio byte counts, timing, and transcript character
+  counts.
+- Pipeline logs keep readiness and injected-character counts.
+- LLM post-processing logs keep input/output character counts.
+- Full dictated text and LLM input/output text stay out of the journal.
+
+This redaction patch is separate from the remaining credential-boundary issue.
+It fixes journal persistence of normal dictation text; it does not stop
+Hyprvoice subprocesses from inheriting `OPENAI_API_KEY`.
 
 ### Text Insertion
 
@@ -189,21 +219,26 @@ the intended text:
 The live niri session accepts `wtype ""`, which verifies that the compositor
 exposes the virtual-keyboard path without injecting text.
 
-The first tmux/cloud-client test showed a second `wtype` failure mode: OpenAI
-returned spaces correctly, Hyprvoice logged the correct final transcript, and
-the terminal client received text with some spaces missing. This points at the
-zero-delay synthetic typing burst, not the STT model. `wtype` documents `-d
-TIME` as a millisecond delay between keystrokes when typing text, with default
-`0`, and Hyprvoice `v1.0.2` calls `wtype -- <text>` with no delay.
+The first terminal/cloud-client tests showed a second `wtype` failure mode:
+OpenAI returned spaces correctly, Hyprvoice logged the correct final transcript,
+and some receiving apps received text with spaces missing. The bug reproduced
+outside tmux but not in the Codex input path, so it is receiver-sensitive rather
+than tmux-specific. This points at fast synthetic typing, not the STT model.
+`wtype` documents `-d TIME` as a millisecond delay between keystrokes when
+typing text, with default `0`, and Hyprvoice `v1.0.2` calls `wtype -- <text>`
+with no delay.
 
 CriomOS-home therefore wraps only Hyprvoice's private `wtype` dependency with:
 
 ```sh
-wtype -d "${HYPRVOICE_WTYPE_DELAY_MS:-10}" "$@"
+wtype -d "${HYPRVOICE_WTYPE_DELAY_MS:-25}" "$@"
 ```
 
 This leaves the system `wtype` unchanged, slows only Hyprvoice injection, and
-keeps the delay overrideable for future terminal/client testing.
+keeps the delay overrideable for future terminal/client testing. The configured
+`wtype_timeout` must be long enough to cover the delayed keystream. Use 60
+seconds for the first production profile so longer dictation bursts do not fall
+through to clipboard.
 
 This is still a trial, not a proven durable answer. Current upstream niri issues
 show `wtype` can make the focused app stop receiving real keyboard input and
@@ -241,7 +276,7 @@ threads = 0
 # available as the explicit non-typing backend.
 backends = ["wtype", "clipboard"]
 ydotool_timeout = "5s"
-wtype_timeout = "5s"
+wtype_timeout = "60s"
 clipboard_timeout = "3s"
 
 [notifications]
@@ -365,7 +400,7 @@ let
   wtypeForHyprvoice = writeShellScriptBin "wtype" ''
     set -eu
 
-    delay_ms="''${HYPRVOICE_WTYPE_DELAY_MS:-10}"
+    delay_ms="''${HYPRVOICE_WTYPE_DELAY_MS:-25}"
     exec ${wtype}/bin/wtype -d "$delay_ms" "$@"
   '';
 in
@@ -382,6 +417,7 @@ buildGoModule {
 
   vendorHash = "...";
   subPackages = [ "cmd/hyprvoice" ];
+  patches = [ ./redact-transcript-logs.patch ];
 
   env.CGO_ENABLED = "0";
   nativeBuildInputs = [ makeWrapper ];
@@ -464,7 +500,7 @@ threads = 0
 # available as the explicit non-typing backend.
 backends = ["wtype", "clipboard"]
 ydotool_timeout = "5s"
-wtype_timeout = "5s"
+wtype_timeout = "60s"
 clipboard_timeout = "3s"
 
 [notifications]
@@ -565,9 +601,12 @@ The first backend is `wtype`. It depends on:
 - `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` being visible to the Hyprvoice user
   service;
 - niri exposing the virtual-keyboard protocol.
-- terminal/tmux clients tolerating the synthetic typing rate; the packaged
-  Hyprvoice wrapper applies a default 10 ms `wtype -d` delay because a
-  zero-delay burst dropped spaces in a live cloud-client-in-tmux test.
+- receiving terminal/application clients tolerating the synthetic typing rate;
+  the packaged Hyprvoice wrapper applies a default 25 ms `wtype -d` delay
+  because fast synthetic typing dropped spaces in live terminal/cloud-client
+  tests. The
+  Hyprvoice `wtype_timeout` is 60 seconds so longer delayed keystreams do not
+  time out and fall through to clipboard.
 
 The clipboard backend in Hyprvoice `v1.0.2` only calls `wl-copy`. It copies the
 transcript; it does not type text or trigger paste. CriomOS can keep that
