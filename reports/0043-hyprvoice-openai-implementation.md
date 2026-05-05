@@ -189,6 +189,22 @@ the intended text:
 The live niri session accepts `wtype ""`, which verifies that the compositor
 exposes the virtual-keyboard path without injecting text.
 
+The first tmux/cloud-client test showed a second `wtype` failure mode: OpenAI
+returned spaces correctly, Hyprvoice logged the correct final transcript, and
+the terminal client received text with some spaces missing. This points at the
+zero-delay synthetic typing burst, not the STT model. `wtype` documents `-d
+TIME` as a millisecond delay between keystrokes when typing text, with default
+`0`, and Hyprvoice `v1.0.2` calls `wtype -- <text>` with no delay.
+
+CriomOS-home therefore wraps only Hyprvoice's private `wtype` dependency with:
+
+```sh
+wtype -d "${HYPRVOICE_WTYPE_DELAY_MS:-10}" "$@"
+```
+
+This leaves the system `wtype` unchanged, slows only Hyprvoice injection, and
+keeps the delay overrideable for future terminal/client testing.
+
 This is still a trial, not a proven durable answer. Current upstream niri issues
 show `wtype` can make the focused app stop receiving real keyboard input and
 can produce gibberish when focus changes. If those bugs reproduce in the live
@@ -313,9 +329,9 @@ The runtime calls external programs by name:
 - `whisper-cli` only when using the local `whisper-cpp` provider.
 
 The Nix package should wrap `hyprvoice` with a `PATH` containing at least
-`pipewire`, `libnotify`, `wtype`, and `wl-clipboard`. Add `ydotool`,
-`dotool`, or `whisper-cpp` only when the configured backend/provider actually
-uses it.
+`pipewire`, `libnotify`, a Hyprvoice-private delayed `wtype` wrapper, and
+`wl-clipboard`. Add `ydotool`, `dotool`, or `whisper-cpp` only when the
+configured backend/provider actually uses it.
 Relying on the ambient user PATH would make the service brittle.
 
 Local validation:
@@ -338,12 +354,21 @@ equivalent blueprint-discovered package path:
   buildGoModule,
   fetchFromGitHub,
   makeWrapper,
+  writeShellScriptBin,
   pipewire,
   libnotify,
   wtype,
   wl-clipboard,
 }:
 
+let
+  wtypeForHyprvoice = writeShellScriptBin "wtype" ''
+    set -eu
+
+    delay_ms="''${HYPRVOICE_WTYPE_DELAY_MS:-10}"
+    exec ${wtype}/bin/wtype -d "$delay_ms" "$@"
+  '';
+in
 buildGoModule {
   pname = "hyprvoice";
   version = "1.0.2";
@@ -371,7 +396,7 @@ buildGoModule {
         lib.makeBinPath [
           pipewire
           libnotify
-          wtype
+          wtypeForHyprvoice
           wl-clipboard
         ]
       }
@@ -386,6 +411,7 @@ buildGoModule {
 }
 ```
 
+The delayed `wtype` wrapper is deliberately private to the Hyprvoice closure.
 `ydotool`, `dotool`, and `whisper-cpp` can be omitted from the wrapper until the
 module config uses them. Keeping tools in the wrapper before the module config
 uses them makes dependency failures less legible, not more.
@@ -539,6 +565,9 @@ The first backend is `wtype`. It depends on:
 - `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` being visible to the Hyprvoice user
   service;
 - niri exposing the virtual-keyboard protocol.
+- terminal/tmux clients tolerating the synthetic typing rate; the packaged
+  Hyprvoice wrapper applies a default 10 ms `wtype -d` delay because a
+  zero-delay burst dropped spaces in a live cloud-client-in-tmux test.
 
 The clipboard backend in Hyprvoice `v1.0.2` only calls `wl-copy`. It copies the
 transcript; it does not type text or trigger paste. CriomOS can keep that
@@ -598,6 +627,8 @@ tools.
 - `wtype` source and docs:
   <https://github.com/atx/wtype/blob/master/main.c>,
   <https://github.com/atx/wtype/blob/master/README.md>
+- Debian `wtype(1)` man page for `-d TIME`:
+  <https://manpages.debian.org/trixie/wtype/wtype.1.en.html>
 - niri `wtype` issue checks:
   <https://github.com/niri-wm/niri/issues/2280>,
   <https://github.com/niri-wm/niri/issues/2314>,
