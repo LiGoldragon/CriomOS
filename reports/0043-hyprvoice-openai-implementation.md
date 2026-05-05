@@ -8,27 +8,27 @@ No paid STT or LLM API call was made while researching or validating this.
 
 ## Current Answer
 
-Use Hyprvoice as the first OpenAI-backed dictation implementation only after a
-small local repair layer. Start with batch `gpt-4o-transcribe`, not OpenAI
-Realtime.
+Use Hyprvoice as the first OpenAI-backed dictation implementation with the
+common upstream desktop trust model: a private Home Manager service wrapper
+reads `gopass openai/api-key`, exports `OPENAI_API_KEY`, and execs
+`hyprvoice serve`. Start with batch `gpt-4o-transcribe`, not OpenAI Realtime.
 
 Hyprvoice `v1.0.2` already exposes the useful surface: a user daemon,
 PipeWire microphone capture, OpenAI `whisper-1`, `gpt-4o-transcribe`,
 `gpt-4o-mini-transcribe`, `gpt-4o-realtime-preview`, optional LLM cleanup,
 keywords, and text injection through `ydotool`, `wtype`, or clipboard.
 
-For CriomOS/niri, the repaired implementation should be:
+For CriomOS/niri, the implementation should be:
 
 1. Package Hyprvoice from source as a Nix derivation in `CriomOS-home`.
-2. Carry a local Hyprvoice patch for secret handling, transcript logging, and
-   Unicode-safe paste insertion.
+2. Add a Home Manager `dictation` module that owns Hyprvoice config, the
+   user service, the private gopass-backed daemon wrapper, and the niri toggle
+   binding.
 3. Enable the NixOS `ydotoold` service from `CriomOS` only on edge/graphical
    hosts.
-4. Add a Home Manager `dictation` module that owns Hyprvoice config, the
-   user service, OpenAI credential source, and the niri toggle binding.
-5. Configure initial transcription as OpenAI `gpt-4o-transcribe`, LLM cleanup
-   disabled, paste-first insertion, and no `wtype` until niri-specific testing
-   says it is stable.
+4. Configure initial transcription as OpenAI `gpt-4o-transcribe`, LLM cleanup
+   disabled, injection backends `["ydotool", "clipboard"]`, and no `wtype`
+   until niri-specific testing says it is stable.
 
 The important shape is that Hyprvoice is a user-session application. The
 package and service belong near the home-manager profile; only privileged
@@ -36,23 +36,26 @@ uinput support belongs in CriomOS.
 
 ## Audit Findings
 
-The original proposal is not ready to implement unchanged. It has seven
-concrete flaws:
+The strict audit found seven concrete issues. The first implementation accepts
+Hyprvoice's common env/config trust model for the OpenAI key, so the first two
+items are accepted tradeoffs rather than blockers:
 
 1. **The OpenAI key boundary is wider than intended.** A service wrapper that
    exports `OPENAI_API_KEY` before `exec hyprvoice serve` gives the key to the
    Hyprvoice process. Hyprvoice then starts `pw-record`, `pw-cli`, `ydotool`,
    `wtype`, `wl-copy`, `notify-send`, and `whisper-cli` with Go's default child
-   environment inheritance. That violates the intended boundary that only the
-   executable needing the key receives it.
+   environment inheritance. This is wider than the earlier strict boundary
+   request, but it matches the common upstream desktop model.
 2. **Environment variables are the wrong secret transport for a long-running
-   service.** systemd's own documentation says service environment variables are
-   exposed via manager APIs and propagate down the process tree. The wrapper is
-   acceptable only as a temporary bridge if the application sanitizes child
-   environments.
-3. **`ydotool type` is not enough for the target text.** Upstream `ydotool`
-   has open issues around non-QWERTY layouts and accented characters. That makes
-   it a poor primary path for Colemak plus Sanskrit/IAST or other Unicode text.
+   service under a strict model.** systemd's own documentation says service
+   environment variables are exposed via manager APIs and propagate down the
+   process tree. This is acceptable for the chosen upstream-style first pass,
+   but not for a future least-privilege credential boundary.
+3. **`ydotool type` may not be enough for the target text.** Upstream
+   `ydotool` has open issues around non-QWERTY layouts and accented characters.
+   The first implementation accepts this as a testable risk; if it fails on
+   Colemak plus Sanskrit/IAST or other Unicode text, the insertion path moves to
+   the deferred paste-first repair.
 4. **The proposed TOML is incomplete.** Hyprvoice `v1.0.2` does not apply
    recording defaults when loading a hand-written config. Omitting `[recording]`
    leaves zero sample rate, channels, and buffer sizes; the initial validation
@@ -70,16 +73,19 @@ concrete flaws:
    does not expose that command. Provider smoke tests therefore need a different
    local harness or a newer upstream tag.
 
-## Repair Research
+## Deferred Strict-Boundary Research
 
 ### Secret Boundary
+
+This section is not part of the first implementation. It records the repair path
+if CriomOS later decides that Hyprvoice's common env-key model is too broad.
 
 There is no shell-only wrapper that gives the OpenAI key strictly to Hyprvoice
 and guarantees Hyprvoice's children do not inherit it. In Go, an `exec.Cmd` with
 `Env = nil` inherits the parent process environment. Hyprvoice uses that default
 for the external programs it starts.
 
-The right repair is a small local Hyprvoice patch:
+The strict repair would be a small local Hyprvoice patch:
 
 - Add a helper for child commands that removes cloud API key variables
   (`OPENAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, `ELEVENLABS_API_KEY`,
@@ -150,9 +156,12 @@ patch.
 
 ### Text Insertion
 
-The first useful insertion path should be paste-first, not `ydotool type`.
-`ydotool` remains useful for small control chords, but it is not the right tool
-to type arbitrary transcript text under Colemak and Unicode vocabulary.
+The first upstream-style insertion path is `ydotool type` with clipboard
+fallback. If that fails on Colemak or Unicode/IAST text, the stricter repair is
+paste-first rather than `ydotool type`.
+Under that stricter repair, `ydotool` remains useful for small control chords,
+but not for typing arbitrary transcript text under Colemak and Unicode
+vocabulary.
 
 Patch Hyprvoice with a backend such as `clipboard-paste`:
 
@@ -194,7 +203,7 @@ streaming = false
 threads = 0
 
 [injection]
-backends = ["clipboard-paste", "clipboard"]
+backends = ["ydotool", "clipboard"]
 ydotool_timeout = "5s"
 wtype_timeout = "5s"
 clipboard_timeout = "3s"
@@ -207,8 +216,9 @@ type = "desktop"
 enabled = false
 ```
 
-Until `clipboard-paste` exists, use `["ydotool", "clipboard"]` only for ASCII
-smoke testing and treat Unicode/IAST insertion as expected-failing.
+If `ydotool` fails the target Unicode/IAST typing cases, add the deferred
+`clipboard-paste` backend and make `["clipboard-paste", "clipboard"]` the
+default.
 
 ### Config Ownership
 
@@ -288,12 +298,10 @@ The runtime calls external programs by name:
 - `notify-send` for desktop notifications.
 - `whisper-cli` only when using the local `whisper-cpp` provider.
 
-The Nix package should apply the local repair patches at build time and wrap
-`hyprvoice` with a `PATH` containing at least `pipewire`, `wl-clipboard`,
-`libnotify`, and `ydotool`. Add `dotool`, `wtype`, and `whisper-cpp` only when
-the configured backend/provider actually uses them. Relying on the ambient user
-PATH would make the service brittle, and hiding security repairs in shell
-wrappers would leave the daemon's child-process behavior unchanged.
+The Nix package should wrap `hyprvoice` with a `PATH` containing at least
+`pipewire`, `wl-clipboard`, `libnotify`, and `ydotool`. Add `wtype`,
+`whisper-cpp`, or `dotool` only when the configured backend/provider actually
+uses them. Relying on the ambient user PATH would make the service brittle.
 
 Local validation:
 
@@ -363,10 +371,10 @@ buildGoModule {
 }
 ```
 
-`dotool`, `wtype`, and `whisper-cpp` can be omitted from the wrapper at first if
-the first trial is strictly OpenAI plus clipboard-paste insertion. Keeping tools
-in the wrapper before the module config uses them makes dependency failures
-less legible, not more.
+`wtype`, `whisper-cpp`, and `dotool` can be omitted from the wrapper at first
+because the first trial is OpenAI plus `ydotool`/clipboard insertion. Keeping
+tools in the wrapper before the module config uses them makes dependency
+failures less legible, not more.
 
 ## System Surface
 
@@ -405,8 +413,8 @@ The module should own:
 - `xdg.configFile."hyprvoice/config.toml".text`
 - `systemd.user.services.hyprvoice`
 - the niri keybinding
-- the provider key source, without exporting the key into the daemon's process
-  environment
+- a private service wrapper that reads `gopass openai/api-key`, exports
+  `OPENAI_API_KEY`, and execs `hyprvoice serve`
 
 The config should be complete and Nix-owned. The initial version should be:
 
@@ -428,7 +436,7 @@ streaming = false
 threads = 0
 
 [injection]
-backends = ["clipboard-paste", "clipboard"]
+backends = ["ydotool", "clipboard"]
 ydotool_timeout = "5s"
 wtype_timeout = "5s"
 clipboard_timeout = "3s"
@@ -441,52 +449,34 @@ type = "desktop"
 enabled = false
 ```
 
-Because this plan makes Home Manager own the durable Hyprvoice config, that
-config must stay non-secret. This is a guardrail for the module design, not a
-claim that the key should ever be placed in Nix. The durable repair is to patch
-Hyprvoice so the OpenAI provider can read the key from `gopass`:
+Because Home Manager owns the durable Hyprvoice config, that config stays
+non-secret. The key source is `gopass openai/api-key`; Nix contains only the
+wrapper script and command path, never the key value.
 
-```toml
-[providers.openai]
-api_key_command = ["gopass", "show", "-o", "openai/api-key"]
-```
+The package binary itself must remain unwrapped for secrets. Client commands
+such as `hyprvoice toggle`, `hyprvoice status`, `hyprvoice cancel`, and the niri
+binding only talk to the daemon over Hyprvoice IPC; they do not need the OpenAI
+key and should not receive it. Commands that intentionally call provider APIs
+need an explicit command path and explicit user permission before any paid test.
 
-That command belongs inside the OpenAI adapter construction path. It should not
-be a package wrapper, a general executable on PATH, or a process-wide
-environment import.
-
-If the first implementation does not include `api_key_command`, use the runtime
-config bridge described in the repair section: generate a private config below
-`XDG_RUNTIME_DIR`, append the OpenAI key there, set `XDG_CONFIG_HOME` for the
-daemon, and keep `OPENAI_API_KEY` unset. This bridge is less good than the patch
-because the key becomes a same-user-readable runtime file, but it still avoids
-leaking the key to `pw-record`, `ydotool`, `wl-copy`, and notification
-subprocesses.
-
-The package binary itself must remain unwrapped. Client commands such as
-`hyprvoice toggle`, `hyprvoice status`, `hyprvoice cancel`, and the niri binding
-only talk to the daemon over Hyprvoice IPC; they do not need the OpenAI key and
-should not receive it. Commands that intentionally call provider APIs need an
-explicit command path and explicit user permission before any paid test.
-
-With the durable `api_key_command` patch, the user service can run Hyprvoice
-directly:
+The wrapper is private to this module:
 
 ```nix
-systemd.user.services.hyprvoice = {
-  Unit = {
-    Description = "Hyprvoice dictation daemon";
-    PartOf = [ "graphical-session.target" ];
-  };
+hyprvoiceServe = pkgs.writeShellScript "hyprvoice-serve" ''
+  set -eu
 
-  Service = {
-    ExecStart = "${hyprvoice}/bin/hyprvoice serve";
-    Restart = "on-failure";
-    Environment = [
-      "YDOTOOL_SOCKET=/run/ydotoold/socket"
-    ];
-  };
-};
+  OPENAI_API_KEY="$(${pkgs.gopass}/bin/gopass show -o openai/api-key)"
+  export OPENAI_API_KEY
+  export YDOTOOL_SOCKET="''${YDOTOOL_SOCKET:-/run/ydotoold/socket}"
+
+  exec ${hyprvoice}/bin/hyprvoice serve
+'';
+```
+
+Then the service runs only that private wrapper:
+
+```nix
+systemd.user.services.hyprvoice.Service.ExecStart = "${hyprvoiceServe}";
 ```
 
 The systemd user service needs the graphical session environment. CriomOS-home
@@ -544,39 +534,39 @@ be the first trial.
 niri issues around `wtype`, and Hyprvoice does not need `wtype` for the first
 trial.
 
-The repaired first backend is clipboard-paste. It depends on:
+The upstream-style first backend is `ydotool`, with clipboard as fallback. It
+depends on:
 
-- `wl-copy` and `wl-paste` from `wl-clipboard`;
-- `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` being visible to the user service;
-- a reliable paste trigger, initially `ydotool key ctrl+v`;
-- the NixOS `ydotoold` service, group membership, and `YDOTOOL_SOCKET` only for
-  that small paste chord.
+- the NixOS `ydotoold` service running;
+- the user being in the configured `ydotool` group after a new login;
+- `YDOTOOL_SOCKET` being visible to the Hyprvoice user service;
+- the virtual keyboard layout producing the intended text under the configured
+  niri/Colemak layout.
 
 The clipboard backend in Hyprvoice `v1.0.2` only calls `wl-copy`. It copies the
 transcript; it does not type text or trigger paste. Treat it as a recovery path,
 not as the main typing backend.
 
-`ydotool type` remains useful only as an ASCII smoke-test backend. It should not
-be the acceptance path for mixed layout or Unicode dictation.
+`ydotool type` is the acceptance path for the first implementation. If it fails
+on mixed layout or Unicode dictation, move to the deferred `clipboard-paste`
+repair.
 
 ## Implementation Order
 
-1. Patch Hyprvoice for sanitized child-command environments, reduced transcript
-   logging, `api_key_command`, and `clipboard-paste`.
-2. Add the patched Hyprvoice source package to `CriomOS-home` and run package
-   checks with `CI=true` and all cloud API key variables unset.
-3. Add the `dictation` Home Manager module with the complete OpenAI batch config
-   and the user service that runs Hyprvoice directly.
-4. Gate `programs.ydotool` in CriomOS to edge/graphical hosts and extend
+1. Add the Hyprvoice source package to `CriomOS-home` and run package checks
+   with `CI=true` and all cloud API key variables unset.
+2. Add the `dictation` Home Manager module with the complete OpenAI batch
+   config and private gopass-backed daemon wrapper.
+3. Gate `programs.ydotool` in CriomOS to edge/graphical hosts and extend
    horizon-built users with the configured ydotool group.
-5. Add the niri `Mod+V` toggle binding and start/restart the daemon from the
+4. Add the niri `Mod+V` toggle binding and start/restart the daemon from the
    niri session bootstrap after importing session environment variables.
-6. Build and deploy through the normal lojix/CriomOS path, then log out and
+5. Build and deploy through the normal lojix/CriomOS path, then log out and
    back in so the group membership and user manager environment are fresh.
-7. Test local behavior without paid APIs: service startup, toggle IPC,
-   microphone capture failure reporting, clipboard-paste insertion, and
+6. Test local behavior without paid APIs: service startup, toggle IPC,
+   microphone capture failure reporting, clipboard fallback, and
    `ydotool type` ASCII smoke behavior.
-8. Only after explicit permission, run real OpenAI transcription tests against
+7. Only after explicit permission, run real OpenAI transcription tests against
    `gpt-4o-transcribe`.
 
 ## Sources Checked
