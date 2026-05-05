@@ -24,7 +24,7 @@ let
     cacheUrls
     dispatchersSshPubKeys
     size
-    isBuilder
+    isRemoteNixBuilder
     isDispatcher
     isNixCache
     ;
@@ -116,7 +116,7 @@ in
 
     # ─── Build receiver (this node serves builds via SSH) ──────
     #
-    # Gated on `isBuilder` so only nodes flagged as build targets
+    # Gated on `isRemoteNixBuilder` so only nodes flagged as remote Nix builders
     # in horizon expose the service. `nix.sshServe.enable = true`
     # creates a restricted `nix-ssh` user whose only allowed
     # command is `nix-daemon --stdio` (ssh-ng) — no shell, no PTY.
@@ -135,7 +135,7 @@ in
     # provisioning `/root/.ssh/id_*` declaratively (NixOS doesn't
     # do that automatically).
     sshServe = {
-      enable = isBuilder;
+      enable = isRemoteNixBuilder;
       protocol = "ssh-ng";
       write = true;
       trusted = true;
@@ -146,7 +146,7 @@ in
     #
     # Gated on `isDispatcher`. `buildMachines` is sourced from
     # `horizon.node.builderConfigs`, a list of every ex-node
-    # horizon-rs flagged `isBuilder`, with hostName, sshUser
+    # horizon-rs flagged `isRemoteNixBuilder`, with hostName, sshUser
     # (= "nix-ssh", matching the receiver above), sshKey
     # (= /etc/ssh/ssh_host_ed25519_key, the local host key as
     # daemon identity), supportedFeatures, system, maxJobs, and
