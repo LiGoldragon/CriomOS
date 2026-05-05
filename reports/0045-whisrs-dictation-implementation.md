@@ -63,6 +63,25 @@ Before calling this done in daily use:
 
 No paid STT call was made while writing this report.
 
+## Verification on 2026-05-06
+
+- `CriomOS-home#whisrs` built successfully from pushed `origin/main` with
+  `--refresh`; both `whisrs` and `whisrsd` are present.
+- Direct `CriomOS#nixosConfigurations.target` build correctly failed without
+  lojix-projected `horizon` and `system` inputs.
+- `lojix-cli` `OsOnly ... Build` succeeded for `goldragon/ouranos` from
+  `github:LiGoldragon/CriomOS/main`.
+- `lojix-cli` `HomeOnly ... Activate` succeeded for user `li` from
+  `github:LiGoldragon/CriomOS-home/main`; `whisrs.service` started and
+  `whisrs status` returned `idle`.
+- `lojix-cli` `OsOnly ... Switch` succeeded for `goldragon/ouranos`; the
+  persistent system group now includes `li` in `uinput`, and `/dev/uinput` is
+  owned by `root:uinput` with group read/write.
+- The already-running shell, niri process, and user systemd manager still lack
+  `uinput` in their live credentials. Log out and log back in before judging
+  whisrs typing behavior from `Mod+V`.
+- No paid STT call was made during verification.
+
 ## Sources
 
 - Whisrs upstream: <https://github.com/y0sif/whisrs>
