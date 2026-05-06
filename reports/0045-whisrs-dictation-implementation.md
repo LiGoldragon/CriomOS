@@ -34,10 +34,14 @@ Home side, in `CriomOS-home`:
   `openai/api-key` into `WHISRS_OPENAI_API_KEY`.
 - `XDG_DATA_HOME` is pointed at `$XDG_RUNTIME_DIR/whisrs-data` for the daemon,
   so upstream transcript history is runtime-only.
-- `notify = false`, so the upstream "Done: <preview>" notification path does
-  not display dictated text.
+- `notify = true`, following upstream whisrs behavior during the trial. This
+  means normal dictation completion notifications can include transcript
+  previews.
 - `Mod+V` toggles `whisrs`.
-- `Mod+Shift+V` keeps Hyprvoice as fallback.
+- `Mod+Shift+V` toggles the CriomOS `toggle-copy` package patch: record,
+  transcribe, and copy the full transcript to the clipboard without automatic
+  paste. This is the explicit Claude/raw-TUI escape hatch.
+- Hyprvoice is no longer active in the profile.
 
 System side, in `CriomOS`:
 
