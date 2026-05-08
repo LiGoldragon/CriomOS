@@ -74,8 +74,12 @@ mkIf behavesAs.edge {
       niri = {
         default = [ "gtk" ];
         "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+        # darkman dropped — the chroma daemon owns the appearance
+        # axis now and writes dconf directly via its apply
+        # script. xdg-desktop-portal-gtk reads dconf and serves
+        # `org.freedesktop.portal.Settings.color-scheme` to
+        # GTK4 / Firefox / Electron / etc.
         "org.freedesktop.impl.portal.Settings" = [
-          "darkman"
           "gtk"
         ];
       };

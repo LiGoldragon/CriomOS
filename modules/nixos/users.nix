@@ -34,6 +34,11 @@ let
       extraGroups =
         user.extraGroups
         ++ (optional behavesAs.edge "uinput")
+        # `chroma` gates access to the visual-state daemon's UDS
+        # in /run/chroma/. Auto-granted to graphical users; server-
+        # only users (no edge) are excluded by directory permission
+        # alone. See modules/nixos/chroma.nix.
+        ++ (optional behavesAs.edge "chroma")
         ++ (optional (config.programs.sway.enable == true) "sway")
         ++ (optional (
           trust.atLeastMed && config.networking.networkmanager.enable == true
