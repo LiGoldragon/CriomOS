@@ -18,6 +18,7 @@ in
     ./normalize.nix
     ./nix.nix
     ./complex.nix
+    ./chroma.nix
     ./llm.nix
     ./users.nix
     ./network
