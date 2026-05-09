@@ -61,7 +61,7 @@ in
         "btrfs"
         "ntfs"
       ]
-      ++ (optional size.atLeastMin "exfat")
+      ++ (optional size.min "exfat")
     );
   };
 
@@ -108,7 +108,7 @@ in
             networkmanager_strongswan
           ]
       )
-      ++ (optionals (size.atLeastMin && !behavesAs.iso) [
+      ++ (optionals (size.min && !behavesAs.iso) [
         git
         curl
         jq

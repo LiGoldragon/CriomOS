@@ -229,13 +229,13 @@ mkIf behavesAs.bareMetal {
     graphics.extraPackages = optionals treatAsIntel intelGpuDrivers;
   };
 
-  location.provider = if size.atLeastMin then "geoclue2" else "manual";
+  location.provider = if size.min then "geoclue2" else "manual";
 
   boot = {
     extraModulePackages =
       [ ]
       ++ (optional modelIsThinkpad config.boot.kernelPackages.acpi_call)
-      ++ (optional size.atLeastLarge config.boot.kernelPackages.v4l2loopback);
+      ++ (optional size.large config.boot.kernelPackages.v4l2loopback);
 
     initrd = {
       availableKernelModules = [
@@ -245,10 +245,10 @@ mkIf behavesAs.bareMetal {
     };
 
     kernelModules =
-      [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu") ++ (optional (size.atLeastMin && behavesAs.edge) "uinput");
+      [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu") ++ (optional (size.min && behavesAs.edge) "uinput");
 
     extraModprobeConfig = (
-      optionalString size.atLeastLarge ''
+      optionalString size.large ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
       ''
     ) + (
@@ -379,8 +379,8 @@ mkIf behavesAs.bareMetal {
       with pkgs;
       [ lm_sensors ]
       ++ optionals chipIsIntel intelUtils
-      ++ optionals size.atLeastLarge [ v4l-utils ]
-      ++ optionals (size.atLeastMax && behavesAs.edge) waydroidPackages
+      ++ optionals size.large [ v4l-utils ]
+      ++ optionals (size.max && behavesAs.edge) waydroidPackages
       ++ optional modelIsThinkpad batteryCtl
       ;
 
@@ -394,7 +394,7 @@ mkIf behavesAs.bareMetal {
     fwupd.enable = true;
 
     geoclue2 = {
-      enable = size.atLeastMin;
+      enable = size.min;
       enableDemoAgent = lib.mkOverride 0 true;
       geoProviderUrl = "https://beacondb.net/v1/geolocate";
       appConfig.redshift = {
@@ -407,12 +407,12 @@ mkIf behavesAs.bareMetal {
     };
 
     localtimed = {
-      enable = size.atLeastMin;
+      enable = size.min;
     };
 
     printing = {
       enable = true;
-      cups-pdf.enable = size.atLeastMin;
+      cups-pdf.enable = size.min;
       drivers = printingDriversPkgs;
     };
 
@@ -513,10 +513,10 @@ mkIf behavesAs.bareMetal {
 
   virtualisation = {
     # libvirtd + waydroid: Max-tier per Li (heavy: ~100MB libvirt,
-    # ~2GB waydroid). isLargeEdge now means atLeastLarge so these go
+    # ~2GB waydroid). isLargeEdge now means size.large so these go
     # inline gated on Max + edge instead.
-    libvirtd.enable = size.atLeastMax && behavesAs.edge;
-    waydroid.enable = size.atLeastMax && behavesAs.edge;
-    spiceUSBRedirection.enable = size.atLeastLarge;
+    libvirtd.enable = size.max && behavesAs.edge;
+    waydroid.enable = size.max && behavesAs.edge;
+    spiceUSBRedirection.enable = size.large;
   };
 }

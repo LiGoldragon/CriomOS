@@ -21,7 +21,7 @@ let
     let
       inherit (user) trust sshPubKeys;
     in
-    optionalAttrs trust.atLeastMin {
+    optionalAttrs trust.min {
       name = user.name;
 
       useDefaultShell = true;
@@ -29,8 +29,8 @@ let
 
       openssh.authorizedKeys.keys = sshPubKeys;
 
-      # horizon-rs gives us the trust-derived list (audio + atLeastMed:video
-      # + atLeastMax:[adbusers,…]); add nixos-module-context groups here.
+      # horizon-rs gives us the trust-derived list (audio + size.medium:video
+      # + size.max:[adbusers,…]); add nixos-module-context groups here.
       extraGroups =
         user.extraGroups
         ++ (optional behavesAs.edge "uinput")
@@ -41,7 +41,7 @@ let
         ++ (optional behavesAs.edge "chroma")
         ++ (optional (config.programs.sway.enable == true) "sway")
         ++ (optional (
-          trust.atLeastMed && config.networking.networkmanager.enable == true
+          trust.medium && config.networking.networkmanager.enable == true
         ) "networkmanager");
 
       linger = user.enableLinger;
