@@ -1,29 +1,22 @@
-# Chroma — system-level wiring for the visual-state daemon.
+# Chroma — legacy system-level compatibility.
 #
 # CriomOS-home runs the daemon and CLI as per-user processes
-# (modules/home/profiles/min/chroma.nix in CriomOS-home). The
-# system side does two things:
+# (modules/home/profiles/min/chroma.nix in CriomOS-home). Current
+# Chroma uses the normal per-user socket at
+# `$XDG_RUNTIME_DIR/chroma.sock`.
 #
-#   1. declare the `chroma` group, used to gate which users can
-#      bind / connect to the daemon's UDS;
-#   2. create a group-controlled `/run/chroma/` directory at boot
-#      so each user's `chroma-daemon` can drop a per-uid socket
-#      inside (`/run/chroma/<uid>.sock`).
-#
-# Membership in the `chroma` group is auto-granted to graphical
-# users in `modules/nixos/users.nix` via the `behavesAs.edge`
-# trust flag. Server-only users (no graphical session) are kept
-# out by the directory permission alone.
+# This module is retained only so old home-manager generations that
+# still point at `/run/chroma/<uid>.sock` have a migration runway.
+# Do not add new Chroma clients to this directory; remove this module
+# after the socket-path migration has landed everywhere.
 {
   ...
 }:
 {
   users.groups.chroma = { };
 
-  # /run/chroma/ is the system-managed home for chroma's
-  # per-user UDS sockets. Mode 0770 root:chroma — non-group
-  # users can't even enter the directory, so cannot connect to
-  # any user's chroma daemon.
+  # Legacy socket directory for pre-migration Chroma generations.
+  # Current Chroma defaults to `$XDG_RUNTIME_DIR/chroma.sock`.
   systemd.tmpfiles.rules = [
     "d /run/chroma 0770 root chroma -"
   ];

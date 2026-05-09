@@ -34,15 +34,13 @@ let
       extraGroups =
         user.extraGroups
         ++ (optional behavesAs.edge "uinput")
-        # `chroma` gates access to the visual-state daemon's UDS
-        # in /run/chroma/. Auto-granted to graphical users; server-
-        # only users (no edge) are excluded by directory permission
-        # alone. See modules/nixos/chroma.nix.
+        # Legacy Chroma group for old home-manager generations that
+        # used /run/chroma/<uid>.sock. Current Chroma uses the user's
+        # own $XDG_RUNTIME_DIR socket; keep this through one migration
+        # wave, then remove it with modules/nixos/chroma.nix.
         ++ (optional behavesAs.edge "chroma")
         ++ (optional (config.programs.sway.enable == true) "sway")
-        ++ (optional (
-          trust.medium && config.networking.networkmanager.enable == true
-        ) "networkmanager");
+        ++ (optional (trust.medium && config.networking.networkmanager.enable == true) "networkmanager");
 
       linger = user.enableLinger;
     };
