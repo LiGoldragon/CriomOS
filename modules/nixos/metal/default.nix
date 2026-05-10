@@ -401,9 +401,10 @@ mkIf behavesAs.bareMetal {
         isAllowed = true;
         isSystem = true;
       };
-      # darkman entry retired — chroma will take over the
-      # appConfig slot when its geoclue subscription lands
-      # (per ScheduleEngine in report 28).
+      appConfig.chroma = {
+        isAllowed = true;
+        isSystem = false;
+      };
     };
 
     localtimed = {
