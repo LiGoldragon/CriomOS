@@ -33,7 +33,7 @@ let
 in
 {
   imports = [
-    ./unbound.nix
+    ./dnsmasq.nix
     ./yggdrasil.nix
     ./tailscale.nix
     ./headscale.nix

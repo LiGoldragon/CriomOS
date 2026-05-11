@@ -22,7 +22,7 @@ in
     ./llm.nix
     ./users.nix
     ./network
-    # aggregator — pulls in unbound, yggdrasil, tailscale,
+    # aggregator — pulls in dnsmasq, yggdrasil, tailscale,
     # headscale, nordvpn, wifi-eap, networkd, wireguard,
     # plus networking.hosts entries from horizon.exNodes
     ./edge/default.nix

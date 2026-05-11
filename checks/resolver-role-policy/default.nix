@@ -40,6 +40,13 @@ let
     criomeDomainName = "router-test.goldragon.criome";
     enableNetworkManager = false;
     nodeIp = constants.network.lan.gateway;
+    routerInterfaces = {
+      wan = "wan-test0";
+      wlan = "wlan-test0";
+      wlanBand = "2g";
+      wlanChannel = 6;
+      wlanStandard = "wifi6";
+    };
     yggAddress = "200:db8::1";
     behavesAs = baseBehaviors // {
       router = true;
@@ -69,6 +76,7 @@ let
       };
       modules = [
         ../../modules/nixos/network/default.nix
+        ../../modules/nixos/router/default.nix
       ];
     };
 
@@ -86,10 +94,16 @@ let
 
   routerUnboundEnabled =
     if routerConfiguration.config.services.unbound.enable then "true" else "false";
+  routerDnsmasqEnabled =
+    if routerConfiguration.config.services.dnsmasq.enable then "true" else "false";
   routerResolvedEnabled =
     if routerConfiguration.config.services.resolved.enable then "true" else "false";
-  routerUnboundInterfaces = builtins.toJSON routerConfiguration.config.services.unbound.settings.server.interface;
-  routerForwardZones = builtins.toJSON routerConfiguration.config.services.unbound.settings.forward-zone;
+  routerDnsmasqInterfaces = builtins.toJSON routerConfiguration.config.services.dnsmasq.settings.interface;
+  routerDnsmasqListenAddresses =
+    builtins.toJSON
+      routerConfiguration.config.services.dnsmasq.settings."listen-address";
+  routerDnsmasqAddressRecords = builtins.toJSON routerConfiguration.config.services.dnsmasq.settings.address;
+  routerDnsmasqServers = builtins.toJSON routerConfiguration.config.services.dnsmasq.settings.server;
 in
 pkgs.runCommand "resolver-role-policy" { } ''
   set -eu
@@ -100,10 +114,14 @@ pkgs.runCommand "resolver-role-policy" { } ''
   test ${lib.escapeShellArg desktopNameservers} = '[]'
   test ${lib.escapeShellArg desktopResolvconfEnabled} = false
 
-  test ${lib.escapeShellArg routerUnboundEnabled} = true
+  test ${lib.escapeShellArg routerUnboundEnabled} = false
+  test ${lib.escapeShellArg routerDnsmasqEnabled} = true
   test ${lib.escapeShellArg routerResolvedEnabled} = false
-  echo ${lib.escapeShellArg routerUnboundInterfaces} | grep -F ${lib.escapeShellArg constants.network.lan.gateway}
-  ! echo ${lib.escapeShellArg routerForwardZones} | grep -F 'tailnet.goldragon.criome.'
+  echo ${lib.escapeShellArg routerDnsmasqInterfaces} | grep -F br-lan
+  echo ${lib.escapeShellArg routerDnsmasqListenAddresses} | grep -F ${lib.escapeShellArg constants.network.lan.gateway}
+  echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/router-test.goldragon.criome/200:db8::1'
+  echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/peer-test.goldragon.criome/200:db8::51'
+  ! echo ${lib.escapeShellArg routerDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
 
   touch "$out"
 ''
