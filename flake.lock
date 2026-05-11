@@ -306,11 +306,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1778487294,
-        "narHash": "sha256-HfXX2LVfPlFAnN5Y1FjrLbpgTRDh9jwgrQNovPhMPPs=",
+        "lastModified": 1778494001,
+        "narHash": "sha256-UfxuPw051WBbuz/Nlmr7jGtefo3S+gdhSCh4jgFvhp4=",
         "owner": "LiGoldragon",
         "repo": "clavifaber",
-        "rev": "8cdaa8a314e94b1eba2923c9f3545d407ae1b14d",
+        "rev": "bb0279ce34ff20776f1c31db60722f867311c1e0",
         "type": "github"
       },
       "original": {
