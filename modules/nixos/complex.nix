@@ -17,11 +17,20 @@ let
   # The Converge request as one positional NOTA record. Per
   # clavifaber's ARCHITECTURE.md, fields are:
   # identity_directory, node_name, publication_output,
-  # yggdrasil_address, yggdrasil_public_key,
+  # yggdrasil (Option<YggdrasilPlan>),
   # wifi_client_certificate_pem, state_database,
   # certificate_authority, server_certificate, node_certificates.
+  #
+  # `yggdrasil = None` today: the existing yggdrasil network module at
+  # modules/nixos/network/yggdrasil.nix owns the runtime keypair via its
+  # own preStart seed step. Passing a YggdrasilPlan here would have
+  # clavifaber mint a *different* keypair, so publication.nota would
+  # carry a yggdrasil identity that isn't the one the daemon actually
+  # uses. The consolidation — clavifaber as the sole owner of the
+  # per-host yggdrasil keypair, with the network module reading from
+  # the clavifaber-written file — is deferred (tracked separately).
   convergeRequest = ''
-    (Converge "${dir}" ${config.networking.hostName} "${publicationFile}" None None None "${stateDatabase}" None None [])
+    (Converge "${dir}" ${config.networking.hostName} "${publicationFile}" None None "${stateDatabase}" None None [])
   '';
 in
 {
@@ -39,6 +48,10 @@ in
       "NetworkManager.service"
       "sshd.service"
     ];
+    # `yggdrasil` lives on PATH so the YggdrasilKey actor can mint and
+    # statically derive identity material when the YggdrasilPlan
+    # consolidation lands. Harmless when yggdrasil = None.
+    path = [ pkgs.yggdrasil ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
