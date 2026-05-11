@@ -6,7 +6,7 @@ You **MUST** read AGENTS.md at `github:ligoldragon/lore` — the workspace contr
 
 NixOS-based host OS for the sema ecosystem. Network-neutral system surface (`nixosConfigurations.target`) consumed by lojix-projected `horizon`, `system`, and `deployment` flake inputs.
 
-This repo doubles as the **CriomOS-cluster meta-repo** — `repos/` symlinks the cluster siblings (CriomOS-home, CriomOS-emacs, horizon-rs, lojix-cli, …) and lore. `CriomOS.code-workspace` mirrors the same set for the editor.
+This repo doubles as the **CriomOS-cluster meta-repo** — `repos/` symlinks the cluster siblings (CriomOS-home, CriomOS-emacs, horizon-rs, lojix-cli, …) and lore.
 
 First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-first tracking rule.
 

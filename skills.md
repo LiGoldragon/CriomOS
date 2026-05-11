@@ -35,7 +35,7 @@ This repo owns:
 
 - NixOS modules under `modules/nixos/`.
 - The single public system surface, `nixosConfigurations.target`.
-- The cluster meta-repo view under `repos/` and `CriomOS.code-workspace`.
+- The cluster meta-repo view under `repos/`.
 - System prerequisites for user-space tools, such as groups, udev rules,
   kernel modules, and system services.
 

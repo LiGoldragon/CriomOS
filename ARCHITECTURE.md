@@ -21,8 +21,8 @@ runtime. forge-deploy (currently `lojix-cli`) materialises
 CriomOS configurations.
 
 This repo doubles as the **CriomOS-cluster meta-repo** — it
-hosts the multi-root editor workspace + symlink farm under
-`repos/` that exposes lore + the CriomOS-cluster siblings
+hosts the symlink farm under `repos/` that exposes lore + the
+CriomOS-cluster siblings
 (CriomOS-home, CriomOS-emacs, horizon-rs) and the transitional
 deploy crates (lojix-cli, brightness-ctl, clavifaber). `nix
 develop` / direnv entry refreshes the symlinks.

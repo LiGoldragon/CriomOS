@@ -9,8 +9,7 @@ let
   };
 
   # Sibling repos under ~/git/ exposed as symlinks in ./repos/
-  # at devshell entry. Multi-root workspace (CriomOS.code-workspace)
-  # gives editors the same view via additional folders.
+  # at devshell entry.
   linkedRepos = [
     "lore"
     # CriomOS cluster
