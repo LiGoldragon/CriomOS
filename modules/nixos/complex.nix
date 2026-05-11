@@ -13,49 +13,56 @@ let
   # Per-host artifacts produced by clavifaber. See clavifaber/ARCHITECTURE.md.
   publicationFile = "${dir}/publication.nota";
 
-  # The boot-time setup sequence is a series of NOTA-only clavifaber
-  # calls (no Converge mega-request; that is orchestrator territory and
-  # does not belong in clavifaber). Each call is idempotent — re-runs are
-  # cheap because the per-handler skip-on-disk-existence checks
-  # short-circuit when the output files already exist.
-  identitySetup = ''(IdentitySetup "${dir}")'';
+  # Clavifaber does NOT create the SSH host key. sshd does
+  # (`services.openssh.enable = true` triggers
+  # /etc/ssh/ssh_host_ed25519_key generation at first boot).
+  # clavifaber's job: read sshd's `.pub` and aggregate it into
+  # publication.nota along with the Yggdrasil projection and the
+  # WiFi-PKI client cert when those are wired in.
+  sshdHostPublicKey = "/etc/ssh/ssh_host_ed25519_key.pub";
+
+  # Operator surface is one NOTA record per call. Today's boot
+  # sequence is one call: assemble publication.nota. The
+  # YggdrasilKeypairSetup / cert-issuance verbs land here when the
+  # network/yggdrasil.nix consolidation (primary-8b3) and the
+  # WiFi-PKI plumbing land.
   publicationWriting = ''
-    (PublicKeyPublicationWriting ${config.networking.hostName} "${dir}" None None "${publicationFile}")
+    (PublicKeyPublicationWriting ${config.networking.hostName} (OpenSshPublicKeyLocation "${sshdHostPublicKey}") None None "${publicationFile}")
   '';
 in
 {
   environment.systemPackages = [ clavifaber ];
 
-  # Clavifaber writes private key bytes; restrict the directory.
+  # publication.nota lives in the complex directory; restrict it to
+  # root since clavifaber writes there. The publication file itself
+  # is mode 0644 (publicly readable per the haywire-stage cluster
+  # contract); the containing directory is 0755 so consumers (e.g.
+  # the SSH-pull pattern) can read the file without elevated perms.
   systemd.tmpfiles.rules = [
-    "d ${dir} 0700 root root -"
+    "d ${dir} 0755 root root -"
   ];
 
   systemd.services.complex-init = {
-    description = "Clavifaber host key-material setup";
+    description = "Clavifaber publication assembly";
     wantedBy = [ "multi-user.target" ];
-    before = [
-      "NetworkManager.service"
-      "sshd.service"
-    ];
+    # complex-init reads sshd's ssh_host_ed25519_key.pub, so sshd's
+    # host-key generation must have completed first. NixOS's sshd
+    # generates keys in its preStart; ordering `after = sshd.service`
+    # ensures the key is present.
+    after = [ "sshd.service" ];
     # Operator override: `touch ${dir}/.disabled` on a host to keep
-    # clavifaber from running at boot. Useful when the host's identity
-    # is managed out-of-band (HSM-backed, manually-provisioned, etc.)
-    # and clavifaber must not touch the directory. See
+    # clavifaber from running at boot. See
     # reports/system-specialist/112-clavifaber-existing-host-audit.md.
     unitConfig.ConditionPathExists = "!${dir}/.disabled";
-    # `yggdrasil` lives on PATH so the YggdrasilKey actor can mint and
-    # statically derive identity material when the YggdrasilKeypairSetup
-    # call is wired in (today the publication writes None for the
-    # yggdrasil keypair until the network/yggdrasil.nix consolidation
-    # lands — primary-8b3).
+    # `yggdrasil` lives on PATH for the (currently unused) yggdrasil
+    # keypair setup; harmless when the request doesn't reach the
+    # YggdrasilKey actor.
     path = [ pkgs.yggdrasil ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
     };
     script = ''
-      ${clavifaber}/bin/clavifaber '${identitySetup}'
       ${clavifaber}/bin/clavifaber '${publicationWriting}'
     '';
   };
