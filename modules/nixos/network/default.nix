@@ -4,14 +4,35 @@
   ...
 }:
 let
-  inherit (lib) mkOverride optional optionals;
+  inherit (lib) mkOverride optionals;
   inherit (horizon) node exNodes;
+  inherit (builtins)
+    head
+    match
+    split
+    ;
+
+  sanitizeIp =
+    ip:
+    if ip == null || ip == "" then
+      null
+    else
+      let
+        cleaned = head (split "/" ip);
+      in
+      if cleaned == "" || match ".*%.*" cleaned != null then null else cleaned;
 
   mkCriomeHostEntries =
     name: node:
     let
-      inherit (node) criomeDomainName nodeIp yggAddress;
+      inherit (node) criomeDomainName;
       inherit (node) isNixCache nixCacheDomain;
+      nodeIp = sanitizeIp node.nodeIp;
+      yggAddress = sanitizeIp node.yggAddress;
+      linkLocalIps = builtins.filter (ip: ip != null) (builtins.map sanitizeIp node.linkLocalIps);
+      nixCacheAliases = optionals (isNixCache && nixCacheDomain != null && nixCacheDomain != "") [
+        nixCacheDomain
+      ];
 
       mkPreNodeHost = linkLocalIP: [ ("wg." + criomeDomainName) ];
 
@@ -19,17 +40,21 @@ let
         "${nodeIp}" = [ criomeDomainName ];
       };
 
-      preNodeHosts = lib.genAttrs node.linkLocalIps mkPreNodeHost;
+      preNodeHosts = lib.genAttrs linkLocalIps mkPreNodeHost;
 
       nodeHosts = lib.optionalAttrs (nodeIp != null) (nodeHost // preNodeHosts);
 
       yggdrasilHost = lib.optionalAttrs (yggAddress != null) {
-        "${yggAddress}" = [ criomeDomainName ] ++ (optional isNixCache nixCacheDomain);
+        "${yggAddress}" = [ criomeDomainName ] ++ nixCacheAliases;
       };
 
     in
     yggdrasilHost // nodeHosts;
 
+  allNodes = {
+    "${node.name}" = node;
+  }
+  // exNodes;
 in
 {
   imports = [
@@ -53,7 +78,7 @@ in
       "1.1.1.1"
       "9.9.9.9"
     ];
-    hosts = lib.concatMapAttrs mkCriomeHostEntries exNodes;
+    hosts = lib.concatMapAttrs mkCriomeHostEntries allNodes;
   };
 
   services = {

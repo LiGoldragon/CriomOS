@@ -24,9 +24,9 @@ let
     hasWireguardPubKey = false;
     hasYggPubKey = false;
     isNixCache = false;
-    linkLocalIps = [ ];
+    linkLocalIps = [ "fe80::50/64" ];
     nixCacheDomain = null;
-    nodeIp = "10.18.0.50";
+    nodeIp = "10.18.0.50/32";
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
     yggAddress = "200:db8::50";
@@ -56,6 +56,7 @@ let
   peerNode = baseNode // {
     name = "peer-test";
     criomeDomainName = "peer-test.goldragon.criome";
+    linkLocalIps = [ "fe80::51/64" ];
     nodeIp = "10.18.0.51";
     yggAddress = "200:db8::51";
   };
@@ -89,6 +90,7 @@ let
     if desktopConfiguration.config.services.resolved.enable then "true" else "false";
   desktopNetworkManagerDns = desktopConfiguration.config.networking.networkmanager.dns;
   desktopNameservers = builtins.toJSON desktopConfiguration.config.networking.nameservers;
+  desktopHosts = builtins.toJSON desktopConfiguration.config.networking.hosts;
   desktopResolvconfEnabled =
     if desktopConfiguration.config.networking.resolvconf.enable then "true" else "false";
 
@@ -112,6 +114,10 @@ pkgs.runCommand "resolver-role-policy" { } ''
   test ${lib.escapeShellArg desktopResolvedEnabled} = true
   test ${lib.escapeShellArg desktopNetworkManagerDns} = systemd-resolved
   test ${lib.escapeShellArg desktopNameservers} = '[]'
+  echo ${lib.escapeShellArg desktopHosts} | grep -F '"edge-test.goldragon.criome"'
+  echo ${lib.escapeShellArg desktopHosts} | grep -F '"wg.peer-test.goldragon.criome"'
+  ! echo ${lib.escapeShellArg desktopHosts} | grep -F '/32'
+  ! echo ${lib.escapeShellArg desktopHosts} | grep -F '/64'
   test ${lib.escapeShellArg desktopResolvconfEnabled} = false
 
   test ${lib.escapeShellArg routerUnboundEnabled} = false
