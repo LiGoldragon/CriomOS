@@ -4,6 +4,18 @@ The host OS for the sema ecosystem. NixOS-based. Boots into a
 pre-configured environment where criome, forge, and sundry
 nexus daemons run as the user-space layer.
 
+> **Scope: today, not eventually.** "criome" here is today's daemon
+> (sema-ecosystem records validator) — see
+> `~/primary/repos/criome/ARCHITECTURE.md`. CriomOS is **named after**
+> the *eventual* Criome — the universal computing paradigm in Sema
+> — but CriomOS today is pre-duct-tape: a NixOS-targeted host that
+> uses transitional shims (ClaviFaber for key generation, lojix-cli
+> for deploy, etc.) where eventual Criome's substrate will later
+> sit. Eventually the OS is written in Sema; ClaviFaber-shaped shims
+> are obsoleted by Criome's quorum-signature multi-sig system at
+> that point. See `~/primary/ESSENCE.md` §"Today and eventually —
+> different things, different names".
+
 CriomOS is **the consumer of forge**, not a member of the criome
 runtime. forge-deploy (currently `lojix-cli`) materialises
 CriomOS configurations.
