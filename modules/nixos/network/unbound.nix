@@ -17,7 +17,6 @@ let
     head
     match
     ;
-  inherit (lib) filter mapAttrsToList concatMapStringsSep lowPrio;
   inherit (horizon) cluster node exNodes;
   inherit (horizon.node) behavesAs;
 
@@ -31,7 +30,6 @@ let
   listenIPs = [
     "::1"
     "127.0.0.1"
-  ] ++ lib.optionals behavesAs.router [
     lanGateway
   ];
 
@@ -52,57 +50,81 @@ let
 
   mkForwardServerUrls = domain: ipList: map (ip: "${ip}@853#${domain}") ipList;
 
-  forwardServerUrls = concatLists (map (name: mkForwardServerUrls name TLSDNServers.${name}) (attrNames TLSDNServers));
+  forwardServerUrls = concatLists (
+    map (name: mkForwardServerUrls name TLSDNServers.${name}) (attrNames TLSDNServers)
+  );
 
-  mkRecord = { name, rtype, value }:
-    "\"${concatStringsSep " " [
-      name
-      "IN"
-      rtype
-      value
-    ]}\"";
+  mkRecord =
+    {
+      name,
+      rtype,
+      value,
+    }:
+    "\"${
+      concatStringsSep " " [
+        name
+        "IN"
+        rtype
+        value
+      ]
+    }\"";
 
-  sanitizeIp = ip:
+  sanitizeIp =
+    ip:
     if ip == null || ip == "" then
       null
     else
       let
         cleaned = head (split "/" ip);
       in
-        if cleaned == "" || match ".*%.*" cleaned != null then null else cleaned;
+      if cleaned == "" || match ".*%.*" cleaned != null then null else cleaned;
 
-  recordTypeForIp = ip:
-    if match ".*:.*" ip != null then "AAAA" else "A";
+  recordTypeForIp = ip: if match ".*:.*" ip != null then "AAAA" else "A";
 
   horizonNodes = [ node ] ++ attrValues exNodes;
 
-  mkPrimaryAddress = entry:
+  mkPrimaryAddress =
+    entry:
     let
       yggAddress = sanitizeIp entry.yggAddress;
       nodeIp = sanitizeIp entry.nodeIp;
     in
-      if yggAddress != null then yggAddress else nodeIp;
+    if yggAddress != null then yggAddress else nodeIp;
 
-  mkPrimaryRecords = entry:
+  mkPrimaryRecords =
+    entry:
     let
       address = mkPrimaryAddress entry;
       alias = entry.nixCacheDomain;
       aliasRecords =
         if alias == null || alias == "" || address == null then
-          []
+          [ ]
         else
-          [ (mkRecord { name = alias; rtype = recordTypeForIp address; value = address; }) ];
+          [
+            (mkRecord {
+              name = alias;
+              rtype = recordTypeForIp address;
+              value = address;
+            })
+          ];
     in
-      if address == null then
-        []
-      else
-        [ (mkRecord { name = entry.criomeDomainName; rtype = recordTypeForIp address; value = address; }) ] ++ aliasRecords;
+    if address == null then
+      [ ]
+    else
+      [
+        (mkRecord {
+          name = entry.criomeDomainName;
+          rtype = recordTypeForIp address;
+          value = address;
+        })
+      ]
+      ++ aliasRecords;
 
   localDnsRecords = concatLists (map mkPrimaryRecords horizonNodes);
 
 in
-{
-  systemd.services.unbound.after = lib.optionals behavesAs.router [ "systemd-networkd.service" ];
+lib.mkIf behavesAs.router {
+  systemd.services.unbound.after = [ "systemd-networkd.service" ];
 
   services.unbound = {
     enable = true;
@@ -112,7 +134,6 @@ in
         access-control = [
           "127.0.0.0/8 allow"
           "::1/128 allow"
-        ] ++ lib.optionals behavesAs.router [
           "${lanSubnet} allow"
         ];
         do-not-query-localhost = false;

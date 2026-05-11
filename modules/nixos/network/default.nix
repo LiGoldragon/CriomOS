@@ -41,6 +41,7 @@ in
     ./wifi-eap.nix
     ./networkd.nix
     ./wireguard.nix
+    ./resolver.nix
   ];
 
   networking = {

@@ -70,6 +70,11 @@
 
       criomos-lib = inputs.criomos-lib.lib;
       constants = criomos-lib.constants;
+      projectChecks = (blueprintOutputs.checks or { }) // {
+        ${system} = (blueprintOutputs.checks.${system} or { }) // {
+          resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
+        };
+      };
 
       target = inputs.nixpkgs.lib.nixosSystem {
         # `system` is derived from `pkgs.stdenv.hostPlatform.system`
@@ -99,6 +104,8 @@
     in
     blueprintOutputs
     // {
+      checks = projectChecks;
+
       nixosConfigurations.target = target;
 
       # For cache-property testing — exposes the parsed horizon

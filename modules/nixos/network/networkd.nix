@@ -51,6 +51,9 @@ mkIf (behavesAs.center && !behavesAs.router) {
 
   services.resolved = {
     enable = true;
-    fallbackDns = [ "1.1.1.1" "9.9.9.9" ];
+    settings.Resolve.FallbackDNS = [
+      "1.1.1.1"
+      "9.9.9.9"
+    ];
   };
 }
