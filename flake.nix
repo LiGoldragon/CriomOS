@@ -72,6 +72,9 @@
       constants = criomos-lib.constants;
       projectChecks = (blueprintOutputs.checks or { }) // {
         ${system} = (blueprintOutputs.checks.${system} or { }) // {
+          headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
+            inherit inputs;
+          };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
         };
       };

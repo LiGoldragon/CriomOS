@@ -14,9 +14,10 @@ let
   headscalePort = 8443;
 
   ouranosFqdn =
-    if exNodes ? ouranos && exNodes.ouranos ? criomeDomainName
-    then exNodes.ouranos.criomeDomainName
-    else "ouranos.${cluster.name}.criome";
+    if exNodes ? ouranos && exNodes.ouranos ? criomeDomainName then
+      exNodes.ouranos.criomeDomainName
+    else
+      "ouranos.${cluster.name}.criome";
 
   tailnetBaseDomain = "tailnet.${cluster.name}.criome";
 
@@ -31,7 +32,11 @@ let
     certFile=${lib.escapeShellArg tlsCertPath}
     keyFile=${lib.escapeShellArg tlsKeyPath}
     fqdn=${lib.escapeShellArg ouranosFqdn}
-    primaryIpv4="$(${lib.getExe' pkgs.iproute2 "ip"} route get 1.1.1.1 | ${lib.getExe' pkgs.gawk "awk"} '/src/ {for (i = 1; i <= NF; i++) if ($i == "src") { print $(i+1); exit }}')"
+    primaryIpv4="$(
+      ${lib.getExe' pkgs.iproute2 "ip"} -4 route get 1.1.1.1 2>/dev/null \
+        | ${lib.getExe' pkgs.gawk "awk"} '/src/ {for (i = 1; i <= NF; i++) if ($i == "src") { print $(i+1); exit }}' \
+        || true
+    )"
 
     umask 077
     mkdir -p "$certDir"
@@ -99,7 +104,12 @@ in
       };
 
       # Ensure required binaries are in PATH for the script.
-      path = [ pkgs.coreutils pkgs.openssl pkgs.iproute2 pkgs.gawk ];
+      path = [
+        pkgs.coreutils
+        pkgs.openssl
+        pkgs.iproute2
+        pkgs.gawk
+      ];
 
       script = mkCertScript;
     };
