@@ -38,6 +38,12 @@ in
       "NetworkManager.service"
       "sshd.service"
     ];
+    # Operator override: `touch ${dir}/.disabled` on a host to keep
+    # clavifaber from running at boot. Useful when the host's identity
+    # is managed out-of-band (HSM-backed, manually-provisioned, etc.)
+    # and clavifaber must not touch the directory. See
+    # reports/system-specialist/112-clavifaber-existing-host-audit.md.
+    unitConfig.ConditionPathExists = "!${dir}/.disabled";
     # `yggdrasil` lives on PATH so the YggdrasilKey actor can mint and
     # statically derive identity material when the YggdrasilKeypairSetup
     # call is wired in (today the publication writes None for the
