@@ -11,6 +11,7 @@ let
 
   headscalePort = 8443;
   headscaleFqdn = node.criomeDomainName;
+  services = node.services or { };
 
   tailnetBaseDomain = "tailnet.${cluster.name}.criome";
 
@@ -64,7 +65,7 @@ let
 
 in
 {
-  config = lib.mkIf (node.tailnetController or false) {
+  config = lib.mkIf ((services.tailnetController or null) == "Server") {
     services.headscale = {
       enable = true;
       address = "0.0.0.0";

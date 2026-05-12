@@ -18,8 +18,10 @@ let
     linkLocalIps = [ ];
     nixCacheDomain = null;
     nodeIp = "10.18.0.50";
-    tailnetClient = true;
-    tailnetController = true;
+    services = {
+      tailnet = "Client";
+      tailnetController = "Server";
+    };
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
     yggAddress = "200:db8::50";
