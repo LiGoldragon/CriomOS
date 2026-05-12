@@ -72,6 +72,13 @@ Module logic reads projected horizon fields directly. If the needed
 truth is missing, extend horizon-rs instead of encoding a local
 workaround.
 
+Node names are identifiers, not predicates. Use `node.name` only where
+the literal identity is the output: hostnames, certificate identities,
+file names, labels, and diagnostics. Never write `node.name == ...` or
+membership checks over concrete cluster node names to enable services,
+open ports, choose providers, or infer roles. Add a Horizon field with
+the semantic role instead.
+
 Build and activate through lojix-projected inputs for real checks. A
 plain direct build of `nixosConfigurations.target` without projected
 `horizon` and `system` inputs is not the real deploy path.

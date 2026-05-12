@@ -12,7 +12,6 @@ let
     mapAttrsToList
     mkIf
     optionals
-    optional
     optionalAttrs
     filterAttrs
     ;
@@ -72,11 +71,9 @@ in
 {
   networking = {
     firewall = {
-      allowedTCPPorts =
-        optionals isNixCache [
-          80
-        ]
-        ++ optional (node.name == "prometheus") 11436;
+      allowedTCPPorts = optionals isNixCache [
+        80
+      ];
     };
   };
 

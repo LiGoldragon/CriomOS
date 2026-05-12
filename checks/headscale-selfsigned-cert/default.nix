@@ -6,9 +6,9 @@ let
 
   constants = inputs.criomos-lib.lib.constants;
 
-  ouranosNode = {
-    name = "ouranos";
-    criomeDomainName = "ouranos.goldragon.criome";
+  tailnetControllerNode = {
+    name = "tailnet-controller-test";
+    criomeDomainName = "tailnet-controller-test.goldragon.criome";
     enableNetworkManager = true;
     hasNordvpnPubKey = false;
     hasWifiCertPubKey = false;
@@ -18,6 +18,8 @@ let
     linkLocalIps = [ ];
     nixCacheDomain = null;
     nodeIp = "10.18.0.50";
+    tailnetClient = true;
+    tailnetController = true;
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
     yggAddress = "200:db8::50";
@@ -37,7 +39,7 @@ let
       inherit constants inputs;
       horizon = {
         cluster.name = "goldragon";
-        node = ouranosNode;
+        node = tailnetControllerNode;
         exNodes = { };
       };
     };

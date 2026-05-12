@@ -27,6 +27,8 @@ let
     linkLocalIps = [ "fe80::50/64" ];
     nixCacheDomain = null;
     nodeIp = "10.18.0.50/32";
+    tailnetClient = false;
+    tailnetController = false;
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
     yggAddress = "200:db8::50";

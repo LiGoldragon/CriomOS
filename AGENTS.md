@@ -13,6 +13,7 @@ First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-fi
 ## Hard architectural rules
 
 - **Network-neutral.** CriomOS holds no cluster or node names. The single public system surface is `nixosConfigurations.target`. Cluster + node identity enter through the lojix-projected `horizon` and `system` flake inputs; deploy-kind intent enters through the `deployment` input.
+- **No node-name logic.** A node name may be rendered as a hostname, certificate identity, path segment, or display string. It must not decide whether a module, service, firewall port, provider, or role is enabled. If code wants to ask "is this the tailnet controller?", "is this an AI provider?", or any similar cluster-specific question, add or use a Horizon role/capability field.
 - **Home lives in `CriomOS-home`.** This repo consumes home via `inputs.criomos-home.homeModules.*`.
 - **Horizon is external.** Schema + method logic live in `horizon-rs` (Rust). Nix consumes the enriched horizon as nota (camelCase fields).
 - **Rust crates live in their own repos** (`clavifaber`, `brightness-ctl`, `horizon-rs`, …) and are consumed as flake inputs.

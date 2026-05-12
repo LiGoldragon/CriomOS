@@ -4,13 +4,10 @@
   ...
 }:
 let
-  inherit (builtins) elem;
   inherit (horizon) node;
-
-  isTailnetNode = elem node.name [ "ouranos" "prometheus" ];
 in
 {
-  config = lib.mkIf isTailnetNode {
+  config = lib.mkIf (node.tailnetClient or false) {
     # Phase 1 scaffolding only: enrollment remains manual.
     services.tailscale = {
       enable = true;

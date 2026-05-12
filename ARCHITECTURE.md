@@ -48,6 +48,12 @@ The configuration substrate is the lojix-projected `horizon` input,
 the target `system` tuple input, the deployment-shape input, and the
 NixOS modules in this repo.
 
+CriomOS is network-neutral. Cluster node names are data flowing through
+Horizon, never control-flow predicates inside the Nix engine. Modules may
+render a node name as a hostname, identity, path component, or diagnostic
+label, but role decisions must come from Horizon capabilities such as
+tailnet client/controller or large-AI provider roles.
+
 ## What this repo does not define
 
 - Sema, signal, or any application-layer record kind.

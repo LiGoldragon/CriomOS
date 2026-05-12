@@ -7,17 +7,10 @@
 }:
 let
   inherit (builtins) toString;
-  inherit (horizon) node cluster exNodes;
-
-  isOuranosNode = node.name == "ouranos";
+  inherit (horizon) node cluster;
 
   headscalePort = 8443;
-
-  ouranosFqdn =
-    if exNodes ? ouranos && exNodes.ouranos ? criomeDomainName then
-      exNodes.ouranos.criomeDomainName
-    else
-      "ouranos.${cluster.name}.criome";
+  headscaleFqdn = node.criomeDomainName;
 
   tailnetBaseDomain = "tailnet.${cluster.name}.criome";
 
@@ -31,7 +24,7 @@ let
     certDir=${lib.escapeShellArg tlsDir}
     certFile=${lib.escapeShellArg tlsCertPath}
     keyFile=${lib.escapeShellArg tlsKeyPath}
-    fqdn=${lib.escapeShellArg ouranosFqdn}
+    fqdn=${lib.escapeShellArg headscaleFqdn}
     primaryIpv4="$(
       ${lib.getExe' pkgs.iproute2 "ip"} -4 route get 1.1.1.1 2>/dev/null \
         | ${lib.getExe' pkgs.gawk "awk"} '/src/ {for (i = 1; i <= NF; i++) if ($i == "src") { print $(i+1); exit }}' \
@@ -71,7 +64,7 @@ let
 
 in
 {
-  config = lib.mkIf isOuranosNode {
+  config = lib.mkIf (node.tailnetController or false) {
     services.headscale = {
       enable = true;
       address = "0.0.0.0";
@@ -79,7 +72,7 @@ in
 
       # Direct TLS (no reverse proxy) for Phase 1.
       settings = {
-        server_url = "https://${ouranosFqdn}:${toString headscalePort}";
+        server_url = "https://${headscaleFqdn}:${toString headscalePort}";
 
         tls_cert_path = tlsCertPath;
         tls_key_path = tlsKeyPath;
