@@ -75,6 +75,7 @@
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };
+          nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
         };
       };

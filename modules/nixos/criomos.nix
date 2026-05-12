@@ -16,7 +16,7 @@ in
   imports = [
     ./disks/preinstalled.nix
     ./normalize.nix
-    ./nix.nix
+    ./nix
     ./complex.nix
     ./chroma.nix
     ./llm.nix
