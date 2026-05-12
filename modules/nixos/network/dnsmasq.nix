@@ -14,13 +14,14 @@ let
     match
     split
     ;
-  inherit (horizon) cluster exNodes node;
+  inherit (horizon) exNodes node;
   inherit (horizon.node) behavesAs;
 
   lanBridgeInterface = "br-lan";
   lanGateway = constants.network.lan.gateway;
 
-  tailnetBaseDomain = "tailnet.${cluster.name}.criome";
+  clusterDomainName = lib.removePrefix "${node.name}." node.criomeDomainName;
+  tailnetBaseDomain = "tailnet.${clusterDomainName}";
   headscaleEnabled = config.services.headscale.enable;
 
   # Router nodes listen on loopback for local system lookups and on

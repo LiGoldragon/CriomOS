@@ -7,13 +7,14 @@
 }:
 let
   inherit (builtins) toString;
-  inherit (horizon) node cluster;
+  inherit (horizon) node;
 
   headscalePort = 8443;
   headscaleFqdn = node.criomeDomainName;
   services = node.services or { };
 
-  tailnetBaseDomain = "tailnet.${cluster.name}.criome";
+  clusterDomainName = lib.removePrefix "${node.name}." node.criomeDomainName;
+  tailnetBaseDomain = "tailnet.${clusterDomainName}";
 
   tlsDir = "/var/lib/headscale/tls";
   tlsCertPath = "${tlsDir}/headscale.crt";
