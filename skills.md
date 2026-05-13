@@ -72,6 +72,14 @@ Module logic reads projected horizon fields directly. If the needed
 truth is missing, extend horizon-rs instead of encoding a local
 workaround.
 
+CriomOS cluster domains are generated from the cluster and node
+identity as `<node>.<cluster>.criome`. For example, node `zeus` in
+cluster `goldragon` is addressed as `zeus.goldragon.criome`. Lojix
+uses the projected horizon `criome_domain_name` for SSH and Nix copy
+targets. When doing a manual reachability or runtime check outside
+lojix, use the same fully qualified Criome domain, not a short node
+name.
+
 Node names are identifiers, not predicates. Use `node.name` only where
 the literal identity is the output: hostnames, certificate identities,
 file names, labels, and diagnostics. Never write `node.name == ...` or
