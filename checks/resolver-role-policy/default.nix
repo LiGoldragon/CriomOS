@@ -57,6 +57,18 @@ let
     };
   };
 
+  tailnetControllerRouterNode = routerNode // {
+    services = {
+      tailnet = "Client";
+      tailnetController = {
+        Server = {
+          port = 9443;
+          baseDomain = "tailnet.fixture.test";
+        };
+      };
+    };
+  };
+
   peerNode = baseNode // {
     name = "peer-test";
     criomeDomainName = "peer-test.goldragon.criome";
@@ -87,6 +99,7 @@ let
 
   desktopConfiguration = configurationFor baseNode;
   routerConfiguration = configurationFor routerNode;
+  tailnetControllerRouterConfiguration = configurationFor tailnetControllerRouterNode;
 
   desktopUnboundEnabled =
     if desktopConfiguration.config.services.unbound.enable then "true" else "false";
@@ -110,6 +123,7 @@ let
       routerConfiguration.config.services.dnsmasq.settings."listen-address";
   routerDnsmasqAddressRecords = builtins.toJSON routerConfiguration.config.services.dnsmasq.settings.address;
   routerDnsmasqServers = builtins.toJSON routerConfiguration.config.services.dnsmasq.settings.server;
+  tailnetControllerRouterDnsmasqServers = builtins.toJSON tailnetControllerRouterConfiguration.config.services.dnsmasq.settings.server;
 in
 pkgs.runCommand "resolver-role-policy" { } ''
   set -eu
@@ -132,6 +146,7 @@ pkgs.runCommand "resolver-role-policy" { } ''
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/router-test.goldragon.criome/200:db8::1'
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/peer-test.goldragon.criome/200:db8::51'
   ! echo ${lib.escapeShellArg routerDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
+  echo ${lib.escapeShellArg tailnetControllerRouterDnsmasqServers} | grep -F '/tailnet.fixture.test/100.100.100.100'
 
   touch "$out"
 ''

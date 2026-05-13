@@ -20,9 +20,8 @@ let
   lanBridgeInterface = "br-lan";
   lanGateway = constants.network.lan.gateway;
 
-  clusterDomainName = lib.removePrefix "${node.name}." node.criomeDomainName;
-  tailnetBaseDomain = "tailnet.${clusterDomainName}";
   headscaleEnabled = config.services.headscale.enable;
+  tailnetBaseDomain = config.services.headscale.settings.dns.base_domain or null;
 
   # Router nodes listen on loopback for local system lookups and on
   # br-lan's gateway address for WiFi/LAN clients.
@@ -118,7 +117,7 @@ lib.mkIf behavesAs.router {
         ];
         address = localAddressRecords;
         server =
-          (lib.optionals headscaleEnabled [
+          (lib.optionals (headscaleEnabled && tailnetBaseDomain != null) [
             "/${tailnetBaseDomain}/100.100.100.100"
           ])
           ++ upstreamServers;

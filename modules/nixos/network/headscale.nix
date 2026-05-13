@@ -9,12 +9,15 @@ let
   inherit (builtins) toString;
   inherit (horizon) node;
 
-  headscalePort = 8443;
   headscaleFqdn = node.criomeDomainName;
   services = node.services or { };
+  tailnetControllerRole = services.tailnetController or null;
+  tailnetControllerServer =
+    if tailnetControllerRole == null then null else tailnetControllerRole.Server or null;
 
-  clusterDomainName = lib.removePrefix "${node.name}." node.criomeDomainName;
-  tailnetBaseDomain = "tailnet.${clusterDomainName}";
+  headscalePort = if tailnetControllerServer == null then null else tailnetControllerServer.port;
+  tailnetBaseDomain =
+    if tailnetControllerServer == null then null else tailnetControllerServer.baseDomain;
 
   tlsDir = "/var/lib/headscale/tls";
   tlsCertPath = "${tlsDir}/headscale.crt";
@@ -66,7 +69,7 @@ let
 
 in
 {
-  config = lib.mkIf ((services.tailnetController or null) == "Server") {
+  config = lib.mkIf (tailnetControllerServer != null) {
     services.headscale = {
       enable = true;
       address = "0.0.0.0";

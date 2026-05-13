@@ -20,7 +20,12 @@ let
     nodeIp = "10.18.0.50";
     services = {
       tailnet = "Client";
-      tailnetController = "Server";
+      tailnetController = {
+        Server = {
+          port = 9443;
+          baseDomain = "tailnet.fixture.test";
+        };
+      };
     };
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
@@ -51,6 +56,10 @@ let
   };
 
   certificateScript = configuration.config.systemd.services.headscale-selfsigned-cert.script;
+  headscalePort = toString configuration.config.services.headscale.port;
+  headscaleServerUrl = configuration.config.services.headscale.settings.server_url;
+  headscaleBaseDomain = configuration.config.services.headscale.settings.dns.base_domain;
+  firewallPorts = builtins.toJSON configuration.config.networking.firewall.allowedTCPPorts;
 in
 pkgs.runCommand "headscale-selfsigned-cert-route-optional" { } ''
   set -eu
@@ -61,6 +70,10 @@ pkgs.runCommand "headscale-selfsigned-cert-route-optional" { } ''
 
   grep -F -- '-4 route get 1.1.1.1 2>/dev/null' "$TMPDIR/headscale-selfsigned-cert"
   grep -F -- '|| true' "$TMPDIR/headscale-selfsigned-cert"
+  test ${lib.escapeShellArg headscalePort} = 9443
+  test ${lib.escapeShellArg headscaleServerUrl} = https://tailnet-controller-test.goldragon.criome:9443
+  test ${lib.escapeShellArg headscaleBaseDomain} = tailnet.fixture.test
+  echo ${lib.escapeShellArg firewallPorts} | grep -F 9443
 
   touch "$out"
 ''
