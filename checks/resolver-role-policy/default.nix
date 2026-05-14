@@ -15,25 +15,33 @@ let
     router = false;
   };
 
+  # Step 14: yggdrasil presence is a typed sub-record. Step 7a:
+  # nixCache likewise. Both are null when not present.
+  mkYgg = address: {
+    pubKey = "0000000000000000000000000000000000000000000000000000000000000000";
+    inherit address;
+    subnet = "300:db8::";
+  };
+
+  # Step 7b: has_*_pub_key shadow fields are gone. Consumers gate
+  # directly on `nordvpn`, `wifiCert`, `wireguardPubKey != null`,
+  # `yggdrasil != null`, `nixCache != null`.
   baseNode = {
     name = "edge-test";
     criomeDomainName = "edge-test.goldragon.criome";
     enableNetworkManager = true;
-    hasNordvpnPubKey = false;
-    hasWifiCertPubKey = false;
-    hasWireguardPubKey = false;
-    hasYggPubKey = false;
-    isNixCache = false;
+    nordvpn = false;
+    wifiCert = false;
+    nixCache = null;
     linkLocalIps = [ "fe80::50/64" ];
-    nixCacheDomain = null;
     nodeIp = "10.18.0.50/32";
     services = {
       tailnet = null;
       tailnetController = null;
     };
-    wireguardPubKey = "";
+    wireguardPubKey = null;
     wireguardUntrustedProxies = [ ];
-    yggAddress = "200:db8::50";
+    yggdrasil = mkYgg "200:db8::50";
     behavesAs = baseBehaviors // {
       edge = true;
     };
@@ -51,19 +59,20 @@ let
       wlanChannel = 6;
       wlanStandard = "wifi6";
     };
-    yggAddress = "200:db8::1";
+    yggdrasil = mkYgg "200:db8::1";
     behavesAs = baseBehaviors // {
       router = true;
     };
   };
 
+  # Step 11: TailnetControllerRole.Server carries port only;
+  # base_domain comes from cluster.tailnet.
   tailnetControllerRouterNode = routerNode // {
     services = {
       tailnet = "Client";
       tailnetController = {
         Server = {
           port = 9443;
-          baseDomain = "tailnet.fixture.test";
         };
       };
     };
@@ -74,17 +83,19 @@ let
     criomeDomainName = "peer-test.goldragon.criome";
     linkLocalIps = [ "fe80::51/64" ];
     nodeIp = "10.18.0.51";
-    yggAddress = "200:db8::51";
+    yggdrasil = mkYgg "200:db8::51";
   };
 
   configurationFor =
-    node:
+    node: clusterExtra:
     lib.nixosSystem {
       inherit system;
       specialArgs = {
         inherit constants inputs;
         horizon = {
-          cluster.name = "goldragon";
+          cluster = {
+            name = "goldragon";
+          } // clusterExtra;
           inherit node;
           exNodes = {
             peer-test = peerNode;
@@ -97,9 +108,15 @@ let
       ];
     };
 
-  desktopConfiguration = configurationFor baseNode;
-  routerConfiguration = configurationFor routerNode;
-  tailnetControllerRouterConfiguration = configurationFor tailnetControllerRouterNode;
+  desktopConfiguration = configurationFor baseNode { };
+  routerConfiguration = configurationFor routerNode { };
+  # Step 11: cluster.tailnet carries baseDomain for the controller node.
+  tailnetControllerRouterConfiguration = configurationFor tailnetControllerRouterNode {
+    tailnet = {
+      baseDomain = "tailnet.fixture.test";
+      tls = null;
+    };
+  };
 
   desktopUnboundEnabled =
     if desktopConfiguration.config.services.unbound.enable then "true" else "false";

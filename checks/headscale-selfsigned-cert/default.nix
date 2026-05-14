@@ -6,30 +6,31 @@ let
 
   constants = inputs.criomos-lib.lib.constants;
 
+  # Steps 7a + 7b: typed nixCache (or null), typed yggdrasil (or null);
+  # has_*_pub_key shadow fields are gone — consumers gate on the
+  # underlying typed sub-record / input bool directly.
+  # Step 11: TailnetControllerRole.Server carries port only;
+  # base_domain comes from cluster.tailnet.
   tailnetControllerNode = {
     name = "tailnet-controller-test";
     criomeDomainName = "tailnet-controller-test.goldragon.criome";
     enableNetworkManager = true;
-    hasNordvpnPubKey = false;
-    hasWifiCertPubKey = false;
-    hasWireguardPubKey = false;
-    hasYggPubKey = false;
-    isNixCache = false;
+    nordvpn = false;
+    wifiCert = false;
+    nixCache = null;
     linkLocalIps = [ ];
-    nixCacheDomain = null;
     nodeIp = "10.18.0.50";
     services = {
       tailnet = "Client";
       tailnetController = {
         Server = {
           port = 9443;
-          baseDomain = "tailnet.fixture.test";
         };
       };
     };
-    wireguardPubKey = "";
+    wireguardPubKey = null;
     wireguardUntrustedProxies = [ ];
-    yggAddress = "200:db8::50";
+    yggdrasil = null;
     behavesAs = {
       bareMetal = false;
       center = false;
@@ -45,7 +46,13 @@ let
     specialArgs = {
       inherit constants inputs;
       horizon = {
-        cluster.name = "goldragon";
+        cluster = {
+          name = "goldragon";
+          tailnet = {
+            baseDomain = "tailnet.fixture.test";
+            tls = null;
+          };
+        };
         node = tailnetControllerNode;
         exNodes = { };
       };

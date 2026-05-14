@@ -70,9 +70,10 @@ let
     entry:
     let
       address = mkPrimaryAddress entry;
-      alias = entry.nixCacheDomain;
+      # Step 7a: nixCache sub-record replaces nixCacheDomain sibling.
+      alias = if entry.nixCache == null then null else entry.nixCache.domain;
       aliasRecords =
-        if alias == null || alias == "" || address == null then
+        if alias == null || address == null then
           [ ]
         else
           [

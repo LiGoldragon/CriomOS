@@ -7,7 +7,8 @@
 }:
 let
   inherit (lib) optionalString;
-  inherit (horizon.node) hasYggPubKey;
+  # Step 7b: gate on the underlying typed sub-record directly (was hasYggPubKey).
+  hasYggPubKey = horizon.node.yggdrasil != null;
   inherit (constants.fileSystem.yggdrasil)
     preCriadJson
     subDirName

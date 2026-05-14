@@ -7,7 +7,8 @@
 let
   inherit (lib) mkIf;
   inherit (horizon) node;
-  inherit (horizon.node) hasWifiCertPubKey;
+  # Step 7b: gate on the underlying input bool directly (was hasWifiCertPubKey).
+  hasWifiCertPubKey = horizon.node.wifiCert;
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
   inherit (constants.fileSystem.complex) keyFile;
 

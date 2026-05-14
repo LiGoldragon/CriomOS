@@ -2,7 +2,6 @@
   lib,
   pkgs,
   horizon,
-  inputs,
   ...
 }:
 let
@@ -10,9 +9,11 @@ let
   inherit (horizon.node) behavesAs;
   inherit (builtins)
     concatStringsSep
-    fromJSON
+    elemAt
+    filter
+    head
+    length
     map
-    readFile
     toString
     ;
 
@@ -20,22 +21,48 @@ let
 
   nodeName = horizon.node.name;
 
-  configPath = inputs.criomos-lib + "/data/largeAI/llm.json";
-  cfg = fromJSON (readFile configPath);
+  # Step 6: every server-side AI provisioning field comes from
+  # horizon. The previous module read from CriomOS-lib's largeAI/llm.json
+  # (serverPort, models[].source/sha256/ctxSize/loadOnStartup,
+  # presetDefaults, router{modelsMax,sleepIdleSeconds}). All of that
+  # now lives on horizon.cluster.aiProviders[<name>].models[i].serving
+  # (per-model: source + runtime_context_size + load_on_startup) and
+  # .serving_config (per-provider router defaults). llm.json is deleted.
+  providers = horizon.cluster.aiProviders or [ ];
 
-  serverPort = cfg.serverPort;
+  # The provider hosted on THIS node. There must be exactly one for
+  # this module to enable; if there are zero, the module is inert.
+  ownProviders =
+    filter (p: p.servingNode == nodeName && p.servingConfig != null) providers;
+  ownProvider =
+    if ownProviders == [ ] then null
+    else if length ownProviders > 1 then
+      throw "llm.nix: more than one AI provider serves on this node (${nodeName}); only one is supported"
+    else
+      head ownProviders;
+
+  # When a provider is hosted here, every one of its models must have
+  # a `serving` (source + runtime_context_size + load_on_startup) so
+  # the server can fetch and configure them.
+  requireServing = model:
+    if model.serving == null then
+      throw "llm.nix: model ${model.id} on provider ${ownProvider.name} (servingNode=${nodeName}) has serving=null; locally-served models require a serving record"
+    else
+      model.serving;
 
   runtimeUser = "llama";
   runtimeHome = "/var/lib/llama";
   apiKeyFile = "${runtimeHome}/api-key";
 
-  # Resolve model source to a store path (file or directory of shards)
+  # Resolve a model's source (from horizon's typed AiModelSource) to
+  # a /nix/store path containing the GGUF file(s).
   mkModelStorePath =
-    spec:
+    model:
     let
-      source = spec.source;
+      serving = requireServing model;
+      source = serving.source;
     in
-    if source.kind == "multi-shard" then
+    if source ? AiModelMultiShard then
       let
         fetched = map (shard: {
           drv = pkgs.fetchurl {
@@ -43,88 +70,95 @@ let
             sha256 = shard.sha256;
           };
           inherit (shard) filename;
-        }) source.shards;
+        }) source.AiModelMultiShard.shards;
       in
-      pkgs.runCommand "model-${spec.modelId}" { } (
-        "mkdir -p $out\n" + concatStringsSep "\n" (map (s: "ln -s ${s.drv} $out/${s.filename}") fetched)
+      pkgs.runCommand "model-${model.id}" { } (
+        "mkdir -p $out\n"
+        + concatStringsSep "\n" (map (s: "ln -s ${s.drv} $out/${s.filename}") fetched)
       )
-    else if source.kind == "fetchurl" then
-      # Single-file model — place in a directory so router sees it by filename
+    else if source ? AiModelFetchurl then
       let
+        single = source.AiModelFetchurl;
         drv = pkgs.fetchurl {
-          url = source.url;
-          sha256 = source.sha256;
+          url = single.url;
+          sha256 = single.sha256;
         };
       in
-      pkgs.runCommand "model-${spec.modelId}" { } ''
+      pkgs.runCommand "model-${model.id}" { } ''
         mkdir -p $out
-        ln -s ${drv} $out/${source.filename}
+        ln -s ${drv} $out/${single.filename}
       ''
     else
-      throw "Unknown source kind: ${source.kind}";
+      throw "llm.nix: model ${model.id} has unknown AiModelSource shape: ${builtins.toJSON source}";
 
-  # Build the models-dir: a directory of subdirectories, one per model
-  # Router mode uses subdirectory name as model name
-  modelsDir = pkgs.runCommand "llm-models-dir" { } (
-    "mkdir -p $out\n"
-    + concatStringsSep "\n" (
-      map (spec: "ln -s ${mkModelStorePath spec} $out/${spec.modelId}") cfg.models
-    )
-  );
+  # Models directory: one subdirectory per model, named by id (the
+  # llama.cpp router takes subdir name as model name).
+  modelsDir =
+    if ownProvider == null then null
+    else pkgs.runCommand "llm-models-dir" { } (
+      "mkdir -p $out\n"
+      + concatStringsSep "\n" (
+        map (m: "ln -s ${mkModelStorePath m} $out/${m.id}") ownProvider.models
+      )
+    );
 
-  # Generate presets.ini for per-model config
-  presetDefaults = cfg.presetDefaults;
-
-  globalPreset = concatStringsSep "\n" [
+  # presets.ini: global defaults from servingConfig + per-model overrides.
+  globalPresetLines = sc: [
     "[*]"
-    "n-gpu-layers = ${toString (presetDefaults."n-gpu-layers" or 99)}"
-    "no-mmap = ${if presetDefaults."no-mmap" or true then "true" else "false"}"
-    "no-warmup = ${if presetDefaults."no-warmup" or true then "true" else "false"}"
-    "fit = ${presetDefaults.fit or "off"}"
-    "parallel = ${toString (presetDefaults.parallel or 1)}"
+    "n-gpu-layers = ${toString sc.gpuLayers}"
+    "no-mmap = ${if sc.noMmap then "true" else "false"}"
+    "no-warmup = ${if sc.noWarmup then "true" else "false"}"
+    "fit = ${if sc.fit == "On" then "on" else "off"}"
+    "parallel = ${toString sc.parallel}"
     ""
   ];
 
-  mkModelPreset =
-    spec:
-    let
-      lines = [
-        "[${spec.modelId}]"
-        "ctx-size = ${toString spec.ctxSize}"
-      ]
-      ++ lib.optional (spec.loadOnStartup or false) "load-on-startup = true";
-    in
-    concatStringsSep "\n" lines + "\n";
+  mkModelPresetLines = m:
+    let serving = requireServing m; in
+    [
+      "[${m.id}]"
+      "ctx-size = ${toString serving.runtimeContextSize}"
+    ]
+    ++ lib.optional serving.loadOnStartup "load-on-startup = true";
 
-  presetsIni = pkgs.writeText "llm-presets.ini" (
-    globalPreset + concatStringsSep "\n" (map mkModelPreset cfg.models)
-  );
+  presetsIni =
+    if ownProvider == null then null
+    else pkgs.writeText "llm-presets.ini" (
+      concatStringsSep "\n" (globalPresetLines ownProvider.servingConfig)
+      + concatStringsSep "\n\n" (map (m: concatStringsSep "\n" (mkModelPresetLines m)) ownProvider.models)
+      + "\n"
+    );
+
+  # Pull the bare port off the provider for firewall + llama-server args.
+  serverPort = if ownProvider == null then null else ownProvider.port;
 
   serviceName = "${nodeName}-llama-router";
 
-  llamaStart = pkgs.writeShellScript "llama-router-start" ''
-    set -eu
+  llamaStart =
+    if ownProvider == null then null
+    else
+      let sc = ownProvider.servingConfig; in
+      pkgs.writeShellScript "llama-router-start" ''
+        set -eu
 
-    api_key_args=()
-    if [ -s ${apiKeyFile} ]; then
-      api_key_args=(--api-key-file ${apiKeyFile})
-    fi
+        api_key_args=()
+        if [ -s ${apiKeyFile} ]; then
+          api_key_args=(--api-key-file ${apiKeyFile})
+        fi
 
-    exec ${llamaCppPackage}/bin/llama-server \
-      --host :: \
-      --port ${toString serverPort} \
-      "''${api_key_args[@]}" \
-      --models-dir ${modelsDir} \
-      --models-preset ${presetsIni} \
-      --models-max ${toString cfg.router.modelsMax} \
-      --no-webui \
-      ${lib.optionalString (
-        cfg.router ? sleepIdleSeconds
-      ) "--sleep-idle-seconds ${toString cfg.router.sleepIdleSeconds}"}
-  '';
+        exec ${llamaCppPackage}/bin/llama-server \
+          --host :: \
+          --port ${toString serverPort} \
+          "''${api_key_args[@]}" \
+          --models-dir ${modelsDir} \
+          --models-preset ${presetsIni} \
+          --models-max ${toString sc.maxLoadedModels} \
+          --no-webui \
+          --sleep-idle-seconds ${toString sc.idleUnloadSeconds}
+      '';
 
 in
-mkIf behavesAs.largeAi {
+mkIf (behavesAs.largeAi && ownProvider != null) {
   users.users.llama = {
     isSystemUser = true;
     description = "llama runtime user";
@@ -147,7 +181,7 @@ mkIf behavesAs.largeAi {
   ];
 
   systemd.services.${serviceName} = {
-    description = "${nodeName} llama.cpp router — multi-model on-demand serving";
+    description = "${nodeName} llama.cpp router — multi-model on-demand serving (horizon-driven)";
     wants = [ "network-online.target" ];
     after = [ "network-online.target" ];
 
@@ -157,8 +191,8 @@ mkIf behavesAs.largeAi {
       WorkingDirectory = runtimeHome;
       Environment = [
         "HOME=${runtimeHome}"
-        "HSA_OVERRIDE_GFX_VERSION=11.5.1"
-      ];
+      ] ++ lib.optional (ownProvider.servingConfig.gpuOverride or null != null)
+        "HSA_OVERRIDE_GFX_VERSION=${ownProvider.servingConfig.gpuOverride}";
 
       ExecStart = llamaStart;
 
@@ -166,9 +200,10 @@ mkIf behavesAs.largeAi {
       RestartSec = 5;
       StateDirectory = "llama";
 
-      # Prevent OOM from killing system services (hostapd, SSH)
-      MemoryMax = "110G";
-      MemoryHigh = "100G";
+      # Operating envelope from horizon — keeps llama from OOM-killing
+      # system services (hostapd, SSH).
+      MemoryMax = "${toString ownProvider.servingConfig.memoryMaxGb}G";
+      MemoryHigh = "${toString ownProvider.servingConfig.memoryHighGb}G";
     };
 
     wantedBy = [ "multi-user.target" ];

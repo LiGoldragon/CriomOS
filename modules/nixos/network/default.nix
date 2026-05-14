@@ -30,7 +30,6 @@ let
     name: node:
     let
       inherit (node) criomeDomainName;
-      inherit (node) isNixCache nixCacheDomain;
       nodeIp = sanitizeIp node.nodeIp;
       # Step 14: yggdrasil presence is now a typed sub-record
       # `node.yggdrasil = { pub_key, address, subnet }` (or null).
@@ -38,8 +37,10 @@ let
       yggAddress =
         if node.yggdrasil == null then null else sanitizeIp node.yggdrasil.address;
       linkLocalIps = builtins.filter (ip: ip != null) (builtins.map sanitizeIp node.linkLocalIps);
-      nixCacheAliases = optionals (isNixCache && nixCacheDomain != null && nixCacheDomain != "") [
-        nixCacheDomain
+      # Step 7a: nixCache is a typed sub-record (domain + url) or null.
+      # Replaces the old (isNixCache, nixCacheDomain, nixUrl) trio.
+      nixCacheAliases = optionals (node.nixCache != null) [
+        node.nixCache.domain
       ];
 
       mkPreNodeHost = linkLocalIP: [ ("wg." + criomeDomainName) ];

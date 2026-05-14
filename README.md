@@ -69,8 +69,10 @@ the requested deploy.
 - `LiGoldragon/CriomOS-home` — home profile. Own inputs
   (niri, noctalia, stylix, …). CriomOS consumes `homeModules.default`.
 - [`LiGoldragon/CriomOS-lib`](https://github.com/LiGoldragon/CriomOS-lib) —
-  shared helpers (`importJSON`, `mkJsonMerge`) + cross-repo data
-  (`data/largeAI/llm.json`). Consumed by both CriomOS and CriomOS-home.
+  shared helpers (`importJSON`, `mkJsonMerge`). Consumed by both
+  CriomOS and CriomOS-home. (The previous `data/largeAI/llm.json`
+  was deleted in the horizon re-engineering arc step 6 — AI
+  provisioning lives entirely in `horizon.cluster.aiProviders` now.)
 - [`LiGoldragon/CriomOS-pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) —
   the `pkgs` axis. Own repo so CriomOS
   edits don't invalidate the pkgs eval cache.
