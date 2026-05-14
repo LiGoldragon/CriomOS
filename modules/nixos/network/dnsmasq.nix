@@ -58,7 +58,10 @@ let
   mkPrimaryAddress =
     entry:
     let
-      yggAddress = sanitizeIp entry.yggAddress;
+      # Step 14: same regrouping as in network/default.nix —
+      # `entry.yggdrasil` is null or `{ pubKey, address, subnet }`.
+      yggAddress =
+        if entry.yggdrasil == null then null else sanitizeIp entry.yggdrasil.address;
       nodeIp = sanitizeIp entry.nodeIp;
     in
     if yggAddress != null then yggAddress else nodeIp;

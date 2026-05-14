@@ -32,7 +32,11 @@ let
       inherit (node) criomeDomainName;
       inherit (node) isNixCache nixCacheDomain;
       nodeIp = sanitizeIp node.nodeIp;
-      yggAddress = sanitizeIp node.yggAddress;
+      # Step 14: yggdrasil presence is now a typed sub-record
+      # `node.yggdrasil = { pub_key, address, subnet }` (or null).
+      # No more `node.yggAddress` sibling field.
+      yggAddress =
+        if node.yggdrasil == null then null else sanitizeIp node.yggdrasil.address;
       linkLocalIps = builtins.filter (ip: ip != null) (builtins.map sanitizeIp node.linkLocalIps);
       nixCacheAliases = optionals (isNixCache && nixCacheDomain != null && nixCacheDomain != "") [
         nixCacheDomain
