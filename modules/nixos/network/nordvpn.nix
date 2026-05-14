@@ -1,36 +1,60 @@
 {
+  config,
   lib,
   pkgs,
+  inputs,
   horizon,
-  constants,
   ...
 }:
 let
-  inherit (builtins) fromJSON readFile pathExists;
-  inherit (lib) mkIf concatStringsSep map;
+  inherit (lib) mkIf concatStringsSep filter map;
   inherit (horizon) node;
-  inherit (horizon.node) hasNordvpnPubKey;
-  inherit (constants.fileSystem.nordvpn) privateKeyFile;
+  # Step 7b: gate on the underlying input bool directly (was hasNordvpnPubKey).
+  hasNordvpnPubKey = horizon.node.nordvpn;
 
-  /*
-    Server data is read from the lock file at build time.
-    Update with: nix shell nixpkgs#curl nixpkgs#jq -c ./data/config/nordvpn/update-servers
-  */
-  lockPath = ../../../data/config/nordvpn/servers-lock.json;
-  lock = fromJSON (readFile lockPath);
+  # Step 8: VPN catalog comes from horizon.cluster.vpnProfiles. The
+  # previous data/config/nordvpn/servers-lock.json shadow file is
+  # deleted; the cluster's datom now carries every server entry,
+  # DNS pair, and client config that used to live in JSON.
+  vpnProfiles = horizon.cluster.vpnProfiles or [ ];
+  nordvpnProfiles = filter (p: p ? NordvpnProfile) vpnProfiles;
+  nordvpnProfile =
+    if nordvpnProfiles == [ ] then null
+    else if builtins.length nordvpnProfiles > 1 then
+      throw "nordvpn.nix: more than one NordvpnProfile in cluster.vpnProfiles; only one is supported"
+    else (builtins.head nordvpnProfiles).NordvpnProfile;
 
-  nordvpnDns = "${lock.dns.primary};${lock.dns.secondary}";
-  clientAddress = lock.client.address;
+  servers = if nordvpnProfile == null then [ ] else nordvpnProfile.servers;
+  nordvpnDns =
+    if nordvpnProfile == null then ""
+    else "${nordvpnProfile.dns.primary};${nordvpnProfile.dns.secondary}";
+  clientAddress =
+    if nordvpnProfile == null then "" else nordvpnProfile.client.address;
+
+  # SecretReference for the WireGuard private key. Resolved through the
+  # same sops infrastructure that production main wires for the router
+  # Wi-Fi password (see system-specialist report 121): lojix-cli stages
+  # `inputs.secrets.sopsFiles.<name>` from the cluster repo's secrets/
+  # directory; sops-install-secrets decrypts at activation; the runtime
+  # path lives at /run/secrets/<name>.
+  credentialsRef =
+    if nordvpnProfile == null then null else nordvpnProfile.credentials;
+  credentialsName =
+    if credentialsRef == null then null else credentialsRef.name;
+  sopsFiles = inputs.secrets.sopsFiles or { };
+  credentialsSopsFile =
+    if credentialsName == null then null
+    else sopsFiles.${credentialsName} or null;
+  privateKeyFile =
+    if credentialsName == null then null
+    else config.sops.secrets.${credentialsName}.path;
 
   routingTable = "51820";
 
-  /*
-    Server endpoint IPs extracted at build time.
-    These must be routed via the main table to prevent a routing
-    loop — encrypted WireGuard packets to the server must not
-    re-enter the tunnel.
-  */
-  serverEndpointIps = map (s: builtins.head (lib.splitString ":" s.endpoint)) lock.servers;
+  # Server endpoint IPs extracted from horizon. These must be routed
+  # via the main table to prevent a routing loop — encrypted WireGuard
+  # packets to the server must not re-enter the tunnel.
+  serverEndpointIps = map (s: builtins.head (lib.splitString ":" s.endpoint)) servers;
 
   mkConnectionFile = server: ''
     cat > "/etc/NetworkManager/system-connections/nordvpn-${server.name}.nmconnection" <<CONN
@@ -60,32 +84,41 @@ let
     chmod 600 "/etc/NetworkManager/system-connections/nordvpn-${server.name}.nmconnection"
   '';
 
-  generatorScript = concatStringsSep "\n" ([
-    ''
-      NORDVPN_KEY=$(cat "${privateKeyFile}" 2>/dev/null | tr -d '[:space:]')
-      if [ -z "$NORDVPN_KEY" ]; then
-        echo "nordvpn: private key not found at ${privateKeyFile}" >&2
-        exit 0
-      fi
-    ''
-  ] ++ (map mkConnectionFile lock.servers) ++ [
-    ''
-      nmcli connection reload 2>/dev/null || true
-    ''
-  ]);
+  # Loud-fail when this node opts in (nordvpn=true) but the cluster
+  # has no NordvpnProfile, or the cluster has one but the credentials
+  # SecretReference doesn't have a backing sops file in the staged
+  # secrets input. The operator must author both the profile and the
+  # encrypted credential.
+  enabledWithoutProfile = hasNordvpnPubKey && nordvpnProfile == null;
+  enabledWithoutSops =
+    hasNordvpnPubKey && nordvpnProfile != null && credentialsSopsFile == null;
+  generatorScript =
+    if enabledWithoutProfile then
+      throw "nordvpn.nix: node ${node.name}.nordvpn = true but cluster.vpnProfiles has no NordvpnProfile"
+    else if enabledWithoutSops then
+      throw "nordvpn.nix: NordvpnProfile.credentials.name=${credentialsName} but inputs.secrets.sopsFiles.${credentialsName} is missing (no encrypted credential staged from the cluster repo's secrets/)"
+    else
+      concatStringsSep "\n" ([
+        ''
+          NORDVPN_KEY=$(cat "${privateKeyFile}" 2>/dev/null | tr -d '[:space:]')
+          if [ -z "$NORDVPN_KEY" ]; then
+            echo "nordvpn: private key not present at ${privateKeyFile} (sops-install-secrets must have failed)" >&2
+            exit 0
+          fi
+        ''
+      ] ++ (map mkConnectionFile servers) ++ [
+        ''
+          nmcli connection reload 2>/dev/null || true
+        ''
+      ]);
 
-  /*
-    NetworkManager dispatcher script for split-tunnel policy routing.
-    On connection up: installs default route in table 51820 and adds
-    ip rules that steer user traffic through the tunnel while exempting
-    overlay networks (Yggdrasil, Tailscale, WireGuard mesh).
-    On connection down: cleans up the rules.
-  */
-  /*
-    Exempt server endpoints, Tailscale, then catch-all into tunnel.
-    Priority numbering: 100 = server endpoints, 150 = Tailscale, 200 = tunnel.
-    Yggdrasil (200::/7) is IPv6 — naturally exempt from the IPv4-only tunnel.
-  */
+  # NetworkManager dispatcher script for split-tunnel policy routing.
+  # On connection up: installs default route in table 51820 and adds
+  # ip rules that steer user traffic through the tunnel while exempting
+  # overlay networks (Yggdrasil, Tailscale, WireGuard mesh).
+  # Priority: 100 = server endpoints (exempt), 150 = Tailscale (exempt),
+  # 200 = catch-all into tunnel. Yggdrasil 200::/7 is IPv6 — naturally
+  # exempt from the IPv4-only tunnel.
   serverExemptRules = lib.concatMapStringsSep "\n" (ip:
     "    ip rule add to ${ip}/32 priority 100 lookup main 2>/dev/null"
   ) serverEndpointIps;
@@ -127,12 +160,18 @@ ${serverCleanupRules}
     esac
   '';
 
-  privateKeyDir = builtins.dirOf privateKeyFile;
-
 in
 {
-  config = lib.mkMerge [
-    (mkIf hasNordvpnPubKey {
+  config = mkIf hasNordvpnPubKey (lib.mkMerge [
+    (lib.mkIf (credentialsName != null && credentialsSopsFile != null) {
+      sops.secrets.${credentialsName} = {
+        format = "binary";
+        sopsFile = credentialsSopsFile;
+        mode = "0400";
+        restartUnits = [ "nordvpn-connections.service" ];
+      };
+    })
+    {
       systemd.services.nordvpn-connections = {
         description = "Generate NordVPN NetworkManager connections";
         wantedBy = [ "NetworkManager.service" ];
@@ -149,38 +188,6 @@ in
           source = dispatcherScript;
         }
       ];
-    })
-
-    (mkIf (!hasNordvpnPubKey) {
-      /*
-        When nordvpn is not yet enabled, prepare the key directory
-        so operators can seed the private key. The directory is
-        temporarily world-writable; the nordvpn-seal service locks
-        it down to root:root 700 on the next boot after seeding.
-        Once the key is in place, set nordvpn = true in the node
-        proposal and rebuild.
-      */
-      systemd.services.nordvpn-prepare = {
-        description = "Prepare NordVPN private key directory for seeding";
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-        script = ''
-          mkdir -p "${privateKeyDir}"
-          if [ -f "${privateKeyFile}" ]; then
-            chmod 600 "${privateKeyFile}"
-            chmod 700 "${privateKeyDir}"
-            chown -R root:root "${privateKeyDir}"
-          else
-            chmod 700 "${privateKeyDir}"
-            chown root:root "${privateKeyDir}"
-            echo "nordvpn: private key not found at ${privateKeyFile}" >&2
-            echo "nordvpn: seed as root: echo '<key>' > ${privateKeyFile}" >&2
-          fi
-        '';
-      };
-    })
-  ];
+    }
+  ]);
 }

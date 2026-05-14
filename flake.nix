@@ -13,6 +13,9 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
     # Shared constants, helpers, and cross-repo data. Consumed by both
     # CriomOS and CriomOS-home.
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib/horizon-re-engineering";
@@ -55,6 +58,10 @@
     # Deployment shape — lojix overrides per request. The default keeps
     # the historical full system+home target.
     deployment.url = "path:./stubs/default-deployment";
+
+    # Encrypted cluster secrets — lojix overrides per deploy from the
+    # cluster repository. Stub flake provides empty `sopsFiles = { }`.
+    secrets.url = "path:./stubs/no-secrets";
   };
 
   outputs =
