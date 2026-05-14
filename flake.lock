@@ -501,11 +501,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1778703607,
-        "narHash": "sha256-Wf1+eu1c301lQFY4LfhcKSTtoUxkR+t+I9pBD7cNZJc=",
+        "lastModified": 1778753583,
+        "narHash": "sha256-S96nUFPrI9cbN9+70h20HRA3NyBXKv/Z4WBnVeUIjl8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5d8edbef9b79aab9d3b8ce6637c4dc4d91a82bc4",
+        "rev": "3f2715d1a3247f0956421025ad9a5ca4cfd0b4e6",
         "type": "github"
       },
       "original": {
