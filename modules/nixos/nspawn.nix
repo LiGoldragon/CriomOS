@@ -18,7 +18,6 @@ let
     name = "criomos-nspawn";
     runtimeInputs = [
       pkgs.coreutils
-      pkgs.sudo
       nixosContainer
     ];
     text = ''
@@ -51,7 +50,7 @@ let
 
       require_root() {
         if [ "$(id -u)" != 0 ]; then
-          exec sudo ${stableCommandPath} "$@"
+          exec /run/wrappers/bin/sudo ${stableCommandPath} "$@"
         fi
       }
 

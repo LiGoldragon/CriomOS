@@ -88,6 +88,7 @@ pkgs.runCommand "nspawn-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg serviceSudoConfig} | grep -F '/run/current-system/sw/bin/criomos-nspawn'
 
   ${servicePackage}/bin/criomos-nspawn help >/dev/null
+  grep -F '/run/wrappers/bin/sudo' ${servicePackage}/bin/criomos-nspawn
 
   touch "$out"
 ''
