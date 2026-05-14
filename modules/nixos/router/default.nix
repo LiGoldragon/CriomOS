@@ -171,10 +171,13 @@ in
     };
 
     systemd.services = {
-      hostapd = {
-        after = [ "sops-nix.service" ];
-        requires = [ "sops-nix.service" ];
-      };
+      # sops-install-secrets runs as part of system activation (before any
+      # service starts), so /run/secrets/routerWifiSaePasswords is already
+      # in place by the time hostapd's ExecStartPre reads it. Rotation is
+      # handled by `sops.secrets.<name>.restartUnits = [ "hostapd.service" ]`
+      # declared above. There is no `sops-nix.service` systemd unit in
+      # current sops-nix — depending on it would prevent hostapd from
+      # starting and break wifi.
       kea-dhcp4-server.after = [ "systemd-networkd.service" ];
     };
 
