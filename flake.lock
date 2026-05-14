@@ -516,15 +516,16 @@
     },
     "criomos-lib": {
       "locked": {
-        "lastModified": 1778685650,
-        "narHash": "sha256-GVHQFrGNwQcOEI3HycD2UPv5yp3TSpN7Ft1WqsRT0FI=",
+        "lastModified": 1778774187,
+        "narHash": "sha256-crfjtUSXQQm+bjMh+5DCCnI8rUqciQn4V3wxqTj58Qs=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-lib",
-        "rev": "ec851e52409cfbb63da96877e30650cc96a47b5e",
+        "rev": "dd4e024e1c19d81d1a08ffd1e33b66e39ad65856",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "horizon-re-engineering",
         "repo": "CriomOS-lib",
         "type": "github"
       }

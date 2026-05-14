@@ -5,12 +5,16 @@
 }:
 let
   inherit (lib) mkOverride optionals;
-  inherit (horizon) node exNodes;
+  inherit (horizon) cluster node exNodes;
   inherit (builtins)
     head
     match
     split
     ;
+
+  clusterResolver =
+    cluster.resolver
+      or (throw "network: horizon.cluster.resolver is required (system nameservers come from horizon)");
 
   sanitizeIp =
     ip:
@@ -72,12 +76,11 @@ in
   networking = {
     hostName = node.name;
     dhcpcd.extraConfig = "noipv4ll";
-    nameservers = [
-      "::1"
-      "127.0.0.1"
-      "1.1.1.1"
-      "9.9.9.9"
-    ];
+    # Local listens first (loopback, LAN gateway via dnsmasq if router),
+    # then upstreams + fallbacks. Whole list comes from horizon —
+    # no Cloudflare/Quad9 literal in this file.
+    nameservers =
+      clusterResolver.listens ++ clusterResolver.upstreams ++ clusterResolver.fallbacks;
     hosts = lib.concatMapAttrs mkCriomeHostEntries allNodes;
   };
 

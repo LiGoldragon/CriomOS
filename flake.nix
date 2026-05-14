@@ -15,7 +15,7 @@
 
     # Shared constants, helpers, and cross-repo data. Consumed by both
     # CriomOS and CriomOS-home.
-    criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
+    criomos-lib.url = "github:LiGoldragon/CriomOS-lib/horizon-re-engineering";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
     criomos-home.url = "github:LiGoldragon/CriomOS-home";

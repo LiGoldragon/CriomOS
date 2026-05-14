@@ -1,6 +1,5 @@
 {
   config,
-  constants,
   lib,
   horizon,
   ...
@@ -14,33 +13,28 @@ let
     match
     split
     ;
-  inherit (horizon) exNodes node;
+  inherit (horizon) cluster exNodes node;
   inherit (horizon.node) behavesAs;
 
   lanBridgeInterface = "br-lan";
-  lanGateway = constants.network.lan.gateway;
+
+  clusterLan =
+    cluster.lan
+      or (throw "dnsmasq: horizon.cluster.lan is required for router nodes (LAN gateway feeds dnsmasq listen-address)");
+  clusterResolver =
+    cluster.resolver
+      or (throw "dnsmasq: horizon.cluster.resolver is required (upstreams/fallbacks/listens come from horizon)");
 
   headscaleEnabled = config.services.headscale.enable;
   tailnetBaseDomain = config.services.headscale.settings.dns.base_domain or null;
 
-  # Router nodes listen on loopback for local system lookups and on
-  # br-lan's gateway address for WiFi/LAN clients.
-  listenAddresses = [
-    "::1"
-    "127.0.0.1"
-    lanGateway
-  ];
+  # Listen addresses come from horizon.cluster.resolver.listens — typed
+  # cluster policy, not a hardcoded ::1/127.0.0.1/lanGateway literal.
+  listenAddresses = clusterResolver.listens;
 
-  upstreamServers = [
-    "1.1.1.1"
-    "1.0.0.1"
-    "2606:4700:4700::1111"
-    "2606:4700:4700::1001"
-    "9.9.9.9"
-    "149.112.112.112"
-    "2620:fe::fe"
-    "2620:fe::9"
-  ];
+  # Upstream DNS comes from horizon.cluster.resolver. dnsmasq queries
+  # primary upstreams first; fallbacks act as backup if primaries fail.
+  upstreamServers = clusterResolver.upstreams ++ clusterResolver.fallbacks;
 
   mkAddressRecord =
     {
@@ -97,6 +91,12 @@ let
       ++ aliasRecords;
 
   localAddressRecords = concatLists (map mkPrimaryRecords horizonNodes);
+
+  # `clusterLan` is force-evaluated here so the throw fires loudly on
+  # router nodes whose datom forgot to author cluster.lan; it stays
+  # lazy on non-router nodes (the whole `mkIf behavesAs.router` block
+  # never accesses it).
+  _ = clusterLan;
 in
 lib.mkIf behavesAs.router {
   services = {

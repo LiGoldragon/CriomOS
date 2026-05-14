@@ -7,7 +7,7 @@
 }:
 let
   inherit (builtins) toString;
-  inherit (horizon) node;
+  inherit (horizon) cluster node;
 
   headscaleFqdn = node.criomeDomainName;
   services = node.services or { };
@@ -16,8 +16,18 @@ let
     if tailnetControllerRole == null then null else tailnetControllerRole.Server or null;
 
   headscalePort = if tailnetControllerServer == null then null else tailnetControllerServer.port;
-  tailnetBaseDomain =
-    if tailnetControllerServer == null then null else tailnetControllerServer.baseDomain;
+
+  # Step 11 collapse: base_domain is per-cluster, not per-controller.
+  # Every node hosting a controller requires `cluster.tailnet` to be
+  # present (validated at horizon projection time via
+  # `Error::TailnetControllerWithoutClusterConfig`); inside the
+  # `mkIf (tailnetControllerServer != null)` block below it is safe
+  # to assume non-null.
+  clusterTailnet =
+    if tailnetControllerServer == null then null else
+      cluster.tailnet
+        or (throw "headscale: cluster.tailnet must be set when a node hosts a tailnet controller (validated by horizon projection — TailnetControllerWithoutClusterConfig)");
+  tailnetBaseDomain = if clusterTailnet == null then null else clusterTailnet.baseDomain;
 
   tlsDir = "/var/lib/headscale/tls";
   tlsCertPath = "${tlsDir}/headscale.crt";
@@ -53,7 +63,9 @@ let
       sanList="$sanList,IP:$primaryIpv4"
     fi
 
-    # Self-signed cert for Phase 1; will be replaced with real PKI later.
+    # Self-signed cert when cluster.tailnet.tls is absent. Once the
+    # operator authors a CA + server cert in horizon, this script
+    # becomes a no-op (certs already on disk).
     ${lib.getExe pkgs.openssl} req \
       -x509 -newkey rsa:4096 -nodes \
       -keyout "$keyFile" \
@@ -82,7 +94,7 @@ in
         tls_cert_path = tlsCertPath;
         tls_key_path = tlsKeyPath;
 
-        # Must differ from server_url domain.
+        # base_domain comes from horizon.cluster.tailnet.baseDomain.
         dns = {
           magic_dns = true;
           base_domain = tailnetBaseDomain;
@@ -92,7 +104,7 @@ in
     };
 
     systemd.services.headscale-selfsigned-cert = {
-      description = "Generate headscale self-signed TLS certificate (Phase 1)";
+      description = "Generate headscale self-signed TLS certificate when cluster.tailnet.tls is absent";
       before = [ "headscale.service" ];
 
       serviceConfig = {

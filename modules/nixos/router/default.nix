@@ -1,23 +1,37 @@
 {
   lib,
   horizon,
-  constants,
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf last splitString;
+  inherit (horizon) cluster;
   inherit (horizon.node) behavesAs;
-  # WiFi PKI paths — uncomment when EAP-TLS is deployed
-  # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
 
   routerInterfaces =
     horizon.node.routerInterfaces
       or (throw "router: horizon.node.routerInterfaces is required for router nodes");
 
+  clusterLan =
+    cluster.lan
+      or (throw "router: horizon.cluster.lan is required for router nodes (subnet/gateway/DHCP/lease come from horizon)");
+
   lanBridgeInterface = "br-lan";
-  lanSubnetPrefix = constants.network.lan.subnetPrefix;
-  lanAddress = constants.network.lan.gateway;
-  lanFullAddress = "${lanAddress}/24";
+
+  # Pull every value from cluster.lan; no constants.network.lan reads.
+  lanCidr = clusterLan.cidr; # e.g. "10.18.0.0/24"
+  lanGateway = clusterLan.gateway; # e.g. "10.18.0.1"
+  lanPrefixLength = last (splitString "/" lanCidr); # "24"
+  lanFullAddress = "${lanGateway}/${lanPrefixLength}";
+
+  dhcpPool = clusterLan.dhcpPool;
+  dhcpPoolRange = "${dhcpPool.start} - ${dhcpPool.end}";
+
+  leaseTtl = clusterLan.leasePolicy.defaultTtlSeconds;
+  # RFC 2131 §4.4.5: T1 ≈ 0.5 × lease, T2 ≈ 0.875 × lease.
+  # kea uses renew-timer = T1, rebind-timer = T2.
+  leaseRenewTimer = leaseTtl / 2;
+  leaseRebindTimer = (leaseTtl * 7) / 8;
 
   useNftables = true;
 
@@ -110,9 +124,9 @@ in
         dhcp4 = {
           enable = true;
           settings = {
-            valid-lifetime = 4000;
-            renew-timer = 1000;
-            rebind-timer = 2000;
+            valid-lifetime = leaseTtl;
+            renew-timer = leaseRenewTimer;
+            rebind-timer = leaseRebindTimer;
             interfaces-config = {
               interfaces = [ lanBridgeInterface ];
               dhcp-socket-type = "raw";
@@ -125,16 +139,16 @@ in
             subnet4 = [
               {
                 id = 1;
-                subnet = lanFullAddress;
-                pools = [ { pool = "${lanSubnetPrefix}.100 - ${lanSubnetPrefix}.240"; } ];
+                subnet = lanCidr;
+                pools = [ { pool = dhcpPoolRange; } ];
                 option-data = [
                   {
                     name = "routers";
-                    data = lanAddress;
+                    data = lanGateway;
                   }
                   {
                     name = "domain-name-servers";
-                    data = lanAddress;
+                    data = lanGateway;
                   }
                 ];
               }
