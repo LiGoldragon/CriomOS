@@ -19,6 +19,7 @@ in
     ./nix
     ./complex.nix
     ./chroma.nix
+    ./nspawn.nix
     ./llm.nix
     ./users.nix
     ./network
