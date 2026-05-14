@@ -1,4 +1,6 @@
 {
+  config,
+  inputs,
   lib,
   horizon,
   constants,
@@ -13,6 +15,17 @@ let
   routerInterfaces =
     horizon.node.routerInterfaces
       or (throw "router: horizon.node.routerInterfaces is required for router nodes");
+  routerWifiPasswordSecret =
+    routerInterfaces.wpa3SaePassword
+      or (throw "router: horizon.node.routerInterfaces.wpa3SaePassword is required for WPA3-SAE");
+  routerWifiPasswordSecretName = routerWifiPasswordSecret.name;
+  routerWifiSopsFiles = inputs.secrets.sopsFiles or { };
+  routerWifiSopsFileExists = builtins.hasAttr routerWifiPasswordSecretName routerWifiSopsFiles;
+  routerWifiSopsFile =
+    if routerWifiSopsFileExists then
+      routerWifiSopsFiles.${routerWifiPasswordSecretName}
+    else
+      throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.routerInterfaces.wpa3SaePassword";
 
   lanBridgeInterface = "br-lan";
   lanSubnetPrefix = constants.network.lan.subnetPrefix;
@@ -29,6 +42,19 @@ in
   ];
 
   config = mkIf behavesAs.router {
+    assertions = [
+      {
+        assertion = routerWifiSopsFileExists;
+        message = "router Wi-Fi secret ${routerWifiPasswordSecretName} is missing from inputs.secrets.sopsFiles";
+      }
+    ];
+
+    sops.secrets.${routerWifiPasswordSecretName} = {
+      format = "binary";
+      sopsFile = routerWifiSopsFile;
+      mode = "0400";
+      restartUnits = [ "hostapd.service" ];
+    };
 
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
@@ -95,7 +121,7 @@ in
                 ssid = "criome";
                 authentication = {
                   mode = "wpa3-sae";
-                  saePasswords = [ { password = "leavesarealsoalive"; } ];
+                  saePasswordsFile = config.sops.secrets.${routerWifiPasswordSecretName}.path;
                 };
                 settings = {
                   bridge = lanBridgeInterface;
@@ -144,7 +170,13 @@ in
       };
     };
 
-    systemd.services.kea-dhcp4-server.after = [ "systemd-networkd.service" ];
+    systemd.services = {
+      hostapd = {
+        after = [ "sops-nix.service" ];
+        requires = [ "sops-nix.service" ];
+      };
+      kea-dhcp4-server.after = [ "systemd-networkd.service" ];
+    };
 
     systemd.network = {
       enable = true;

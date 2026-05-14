@@ -10,6 +10,9 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -55,6 +58,10 @@
     # Deployment shape — lojix overrides per request. The default keeps
     # the historical full system+home target.
     deployment.url = "path:./stubs/default-deployment";
+
+    # Encrypted cluster secrets — lojix overrides per deploy from the
+    # cluster repository.
+    secrets.url = "path:./stubs/no-secrets";
   };
 
   outputs =
@@ -78,6 +85,7 @@
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
+          router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
         };
       };
 
