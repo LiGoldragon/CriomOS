@@ -9,8 +9,9 @@ let
   inherit (builtins) fromJSON readFile pathExists;
   inherit (lib) mkIf concatStringsSep map;
   inherit (horizon) node;
-  inherit (horizon.node) hasNordvpnPubKey;
   inherit (constants.fileSystem.nordvpn) privateKeyFile;
+
+  hasNordvpnPubKey = horizon.node.hasNordvpnPubKey or (horizon.node.nordvpn or false);
 
   /*
     Server data is read from the lock file at build time.
