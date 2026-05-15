@@ -11,6 +11,31 @@ let
     isRemoteNixBuilder
     isDispatcher
     ;
+
+  nixSystemName =
+    system:
+    {
+      Aarch64Linux = "aarch64-linux";
+      X86_64Linux = "x86_64-linux";
+    }
+    ."${system}" or system;
+
+  buildMachineFor =
+    builder:
+    {
+      inherit (builder)
+        hostName
+        sshUser
+        sshKey
+      supportedFeatures
+      maxJobs
+      ;
+      system = nixSystemName builder.system;
+      systems = map nixSystemName (builder.systems or [ builder.system ]);
+      protocol = "ssh-ng";
+      speedFactor = 10;
+      publicHostKey = builder.publicHostKey;
+    };
 in
 {
   nix = {
@@ -32,20 +57,7 @@ in
 
     # Build dispatcher: this node sends derivations to remote builders.
     distributedBuilds = isDispatcher;
-    buildMachines = map (b: {
-      inherit (b)
-        hostName
-        sshUser
-        sshKey
-        supportedFeatures
-        system
-        systems
-        maxJobs
-        ;
-      protocol = "ssh-ng";
-      speedFactor = 10;
-      publicHostKey = b.publicHostKey;
-    }) (optionals isDispatcher builderConfigs);
+    buildMachines = map buildMachineFor (optionals isDispatcher builderConfigs);
   };
 
   # known_hosts entries for every builder this dispatcher will connect to.

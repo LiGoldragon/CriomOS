@@ -34,8 +34,8 @@ let
           "kvm"
           "nixos-test"
         ];
-        inherit system;
-        systems = [ system ];
+        system = "X86_64Linux";
+        systems = [ "X86_64Linux" ];
         maxJobs = 4;
         publicHostKey = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         publicHostKeyLine = "builder.example ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
@@ -95,6 +95,8 @@ pkgs.runCommand "nix-role-policy" { } ''
   test ${lib.escapeShellArg (bool serviceConfiguration.nix.sshServe.enable)} = true
   test ${lib.escapeShellArg (bool serviceConfiguration.nix.distributedBuilds)} = true
   test ${lib.escapeShellArg (toString (builtins.length serviceConfiguration.nix.buildMachines))} = 1
+  test ${lib.escapeShellArg (builtins.elemAt serviceConfiguration.nix.buildMachines 0).system} = ${lib.escapeShellArg system}
+  test ${lib.escapeShellArg (builtins.toJSON (builtins.elemAt serviceConfiguration.nix.buildMachines 0).systems)} = ${lib.escapeShellArg (builtins.toJSON [ system ])}
   test ${lib.escapeShellArg (bool (builtins.hasAttr "builder.example" serviceConfiguration.programs.ssh.knownHosts))} = true
   test ${lib.escapeShellArg (bool serviceConfiguration.services.nix-serve.enable)} = true
   test ${lib.escapeShellArg (bool (builtins.elem 80 serviceConfiguration.networking.firewall.allowedTCPPorts))} = true
