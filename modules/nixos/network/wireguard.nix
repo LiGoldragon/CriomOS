@@ -6,25 +6,20 @@
   ...
 }:
 let
-  inherit (builtins)
-    mapAttrs
-    attrNames
-    filter
-    concatStringsSep
-    ;
   inherit (lib)
     mkIf
     mapAttrsToList
     filterAttrs
     ;
   inherit (horizon) node exNodes;
-  inherit (horizon.node)
-    hasWireguardPubKey
-    wireguardUntrustedProxies
-    ;
+
+  hasWireguardPubKey =
+    horizon.node.hasWireguardPubKey or ((horizon.node.wireguardPubKey or null) != null);
+
+  wireguardUntrustedProxies = horizon.node.wireguardUntrustedProxies or [ ];
 
   mkUntrustedProxy = untrustedProxy: {
-    inherit (wireguardUntrustedProxies) publicKey endpoint;
+    inherit (untrustedProxy) publicKey endpoint;
     allowedIPs = [ "0.0.0.0/0" ];
   };
 
@@ -34,13 +29,17 @@ let
 
   untrustedProxiesIps = map mkUntrustedProxyIp wireguardUntrustedProxies;
 
-  mkNodePeer = name: node: {
-    allowedIPs = [ node.nodeIp ];
-    publicKey = node.wireguardPubKey;
-    endpoint = "wg.${node.criomeDomainName}:51820";
+  mkNodePeer = nodeName: peerNode: {
+    allowedIPs = [ peerNode.nodeIp ];
+    publicKey = peerNode.wireguardPubKey;
+    endpoint = "wg.${peerNode.criomeDomainName}:51820";
   };
 
-  validPreNodes = filterAttrs (n: v: v.hasWireguardPubKey) exNodes;
+  validPreNodes =
+    filterAttrs (
+      nodeName: peerNode:
+      peerNode.hasWireguardPubKey or ((peerNode.wireguardPubKey or null) != null)
+    ) exNodes;
 
   nodePeers = mapAttrsToList mkNodePeer validPreNodes;
 
