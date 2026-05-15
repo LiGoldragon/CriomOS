@@ -27,27 +27,34 @@ let
     nodeName: entryNode:
     let
       inherit (entryNode) criomeDomainName;
-      isNixCache = entryNode.isNixCache or false;
-      nixCacheDomain = entryNode.nixCacheDomain or null;
+      isNixCache = entryNode.isNixCache or ((entryNode.nixCache or null) != null);
+      nixCacheDomain = entryNode.nixCacheDomain or (entryNode.nixCache.domain or null);
       nodeIp = sanitizeIp (entryNode.nodeIp or null);
-      yggAddress = sanitizeIp (entryNode.yggAddress or null);
+      yggAddress = sanitizeIp (entryNode.yggAddress or (entryNode.yggdrasil.address or null));
       linkLocalIps = builtins.filter (ip: ip != null) (builtins.map sanitizeIp (entryNode.linkLocalIps or [ ]));
       nixCacheAliases = optionals (isNixCache && nixCacheDomain != null && nixCacheDomain != "") [
         nixCacheDomain
       ];
+      primaryAliases = [ criomeDomainName ] ++ nixCacheAliases;
 
       mkPreNodeHost = linkLocalIP: [ ("wg." + criomeDomainName) ];
 
-      nodeHost = {
-        "${nodeIp}" = [ criomeDomainName ];
+      nodeAliases =
+        if yggAddress == null then
+          primaryAliases
+        else
+          [ ("wg." + criomeDomainName) ];
+
+      nodeHost = lib.optionalAttrs (nodeIp != null && nodeAliases != [ ]) {
+        "${nodeIp}" = nodeAliases;
       };
 
       preNodeHosts = lib.genAttrs linkLocalIps mkPreNodeHost;
 
-      nodeHosts = lib.optionalAttrs (nodeIp != null) (nodeHost // preNodeHosts);
+      nodeHosts = nodeHost // preNodeHosts;
 
       yggdrasilHost = lib.optionalAttrs (yggAddress != null) {
-        "${yggAddress}" = [ criomeDomainName ] ++ nixCacheAliases;
+        "${yggAddress}" = primaryAliases;
       };
 
     in
