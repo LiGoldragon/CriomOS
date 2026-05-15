@@ -5,7 +5,7 @@
 }:
 let
   inherit (lib) mkIf optionalAttrs optionals;
-  inherit (horizon.node) isNixCache;
+  isNixCache = horizon.node.isNixCache or false;
 in
 {
   networking.firewall.allowedTCPPorts = optionals isNixCache [
