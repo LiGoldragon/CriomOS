@@ -12,6 +12,7 @@ let
   };
 
   baseNode = {
+    behavesAs.center = false;
     buildCores = 2;
     builderConfigs = [ ];
     cacheUrls = [ ];
@@ -23,6 +24,7 @@ let
   };
 
   serviceNode = baseNode // {
+    behavesAs.center = true;
     buildCores = 8;
     builderConfigs = [
       {
@@ -54,6 +56,12 @@ let
     };
   };
 
+  edgeBuilderNode = serviceNode // {
+    behavesAs.center = false;
+    buildCores = 1;
+    maxJobs = 12;
+  };
+
   configurationFor =
     node:
     lib.nixosSystem {
@@ -73,6 +81,7 @@ let
 
   baseConfiguration = (configurationFor baseNode).config;
   serviceConfiguration = (configurationFor serviceNode).config;
+  edgeBuilderConfiguration = (configurationFor edgeBuilderNode).config;
 
   baseExtraOptions = baseConfiguration.nix.extraOptions;
   serviceExtraOptions = serviceConfiguration.nix.extraOptions;
@@ -88,6 +97,9 @@ pkgs.runCommand "nix-role-policy" { } ''
   test ${lib.escapeShellArg (bool baseConfiguration.nix.distributedBuilds)} = false
   test ${lib.escapeShellArg (bool baseConfiguration.services.nix-serve.enable)} = false
   test ${lib.escapeShellArg (builtins.toJSON baseConfiguration.nix.buildMachines)} = '[]'
+
+  test ${lib.escapeShellArg (toString edgeBuilderConfiguration.nix.settings.cores)} = 2
+  test ${lib.escapeShellArg (toString edgeBuilderConfiguration.nix.settings.max-jobs)} = 1
 
   test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.cores)} = 8
   test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.max-jobs)} = 4

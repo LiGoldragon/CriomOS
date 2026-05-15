@@ -12,8 +12,8 @@ let
   inherit (horizon) node;
   inherit (horizon.node) cacheUrls;
 
-  dedicatedNixBuilder = node.isRemoteNixBuilder or false;
-  localBuildCores = if dedicatedNixBuilder then node.buildCores else 2;
+  dedicatedNixBuilder = (node.isRemoteNixBuilder or false) && (node.behavesAs.center or false);
+  localBuildCores = if dedicatedNixBuilder then (node.buildCores or 2) else 2;
   localMaxJobs = if dedicatedNixBuilder then (node.maxJobs or 4) else 1;
 
   # Build a flake-registry entry from a locked input's `sourceInfo`.
