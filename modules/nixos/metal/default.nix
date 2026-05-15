@@ -94,6 +94,53 @@ let
   hasTouchpad = true;
 
   needsIntelThrottlingFix = model == "ThinkPadT14Gen2Intel";
+  needsThinkpadThermalGuard = modelIsThinkpad && chipIsIntel;
+
+  thinkpadFanLevels = [
+    [ 0 0 48 ]
+    [ 1 45 55 ]
+    [ 2 50 60 ]
+    [ 3 55 65 ]
+    [ 6 60 70 ]
+    [ 7 65 32767 ]
+  ];
+
+  thermaldEightyDegreeConfiguration = pkgs.writeText "thermald-eighty-degree-processor-guard.xml" ''
+    <?xml version="1.0"?>
+    <ThermalConfiguration>
+      <Platform>
+        <Name>CriomOS Intel processor guard</Name>
+        <ProductName>*</ProductName>
+        <Preference>QUIET</Preference>
+        <ThermalZones>
+          <ThermalZone>
+            <Type>x86_pkg_temp</Type>
+            <TripPoints>
+              <TripPoint>
+                <SensorType>x86_pkg_temp</SensorType>
+                <Temperature>80000</Temperature>
+                <type>passive</type>
+                <ControlType>SEQUENTIAL</ControlType>
+                <CoolingDevice>
+                  <type>Processor</type>
+                </CoolingDevice>
+              </TripPoint>
+            </TripPoints>
+          </ThermalZone>
+        </ThermalZones>
+        <CoolingDevices>
+          <CoolingDevice>
+            <Type>Processor</Type>
+            <PidControl>
+              <kp>0.0002</kp>
+              <kd>0</kd>
+              <ki>0</ki>
+            </PidControl>
+          </CoolingDevice>
+        </CoolingDevices>
+      </Platform>
+    </ThermalConfiguration>
+  '';
 
   modelFirmwareIndex = with pkgs; {
     ThinkPadE15Gen2Intel = [ sof-firmware ];
@@ -215,6 +262,11 @@ let
 
 in
 mkIf behavesAs.bareMetal {
+  assertions = optional modelIsThinkpad {
+    assertion = !(builtins.any (level: builtins.elem "level auto" level) thinkpadFanLevels);
+    message = "ThinkPad fan policy must keep user-space fan control at high temperatures; do not use `level auto`.";
+  };
+
   hardware = {
     cpu.intel.updateMicrocode = chipIsIntel;
 
@@ -457,12 +509,18 @@ mkIf behavesAs.bareMetal {
 
     thinkfan = mkIf modelIsThinkpad {
       enable = true;
+      levels = thinkpadFanLevels;
       sensors = [
         {
           type = "tpacpi";
           query = "/proc/acpi/ibm/thermal";
         }
       ];
+    };
+
+    thermald = mkIf needsThinkpadThermalGuard {
+      enable = true;
+      configFile = thermaldEightyDegreeConfiguration;
     };
 
     udisks2.enable = true;
