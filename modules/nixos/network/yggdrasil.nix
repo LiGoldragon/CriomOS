@@ -7,7 +7,7 @@
 }:
 let
   inherit (lib) optionalString;
-  inherit (horizon.node) hasYggPubKey;
+  hasYggPubKey = horizon.node.hasYggPubKey or ((horizon.node.yggPubKey or null) != null);
   inherit (constants.fileSystem.yggdrasil)
     preCriadJson
     subDirName
