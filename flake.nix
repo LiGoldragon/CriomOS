@@ -21,7 +21,7 @@
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib/horizon-re-engineering";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/horizon-re-engineering";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
