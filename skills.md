@@ -91,6 +91,13 @@ Build and activate through lojix-projected inputs for real checks. A
 plain direct build of `nixosConfigurations.target` without projected
 `horizon` and `system` inputs is not the real deploy path.
 
+When manual local activation is needed from an agent harness, use the
+host's root SSH path instead of sudo or run0. Address the machine by its
+full Criome domain (`<node>.<cluster>.criome`) and run the already-built
+generation's `switch-to-configuration` over `ssh root@...`. The agent
+harness may not have interactive sudo, but system-specialist has root SSH
+for host activation.
+
 Push before build/switch work. Capture store paths in shell variables,
 not prose. Keep niri unsignalled.
 
