@@ -492,6 +492,7 @@
         "pkgs": [
           "pkgs"
         ],
+        "rust-overlay": "rust-overlay",
         "stylix": "stylix",
         "substack-cli": "substack-cli",
         "system": [
@@ -501,11 +502,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1778781935,
-        "narHash": "sha256-QhG43Lpxj52NBbly/dbJaUaSE2qnzGKTwG2YlDhuoY8=",
+        "lastModified": 1778870943,
+        "narHash": "sha256-J8MuLEzz6fWnEskcGKNOko6IkMZXcN6P37DpuZFcGMw=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "ed77c7ec03e502cd3d2bd7a81c066803677a8677",
+        "rev": "eb1ca6f6fe701bbb78135eaec8f7fcbb505a9577",
         "type": "github"
       },
       "original": {
@@ -897,11 +898,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777408251,
-        "narHash": "sha256-aYHmJU7qJXQ8UrRRWGRoBR5pPOSSkx6cLGOTnkqnI8E=",
+        "lastModified": 1778870757,
+        "narHash": "sha256-oFvRuV+gbVFRAZjG4ZMy08imjWoC+D/XsV2ImOp0mNQ=",
         "owner": "LiGoldragon",
         "repo": "hexis",
-        "rev": "8ef02c41cba11b350aeef9faa3d4cfa2df1af1cd",
+        "rev": "744f20d70c982309baa635952430fa3e3097d677",
         "type": "github"
       },
       "original": {
@@ -1255,7 +1256,7 @@
         "horizon": "horizon",
         "nixpkgs": "nixpkgs",
         "pkgs": "pkgs",
-        "rust-overlay": "rust-overlay",
+        "rust-overlay": "rust-overlay_2",
         "secrets": "secrets",
         "sops-nix": "sops-nix",
         "system": "system"
@@ -1381,6 +1382,27 @@
       }
     },
     "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1778815121,
+        "narHash": "sha256-xlhD+1NVJbhrUUM2usRHW6iKWTXP2uw2Fo6sWJmLg8g=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "017351829a9356423afd2cca0dde9b63346c8ab3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"

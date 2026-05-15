@@ -521,6 +521,7 @@ mkIf behavesAs.bareMetal {
     thermald = mkIf needsThinkpadThermalGuard {
       enable = true;
       configFile = thermaldEightyDegreeConfiguration;
+      ignoreCpuidCheck = true;
     };
 
     udisks2.enable = true;
