@@ -81,7 +81,7 @@ pkgs.runCommand "nix-role-policy" { } ''
   set -eu
 
   test ${lib.escapeShellArg (bool (builtins.hasAttr "nixdev" baseConfiguration.users.groups))} = true
-  test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.build-cores)} = 2
+  test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.cores)} = 2
   test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.max-jobs)} = 1
   test ${lib.escapeShellArg (bool baseConfiguration.nix.settings.auto-optimise-store)} = true
   test ${lib.escapeShellArg (bool baseConfiguration.nix.sshServe.enable)} = false
@@ -89,7 +89,7 @@ pkgs.runCommand "nix-role-policy" { } ''
   test ${lib.escapeShellArg (bool baseConfiguration.services.nix-serve.enable)} = false
   test ${lib.escapeShellArg (builtins.toJSON baseConfiguration.nix.buildMachines)} = '[]'
 
-  test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.build-cores)} = 8
+  test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.cores)} = 8
   test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.max-jobs)} = 4
   test ${lib.escapeShellArg (bool serviceConfiguration.nix.settings.builders-use-substitutes)} = true
   test ${lib.escapeShellArg (bool serviceConfiguration.nix.sshServe.enable)} = true

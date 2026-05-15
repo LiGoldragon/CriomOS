@@ -68,7 +68,7 @@ in
         "nix-serve"
       ];
 
-      build-cores = localBuildCores;
+      cores = localBuildCores;
       max-jobs = localMaxJobs;
 
       connect-timeout = 5;
