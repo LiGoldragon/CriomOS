@@ -162,6 +162,12 @@ ${serverCleanupRules}
 
 in
 {
+  # sops options come from ../secrets.nix; declare the dependency
+  # locally so isolated module tests (cluster-contracts loads only
+  # network + router, not the criomos aggregate) still resolve the
+  # `sops.secrets.<name>` references below.
+  imports = [ ../secrets.nix ];
+
   config = mkIf hasNordvpnPubKey (lib.mkMerge [
     (lib.mkIf (credentialsName != null && credentialsSopsFile != null) {
       sops.secrets.${credentialsName} = {
