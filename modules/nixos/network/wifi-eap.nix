@@ -7,9 +7,10 @@
 let
   inherit (lib) mkIf;
   inherit (horizon) node;
-  inherit (horizon.node) hasWifiCertPubKey;
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
   inherit (constants.fileSystem.complex) keyFile;
+
+  hasWifiCertPubKey = horizon.node.hasWifiCertPubKey or (horizon.node.wifiCert or false);
 
   nodeCertFile = "${certsDir}/${node.name}.pem";
 
