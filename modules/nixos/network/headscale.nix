@@ -7,7 +7,7 @@
 }:
 let
   inherit (builtins) toString;
-  inherit (horizon) node;
+  inherit (horizon) cluster node;
 
   headscaleFqdn = node.criomeDomainName;
   services = node.services or { };
@@ -17,7 +17,10 @@ let
 
   headscalePort = if tailnetControllerServer == null then null else tailnetControllerServer.port;
   tailnetBaseDomain =
-    if tailnetControllerServer == null then null else tailnetControllerServer.baseDomain;
+    if tailnetControllerServer == null then
+      null
+    else
+      tailnetControllerServer.baseDomain or (cluster.tailnet.baseDomain or null);
 
   tlsDir = "/var/lib/headscale/tls";
   tlsCertPath = "${tlsDir}/headscale.crt";
