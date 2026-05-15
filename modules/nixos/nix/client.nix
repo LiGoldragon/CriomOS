@@ -12,6 +12,10 @@ let
   inherit (horizon) node;
   inherit (horizon.node) cacheUrls;
 
+  dedicatedNixBuilder = node.isRemoteNixBuilder or false;
+  localBuildCores = if dedicatedNixBuilder then node.buildCores else 2;
+  localMaxJobs = if dedicatedNixBuilder then (node.maxJobs or 4) else 1;
+
   # Build a flake-registry entry from a locked input's `sourceInfo`.
   # Same lock input -> same registry entry on deployed nodes.
   mkFlakeEntry = name: input: {
@@ -64,7 +68,8 @@ in
         "nix-serve"
       ];
 
-      build-cores = node.buildCores;
+      build-cores = localBuildCores;
+      max-jobs = localMaxJobs;
 
       connect-timeout = 5;
       fallback = true;
