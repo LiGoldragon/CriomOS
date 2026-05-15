@@ -5,7 +5,8 @@
 }:
 let
   inherit (lib) mkOverride optionals;
-  inherit (horizon) node exNodes;
+  inherit (horizon) node;
+  exNodes = horizon.exNodes or { };
   inherit (builtins)
     head
     match
@@ -23,13 +24,14 @@ let
       if cleaned == "" || match ".*%.*" cleaned != null then null else cleaned;
 
   mkCriomeHostEntries =
-    name: node:
+    nodeName: entryNode:
     let
-      inherit (node) criomeDomainName;
-      inherit (node) isNixCache nixCacheDomain;
-      nodeIp = sanitizeIp node.nodeIp;
-      yggAddress = sanitizeIp node.yggAddress;
-      linkLocalIps = builtins.filter (ip: ip != null) (builtins.map sanitizeIp node.linkLocalIps);
+      inherit (entryNode) criomeDomainName;
+      isNixCache = entryNode.isNixCache or false;
+      nixCacheDomain = entryNode.nixCacheDomain or null;
+      nodeIp = sanitizeIp (entryNode.nodeIp or null);
+      yggAddress = sanitizeIp (entryNode.yggAddress or null);
+      linkLocalIps = builtins.filter (ip: ip != null) (builtins.map sanitizeIp (entryNode.linkLocalIps or [ ]));
       nixCacheAliases = optionals (isNixCache && nixCacheDomain != null && nixCacheDomain != "") [
         nixCacheDomain
       ];
