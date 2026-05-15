@@ -1,6 +1,8 @@
 {
+  config,
   lib,
   horizon,
+  inputs,
   ...
 }:
 let
@@ -11,6 +13,17 @@ let
   routerInterfaces =
     horizon.node.routerInterfaces
       or (throw "router: horizon.node.routerInterfaces is required for router nodes");
+
+  routerWifiPasswordSecret = routerInterfaces.wpa3SaePassword;
+  routerWifiPasswordSecretName = routerWifiPasswordSecret.name;
+  routerWifiSopsFiles = inputs.secrets.sopsFiles or { };
+  routerWifiSopsFileExists =
+    builtins.hasAttr routerWifiPasswordSecretName routerWifiSopsFiles;
+  routerWifiSopsFile =
+    if routerWifiSopsFileExists then
+      routerWifiSopsFiles.${routerWifiPasswordSecretName}
+    else
+      throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.routerInterfaces.wpa3SaePassword";
 
   clusterLan =
     cluster.lan
@@ -38,11 +51,25 @@ let
 in
 {
   imports = [
+    ../secrets.nix
     ./wifi-pki.nix
     ./yggdrasil.nix
   ];
 
   config = mkIf behavesAs.router {
+    assertions = [
+      {
+        assertion = routerWifiSopsFileExists;
+        message = "router Wi-Fi secret ${routerWifiPasswordSecretName} is missing from inputs.secrets.sopsFiles";
+      }
+    ];
+
+    sops.secrets.${routerWifiPasswordSecretName} = {
+      format = "binary";
+      sopsFile = routerWifiSopsFile;
+      mode = "0400";
+      restartUnits = [ "hostapd.service" ];
+    };
 
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
@@ -99,17 +126,16 @@ in
           "${routerInterfaces.wlan}" = {
             band = routerInterfaces.wlanBand;
             channel = routerInterfaces.wlanChannel;
-            countryCode = "PL";
+            countryCode = routerInterfaces.country;
             wifi4.enable = routerInterfaces.wlanStandard == "wifi4";
             wifi6.enable = routerInterfaces.wlanStandard == "wifi6" || routerInterfaces.wlanStandard == "wifi7";
             wifi7.enable = routerInterfaces.wlanStandard == "wifi7";
             networks = {
-              # WPA3-SAE — primary SSID (EAP-TLS will replace this once PKI is deployed)
               "${routerInterfaces.wlan}" = {
-                ssid = "criome";
+                ssid = routerInterfaces.ssid;
                 authentication = {
                   mode = "wpa3-sae";
-                  saePasswords = [ { password = "leavesarealsoalive"; } ];
+                  saePasswordsFile = config.sops.secrets.${routerWifiPasswordSecretName}.path;
                 };
                 settings = {
                   bridge = lanBridgeInterface;
