@@ -82,10 +82,14 @@
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };
+          devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
+          legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
+          router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
+          wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
         };
       };
 

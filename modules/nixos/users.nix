@@ -34,11 +34,6 @@ let
       extraGroups =
         user.extraGroups
         ++ (optional behavesAs.edge "uinput")
-        # Legacy Chroma group for old home-manager generations that
-        # used /run/chroma/<uid>.sock. Current Chroma uses the user's
-        # own $XDG_RUNTIME_DIR socket; keep this through one migration
-        # wave, then remove it with modules/nixos/chroma.nix.
-        ++ (optional behavesAs.edge "chroma")
         ++ (optional (config.programs.sway.enable == true) "sway")
         ++ (optional (trust.medium && config.networking.networkmanager.enable == true) "networkmanager");
 

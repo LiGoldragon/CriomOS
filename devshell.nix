@@ -8,8 +8,8 @@ let
     ];
   };
 
-  # Sibling repos under ~/git/ exposed as symlinks in ./repos/
-  # at devshell entry.
+  # Sibling repos managed by ghq under /git/ exposed as symlinks in
+  # ./repos/ at devshell entry.
   linkedRepos = [
     "lore"
     # CriomOS cluster
@@ -28,10 +28,10 @@ let
     # Remove stale symlinks before re-creating
     find repos -maxdepth 1 -type l -exec rm {} \;
     ${pkgs.lib.concatMapStringsSep "\n" (name: ''
-      if [ -d "$HOME/git/${name}" ]; then
-        ln -sfn "$HOME/git/${name}" "repos/${name}"
+      if [ -d "/git/github.com/LiGoldragon/${name}" ]; then
+        ln -sfn "/git/github.com/LiGoldragon/${name}" "repos/${name}"
       else
-        echo "warn: $HOME/git/${name} not found; skipping symlink" >&2
+        echo "warn: /git/github.com/LiGoldragon/${name} not found; skipping symlink" >&2
       fi
     '') linkedRepos}
   '';

@@ -59,8 +59,8 @@ tailnet client/controller or large-AI provider roles.
 - Sema, signal, or any application-layer record kind.
 - The criome daemon, forge daemon, or any sema-ecosystem
   binary.
-- The deploy CLI — that's
-  [lojix-cli](https://github.com/LiGoldragon/lojix-cli) (transitional).
+- The deploy CLI — that's `github:LiGoldragon/lojix-cli`
+  (transitional).
 
 ## Status
 

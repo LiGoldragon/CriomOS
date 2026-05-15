@@ -22,10 +22,11 @@ entry point:
 4. Invokes nix against `github:LiGoldragon/CriomOS` with
    those override inputs.
 
-User-facing form:
+User-facing form is a single Nota command value passed to `lojix-cli`:
 
 ```
-lojix build|eval|deploy --cluster <C> --node <N> --source <C>/datom.nota
+lojix-cli '(Build (Cluster goldragon) (Node prometheus))'
+lojix-cli '(Deploy (Cluster goldragon) (Node prometheus) (Action switch))'
 ```
 
 CriomOS exposes one configuration —
@@ -51,7 +52,7 @@ The orchestration axes evaluate and cache independently:
 | input | what it is | when it changes |
 |---|---|---|
 | [`system`](stubs/no-system/) | tiny flake whose only output is a system tuple (`x86_64-linux`, `aarch64-linux`) | per supported arch |
-| [`pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) | wrapper that instantiates nixpkgs for a given system, plus overlays | per (nixpkgs-rev, system, overlays) |
+| `pkgs` (`github:LiGoldragon/CriomOS-pkgs`) | wrapper that instantiates nixpkgs for a given system, plus overlays | per (nixpkgs-rev, system, overlays) |
 | [`horizon`](stubs/no-horizon/) | the projected per-(cluster, node) view | per deploy |
 | [`deployment`](stubs/default-deployment/) | operation shape, currently `includeHome` | per deploy kind |
 
@@ -68,23 +69,23 @@ the requested deploy.
 
 - `LiGoldragon/CriomOS-home` — home profile. Own inputs
   (niri, noctalia, stylix, …). CriomOS consumes `homeModules.default`.
-- [`LiGoldragon/CriomOS-lib`](https://github.com/LiGoldragon/CriomOS-lib) —
+- `LiGoldragon/CriomOS-lib` —
   shared helpers (`importJSON`, `mkJsonMerge`) + cross-repo data
   (`data/largeAI/llm.json`). Consumed by both CriomOS and CriomOS-home.
-- [`LiGoldragon/CriomOS-pkgs`](https://github.com/LiGoldragon/CriomOS-pkgs) —
+- `LiGoldragon/CriomOS-pkgs` —
   the `pkgs` axis. Own repo so CriomOS
   edits don't invalidate the pkgs eval cache.
-- [`LiGoldragon/horizon-rs`](https://github.com/LiGoldragon/horizon-rs) —
+- `LiGoldragon/horizon-rs` —
   horizon schema + projection logic (Rust). Single source of truth
   for the typed schema.
-- [`LiGoldragon/lojix-cli`](https://github.com/LiGoldragon/lojix-cli) —
+- `LiGoldragon/lojix-cli` —
   the orchestrator (Rust). Today: standalone CLI; eventually a thin
   client to `lojix` (the daemon, planned).
-- [`LiGoldragon/clavifaber`](https://github.com/LiGoldragon/clavifaber) —
+- `LiGoldragon/clavifaber` —
   GPG → X.509 WiFi PKI tool. Consumed in `modules/nixos/complex.nix`.
-- [`LiGoldragon/brightness-ctl`](https://github.com/LiGoldragon/brightness-ctl) —
+- `LiGoldragon/brightness-ctl` —
   backlight + idle-dim daemon. Consumed in `modules/nixos/metal/`.
-- [`LiGoldragon/CriomOS-emacs`](https://github.com/LiGoldragon/CriomOS-emacs)
+- `LiGoldragon/CriomOS-emacs`
   *(planned)* — replaces legacy `pkdjz/mkEmacs`. Will be consumed by
   CriomOS-home.
 

@@ -5,6 +5,13 @@ let
   inherit (pkgs.stdenv.hostPlatform) system;
 
   constants = inputs.criomos-lib.lib.constants;
+  testInputs = inputs // {
+    secrets = (inputs.secrets or { }) // {
+      sopsFiles = {
+        routerWifiSaePasswords = pkgs.writeText "router-wifi-sae-passwords" "password";
+      };
+    };
+  };
 
   baseBehaviors = {
     bareMetal = false;
@@ -47,9 +54,14 @@ let
     routerInterfaces = {
       wan = "wan-test0";
       wlan = "wlan-test0";
+      wirelessCountryCode = "PL";
+      wirelessNetworkName = "criome-test";
       wlanBand = "2g";
       wlanChannel = 6;
       wlanStandard = "wifi6";
+      wpa3SaePassword = {
+        name = "routerWifiSaePasswords";
+      };
     };
     yggAddress = "200:db8::1";
     behavesAs = baseBehaviors // {
@@ -82,7 +94,8 @@ let
     lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inherit constants inputs;
+        inherit constants;
+        inputs = testInputs;
         horizon = {
           cluster.name = "goldragon";
           inherit node;
@@ -92,6 +105,7 @@ let
         };
       };
       modules = [
+        inputs.sops-nix.nixosModules.sops
         ../../modules/nixos/network/default.nix
         ../../modules/nixos/router/default.nix
       ];

@@ -234,7 +234,7 @@ relevant boolean off the projected horizon (`horizon.node.typeIs.*`,
 hardcoding host names or local literals.
 
 When a new toggle requires horizon truth absent from the current schema,
-extend the typed schema in `horizon-rs` (`/home/li/git/horizon-rs/lib/src/`)
+extend the typed schema in `github:LiGoldragon/horizon-rs` (`lib/src/`)
 so the projected horizon exposes the new field, and consume that field
 directly. Schema changes are tracked as horizon-rs beads.
 
@@ -268,7 +268,7 @@ single system surface:
 - Public system surface:
   `github:LiGoldragon/CriomOS/<rev>#nixosConfigurations.target.config.system.build.toplevel`.
 - Normal build/deploy entry point:
-  `lojix-cli build|eval|deploy --cluster <C> --node <N> --source <proposal> --criomos github:LiGoldragon/CriomOS/<rev>`.
+  `lojix-cli '(Deploy (Cluster <cluster>) (Node <node>) (Action switch))'`.
 - Prefer `lojix-cli deploy --action boot` for first-touch deploys. Use
   `boot-once` for headless/riskier nodes, and `switch` only when live
   activation is intended.

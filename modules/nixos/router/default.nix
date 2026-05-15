@@ -111,14 +111,14 @@ in
           "${routerInterfaces.wlan}" = {
             band = routerInterfaces.wlanBand;
             channel = routerInterfaces.wlanChannel;
-            countryCode = "PL";
+            countryCode = routerInterfaces.wirelessCountryCode;
             wifi4.enable = routerInterfaces.wlanStandard == "wifi4";
             wifi6.enable = routerInterfaces.wlanStandard == "wifi6" || routerInterfaces.wlanStandard == "wifi7";
             wifi7.enable = routerInterfaces.wlanStandard == "wifi7";
             networks = {
               # WPA3-SAE — primary SSID (EAP-TLS will replace this once PKI is deployed)
               "${routerInterfaces.wlan}" = {
-                ssid = "criome";
+                ssid = routerInterfaces.wirelessNetworkName;
                 authentication = {
                   mode = "wpa3-sae";
                   saePasswordsFile = config.sops.secrets.${routerWifiPasswordSecretName}.path;

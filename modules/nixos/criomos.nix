@@ -19,7 +19,6 @@ in
     ./secrets.nix
     ./nix
     ./complex.nix
-    ./chroma.nix
     ./nspawn.nix
     ./llm.nix
     ./users.nix
