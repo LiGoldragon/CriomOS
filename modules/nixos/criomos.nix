@@ -18,6 +18,7 @@ in
     ./normalize.nix
     ./secrets.nix
     ./nix
+    ./nspawn.nix
     ./complex.nix
     ./chroma.nix
     ./llm.nix

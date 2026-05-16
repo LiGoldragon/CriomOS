@@ -83,6 +83,7 @@
             inherit inputs;
           };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
+          nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
         };
       };
