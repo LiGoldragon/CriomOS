@@ -2,8 +2,8 @@
   config,
   lib,
   pkgs,
-  inputs,
   horizon,
+  resolveSecret,
   ...
 }:
 let
@@ -55,12 +55,10 @@ let
   runtimeUser = "llama";
   runtimeHome = "/var/lib/llama";
 
-  # SecretReference for the local serving endpoint's API key. Resolved
-  # through the same sops infrastructure that wires nordvpn-credentials
-  # and the router Wi-Fi password: `inputs.secrets.sopsFiles.<name>` is
-  # staged from the cluster repo's secrets/ directory and decrypted at
-  # activation time by sops-install-secrets; the runtime path lives at
-  # /run/secrets/<name>.
+  # SecretReference for the local serving endpoint's API key. Dispatch
+  # through the cluster secret-binding resolver instead of reconstructing
+  # the SOPS path locally. The binding table is the single place that
+  # decides which backend owns a given secret name.
   #
   # `apiKey` is `Option<SecretReference>` on the schema — `null` for
   # endpoints that need no key (the canonical local llama.cpp router
@@ -68,21 +66,10 @@ let
   # without `--api-key-file` and `apiKeyFile` stays `null`.
   apiKeyRef =
     if ownProvider == null then null else ownProvider.apiKey or null;
-  apiKeyName =
-    if apiKeyRef == null then null else apiKeyRef.name;
-  sopsFiles = inputs.secrets.sopsFiles or { };
-  apiKeySopsFile =
-    if apiKeyName == null then null
-    else sopsFiles.${apiKeyName} or null;
+  resolvedApiKey =
+    if apiKeyRef == null then null else resolveSecret apiKeyRef;
   apiKeyFile =
-    if apiKeyName == null then null
-    else config.sops.secrets.${apiKeyName}.path;
-
-  # Loud-fail when the provider authors an apiKey SecretReference but
-  # no encrypted credential is staged in the secrets input. Matches the
-  # nordvpn.nix shape for symmetric operator-friendly errors.
-  apiKeyMissingSops =
-    apiKeyRef != null && apiKeySopsFile == null;
+    if resolvedApiKey == null then null else resolvedApiKey.runtimePath;
 
   # Resolve a model's source (from horizon's typed AiModelSource) to
   # a /nix/store path containing the GGUF file(s).
@@ -196,18 +183,8 @@ in
   imports = [ ./secrets.nix ];
 
   config = mkIf (behavesAs.largeAi && ownProvider != null) (lib.mkMerge [
-    {
-      assertions = [
-        {
-          assertion = !apiKeyMissingSops;
-          message = "llm.nix: provider ${ownProvider.name}.apiKey.name=${apiKeyName} but inputs.secrets.sopsFiles.${apiKeyName} is missing (no encrypted credential staged from the cluster repo's secrets/)";
-        }
-      ];
-    }
-    (lib.mkIf (apiKeyName != null && apiKeySopsFile != null) {
-      sops.secrets.${apiKeyName} = {
-        format = "binary";
-        sopsFile = apiKeySopsFile;
+    (lib.mkIf (resolvedApiKey != null && resolvedApiKey.kind == "Sops") {
+      sops.secrets.${resolvedApiKey.name} = resolvedApiKey.sopsConfig // {
         mode = "0400";
         owner = runtimeUser;
         restartUnits = [ "${serviceName}.service" ];
