@@ -23,7 +23,8 @@ let
   hasWireguardPubKey = horizon.node.wireguardPubKey != null;
 
   mkUntrustedProxy = untrustedProxy: {
-    inherit (wireguardUntrustedProxies) publicKey endpoint;
+    publicKey = untrustedProxy.pubKey;
+    inherit (untrustedProxy) endpoint;
     allowedIPs = [ "0.0.0.0/0" ];
   };
 
