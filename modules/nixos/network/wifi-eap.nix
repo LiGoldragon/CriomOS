@@ -6,7 +6,7 @@
 }:
 let
   inherit (lib) mkIf;
-  inherit (horizon) node;
+  inherit (horizon) node cluster;
   # Step 7b: gate on the underlying input bool directly (was hasWifiCertPubKey).
   hasWifiCertPubKey = horizon.node.wifiCert;
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
@@ -14,17 +14,25 @@ let
 
   nodeCertFile = "${certsDir}/${node.name}.pem";
 
+  # The EAP-TLS client connects to the cluster's broadcast SSID; the
+  # router-side hostapd config uses `routerInterfaces.ssid` per-node,
+  # but at the client side we read `cluster.domain` — the single
+  # cluster-wide identifier ("criome" today) that both halves resolve
+  # against. NetworkManager `id=` matches `ssid=` so both render from
+  # the same source.
+  clusterSsid = cluster.domain;
+
   # NM connection: WPA3-Enterprise EAP-TLS using the complex's private key.
   # autoconnect-priority=100 prefers this over any other WiFi network.
   nmConnection = ''
     [connection]
-    id=criome
+    id=${clusterSsid}
     type=wifi
     autoconnect=true
     autoconnect-priority=100
 
     [wifi]
-    ssid=criome
+    ssid=${clusterSsid}
     mode=infrastructure
 
     [wifi-security]
