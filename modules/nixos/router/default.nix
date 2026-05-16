@@ -1,8 +1,7 @@
 {
-  config,
   lib,
   horizon,
-  inputs,
+  resolveSecret,
   ...
 }:
 let
@@ -14,16 +13,13 @@ let
     horizon.node.routerInterfaces
       or (throw "router: horizon.node.routerInterfaces is required for router nodes");
 
-  routerWifiPasswordSecret = routerInterfaces.wpa3SaePassword;
-  routerWifiPasswordSecretName = routerWifiPasswordSecret.name;
-  routerWifiSopsFiles = inputs.secrets.sopsFiles or { };
-  routerWifiSopsFileExists =
-    builtins.hasAttr routerWifiPasswordSecretName routerWifiSopsFiles;
-  routerWifiSopsFile =
-    if routerWifiSopsFileExists then
-      routerWifiSopsFiles.${routerWifiPasswordSecretName}
-    else
-      throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.routerInterfaces.wpa3SaePassword";
+  # SecretReference for the WPA3-SAE password. Dispatch through the
+  # cluster's secret-binding table — the per-cluster `secretBindings`
+  # map decides which backend (Sops | SystemdCredential | Agenix)
+  # stores the password; the consumer reads `runtimePath` for the
+  # decrypted bytes and (when backend = Sops) `sopsConfig` for the
+  # activation-time `sops.secrets.${name}` declaration.
+  resolvedRouterWifiPassword = resolveSecret routerInterfaces.wpa3SaePassword;
 
   clusterLan =
     cluster.lan
@@ -56,20 +52,14 @@ in
     ./yggdrasil.nix
   ];
 
-  config = mkIf behavesAs.router {
-    assertions = [
-      {
-        assertion = routerWifiSopsFileExists;
-        message = "router Wi-Fi secret ${routerWifiPasswordSecretName} is missing from inputs.secrets.sopsFiles";
-      }
-    ];
-
-    sops.secrets.${routerWifiPasswordSecretName} = {
-      format = "binary";
-      sopsFile = routerWifiSopsFile;
-      mode = "0400";
-      restartUnits = [ "hostapd.service" ];
-    };
+  config = mkIf behavesAs.router (lib.mkMerge [
+    (lib.mkIf (resolvedRouterWifiPassword.kind == "Sops") {
+      sops.secrets.${resolvedRouterWifiPassword.name} = resolvedRouterWifiPassword.sopsConfig // {
+        mode = "0400";
+        restartUnits = [ "hostapd.service" ];
+      };
+    })
+    {
 
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
@@ -135,7 +125,7 @@ in
                 ssid = routerInterfaces.ssid;
                 authentication = {
                   mode = "wpa3-sae";
-                  saePasswordsFile = config.sops.secrets.${routerWifiPasswordSecretName}.path;
+                  saePasswordsFile = resolvedRouterWifiPassword.runtimePath;
                 };
                 settings = {
                   bridge = lanBridgeInterface;
@@ -236,5 +226,6 @@ in
       };
     };
 
-  };
+    }
+  ]);
 }

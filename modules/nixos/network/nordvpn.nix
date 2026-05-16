@@ -1,9 +1,8 @@
 {
-  config,
   lib,
   pkgs,
-  inputs,
   horizon,
+  resolveSecret,
   ...
 }:
 let
@@ -31,23 +30,19 @@ let
   clientAddress =
     if nordvpnProfile == null then "" else nordvpnProfile.client.address;
 
-  # SecretReference for the WireGuard private key. Resolved through the
-  # same sops infrastructure that production main wires for the router
-  # Wi-Fi password (see system-specialist report 121): lojix-cli stages
-  # `inputs.secrets.sopsFiles.<name>` from the cluster repo's secrets/
-  # directory; sops-install-secrets decrypts at activation; the runtime
-  # path lives at /run/secrets/<name>.
+  # SecretReference for the WireGuard private key. Dispatch through
+  # the cluster's secret-binding table — `resolveSecret` looks up
+  # `nordvpnProfile.credentials.name` in `horizon.cluster.secretBindings`
+  # and returns the resolved-backend record (today: Sops; tomorrow:
+  # SystemdCredential / Agenix). The consumer reads `runtimePath` for
+  # the decrypted value and `sopsConfig` for the activation-time
+  # `sops.secrets.${name}` declaration.
   credentialsRef =
     if nordvpnProfile == null then null else nordvpnProfile.credentials;
-  credentialsName =
-    if credentialsRef == null then null else credentialsRef.name;
-  sopsFiles = inputs.secrets.sopsFiles or { };
-  credentialsSopsFile =
-    if credentialsName == null then null
-    else sopsFiles.${credentialsName} or null;
+  resolvedCredentials =
+    if credentialsRef == null then null else resolveSecret credentialsRef;
   privateKeyFile =
-    if credentialsName == null then null
-    else config.sops.secrets.${credentialsName}.path;
+    if resolvedCredentials == null then null else resolvedCredentials.runtimePath;
 
   routingTable = "51820";
 
@@ -85,18 +80,14 @@ let
   '';
 
   # Loud-fail when this node opts in (nordvpn=true) but the cluster
-  # has no NordvpnProfile, or the cluster has one but the credentials
-  # SecretReference doesn't have a backing sops file in the staged
-  # secrets input. The operator must author both the profile and the
-  # encrypted credential.
+  # has no NordvpnProfile. The secret-binding side fails inside
+  # resolveSecret (binding-missing or staged-file-missing); the
+  # profile-missing case stays local because resolveSecret has no
+  # opinion about whether a profile exists at all.
   enabledWithoutProfile = hasNordvpnPubKey && nordvpnProfile == null;
-  enabledWithoutSops =
-    hasNordvpnPubKey && nordvpnProfile != null && credentialsSopsFile == null;
   generatorScript =
     if enabledWithoutProfile then
       throw "nordvpn.nix: node ${node.name}.nordvpn = true but cluster.vpnProfiles has no NordvpnProfile"
-    else if enabledWithoutSops then
-      throw "nordvpn.nix: NordvpnProfile.credentials.name=${credentialsName} but inputs.secrets.sopsFiles.${credentialsName} is missing (no encrypted credential staged from the cluster repo's secrets/)"
     else
       concatStringsSep "\n" ([
         ''
@@ -169,10 +160,8 @@ in
   imports = [ ../secrets.nix ];
 
   config = mkIf hasNordvpnPubKey (lib.mkMerge [
-    (lib.mkIf (credentialsName != null && credentialsSopsFile != null) {
-      sops.secrets.${credentialsName} = {
-        format = "binary";
-        sopsFile = credentialsSopsFile;
+    (lib.mkIf (resolvedCredentials != null && resolvedCredentials.kind == "Sops") {
+      sops.secrets.${resolvedCredentials.name} = resolvedCredentials.sopsConfig // {
         mode = "0400";
         restartUnits = [ "nordvpn-connections.service" ];
       };
