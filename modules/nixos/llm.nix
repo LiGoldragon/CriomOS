@@ -1,6 +1,8 @@
 {
+  config,
   lib,
   pkgs,
+  inputs,
   horizon,
   ...
 }:
@@ -52,7 +54,35 @@ let
 
   runtimeUser = "llama";
   runtimeHome = "/var/lib/llama";
-  apiKeyFile = "${runtimeHome}/api-key";
+
+  # SecretReference for the local serving endpoint's API key. Resolved
+  # through the same sops infrastructure that wires nordvpn-credentials
+  # and the router Wi-Fi password: `inputs.secrets.sopsFiles.<name>` is
+  # staged from the cluster repo's secrets/ directory and decrypted at
+  # activation time by sops-install-secrets; the runtime path lives at
+  # /run/secrets/<name>.
+  #
+  # `apiKey` is `Option<SecretReference>` on the schema — `null` for
+  # endpoints that need no key (the canonical local llama.cpp router
+  # being keyless today). When `null`, the llama-server is launched
+  # without `--api-key-file` and `apiKeyFile` stays `null`.
+  apiKeyRef =
+    if ownProvider == null then null else ownProvider.apiKey or null;
+  apiKeyName =
+    if apiKeyRef == null then null else apiKeyRef.name;
+  sopsFiles = inputs.secrets.sopsFiles or { };
+  apiKeySopsFile =
+    if apiKeyName == null then null
+    else sopsFiles.${apiKeyName} or null;
+  apiKeyFile =
+    if apiKeyName == null then null
+    else config.sops.secrets.${apiKeyName}.path;
+
+  # Loud-fail when the provider authors an apiKey SecretReference but
+  # no encrypted credential is staged in the secrets input. Matches the
+  # nordvpn.nix shape for symmetric operator-friendly errors.
+  apiKeyMissingSops =
+    apiKeyRef != null && apiKeySopsFile == null;
 
   # Resolve a model's source (from horizon's typed AiModelSource) to
   # a /nix/store path containing the GGUF file(s).
@@ -137,19 +167,19 @@ let
   llamaStart =
     if ownProvider == null then null
     else
-      let sc = ownProvider.servingConfig; in
+      let
+        sc = ownProvider.servingConfig;
+        apiKeyArg =
+          if apiKeyFile == null then ""
+          else "--api-key-file ${apiKeyFile} ";
+      in
       pkgs.writeShellScript "llama-router-start" ''
         set -eu
-
-        api_key_args=()
-        if [ -s ${apiKeyFile} ]; then
-          api_key_args=(--api-key-file ${apiKeyFile})
-        fi
 
         exec ${llamaCppPackage}/bin/llama-server \
           --host :: \
           --port ${toString serverPort} \
-          "''${api_key_args[@]}" \
+          ${apiKeyArg}\
           --models-dir ${modelsDir} \
           --models-preset ${presetsIni} \
           --models-max ${toString sc.maxLoadedModels} \
@@ -158,54 +188,80 @@ let
       '';
 
 in
-mkIf (behavesAs.largeAi && ownProvider != null) {
-  users.users.llama = {
-    isSystemUser = true;
-    description = "llama runtime user";
-    home = runtimeHome;
-    createHome = false;
-    group = "llama";
-    extraGroups = [
-      "video"
-      "render"
-    ];
-    password = "*";
-  };
-  users.groups.llama = { };
+{
+  # sops options come from ./secrets.nix; declare the dependency
+  # locally so the sops.secrets reference below resolves even when
+  # this module is loaded in isolation (matches the shape network/
+  # nordvpn.nix and router/default.nix already use).
+  imports = [ ./secrets.nix ];
 
-  networking.firewall.allowedTCPPorts = [ serverPort ];
+  config = mkIf (behavesAs.largeAi && ownProvider != null) (lib.mkMerge [
+    {
+      assertions = [
+        {
+          assertion = !apiKeyMissingSops;
+          message = "llm.nix: provider ${ownProvider.name}.apiKey.name=${apiKeyName} but inputs.secrets.sopsFiles.${apiKeyName} is missing (no encrypted credential staged from the cluster repo's secrets/)";
+        }
+      ];
+    }
+    (lib.mkIf (apiKeyName != null && apiKeySopsFile != null) {
+      sops.secrets.${apiKeyName} = {
+        format = "binary";
+        sopsFile = apiKeySopsFile;
+        mode = "0400";
+        owner = runtimeUser;
+        restartUnits = [ "${serviceName}.service" ];
+      };
+    })
+    {
+      users.users.llama = {
+        isSystemUser = true;
+        description = "llama runtime user";
+        home = runtimeHome;
+        createHome = false;
+        group = "llama";
+        extraGroups = [
+          "video"
+          "render"
+        ];
+        password = "*";
+      };
+      users.groups.llama = { };
 
-  systemd.tmpfiles.rules = [
-    "d /var/lib/llama 0755 llama llama - -"
-    "f ${apiKeyFile} 0600 llama llama - -"
-  ];
+      networking.firewall.allowedTCPPorts = [ serverPort ];
 
-  systemd.services.${serviceName} = {
-    description = "${nodeName} llama.cpp router — multi-model on-demand serving (horizon-driven)";
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
+      systemd.tmpfiles.rules = [
+        "d /var/lib/llama 0755 llama llama - -"
+      ];
 
-    serviceConfig = {
-      Type = "simple";
-      User = runtimeUser;
-      WorkingDirectory = runtimeHome;
-      Environment = [
-        "HOME=${runtimeHome}"
-      ] ++ lib.optional (ownProvider.servingConfig.gpuOverride or null != null)
-        "HSA_OVERRIDE_GFX_VERSION=${ownProvider.servingConfig.gpuOverride}";
+      systemd.services.${serviceName} = {
+        description = "${nodeName} llama.cpp router — multi-model on-demand serving (horizon-driven)";
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" ];
 
-      ExecStart = llamaStart;
+        serviceConfig = {
+          Type = "simple";
+          User = runtimeUser;
+          WorkingDirectory = runtimeHome;
+          Environment = [
+            "HOME=${runtimeHome}"
+          ] ++ lib.optional (ownProvider.servingConfig.gpuOverride or null != null)
+            "HSA_OVERRIDE_GFX_VERSION=${ownProvider.servingConfig.gpuOverride}";
 
-      Restart = "on-failure";
-      RestartSec = 5;
-      StateDirectory = "llama";
+          ExecStart = llamaStart;
 
-      # Operating envelope from horizon — keeps llama from OOM-killing
-      # system services (hostapd, SSH).
-      MemoryMax = "${toString ownProvider.servingConfig.memoryMaxGb}G";
-      MemoryHigh = "${toString ownProvider.servingConfig.memoryHighGb}G";
-    };
+          Restart = "on-failure";
+          RestartSec = 5;
+          StateDirectory = "llama";
 
-    wantedBy = [ "multi-user.target" ];
-  };
+          # Operating envelope from horizon — keeps llama from OOM-killing
+          # system services (hostapd, SSH).
+          MemoryMax = "${toString ownProvider.servingConfig.memoryMaxGb}G";
+          MemoryHigh = "${toString ownProvider.servingConfig.memoryHighGb}G";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+    }
+  ]);
 }
