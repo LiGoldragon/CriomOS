@@ -81,8 +81,9 @@ let
   apiKeyFile =
     if resolvedApiKey == null then null else resolvedApiKey.runtimePath;
 
-  # Resolve a model's source (from horizon's typed AiModelSource) to
-  # a /nix/store path containing the GGUF file(s).
+  # Resolve a CriomOS-lib model source to a /nix/store path containing
+  # the GGUF file(s). The cluster selects the provider; CriomOS-lib
+  # owns the model catalog and fetch details.
   mkModelStorePath =
     model:
     let

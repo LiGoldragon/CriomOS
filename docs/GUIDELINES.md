@@ -229,9 +229,9 @@ is stated as fact. Non‑boilerplate behavior is documented. Boilerplate is not.
 
 Any non-default NixOS switch must be driven by node-horizon data rather than
 local literals. When a module needs to flip behavior per node, it reads the
-relevant boolean off the projected horizon (`horizon.node.typeIs.*`,
-`horizon.node.behavesAs.*`, `horizon.node.has*PubKey`, etc.) rather than
-hardcoding host names or local literals.
+relevant field off the projected horizon (`horizon.node.species`,
+`horizon.node.behavesAs.*`, explicit key-presence fields, etc.) rather
+than hardcoding host names or local literals.
 
 When a new toggle requires horizon truth absent from the current schema,
 extend the typed schema in `horizon-rs` (`/home/li/git/horizon-rs/lib/src/`)
@@ -243,10 +243,11 @@ directly. Schema changes are tracked as horizon-rs beads.
 CriomOS is **network-neutral**: it does not enumerate clusters or nodes.
 The truth source is the lojix-projected horizon input.
 
-For the LiGoldragon kriom, lojix reads `goldragon/datom.nota`, projects
-it through `horizon-rs`, writes content-addressed `horizon` and `system`
-flake inputs plus a deployment-shape input, and invokes this repo's
-single system surface:
+For the LiGoldragon kriom, `lojix-daemon` loads its pan-horizon
+configuration, reads `goldragon/datom.nota`, projects the requested
+view through `horizon-rs`, writes content-addressed `horizon` and
+`system` flake inputs plus a deployment-shape input, and invokes this
+repo's single system surface:
 `nixosConfigurations.target`.
 
 ### Edit flow
@@ -254,8 +255,8 @@ single system surface:
 - Edit cluster / node / user / trust truth in `goldragon/datom.nota`.
   Any node name, role, connectivity, or identity change begins there.
 - `horizon-rs` validates the proposal and computes the enriched
-  horizon. Use `lojix-cli eval` / `lojix-cli build` when checking the
-  projected view against CriomOS.
+  horizon. Use `horizon-cli` for ad-hoc projection checks and `lojix`
+  requests for daemon-driven build checks.
 - CriomOS modules read `horizon.node.*`, `horizon.exNodes.*`, and
   `horizon.users.*`; they never add node or cluster literals.
 
@@ -267,8 +268,9 @@ single system surface:
   local commits are invisible.
 - Public system surface:
   `github:LiGoldragon/CriomOS/<rev>#nixosConfigurations.target.config.system.build.toplevel`.
-- Normal build/deploy entry point:
-  `lojix-cli build|eval|deploy --cluster <C> --node <N> --source <proposal> --criomos github:LiGoldragon/CriomOS/<rev>`.
-- Prefer `lojix-cli deploy --action boot` for first-touch deploys. Use
-  `boot-once` for headless/riskier nodes, and `switch` only when live
-  activation is intended.
+- Normal build/deploy entry point: send one typed NOTA request through
+  the thin `lojix` client to `lojix-daemon`. The daemon owns Horizon
+  projection, Nix invocation, GC roots, and deploy state.
+- Prefer boot-oriented deploy actions for first-touch deploys. Use
+  boot-once semantics for headless/riskier nodes, and switch semantics
+  only when live activation is intended.

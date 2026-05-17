@@ -30,8 +30,9 @@ let
   headscaleEnabled = config.services.headscale.enable;
   tailnetBaseDomain = config.services.headscale.settings.dns.base_domain or null;
 
-  # Listen addresses come from horizon.cluster.resolver.listens — typed
-  # cluster policy, not a hardcoded ::1/127.0.0.1/lanGateway literal.
+  # Listen addresses come from horizon.cluster.resolver.listens —
+  # projected local resolver addresses, not hardcoded literals and not
+  # cluster-authored policy.
   listenAddresses = clusterResolver.listens;
 
   # Upstream DNS is CriomOS runtime policy. dnsmasq queries primary
@@ -98,10 +99,10 @@ let
 
   localAddressRecords = concatLists (map mkPrimaryRecords horizonNodes);
 
-  # `clusterLan` is force-evaluated here so the throw fires loudly on
-  # router nodes whose datom forgot to author cluster.lan; it stays
-  # lazy on non-router nodes (the whole `mkIf behavesAs.router` block
-  # never accesses it).
+  # `clusterLan` is force-evaluated here so the throw fires loudly if
+  # Horizon failed to project LAN data for a router node; it stays lazy
+  # on non-router nodes (the whole `mkIf behavesAs.router` block never
+  # accesses it).
   _ = clusterLan;
 in
 lib.mkIf behavesAs.router {

@@ -9,7 +9,7 @@ nexus daemons run as the user-space layer.
 > `~/primary/repos/criome/ARCHITECTURE.md`. CriomOS is **named after**
 > the *eventual* Criome — the universal computing paradigm in Sema
 > — but CriomOS today is pre-duct-tape: a NixOS-targeted host that
-> uses transitional shims (ClaviFaber for key generation, lojix-cli
+> uses transitional shims (ClaviFaber for key generation, lojix
 > for deploy, etc.) where eventual Criome's substrate will later
 > sit. Eventually the OS is written in Sema; ClaviFaber-shaped shims
 > are obsoleted by Criome's quorum-signature multi-sig system at
@@ -17,14 +17,16 @@ nexus daemons run as the user-space layer.
 > different things, different names".
 
 CriomOS is **the consumer of forge**, not a member of the criome
-runtime. forge-deploy (currently `lojix-cli`) materialises
-CriomOS configurations.
+runtime. The new deploy path is `lojix-daemon` plus the thin
+`lojix` CLI client. The CLI is only a text-to-Signal adapter; the
+daemon materialises CriomOS configurations, projects Horizon, invokes
+Nix, and records deployment state.
 
 This repo doubles as the **CriomOS-cluster meta-repo** — it
 hosts the symlink farm under `repos/` that exposes lore + the
 CriomOS-cluster siblings
 (CriomOS-home, CriomOS-emacs, horizon-rs) and the transitional
-deploy crates (lojix-cli, brightness-ctl, clavifaber). `nix
+deploy crates (lojix, brightness-ctl, clavifaber). `nix
 develop` / direnv entry refreshes the symlinks.
 
 ## Role
@@ -59,8 +61,9 @@ tailnet client/controller or large-AI provider roles.
 - Sema, signal, or any application-layer record kind.
 - The criome daemon, forge daemon, or any sema-ecosystem
   binary.
-- The deploy CLI — that's
-  [lojix-cli](https://github.com/LiGoldragon/lojix-cli) (transitional).
+- The deploy daemon and CLI — those live in `lojix`. CriomOS consumes
+  the projected `horizon`, `system`, and `deployment` flake inputs
+  prepared by the daemon.
 
 ## Status
 
