@@ -14,6 +14,7 @@ let
     optionalString
     optionalAttrs
     ;
+  inherit (horizon) node;
   inherit (horizon.node.machine) model;
   inherit (horizon.node)
     behavesAs
@@ -21,11 +22,14 @@ let
     chipIsIntel
     modelIsThinkpad
     useColemak
-    computerIs
-    handleLidSwitch
-    handleLidSwitchExternalPower
-    handleLidSwitchDocked
     ;
+
+  handleLidSwitch = if behavesAs.center then "ignore" else "suspend";
+  handleLidSwitchExternalPower =
+    if behavesAs.center then "ignore"
+    else if behavesAs.lowPower then "suspend"
+    else "lock";
+  handleLidSwitchDocked = if behavesAs.edge then "lock" else "ignore";
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
 
@@ -249,7 +253,7 @@ let
   #   support); dropped from default closure pending a real consumer.
   chipGen = horizon.node.machine.chipGen;
   igpuIsModern = chipGen != null && chipGen >= 12;
-  wantsHwVideoAccel = horizon.node.wantsHwVideoAccel;
+  wantsHwVideoAccel = node.wantsHwVideoAccel;
 
   intelGpuDrivers =
     if gpuUsesVaapi then
@@ -326,7 +330,7 @@ mkIf behavesAs.bareMetal {
 
     kernelParams =
       lib.concatLists [
-        (if computerIs.rpi3b then [
+        (if model == "rpi3B" || model == "Rpi3B" then [
           "cma=32M"
           "console=ttyS0,115200n8"
           "console=ttyAMA0,11520n8"

@@ -2,11 +2,11 @@
   lib,
   pkgs,
   horizon,
+  constants,
   ...
 }:
 let
   inherit (lib) mkIf;
-  inherit (horizon) cluster;
   inherit (horizon.node) behavesAs;
 
   # USB-Ethernet hotplug subnet is a CriomOS implementation convention
@@ -15,9 +15,6 @@ let
   # §2) lands.
   hotplugSubnet = "10.47.0";
 
-  clusterResolver =
-    cluster.resolver
-      or (throw "networkd: horizon.cluster.resolver is required (FallbackDNS comes from horizon)");
 in
 # Router nodes provide their own networkd config with bridge/hostapd
 mkIf (behavesAs.center && !behavesAs.router) {
@@ -59,6 +56,6 @@ mkIf (behavesAs.center && !behavesAs.router) {
 
   services.resolved = {
     enable = true;
-    settings.Resolve.FallbackDNS = clusterResolver.fallbacks;
+    settings.Resolve.FallbackDNS = constants.network.resolver.fallbacks;
   };
 }

@@ -3,18 +3,18 @@
   pkgs,
   horizon,
   resolveSecret,
+  criomos-lib,
   ...
 }:
 let
   inherit (lib) mkIf concatStringsSep filter map;
+  inherit (builtins) any;
   inherit (horizon) node;
   # Step 7b: gate on the underlying input bool directly (was hasNordvpnPubKey).
   hasNordvpnPubKey = horizon.node.nordvpn;
 
-  # Step 8: VPN catalog comes from horizon.cluster.vpnProfiles. The
-  # previous data/config/nordvpn/servers-lock.json shadow file is
-  # deleted; the cluster's datom now carries every server entry,
-  # DNS pair, and client config that used to live in JSON.
+  # Horizon selects the VPN provider and credentials. CriomOS owns the
+  # provider catalog (servers, client address, DNS).
   vpnProfiles = horizon.cluster.vpnProfiles or [ ];
   nordvpnProfiles = filter (p: p ? NordvpnProfile) vpnProfiles;
   nordvpnProfile =
@@ -23,12 +23,22 @@ let
       throw "nordvpn.nix: more than one NordvpnProfile in cluster.vpnProfiles; only one is supported"
     else (builtins.head nordvpnProfiles).NordvpnProfile;
 
-  servers = if nordvpnProfile == null then [ ] else nordvpnProfile.servers;
+  catalog = criomos-lib.catalogs.nordvpn;
+  preferredLocations =
+    if nordvpnProfile == null then [ ] else nordvpnProfile.preferredLocations or [ ];
+  matchesPreference = server: preference:
+    server.country == preference.country
+    && (!(preference ? city) || preference.city == null || server.city == preference.city);
+  matchesAnyPreference = server: any (preference: matchesPreference server preference) preferredLocations;
+  servers =
+    if nordvpnProfile == null then [ ]
+    else if preferredLocations == [ ] then catalog.servers
+    else filter matchesAnyPreference catalog.servers;
   nordvpnDns =
     if nordvpnProfile == null then ""
-    else "${nordvpnProfile.dns.primary};${nordvpnProfile.dns.secondary}";
+    else "${catalog.dns.primary};${catalog.dns.secondary}";
   clientAddress =
-    if nordvpnProfile == null then "" else nordvpnProfile.client.address;
+    if nordvpnProfile == null then "" else catalog.client.address;
 
   # SecretReference for the WireGuard private key. Dispatch through
   # the cluster's secret-binding table — `resolveSecret` looks up

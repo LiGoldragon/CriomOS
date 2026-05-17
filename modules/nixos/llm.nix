@@ -4,6 +4,7 @@
   pkgs,
   horizon,
   resolveSecret,
+  criomos-lib,
   ...
 }:
 let
@@ -23,34 +24,43 @@ let
 
   nodeName = horizon.node.name;
 
-  # Step 6: every server-side AI provisioning field comes from
-  # horizon. The previous module read from CriomOS-lib's largeAI/llm.json
-  # (serverPort, models[].source/sha256/ctxSize/loadOnStartup,
-  # presetDefaults, router{modelsMax,sleepIdleSeconds}). All of that
-  # now lives on horizon.cluster.aiProviders[<name>].models[i].serving
-  # (per-model: source + runtime_context_size + load_on_startup) and
-  # .serving_config (per-provider router defaults). llm.json is deleted.
+  # Horizon selects provider profiles and serving nodes. CriomOS owns
+  # the local llama catalog and runtime defaults.
+  localLlamaCatalog = criomos-lib.catalogs.ai.localLlama;
+  localLlamaDefaults = criomos-lib.constants.ai.localLlama;
   providers = horizon.cluster.aiProviders or [ ];
+
+  enrichLocalLlamaProvider = provider: provider // {
+    protocol = localLlamaDefaults.protocol;
+    port = localLlamaCatalog.serverPort;
+    basePath = localLlamaDefaults.basePath;
+    models = localLlamaCatalog.models;
+    servingConfig = {
+      maxLoadedModels = localLlamaCatalog.router.modelsMax;
+      idleUnloadSeconds = localLlamaCatalog.router.sleepIdleSeconds;
+      gpuLayers = localLlamaCatalog.presetDefaults."n-gpu-layers";
+      noMmap = localLlamaCatalog.presetDefaults."no-mmap";
+      noWarmup = localLlamaCatalog.presetDefaults."no-warmup";
+      fit = localLlamaCatalog.presetDefaults.fit;
+      parallel = localLlamaCatalog.presetDefaults.parallel;
+      gpuOverride = localLlamaDefaults.gpuOverride;
+      memoryMaxGb = localLlamaDefaults.memoryMaxGb;
+      memoryHighGb = localLlamaDefaults.memoryHighGb;
+    };
+  };
 
   # The provider hosted on THIS node. There must be exactly one for
   # this module to enable; if there are zero, the module is inert.
   ownProviders =
-    filter (p: p.servingNode == nodeName && p.servingConfig != null) providers;
+    map enrichLocalLlamaProvider (
+      filter (p: p.servingNode == nodeName && p.profile == "CriomosLocalLlama") providers
+    );
   ownProvider =
     if ownProviders == [ ] then null
     else if length ownProviders > 1 then
       throw "llm.nix: more than one AI provider serves on this node (${nodeName}); only one is supported"
     else
       head ownProviders;
-
-  # When a provider is hosted here, every one of its models must have
-  # a `serving` (source + runtime_context_size + load_on_startup) so
-  # the server can fetch and configure them.
-  requireServing = model:
-    if model.serving == null then
-      throw "llm.nix: model ${model.id} on provider ${ownProvider.name} (servingNode=${nodeName}) has serving=null; locally-served models require a serving record"
-    else
-      model.serving;
 
   runtimeUser = "llama";
   runtimeHome = "/var/lib/llama";
@@ -76,10 +86,9 @@ let
   mkModelStorePath =
     model:
     let
-      serving = requireServing model;
-      source = serving.source;
+      source = model.source;
     in
-    if source ? AiModelMultiShard then
+    if source.kind == "multi-shard" then
       let
         fetched = map (shard: {
           drv = pkgs.fetchurl {
@@ -87,26 +96,25 @@ let
             sha256 = shard.sha256;
           };
           inherit (shard) filename;
-        }) source.AiModelMultiShard.shards;
+        }) source.shards;
       in
-      pkgs.runCommand "model-${model.id}" { } (
+      pkgs.runCommand "model-${model.modelId}" { } (
         "mkdir -p $out\n"
         + concatStringsSep "\n" (map (s: "ln -s ${s.drv} $out/${s.filename}") fetched)
       )
-    else if source ? AiModelFetchurl then
+    else if source.kind == "fetchurl" then
       let
-        single = source.AiModelFetchurl;
         drv = pkgs.fetchurl {
-          url = single.url;
-          sha256 = single.sha256;
+          url = source.url;
+          sha256 = source.sha256;
         };
       in
-      pkgs.runCommand "model-${model.id}" { } ''
+      pkgs.runCommand "model-${model.modelId}" { } ''
         mkdir -p $out
-        ln -s ${drv} $out/${single.filename}
+        ln -s ${drv} $out/${source.filename}
       ''
     else
-      throw "llm.nix: model ${model.id} has unknown AiModelSource shape: ${builtins.toJSON source}";
+      throw "llm.nix: model ${model.modelId} has unknown model source shape: ${builtins.toJSON source}";
 
   # Models directory: one subdirectory per model, named by id (the
   # llama.cpp router takes subdir name as model name).
@@ -115,7 +123,7 @@ let
     else pkgs.runCommand "llm-models-dir" { } (
       "mkdir -p $out\n"
       + concatStringsSep "\n" (
-        map (m: "ln -s ${mkModelStorePath m} $out/${m.id}") ownProvider.models
+        map (model: "ln -s ${mkModelStorePath model} $out/${model.modelId}") ownProvider.models
       )
     );
 
@@ -125,18 +133,17 @@ let
     "n-gpu-layers = ${toString sc.gpuLayers}"
     "no-mmap = ${if sc.noMmap then "true" else "false"}"
     "no-warmup = ${if sc.noWarmup then "true" else "false"}"
-    "fit = ${if sc.fit == "On" then "on" else "off"}"
+    "fit = ${sc.fit}"
     "parallel = ${toString sc.parallel}"
     ""
   ];
 
   mkModelPresetLines = m:
-    let serving = requireServing m; in
     [
-      "[${m.id}]"
-      "ctx-size = ${toString serving.runtimeContextSize}"
+      "[${m.modelId}]"
+      "ctx-size = ${toString m.ctxSize}"
     ]
-    ++ lib.optional serving.loadOnStartup "load-on-startup = true";
+    ++ lib.optional m.loadOnStartup "load-on-startup = true";
 
   presetsIni =
     if ownProvider == null then null

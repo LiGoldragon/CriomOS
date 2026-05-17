@@ -18,10 +18,10 @@
 
     # Shared constants, helpers, and cross-repo data. Consumed by both
     # CriomOS and CriomOS-home.
-    criomos-lib.url = "github:LiGoldragon/CriomOS-lib/horizon-re-engineering";
+    criomos-lib.url = "git+https://github.com/LiGoldragon/CriomOS-lib?ref=horizon-leaner-shape";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/horizon-re-engineering";
+    criomos-home.url = "git+https://github.com/LiGoldragon/CriomOS-home?ref=horizon-leaner-shape";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -68,6 +68,7 @@
     inputs:
     let
       blueprintOutputs = inputs.blueprint { inherit inputs; };
+      lib = inputs.nixpkgs.lib;
 
       horizon = inputs.horizon.horizon;
       pkgs = inputs.pkgs.pkgs;
@@ -77,8 +78,12 @@
 
       criomos-lib = inputs.criomos-lib.lib;
       constants = criomos-lib.constants;
-      projectChecks = (blueprintOutputs.checks or { }) // {
-        ${system} = (blueprintOutputs.checks.${system} or { }) // {
+      derivationChecks = builtins.mapAttrs (
+        _system: checks:
+        lib.filterAttrs (_name: value: lib.isDerivation value) checks
+      ) (blueprintOutputs.checks or { });
+      projectChecks = derivationChecks // {
+        ${system} = (derivationChecks.${system} or { }) // {
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };

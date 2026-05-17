@@ -501,34 +501,34 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1778861740,
-        "narHash": "sha256-kIInIyZ6GCq22RZO+hymx0siNcLOSmhfLXh5n2UN/b4=",
-        "owner": "LiGoldragon",
-        "repo": "CriomOS-home",
-        "rev": "72e31c439863201d75fbe132db5dad450a62a662",
-        "type": "github"
+        "lastModified": 1779005015,
+        "narHash": "sha256-AtrrCRZ/i4zTcfeDmRSe8qKKn9VtPfXBaZQi/pB+Wcg=",
+        "ref": "horizon-leaner-shape",
+        "rev": "e120653368f4644258571c3a9efe54500896ed5e",
+        "revCount": 212,
+        "type": "git",
+        "url": "https://github.com/LiGoldragon/CriomOS-home"
       },
       "original": {
-        "owner": "LiGoldragon",
-        "ref": "horizon-re-engineering",
-        "repo": "CriomOS-home",
-        "type": "github"
+        "ref": "horizon-leaner-shape",
+        "type": "git",
+        "url": "https://github.com/LiGoldragon/CriomOS-home"
       }
     },
     "criomos-lib": {
       "locked": {
-        "lastModified": 1778780545,
-        "narHash": "sha256-JnLvaCBvmIyLVy3eZJPUXsKAUmUHLOkh2Bmnehz/YBI=",
-        "owner": "LiGoldragon",
-        "repo": "CriomOS-lib",
-        "rev": "40c774afa63eaa12376adf8056f4ecc69df451ed",
-        "type": "github"
+        "lastModified": 1779004956,
+        "narHash": "sha256-p6mp5uwaIXzSR0mOR8YT3ghHEiG/xOMUuMtN4IWSBx4=",
+        "ref": "horizon-leaner-shape",
+        "rev": "21de5ebc6966ae46961c91794e8a501efe287b0d",
+        "revCount": 8,
+        "type": "git",
+        "url": "https://github.com/LiGoldragon/CriomOS-lib"
       },
       "original": {
-        "owner": "LiGoldragon",
-        "ref": "horizon-re-engineering",
-        "repo": "CriomOS-lib",
-        "type": "github"
+        "ref": "horizon-leaner-shape",
+        "type": "git",
+        "url": "https://github.com/LiGoldragon/CriomOS-lib"
       }
     },
     "deployment": {

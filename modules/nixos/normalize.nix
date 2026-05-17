@@ -23,11 +23,10 @@ let
     size
     useColemak
     behavesAs
-    hasVideoOutput
     enableNetworkManager
     ;
 
-  hasAudioOutput = hasVideoOutput;
+  hasAudioOutput = behavesAs.edge;
 
   jsonHorizonFail = pkgs.writeText "horizon.json" (builtins.toJSON horizon);
 

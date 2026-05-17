@@ -1,6 +1,7 @@
 {
   lib,
   horizon,
+  constants,
   ...
 }:
 let
@@ -14,7 +15,8 @@ let
 
   clusterResolver =
     cluster.resolver
-      or (throw "network: horizon.cluster.resolver is required (system nameservers come from horizon)");
+      or (throw "network: horizon.cluster.resolver is required (local listen addresses come from horizon)");
+  resolverDefaults = constants.network.resolver;
 
   sanitizeIp =
     ip:
@@ -82,10 +84,9 @@ in
     hostName = node.name;
     dhcpcd.extraConfig = "noipv4ll";
     # Local listens first (loopback, LAN gateway via dnsmasq if router),
-    # then upstreams + fallbacks. Whole list comes from horizon —
-    # no Cloudflare/Quad9 literal in this file.
+    # then CriomOS-owned upstreams + fallbacks.
     nameservers =
-      clusterResolver.listens ++ clusterResolver.upstreams ++ clusterResolver.fallbacks;
+      clusterResolver.listens ++ resolverDefaults.upstreams ++ resolverDefaults.fallbacks;
     hosts = lib.concatMapAttrs mkCriomeHostEntries allNodes;
   };
 

@@ -2,6 +2,7 @@
   config,
   lib,
   horizon,
+  constants,
   ...
 }:
 let
@@ -23,7 +24,8 @@ let
       or (throw "dnsmasq: horizon.cluster.lan is required for router nodes (LAN gateway feeds dnsmasq listen-address)");
   clusterResolver =
     cluster.resolver
-      or (throw "dnsmasq: horizon.cluster.resolver is required (upstreams/fallbacks/listens come from horizon)");
+      or (throw "dnsmasq: horizon.cluster.resolver is required (local listen addresses come from horizon)");
+  resolverDefaults = constants.network.resolver;
 
   headscaleEnabled = config.services.headscale.enable;
   tailnetBaseDomain = config.services.headscale.settings.dns.base_domain or null;
@@ -32,9 +34,9 @@ let
   # cluster policy, not a hardcoded ::1/127.0.0.1/lanGateway literal.
   listenAddresses = clusterResolver.listens;
 
-  # Upstream DNS comes from horizon.cluster.resolver. dnsmasq queries
-  # primary upstreams first; fallbacks act as backup if primaries fail.
-  upstreamServers = clusterResolver.upstreams ++ clusterResolver.fallbacks;
+  # Upstream DNS is CriomOS runtime policy. dnsmasq queries primary
+  # upstreams first; fallbacks act as backup if primaries fail.
+  upstreamServers = resolverDefaults.upstreams ++ resolverDefaults.fallbacks;
 
   mkAddressRecord =
     {

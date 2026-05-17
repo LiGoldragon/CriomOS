@@ -11,6 +11,8 @@ let
   inherit (horizon.cluster) trustedBuildPubKeys;
   inherit (horizon) node;
   inherit (horizon.node) cacheUrls;
+  buildCores =
+    if node ? buildCores && node.buildCores != null then node.buildCores else 2;
 
   # Build a flake-registry entry from a locked input's `sourceInfo`.
   # Same lock input -> same registry entry on deployed nodes.
@@ -64,7 +66,7 @@ in
         "nix-serve"
       ];
 
-      build-cores = node.buildCores;
+      build-cores = buildCores;
 
       connect-timeout = 5;
       fallback = true;

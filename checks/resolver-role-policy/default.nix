@@ -6,6 +6,23 @@ let
 
   constants = inputs.criomos-lib.lib.constants;
 
+  testLan = {
+    cidr = "10.18.0.0/24";
+    gateway = "10.18.0.1";
+    dhcpPool = {
+      start = "10.18.0.100";
+      end = "10.18.0.240";
+    };
+  };
+
+  testResolver = {
+    listens = [
+      "::1"
+      "127.0.0.1"
+      testLan.gateway
+    ];
+  };
+
   baseBehaviors = {
     bareMetal = false;
     center = false;
@@ -51,13 +68,19 @@ let
     name = "router-test";
     criomeDomainName = "router-test.goldragon.criome";
     enableNetworkManager = false;
-    nodeIp = constants.network.lan.gateway;
+    nodeIp = testLan.gateway;
     routerInterfaces = {
       wan = "wan-test0";
       wlan = "wlan-test0";
       wlanBand = "2g";
       wlanChannel = 6;
       wlanStandard = "wifi6";
+      wpa3SaePassword = {
+        name = "router-wifi-sae-passwords";
+        purpose = "WifiPassword";
+      };
+      ssid = "goldragon.criome";
+      country = "PL";
     };
     yggdrasil = mkYgg "200:db8::1";
     behavesAs = baseBehaviors // {
@@ -95,6 +118,8 @@ let
         horizon = {
           cluster = {
             name = "goldragon";
+            lan = testLan;
+            resolver = testResolver;
           } // clusterExtra;
           inherit node;
           exNodes = {
@@ -159,7 +184,7 @@ pkgs.runCommand "resolver-role-policy" { } ''
   test ${lib.escapeShellArg routerDnsmasqEnabled} = true
   test ${lib.escapeShellArg routerResolvedEnabled} = false
   echo ${lib.escapeShellArg routerDnsmasqInterfaces} | grep -F br-lan
-  echo ${lib.escapeShellArg routerDnsmasqListenAddresses} | grep -F ${lib.escapeShellArg constants.network.lan.gateway}
+  echo ${lib.escapeShellArg routerDnsmasqListenAddresses} | grep -F ${lib.escapeShellArg testLan.gateway}
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/router-test.goldragon.criome/200:db8::1'
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/peer-test.goldragon.criome/200:db8::51'
   ! echo ${lib.escapeShellArg routerDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
