@@ -502,11 +502,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1779127499,
-        "narHash": "sha256-nRxMDKEAnu5RM30KNNfonv6WFFpJmfEa2AePa0T4daE=",
+        "lastModified": 1779144000,
+        "narHash": "sha256-THquqttXCcXBKM2wT+LCkzr4XIk6lqlWqoJzDBvy9c0=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "36e7b43f7a9a45c576d959e4303e6023852755e8",
+        "rev": "67bd8177f60e01488306155a3598fc3c262f5c66",
         "type": "github"
       },
       "original": {
@@ -978,11 +978,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779127425,
-        "narHash": "sha256-mpEK27U4oxS0lhoFSifw3v7Vdp6AIJ6goECCa4EA7dI=",
+        "lastModified": 1779143963,
+        "narHash": "sha256-hzmGDDijDwKEZOHde2AqrIzIHVk7YUKd5x6IZFw69f4=",
         "owner": "LiGoldragon",
         "repo": "lojix-cli",
-        "rev": "b398cbac33069e6e90c2edd68a73562e14e31ae8",
+        "rev": "70e1bcc5cd97991b16d64d8447ba7fbf50600beb",
         "type": "github"
       },
       "original": {
