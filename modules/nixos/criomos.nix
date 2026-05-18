@@ -17,6 +17,7 @@ in
     ./disks/preinstalled.nix
     ./normalize.nix
     ./secrets.nix
+    ./repository-receive.nix
     ./nix
     ./complex.nix
     ./nspawn.nix

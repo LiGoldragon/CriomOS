@@ -87,6 +87,9 @@
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
+          repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
+            inherit inputs;
+          };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
