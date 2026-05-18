@@ -46,28 +46,35 @@ let
     libpulseaudio = pkgs.pulseaudioFull;
   };
 
-  desktopAudioPolicy = pkgs.writeTextDir "share/wireplumber/wireplumber.conf.d/10-criomos-desktop-audio.conf" ''
-    monitor.bluez.properties = {
-      bluez5.roles = [ a2dp_sink a2dp_source bap_sink bap_source hsp_hs hsp_ag hfp_hf hfp_ag ]
-      bluez5.hfphsp-backend = "native"
-    }
+  desktopAudioPolicy = {
+    "monitor.bluez.properties" = {
+      "bluez5.roles" = [
+        "a2dp_sink"
+        "a2dp_source"
+        "bap_sink"
+        "bap_source"
+        "hsp_hs"
+        "hsp_ag"
+        "hfp_hf"
+        "hfp_ag"
+      ];
+      "bluez5.hfphsp-backend" = "native";
+    };
 
-    monitor.alsa.rules = [
+    "monitor.alsa.rules" = [
       {
         matches = [
-          { node.name = "~alsa_output.platform-snd_aloop.*" }
-          { node.name = "~alsa_input.platform-snd_aloop.*" }
-        ]
-        actions = {
-          update-props = {
-            node.disabled = true
-            priority.driver = 1
-            priority.session = 1
-          }
-        }
+          { "node.name" = "~alsa_output.platform-snd_aloop.*"; }
+          { "node.name" = "~alsa_input.platform-snd_aloop.*"; }
+        ];
+        actions.update-props = {
+          "node.disabled" = true;
+          "priority.driver" = 1;
+          "priority.session" = 1;
+        };
       }
-    ]
-  '';
+    ];
+  };
 
 in
 {
@@ -176,7 +183,7 @@ in
       pulse.enable = true;
       wireplumber = {
         enable = true;
-        configPackages = [ desktopAudioPolicy ];
+        extraConfig."10-criomos-desktop-audio" = desktopAudioPolicy;
       };
     };
 
