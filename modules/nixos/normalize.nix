@@ -68,7 +68,6 @@ let
           { "node.name" = "~alsa_input.platform-snd_aloop.*"; }
         ];
         actions.update-props = {
-          "node.disabled" = true;
           "priority.driver" = 1;
           "priority.session" = 1;
         };

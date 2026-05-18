@@ -48,8 +48,11 @@ assert lib.assertMsg (builtins.elem "~alsa_output.platform-snd_aloop.*" loopback
 assert lib.assertMsg (builtins.elem "~alsa_input.platform-snd_aloop.*" loopbackMatchNames)
   "desktop audio policy must match ALSA loopback input nodes";
 assert lib.assertMsg (lib.any (
-  action: action."node.disabled" or false
-) loopbackActions) "desktop audio policy must disable ALSA loopback nodes in PipeWire";
+  action: (action."priority.driver" or null) == 1 && (action."priority.session" or null) == 1
+) loopbackActions) "desktop audio policy must demote ALSA loopback nodes in PipeWire";
+assert lib.assertMsg (lib.all (
+  action: !(action."node.disabled" or false)
+) loopbackActions) "desktop audio policy must leave ALSA loopback nodes selectable";
 
 pkgs.runCommand "desktop-audio-policy-check" { } ''
   touch "$out"
