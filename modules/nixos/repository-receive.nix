@@ -10,15 +10,7 @@ let
   inherit (lib) mkIf;
 
   nodeServices = horizon.node.services or { };
-  personaDevelopmentRole = nodeServices.personaDevelopment or null;
-  personaDevelopmentWorkstation =
-    if personaDevelopmentRole == null then null else personaDevelopmentRole.Workstation or null;
-  repositoryReceive =
-    if personaDevelopmentWorkstation == null then
-      null
-    else
-      personaDevelopmentWorkstation.repositoryReceive or null;
-  repositoryReceiveEnabled = repositoryReceive != null;
+  repositoryReceiveEnabled = nodeServices.personaDevelopment or false;
 
   adminSshPubKeys = horizon.node.adminSshPubKeys or [ ];
   gitoliteAdminPubkey =

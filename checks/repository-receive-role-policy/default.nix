@@ -17,7 +17,7 @@ let
     # so use an obvious non-key placeholder instead of key-shaped test
     # data. Real public keys come from projected Horizon user data.
     adminSshPubKeys = [ optionEvaluationPlaceholder ];
-    services.personaDevelopment.Workstation.repositoryReceive.localOnly = true;
+    services.personaDevelopment = true;
   };
 
   configurationFor =
