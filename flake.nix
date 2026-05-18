@@ -82,6 +82,7 @@
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };
+          desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
