@@ -9,8 +9,9 @@ let
   inherit (builtins) head length;
   inherit (lib) mkIf;
 
-  nodeServices = horizon.node.services or { };
-  repositoryReceiveEnabled = nodeServices.personaDevelopment or false;
+  nodeServices = import ./node-services.nix { inherit lib; };
+  repositoryReceiveEnabled = nodeServices.personaDevelopmentHas (horizon.node.services or [ ]
+  ) "GitoliteServer";
 
   adminSshPubKeys = horizon.node.adminSshPubKeys or [ ];
   gitoliteAdminPubkey =

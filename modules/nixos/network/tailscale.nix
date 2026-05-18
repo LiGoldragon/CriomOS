@@ -5,10 +5,10 @@
 }:
 let
   inherit (horizon) node;
-  services = node.services or { };
+  nodeServices = import ../node-services.nix { inherit lib; };
 in
 {
-  config = lib.mkIf ((services.tailnet or null) == "Client") {
+  config = lib.mkIf (nodeServices.has (node.services or [ ]) "TailnetClient") {
     # Phase 1 scaffolding only: enrollment remains manual.
     services.tailscale = {
       enable = true;

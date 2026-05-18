@@ -18,15 +18,10 @@ let
     linkLocalIps = [ ];
     nixCacheDomain = null;
     nodeIp = "10.18.0.50";
-    services = {
-      tailnet = "Client";
-      tailnetController = {
-        Server = {
-          port = 9443;
-          baseDomain = "tailnet.fixture.test";
-        };
-      };
-    };
+    services = [
+      { TailnetClient = { }; }
+      { TailnetController = { }; }
+    ];
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
     yggAddress = "200:db8::50";
@@ -45,7 +40,10 @@ let
     specialArgs = {
       inherit constants inputs;
       horizon = {
-        cluster.name = "goldragon";
+        cluster = {
+          name = "goldragon";
+          tailnetBaseDomain = "tailnet.goldragon.criome";
+        };
         node = tailnetControllerNode;
         exNodes = { };
       };
@@ -70,10 +68,10 @@ pkgs.runCommand "headscale-selfsigned-cert-route-optional" { } ''
 
   grep -F -- '-4 route get 1.1.1.1 2>/dev/null' "$TMPDIR/headscale-selfsigned-cert"
   grep -F -- '|| true' "$TMPDIR/headscale-selfsigned-cert"
-  test ${lib.escapeShellArg headscalePort} = 9443
-  test ${lib.escapeShellArg headscaleServerUrl} = https://tailnet-controller-test.goldragon.criome:9443
-  test ${lib.escapeShellArg headscaleBaseDomain} = tailnet.fixture.test
-  echo ${lib.escapeShellArg firewallPorts} | grep -F 9443
+  test ${lib.escapeShellArg headscalePort} = 8443
+  test ${lib.escapeShellArg headscaleServerUrl} = https://tailnet-controller-test.goldragon.criome:8443
+  test ${lib.escapeShellArg headscaleBaseDomain} = tailnet.goldragon.criome
+  echo ${lib.escapeShellArg firewallPorts} | grep -F 8443
 
   touch "$out"
 ''

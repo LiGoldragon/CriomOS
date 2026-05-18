@@ -8,7 +8,7 @@ let
   optionEvaluationPlaceholder = "repository-receive-option-evaluation-placeholder-not-key-material";
 
   baseNode = {
-    services = { };
+    services = [ ];
   };
 
   receiveNode = {
@@ -17,7 +17,15 @@ let
     # so use an obvious non-key placeholder instead of key-shaped test
     # data. Real public keys come from projected Horizon user data.
     adminSshPubKeys = [ optionEvaluationPlaceholder ];
-    services.personaDevelopment = true;
+    services = [
+      {
+        PersonaDevelopment = {
+          capabilities = [
+            { GitoliteServer = { }; }
+          ];
+        };
+      }
+    ];
   };
 
   configurationFor =

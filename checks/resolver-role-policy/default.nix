@@ -34,10 +34,7 @@ let
     linkLocalIps = [ "fe80::50/64" ];
     nixCacheDomain = null;
     nodeIp = "10.18.0.50/32";
-    services = {
-      tailnet = null;
-      tailnetController = null;
-    };
+    services = [ ];
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
     yggAddress = "200:db8::50";
@@ -70,15 +67,10 @@ let
   };
 
   tailnetControllerRouterNode = routerNode // {
-    services = {
-      tailnet = "Client";
-      tailnetController = {
-        Server = {
-          port = 9443;
-          baseDomain = "tailnet.fixture.test";
-        };
-      };
-    };
+    services = [
+      { TailnetClient = { }; }
+      { TailnetController = { }; }
+    ];
   };
 
   peerNode = baseNode // {
@@ -97,7 +89,10 @@ let
         inherit constants;
         inputs = testInputs;
         horizon = {
-          cluster.name = "goldragon";
+          cluster = {
+            name = "goldragon";
+            tailnetBaseDomain = "tailnet.goldragon.criome";
+          };
           inherit node;
           exNodes = {
             peer-test = peerNode;
@@ -160,7 +155,7 @@ pkgs.runCommand "resolver-role-policy" { } ''
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/router-test.goldragon.criome/200:db8::1'
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/peer-test.goldragon.criome/200:db8::51'
   ! echo ${lib.escapeShellArg routerDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
-  echo ${lib.escapeShellArg tailnetControllerRouterDnsmasqServers} | grep -F '/tailnet.fixture.test/100.100.100.100'
+  echo ${lib.escapeShellArg tailnetControllerRouterDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
 
   touch "$out"
 ''
