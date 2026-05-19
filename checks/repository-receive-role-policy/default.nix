@@ -93,7 +93,7 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
 
   printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /var/lib/repository-ledger 2770 repository-ledger repository-ledger-receive -'
   printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F '/var/lib/repository-ledger/spool'
-  printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /run/repository-ledger 0750 repository-ledger nixdev -'
+  printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /run/repository-ledger 0755 repository-ledger nixdev -'
 
   touch "$out"
 ''

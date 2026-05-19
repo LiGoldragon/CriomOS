@@ -142,7 +142,7 @@ in
     systemd.tmpfiles.rules = [
       "d /var/lib/repository-ledger 2770 ${daemonUser} ${receiveGroup} -"
       "d ${spoolDirectory} 2770 ${config.services.gitolite.user} ${receiveGroup} -"
-      "d /run/repository-ledger 0750 ${daemonUser} ${clientGroup} -"
+      "d /run/repository-ledger 0755 ${daemonUser} ${clientGroup} -"
     ];
   };
 }
