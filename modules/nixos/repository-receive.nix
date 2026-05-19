@@ -22,10 +22,14 @@ let
 
   spoolDirectory = "/var/lib/repository-ledger/spool";
   daemonSocket = "/run/repository-ledger/repository-ledger.sock";
+  daemonUser = "repository-ledger";
+  daemonGroup = "repository-ledger";
+  receiveGroup = "repository-ledger-receive";
 
   repositoryLedgerPostReceiveHook = "${pkgs.writeTextDir "post-receive" ''
     #!${pkgs.runtimeShell}
     set -eu
+    umask 007
 
     spool_directory=${lib.escapeShellArg spoolDirectory}
     daemon_socket=${lib.escapeShellArg daemonSocket}
@@ -46,7 +50,6 @@ let
     temporary_path="$spool_directory/.$timestamp-$safe_repository_name-$$.tmp"
     final_path="$spool_directory/$timestamp-$safe_repository_name-$$.nota"
 
-    umask 077
     {
       printf '%s\n' '(RepositoryReceiveHookNotification'
       printf '  (RepositoryName "%s")\n' "$(printf '%s' "$repository_name" | escape_nota_string)"
@@ -69,6 +72,7 @@ let
       printf '%s\n' ')'
     } >"$temporary_path"
 
+    ${lib.getExe' pkgs.coreutils "chmod"} 0640 "$temporary_path"
     ${lib.getExe' pkgs.coreutils "mv"} "$temporary_path" "$final_path"
     exit 0
   ''}/post-receive";
@@ -82,9 +86,23 @@ in
       commonHooks = [ repositoryLedgerPostReceiveHook ];
     };
 
+    users.groups.${daemonGroup} = { };
+    users.groups.${receiveGroup}.members = [
+      config.services.gitolite.user
+      daemonUser
+    ];
+
+    users.users.${daemonUser} = {
+      isSystemUser = true;
+      group = daemonGroup;
+      description = "Repository ledger daemon user";
+      home = "/var/lib/repository-ledger";
+    };
+
     systemd.tmpfiles.rules = [
-      "d /var/lib/repository-ledger 0750 ${config.services.gitolite.user} ${config.services.gitolite.group} -"
-      "d ${spoolDirectory} 0750 ${config.services.gitolite.user} ${config.services.gitolite.group} -"
+      "d /var/lib/repository-ledger 2770 ${daemonUser} ${receiveGroup} -"
+      "d ${spoolDirectory} 2770 ${config.services.gitolite.user} ${receiveGroup} -"
+      "d /run/repository-ledger 0750 ${daemonUser} ${receiveGroup} -"
     ];
   };
 }

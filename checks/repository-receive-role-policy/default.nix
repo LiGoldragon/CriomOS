@@ -51,6 +51,10 @@ let
   hookPath = builtins.head receiveConfiguration.config.services.gitolite.commonHooks;
   hookText = builtins.readFile hookPath;
   hookBaseName = baseNameOf (toString hookPath);
+  receiveGroupMembers =
+    lib.concatStringsSep " "
+      receiveConfiguration.config.users.groups."repository-ledger-receive".members;
+  receiveDaemonUser = receiveConfiguration.config.users.users."repository-ledger";
 
   receiveTmpfiles = lib.concatStringsSep "\n" receiveConfiguration.config.systemd.tmpfiles.rules;
 in
@@ -66,7 +70,16 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
 
   printf '%s' ${lib.escapeShellArg hookText} | grep -F '/var/lib/repository-ledger/spool'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'RepositoryReceiveHookNotification'
+  printf '%s' ${lib.escapeShellArg hookText} | grep -F 'umask 007'
+  printf '%s' ${lib.escapeShellArg hookText} | grep -F '0640 "$temporary_path"'
+
+  test ${lib.escapeShellArg receiveDaemonUser.group} = repository-ledger
+  printf '%s' ${lib.escapeShellArg receiveGroupMembers} | grep -F gitolite
+  printf '%s' ${lib.escapeShellArg receiveGroupMembers} | grep -F repository-ledger
+
+  printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /var/lib/repository-ledger 2770 repository-ledger repository-ledger-receive -'
   printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F '/var/lib/repository-ledger/spool'
+  printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /run/repository-ledger 0750 repository-ledger repository-ledger-receive -'
 
   touch "$out"
 ''
