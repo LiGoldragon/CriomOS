@@ -43,9 +43,11 @@ let
     spool_directory=${lib.escapeShellArg spoolDirectory}
     daemon_socket=${lib.escapeShellArg daemonSocket}
     repository_ledger_cli=${lib.escapeShellArg "${repositoryLedgerPackage}/bin/repository-ledger"}
+    git_command=${lib.escapeShellArg "${lib.getExe pkgs.git}"}
+    zero_object_id=0000000000000000000000000000000000000000
 
     escape_nota_string() {
-      ${lib.getExe pkgs.gnused} 's/\\/\\\\/g; s/"/\\"/g'
+      ${lib.getExe pkgs.perl} -0pe 's/\\/\\\\/g; s/"/\\"/g; s/\n/\\n/g; s/\t/\\t/g; s/\r/\\r/g'
     }
 
     repository_name=''${GL_REPO:-unknown}
@@ -59,9 +61,14 @@ let
     ${lib.getExe' pkgs.coreutils "mkdir"} -p "$spool_directory"
     direct_request_path="$spool_directory/.$timestamp-$safe_repository_name-$$.direct.nota"
     temporary_path="$spool_directory/.$timestamp-$safe_repository_name-$$.spool.tmp"
+    commit_observations_path="$spool_directory/.$timestamp-$safe_repository_name-$$.commit-observations.tmp"
+    commit_list_path="$spool_directory/.$timestamp-$safe_repository_name-$$.commits.tmp"
+    file_list_path="$spool_directory/.$timestamp-$safe_repository_name-$$.files.tmp"
     final_path="$spool_directory/$timestamp-$safe_repository_name-$$.nota"
+    : >"$commit_observations_path"
 
     {
+      printf '(RepositoryPushObservation '
       printf '(RepositoryReceiveHookNotification "%s" "%s" "%s" ' \
         "$(printf '%s' "$repository_name" | escape_nota_string)" \
         "$(printf '%s' "$gitolite_user" | escape_nota_string)" \
@@ -88,6 +95,7 @@ let
     } >"$temporary_path"
 
     first_update=true
+    first_commit=true
     while read -r old_object_id new_object_id ref_name; do
       [ -n "$old_object_id$new_object_id$ref_name" ] || continue
       if [ "$first_update" = true ]; then
@@ -105,8 +113,61 @@ let
         "$(printf '%s' "$new_object_id" | escape_nota_string)" \
         "$(printf '%s' "$ref_name" | escape_nota_string)" \
         >>"$temporary_path"
+
+      if [ "$new_object_id" = "$zero_object_id" ]; then
+        continue
+      fi
+
+      if [ "$old_object_id" = "$zero_object_id" ]; then
+        "$git_command" rev-list --reverse --max-count=50 "$new_object_id" >"$commit_list_path"
+      else
+        "$git_command" rev-list --reverse "$old_object_id..$new_object_id" >"$commit_list_path"
+      fi
+
+      while read -r commit_object_id; do
+        [ -n "$commit_object_id" ] || continue
+        if [ "$first_commit" = true ]; then
+          first_commit=false
+        else
+          printf ' ' >>"$commit_observations_path"
+        fi
+        commit_timestamp="$("$git_command" log -1 --format=%cI "$commit_object_id")"
+        commit_message="$("$git_command" log -1 --format=%B "$commit_object_id")"
+        printf '(RepositoryCommitObservation "%s" "%s" "%s" "%s" [' \
+          "$(printf '%s' "$commit_object_id" | escape_nota_string)" \
+          "$(printf '%s' "$ref_name" | escape_nota_string)" \
+          "$(printf '%s' "$commit_timestamp" | escape_nota_string)" \
+          "$(printf '%s' "$commit_message" | escape_nota_string)" \
+          >>"$commit_observations_path"
+
+        "$git_command" diff-tree --root --no-commit-id --name-status -r -M "$commit_object_id" >"$file_list_path"
+        first_file=true
+        while IFS="$(printf '\t')" read -r status first_path second_path _rest; do
+          [ -n "$status$first_path" ] || continue
+          if [ "$first_file" = true ]; then
+            first_file=false
+          else
+            printf ' ' >>"$commit_observations_path"
+          fi
+          if [ -n "$second_path" ]; then
+            printf '(RepositoryFileChange "%s" "%s" (Some "%s"))' \
+              "$(printf '%s' "$status" | escape_nota_string)" \
+              "$(printf '%s' "$second_path" | escape_nota_string)" \
+              "$(printf '%s' "$first_path" | escape_nota_string)" \
+              >>"$commit_observations_path"
+          else
+            printf '(RepositoryFileChange "%s" "%s" None)' \
+              "$(printf '%s' "$status" | escape_nota_string)" \
+              "$(printf '%s' "$first_path" | escape_nota_string)" \
+              >>"$commit_observations_path"
+          fi
+        done <"$file_list_path"
+        printf '])' >>"$commit_observations_path"
+      done <"$commit_list_path"
     done
 
+    printf '%s' ']) [' >>"$direct_request_path"
+    ${lib.getExe' pkgs.coreutils "cat"} "$commit_observations_path" >>"$direct_request_path"
     printf '%s\n' '])' >>"$direct_request_path"
     {
       printf '%s\n' '  )'
@@ -114,13 +175,13 @@ let
     } >>"$temporary_path"
 
     if REPOSITORY_LEDGER_SOCKET_PATH="$daemon_socket" "$repository_ledger_cli" "$direct_request_path" >/dev/null 2>&1; then
-      ${lib.getExe' pkgs.coreutils "rm"} -f "$direct_request_path" "$temporary_path"
+      ${lib.getExe' pkgs.coreutils "rm"} -f "$direct_request_path" "$temporary_path" "$commit_observations_path" "$commit_list_path" "$file_list_path"
       exit 0
     fi
 
     ${lib.getExe' pkgs.coreutils "chmod"} 0640 "$temporary_path"
     ${lib.getExe' pkgs.coreutils "mv"} "$temporary_path" "$final_path"
-    ${lib.getExe' pkgs.coreutils "rm"} -f "$direct_request_path"
+    ${lib.getExe' pkgs.coreutils "rm"} -f "$direct_request_path" "$commit_observations_path" "$commit_list_path" "$file_list_path"
     exit 0
   ''}/post-receive";
 in
