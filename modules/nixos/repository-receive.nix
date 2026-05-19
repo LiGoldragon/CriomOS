@@ -42,6 +42,7 @@ let
 
     spool_directory=${lib.escapeShellArg spoolDirectory}
     daemon_socket=${lib.escapeShellArg daemonSocket}
+    repository_ledger_cli=${lib.escapeShellArg "${repositoryLedgerPackage}/bin/repository-ledger"}
 
     escape_nota_string() {
       ${lib.getExe pkgs.gnused} 's/\\/\\\\/g; s/"/\\"/g'
@@ -56,8 +57,22 @@ let
     )"
 
     ${lib.getExe' pkgs.coreutils "mkdir"} -p "$spool_directory"
-    temporary_path="$spool_directory/.$timestamp-$safe_repository_name-$$.tmp"
+    direct_request_path="$spool_directory/.$timestamp-$safe_repository_name-$$.direct.nota"
+    temporary_path="$spool_directory/.$timestamp-$safe_repository_name-$$.spool.tmp"
     final_path="$spool_directory/$timestamp-$safe_repository_name-$$.nota"
+
+    {
+      printf '(RepositoryReceiveHookNotification "%s" "%s" "%s" ' \
+        "$(printf '%s' "$repository_name" | escape_nota_string)" \
+        "$(printf '%s' "$gitolite_user" | escape_nota_string)" \
+        "$timestamp"
+      if [ -S "$daemon_socket" ]; then
+        printf 'true '
+      else
+        printf 'false '
+      fi
+      printf '['
+    } >"$direct_request_path"
 
     {
       printf '%s\n' '(RepositoryReceiveHookNotification'
@@ -70,19 +85,42 @@ let
         printf '%s\n' '  (DaemonSocketPresent false)'
       fi
       printf '%s\n' '  (RefUpdates'
-      while read -r old_object_id new_object_id ref_name; do
-        [ -n "$old_object_id$new_object_id$ref_name" ] || continue
-        printf '    (RefUpdate "%s" "%s" "%s")\n' \
-          "$(printf '%s' "$old_object_id" | escape_nota_string)" \
-          "$(printf '%s' "$new_object_id" | escape_nota_string)" \
-          "$(printf '%s' "$ref_name" | escape_nota_string)"
-      done
+    } >"$temporary_path"
+
+    first_update=true
+    while read -r old_object_id new_object_id ref_name; do
+      [ -n "$old_object_id$new_object_id$ref_name" ] || continue
+      if [ "$first_update" = true ]; then
+        first_update=false
+      else
+        printf ' ' >>"$direct_request_path"
+      fi
+      printf '(RefUpdate "%s" "%s" "%s")' \
+        "$(printf '%s' "$old_object_id" | escape_nota_string)" \
+        "$(printf '%s' "$new_object_id" | escape_nota_string)" \
+        "$(printf '%s' "$ref_name" | escape_nota_string)" \
+        >>"$direct_request_path"
+      printf '    (RefUpdate "%s" "%s" "%s")\n' \
+        "$(printf '%s' "$old_object_id" | escape_nota_string)" \
+        "$(printf '%s' "$new_object_id" | escape_nota_string)" \
+        "$(printf '%s' "$ref_name" | escape_nota_string)" \
+        >>"$temporary_path"
+    done
+
+    printf '%s\n' '])' >>"$direct_request_path"
+    {
       printf '%s\n' '  )'
       printf '%s\n' ')'
-    } >"$temporary_path"
+    } >>"$temporary_path"
+
+    if REPOSITORY_LEDGER_SOCKET_PATH="$daemon_socket" "$repository_ledger_cli" "$direct_request_path" >/dev/null 2>&1; then
+      ${lib.getExe' pkgs.coreutils "rm"} -f "$direct_request_path" "$temporary_path"
+      exit 0
+    fi
 
     ${lib.getExe' pkgs.coreutils "chmod"} 0640 "$temporary_path"
     ${lib.getExe' pkgs.coreutils "mv"} "$temporary_path" "$final_path"
+    ${lib.getExe' pkgs.coreutils "rm"} -f "$direct_request_path"
     exit 0
   ''}/post-receive";
 in
@@ -98,7 +136,10 @@ in
     environment.systemPackages = [ repositoryLedgerPackage ];
 
     users.groups.${daemonGroup} = { };
-    users.groups.${clientGroup} = { };
+    users.groups.${clientGroup}.members = [
+      config.services.gitolite.user
+      daemonUser
+    ];
     users.groups.${receiveGroup}.members = [
       config.services.gitolite.user
       daemonUser

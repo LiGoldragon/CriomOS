@@ -51,6 +51,7 @@ let
   hookPath = builtins.head receiveConfiguration.config.services.gitolite.commonHooks;
   hookText = builtins.readFile hookPath;
   hookBaseName = baseNameOf (toString hookPath);
+  clientGroupMembers = lib.concatStringsSep " " receiveConfiguration.config.users.groups.nixdev.members;
   receiveGroupMembers =
     lib.concatStringsSep " "
       receiveConfiguration.config.users.groups."repository-ledger-receive".members;
@@ -77,10 +78,14 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
 
   printf '%s' ${lib.escapeShellArg hookText} | grep -F '/var/lib/repository-ledger/spool'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'RepositoryReceiveHookNotification'
+  printf '%s' ${lib.escapeShellArg hookText} | grep -F '/bin/repository-ledger'
+  printf '%s' ${lib.escapeShellArg hookText} | grep -F 'REPOSITORY_LEDGER_SOCKET_PATH="$daemon_socket"'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'umask 007'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F '0640 "$temporary_path"'
 
   test ${lib.escapeShellArg receiveDaemonUser.group} = repository-ledger
+  printf '%s' ${lib.escapeShellArg clientGroupMembers} | grep -F gitolite
+  printf '%s' ${lib.escapeShellArg clientGroupMembers} | grep -F repository-ledger
   printf '%s' ${lib.escapeShellArg receiveGroupMembers} | grep -F gitolite
   printf '%s' ${lib.escapeShellArg receiveGroupMembers} | grep -F repository-ledger
   test ${lib.escapeShellArg receiveDaemonService.description} = 'Repository ledger daemon'
