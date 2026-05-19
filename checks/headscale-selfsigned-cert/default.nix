@@ -7,10 +7,8 @@ let
   constants = inputs.criomos-lib.lib.constants;
 
   # Steps 7a + 7b: typed nixCache (or null), typed yggdrasil (or null);
-  # has_*_pub_key shadow fields are gone — consumers gate on the
-  # underlying typed sub-record / input bool directly.
-  # Step 11: TailnetControllerRole.Server carries port only;
-  # base_domain comes from cluster.tailnet.
+  # has_*_pub_key shadow fields are gone. Service roles are a vector of
+  # named variants; Headscale port is a CriomOS-lib constant.
   tailnetControllerNode = {
     name = "tailnet-controller-test";
     criomeDomainName = "tailnet-controller-test.goldragon.criome";
@@ -20,14 +18,10 @@ let
     nixCache = null;
     linkLocalIps = [ ];
     nodeIp = "10.18.0.50";
-    services = {
-      tailnet = "Client";
-      tailnetController = {
-        Server = {
-          port = 9443;
-        };
-      };
-    };
+    services = [
+      { TailnetClient = { }; }
+      { TailnetController = { }; }
+    ];
     wireguardPubKey = null;
     wireguardUntrustedProxies = [ ];
     yggdrasil = null;
@@ -64,7 +58,9 @@ let
 
   certificateScript = configuration.config.systemd.services.headscale-selfsigned-cert.script;
   headscalePort = toString configuration.config.services.headscale.port;
+  expectedHeadscalePort = toString constants.network.headscale.port;
   headscaleServerUrl = configuration.config.services.headscale.settings.server_url;
+  expectedHeadscaleServerUrl = "https://tailnet-controller-test.goldragon.criome:${expectedHeadscalePort}";
   headscaleBaseDomain = configuration.config.services.headscale.settings.dns.base_domain;
   firewallPorts = builtins.toJSON configuration.config.networking.firewall.allowedTCPPorts;
 in
@@ -77,10 +73,10 @@ pkgs.runCommand "headscale-selfsigned-cert-route-optional" { } ''
 
   grep -F -- '-4 route get 1.1.1.1 2>/dev/null' "$TMPDIR/headscale-selfsigned-cert"
   grep -F -- '|| true' "$TMPDIR/headscale-selfsigned-cert"
-  test ${lib.escapeShellArg headscalePort} = 9443
-  test ${lib.escapeShellArg headscaleServerUrl} = https://tailnet-controller-test.goldragon.criome:9443
+  test ${lib.escapeShellArg headscalePort} = ${lib.escapeShellArg expectedHeadscalePort}
+  test ${lib.escapeShellArg headscaleServerUrl} = ${lib.escapeShellArg expectedHeadscaleServerUrl}
   test ${lib.escapeShellArg headscaleBaseDomain} = tailnet.fixture.test
-  echo ${lib.escapeShellArg firewallPorts} | grep -F 9443
+  echo ${lib.escapeShellArg firewallPorts} | grep -F ${lib.escapeShellArg expectedHeadscalePort}
 
   touch "$out"
 ''

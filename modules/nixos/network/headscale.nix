@@ -3,6 +3,7 @@
   lib,
   pkgs,
   horizon,
+  constants,
   ...
 }:
 let
@@ -10,21 +11,22 @@ let
   inherit (horizon) cluster node;
 
   headscaleFqdn = node.criomeDomainName;
-  services = node.services or { };
-  tailnetControllerRole = services.tailnetController or null;
-  tailnetControllerServer =
-    if tailnetControllerRole == null then null else tailnetControllerRole.Server or null;
+  nodeServices = import ../node-services.nix { inherit lib; };
+  services = node.services or [ ];
+  isTailnetController = nodeServices.has services "TailnetController";
+  headscalePort = constants.network.headscale.port;
 
-  headscalePort = if tailnetControllerServer == null then null else tailnetControllerServer.port;
-
-  # Step 11 collapse: base_domain is per-cluster, not per-controller.
+  # The controller role is a variant. Base domain is per-cluster and
+  # service port is a CriomOS-lib constant, never cluster-authored.
   # Every node hosting a controller requires `cluster.tailnet` to be
   # present (validated at horizon projection time via
   # `Error::TailnetControllerWithoutClusterConfig`); inside the
-  # `mkIf (tailnetControllerServer != null)` block below it is safe
+  # `mkIf isTailnetController` block below it is safe
   # to assume non-null.
   clusterTailnet =
-    if tailnetControllerServer == null then null else
+    if !isTailnetController then
+      null
+    else
       cluster.tailnet
         or (throw "headscale: cluster.tailnet must be set when a node hosts a tailnet controller (validated by horizon projection — TailnetControllerWithoutClusterConfig)");
   tailnetBaseDomain = if clusterTailnet == null then null else clusterTailnet.baseDomain;
@@ -81,7 +83,7 @@ let
 
 in
 {
-  config = lib.mkIf (tailnetControllerServer != null) {
+  config = lib.mkIf isTailnetController {
     services.headscale = {
       enable = true;
       address = "0.0.0.0";

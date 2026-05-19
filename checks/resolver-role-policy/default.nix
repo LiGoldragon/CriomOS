@@ -52,10 +52,7 @@ let
     nixCache = null;
     linkLocalIps = [ "fe80::50/64" ];
     nodeIp = "10.18.0.50/32";
-    services = {
-      tailnet = null;
-      tailnetController = null;
-    };
+    services = [ ];
     wireguardPubKey = null;
     wireguardUntrustedProxies = [ ];
     yggdrasil = mkYgg "200:db8::50";
@@ -88,17 +85,13 @@ let
     };
   };
 
-  # Step 11: TailnetControllerRole.Server carries port only;
-  # base_domain comes from cluster.tailnet.
+  # Tailnet service roles are a vector of variants. Headscale's port is
+  # owned by CriomOS-lib; base_domain comes from cluster.tailnet.
   tailnetControllerRouterNode = routerNode // {
-    services = {
-      tailnet = "Client";
-      tailnetController = {
-        Server = {
-          port = 9443;
-        };
-      };
-    };
+    services = [
+      { TailnetClient = { }; }
+      { TailnetController = { }; }
+    ];
   };
 
   peerNode = baseNode // {
@@ -120,7 +113,8 @@ let
             name = "goldragon";
             lan = testLan;
             resolver = testResolver;
-          } // clusterExtra;
+          }
+          // clusterExtra;
           inherit node;
           exNodes = {
             peer-test = peerNode;
