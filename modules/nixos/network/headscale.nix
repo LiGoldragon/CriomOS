@@ -3,6 +3,7 @@
   lib,
   pkgs,
   horizon,
+  constants,
   ...
 }:
 let
@@ -12,7 +13,7 @@ let
   headscaleFqdn = node.criomeDomainName;
   nodeServices = import ../node-services.nix { inherit lib; };
   tailnetControllerEnabled = nodeServices.has (node.services or [ ]) "TailnetController";
-  headscalePort = 8443;
+  headscalePort = constants.network.headscale.port;
   tailnetBaseDomain = cluster.tailnetBaseDomain;
 
   tlsDir = "/var/lib/headscale/tls";

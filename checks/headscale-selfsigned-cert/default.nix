@@ -55,7 +55,9 @@ let
 
   certificateScript = configuration.config.systemd.services.headscale-selfsigned-cert.script;
   headscalePort = toString configuration.config.services.headscale.port;
+  expectedHeadscalePort = toString constants.network.headscale.port;
   headscaleServerUrl = configuration.config.services.headscale.settings.server_url;
+  expectedHeadscaleServerUrl = "https://tailnet-controller-test.goldragon.criome:${expectedHeadscalePort}";
   headscaleBaseDomain = configuration.config.services.headscale.settings.dns.base_domain;
   firewallPorts = builtins.toJSON configuration.config.networking.firewall.allowedTCPPorts;
 in
@@ -68,10 +70,10 @@ pkgs.runCommand "headscale-selfsigned-cert-route-optional" { } ''
 
   grep -F -- '-4 route get 1.1.1.1 2>/dev/null' "$TMPDIR/headscale-selfsigned-cert"
   grep -F -- '|| true' "$TMPDIR/headscale-selfsigned-cert"
-  test ${lib.escapeShellArg headscalePort} = 8443
-  test ${lib.escapeShellArg headscaleServerUrl} = https://tailnet-controller-test.goldragon.criome:8443
+  test ${lib.escapeShellArg headscalePort} = ${lib.escapeShellArg expectedHeadscalePort}
+  test ${lib.escapeShellArg headscaleServerUrl} = ${lib.escapeShellArg expectedHeadscaleServerUrl}
   test ${lib.escapeShellArg headscaleBaseDomain} = tailnet.goldragon.criome
-  echo ${lib.escapeShellArg firewallPorts} | grep -F 8443
+  echo ${lib.escapeShellArg firewallPorts} | grep -F ${lib.escapeShellArg expectedHeadscalePort}
 
   touch "$out"
 ''
