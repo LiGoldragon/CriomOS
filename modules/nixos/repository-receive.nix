@@ -27,6 +27,7 @@ let
   storePath = "/var/lib/repository-ledger/repository-ledger.redb";
   daemonUser = "repository-ledger";
   daemonGroup = "repository-ledger";
+  clientGroup = "nixdev";
   receiveGroup = "repository-ledger-receive";
   repositoryLedgerPackage =
     inputs.repository-ledger.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -97,6 +98,7 @@ in
     environment.systemPackages = [ repositoryLedgerPackage ];
 
     users.groups.${daemonGroup} = { };
+    users.groups.${clientGroup} = { };
     users.groups.${receiveGroup}.members = [
       config.services.gitolite.user
       daemonUser
@@ -116,8 +118,11 @@ in
       serviceConfig = {
         Type = "simple";
         User = daemonUser;
-        Group = receiveGroup;
-        SupplementaryGroups = [ daemonGroup ];
+        Group = clientGroup;
+        SupplementaryGroups = [
+          daemonGroup
+          receiveGroup
+        ];
         WorkingDirectory = "/var/lib/repository-ledger";
         ExecStart = "${repositoryLedgerPackage}/bin/repository-ledger-daemon ${daemonConfiguration}";
         Restart = "on-failure";
@@ -137,7 +142,7 @@ in
     systemd.tmpfiles.rules = [
       "d /var/lib/repository-ledger 2770 ${daemonUser} ${receiveGroup} -"
       "d ${spoolDirectory} 2770 ${config.services.gitolite.user} ${receiveGroup} -"
-      "d /run/repository-ledger 0750 ${daemonUser} ${receiveGroup} -"
+      "d /run/repository-ledger 0750 ${daemonUser} ${clientGroup} -"
     ];
   };
 }

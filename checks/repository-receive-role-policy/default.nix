@@ -85,14 +85,15 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg receiveGroupMembers} | grep -F repository-ledger
   test ${lib.escapeShellArg receiveDaemonService.description} = 'Repository ledger daemon'
   test ${lib.escapeShellArg receiveDaemonServiceConfig.User} = repository-ledger
-  test ${lib.escapeShellArg receiveDaemonServiceConfig.Group} = repository-ledger-receive
+  test ${lib.escapeShellArg receiveDaemonServiceConfig.Group} = nixdev
+  printf '%s' ${lib.escapeShellArg (builtins.toJSON receiveDaemonServiceConfig.SupplementaryGroups)} | grep -F repository-ledger-receive
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F '/bin/repository-ledger-daemon'
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F 'repository-ledger-daemon.nota'
   printf '%s' ${lib.escapeShellArg receiveSystemPackageNames} | grep -F repository-ledger
 
   printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /var/lib/repository-ledger 2770 repository-ledger repository-ledger-receive -'
   printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F '/var/lib/repository-ledger/spool'
-  printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /run/repository-ledger 0750 repository-ledger repository-ledger-receive -'
+  printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /run/repository-ledger 0750 repository-ledger nixdev -'
 
   touch "$out"
 ''
