@@ -1309,11 +1309,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779200803,
-        "narHash": "sha256-mNoxUplz11nb7I2L1y1qASxkrm8Y86LGdPLgM/6AMjY=",
+        "lastModified": 1779202597,
+        "narHash": "sha256-Obc2Wt36Q8iRfkK8VywL0OWP1wi4TlsJ49g07eF6lkU=",
         "ref": "main",
-        "rev": "d52298c4261abacde8c51fe838e86ac1ca62d6a7",
-        "revCount": 4,
+        "rev": "2d7aa28cb80ce11bb1d6384a8aea6b17623a7c63",
+        "revCount": 6,
         "type": "git",
         "url": "ssh://gitolite@localhost/repository-ledger"
       },

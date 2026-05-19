@@ -32,7 +32,7 @@ let
   repositoryLedgerPackage =
     inputs.repository-ledger.packages.${pkgs.stdenv.hostPlatform.system}.default;
   daemonConfiguration = pkgs.writeText "repository-ledger-daemon.nota" ''
-    (RepositoryLedgerDaemonConfiguration "${daemonSocket}" 432 "${ownerSocket}" 384 "${storePath}" "${spoolDirectory}")
+    (DaemonConfiguration "${daemonSocket}" 432 "${ownerSocket}" 384 "${storePath}" "${spoolDirectory}")
   '';
 
   repositoryLedgerPostReceiveHook = "${pkgs.writeTextDir "post-receive" ''
@@ -68,8 +68,8 @@ let
     : >"$commit_observations_path"
 
     {
-      printf '(RepositoryPushObservation '
-      printf '(RepositoryReceiveHookNotification "%s" "%s" "%s" ' \
+      printf '(PushObservation '
+      printf '(ReceiveHookNotification "%s" "%s" "%s" ' \
         "$(printf '%s' "$repository_name" | escape_nota_string)" \
         "$(printf '%s' "$gitolite_user" | escape_nota_string)" \
         "$timestamp"
@@ -82,8 +82,8 @@ let
     } >"$direct_request_path"
 
     {
-      printf '%s\n' '(RepositoryReceiveHookNotification'
-      printf '  (RepositoryName "%s")\n' "$(printf '%s' "$repository_name" | escape_nota_string)"
+      printf '%s\n' '(ReceiveHookNotification'
+      printf '  (Name "%s")\n' "$(printf '%s' "$repository_name" | escape_nota_string)"
       printf '  (GitoliteUser "%s")\n' "$(printf '%s' "$gitolite_user" | escape_nota_string)"
       printf '  (ReceivedAt "%s")\n' "$timestamp"
       if [ -S "$daemon_socket" ]; then
@@ -133,7 +133,7 @@ let
         fi
         commit_timestamp="$("$git_command" log -1 --format=%cI "$commit_object_id")"
         commit_message="$("$git_command" log -1 --format=%B "$commit_object_id")"
-        printf '(RepositoryCommitObservation "%s" "%s" "%s" "%s" [' \
+        printf '(CommitObservation "%s" "%s" "%s" "%s" [' \
           "$(printf '%s' "$commit_object_id" | escape_nota_string)" \
           "$(printf '%s' "$ref_name" | escape_nota_string)" \
           "$(printf '%s' "$commit_timestamp" | escape_nota_string)" \
@@ -150,13 +150,13 @@ let
             printf ' ' >>"$commit_observations_path"
           fi
           if [ -n "$second_path" ]; then
-            printf '(RepositoryFileChange "%s" "%s" (Some "%s"))' \
+            printf '(FileChange "%s" "%s" (Some "%s"))' \
               "$(printf '%s' "$status" | escape_nota_string)" \
               "$(printf '%s' "$second_path" | escape_nota_string)" \
               "$(printf '%s' "$first_path" | escape_nota_string)" \
               >>"$commit_observations_path"
           else
-            printf '(RepositoryFileChange "%s" "%s" None)' \
+            printf '(FileChange "%s" "%s" None)' \
               "$(printf '%s' "$status" | escape_nota_string)" \
               "$(printf '%s' "$first_path" | escape_nota_string)" \
               >>"$commit_observations_path"
