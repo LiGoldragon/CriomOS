@@ -3,6 +3,7 @@
   lib,
   pkgs,
   horizon,
+  inputs,
   ...
 }:
 let
@@ -22,9 +23,16 @@ let
 
   spoolDirectory = "/var/lib/repository-ledger/spool";
   daemonSocket = "/run/repository-ledger/repository-ledger.sock";
+  ownerSocket = "/run/repository-ledger/repository-ledger-owner.sock";
+  storePath = "/var/lib/repository-ledger/repository-ledger.redb";
   daemonUser = "repository-ledger";
   daemonGroup = "repository-ledger";
   receiveGroup = "repository-ledger-receive";
+  repositoryLedgerPackage =
+    inputs.repository-ledger.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  daemonConfiguration = pkgs.writeText "repository-ledger-daemon.nota" ''
+    (RepositoryLedgerDaemonConfiguration "${daemonSocket}" 432 "${ownerSocket}" 384 "${storePath}" "${spoolDirectory}")
+  '';
 
   repositoryLedgerPostReceiveHook = "${pkgs.writeTextDir "post-receive" ''
     #!${pkgs.runtimeShell}
@@ -86,6 +94,8 @@ in
       commonHooks = [ repositoryLedgerPostReceiveHook ];
     };
 
+    environment.systemPackages = [ repositoryLedgerPackage ];
+
     users.groups.${daemonGroup} = { };
     users.groups.${receiveGroup}.members = [
       config.services.gitolite.user
@@ -97,6 +107,31 @@ in
       group = daemonGroup;
       description = "Repository ledger daemon user";
       home = "/var/lib/repository-ledger";
+    };
+
+    systemd.services.repository-ledger = {
+      description = "Repository ledger daemon";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "gitolite-init.service" ];
+      serviceConfig = {
+        Type = "simple";
+        User = daemonUser;
+        Group = receiveGroup;
+        SupplementaryGroups = [ daemonGroup ];
+        WorkingDirectory = "/var/lib/repository-ledger";
+        ExecStart = "${repositoryLedgerPackage}/bin/repository-ledger-daemon ${daemonConfiguration}";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        UMask = "0007";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ReadWritePaths = [
+          "/var/lib/repository-ledger"
+          "/run/repository-ledger"
+        ];
+      };
     };
 
     systemd.tmpfiles.rules = [
