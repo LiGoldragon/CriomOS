@@ -4,6 +4,10 @@
   config,
   pkgs,
   inputs,
+  deployment ? {
+    includeHome = true;
+    includeAllFirmware = true;
+  },
   ...
 }:
 let
@@ -28,6 +32,8 @@ let
     ;
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
+  includeHome = deployment.includeHome or true;
+  includeAllFirmware = deployment.includeAllFirmware or includeHome;
 
   batteryCtl = pkgs.writeShellScriptBin "battery-ctl" ''
     usage() { echo "usage: battery-ctl care | full | status"; exit 1; }
@@ -97,12 +103,36 @@ let
   needsThinkpadThermalGuard = modelIsThinkpad && chipIsIntel;
 
   thinkpadFanLevels = [
-    [ 0 0 48 ]
-    [ 1 45 55 ]
-    [ 2 50 60 ]
-    [ 3 55 65 ]
-    [ 6 60 70 ]
-    [ 7 65 32767 ]
+    [
+      0
+      0
+      48
+    ]
+    [
+      1
+      45
+      55
+    ]
+    [
+      2
+      50
+      60
+    ]
+    [
+      3
+      55
+      65
+    ]
+    [
+      6
+      60
+      70
+    ]
+    [
+      7
+      65
+      32767
+    ]
   ];
 
   thermaldEightyDegreeConfiguration = pkgs.writeText "thermald-eighty-degree-processor-guard.xml" ''
@@ -231,11 +261,13 @@ let
 
   treatAsIntel = chipIsIntel && !gpuUsesAmdGpu;
 
-  gpuUsesVaapi = isGenericModel || builtins.elem model [
-    "ThinkPadX230"
-    "ThinkPadX240"
-    "ThinkPadX250"
-  ];
+  gpuUsesVaapi =
+    isGenericModel
+    || builtins.elem model [
+      "ThinkPadX230"
+      "ThinkPadX240"
+      "ThinkPadX250"
+    ];
 
   # Codec driver decision per Li 2026-04-25 + agent research:
   # - intel-media-driver (~80MB) is the modern iHD VAAPI backend. Always
@@ -255,8 +287,7 @@ let
     if gpuUsesVaapi then
       [ pkgs.intel-vaapi-driver ]
     else if treatAsIntel then
-      [ pkgs.intel-media-driver ]
-      ++ optionals (wantsHwVideoAccel && igpuIsModern) [ pkgs.vpl-gpu-rt ]
+      [ pkgs.intel-media-driver ] ++ optionals (wantsHwVideoAccel && igpuIsModern) [ pkgs.vpl-gpu-rt ]
     else
       [ ];
 
@@ -270,8 +301,10 @@ mkIf behavesAs.bareMetal {
   hardware = {
     cpu.intel.updateMicrocode = chipIsIntel;
 
-    # Hack: TODO - tune per model, see `modelSpecificfirmware`
-    enableAllFirmware = true;
+    # Broad firmware remains enabled for normal deployments, while
+    # synthetic/home-off builds can opt out and rely on model-specific
+    # firmware below.
+    enableAllFirmware = includeAllFirmware;
 
     firmware = modelSpecificFirmware;
 
@@ -296,66 +329,73 @@ mkIf behavesAs.bareMetal {
       ];
     };
 
-    kernelModules =
-      [ "coretemp" ] ++ modelSpecificKernelModules ++ (optional gpuUsesAmdGpu "amdgpu") ++ (optional (size.min && behavesAs.edge) "uinput");
+    kernelModules = [
+      "coretemp"
+    ]
+    ++ modelSpecificKernelModules
+    ++ (optional gpuUsesAmdGpu "amdgpu")
+    ++ (optional (size.min && behavesAs.edge) "uinput");
 
-    extraModprobeConfig = (
-      optionalString size.large ''
+    extraModprobeConfig =
+      (optionalString size.large ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
-      ''
-    ) + (
-      optionalString (model == "ThinkPadT14Gen5Intel") ''
+      '')
+      + (optionalString (model == "ThinkPadT14Gen5Intel") ''
         blacklist i915
         options xe force_probe=7d45
-      ''
-    ) + (
-      # T14 Gen2 Intel (Tiger Lake) suspend fixes:
-      # MHI (Quectel WWAN modem) returns -EBUSY on suspend, aborting sleep.
-      # IPU6 camera driver breaks s2idle on kernel 6.16+.
-      optionalString (model == "ThinkPadT14Gen2Intel") ''
-        blacklist mhi
-        blacklist mhi_ep
-        blacklist mhi_net
-        blacklist mhi_pci_generic
-        blacklist mhi_wwan_ctrl
-        blacklist mhi_wwan_mbim
-        blacklist intel_ipu6
-        blacklist intel_ipu6_psys
-      ''
-    );
+      '')
+      + (
+        # T14 Gen2 Intel (Tiger Lake) suspend fixes:
+        # MHI (Quectel WWAN modem) returns -EBUSY on suspend, aborting sleep.
+        # IPU6 camera driver breaks s2idle on kernel 6.16+.
+        optionalString (model == "ThinkPadT14Gen2Intel") ''
+          blacklist mhi
+          blacklist mhi_ep
+          blacklist mhi_net
+          blacklist mhi_pci_generic
+          blacklist mhi_wwan_ctrl
+          blacklist mhi_wwan_mbim
+          blacklist intel_ipu6
+          blacklist intel_ipu6_psys
+        ''
+      );
 
-    kernelParams =
-      lib.concatLists [
-        (if computerIs.rpi3b then [
-          "cma=32M"
-          "console=ttyS0,115200n8"
-          "console=ttyAMA0,11520n8"
-          "console=tty0"
-          "dtparam=audio=on"
-        ] else [])
-        # RDNA 3.5 (gfx1150/1151/1152) stability — MES hang + PSR2-SU freeze workarounds.
-        # cwsr_enable=0: prevents MES "failed to respond" hangs during compute.
-        # gpu_recovery=1: auto-recover from GPU hangs instead of hard-lock.
-        # dcdebugmask=0x200: disables PSR2-SU (keeps legacy PSR for battery).
-        (optionals gpuUsesAmdGpu [
-          "amdgpu.cwsr_enable=0"
-          "amdgpu.gpu_recovery=1"
-          "amdgpu.dcdebugmask=0x200"
-        ])
-        # largeAI GPU tuning — expose 5/6 of unified RAM to GPU via TTM
-        # Without this, Vulkan only sees ~64GB on 128GB Strix Halo.
-        (optionals (behavesAs.center) [
-          "ttm.page_pool_size=27787264"
-          "ttm.pages_limit=27787264"
-        ])
-        # T14 Gen2 Intel (Tiger Lake) — touchpad and suspend fixes.
-        # i8042.nomux: fixes erratic cursor / ghost touches from AUX mux conflict.
-        # acpi.ec_no_wakeup: prevents spurious EC wakeups on ThinkPads.
-        (optionals (model == "ThinkPadT14Gen2Intel") [
-          "i8042.nomux=1"
-          "acpi.ec_no_wakeup=1"
-        ])
-      ];
+    kernelParams = lib.concatLists [
+      (
+        if computerIs.rpi3b then
+          [
+            "cma=32M"
+            "console=ttyS0,115200n8"
+            "console=ttyAMA0,11520n8"
+            "console=tty0"
+            "dtparam=audio=on"
+          ]
+        else
+          [ ]
+      )
+      # RDNA 3.5 (gfx1150/1151/1152) stability — MES hang + PSR2-SU freeze workarounds.
+      # cwsr_enable=0: prevents MES "failed to respond" hangs during compute.
+      # gpu_recovery=1: auto-recover from GPU hangs instead of hard-lock.
+      # dcdebugmask=0x200: disables PSR2-SU (keeps legacy PSR for battery).
+      (optionals gpuUsesAmdGpu [
+        "amdgpu.cwsr_enable=0"
+        "amdgpu.gpu_recovery=1"
+        "amdgpu.dcdebugmask=0x200"
+      ])
+      # largeAI GPU tuning — expose 5/6 of unified RAM to GPU via TTM
+      # Without this, Vulkan only sees ~64GB on 128GB Strix Halo.
+      (optionals (behavesAs.center) [
+        "ttm.page_pool_size=27787264"
+        "ttm.pages_limit=27787264"
+      ])
+      # T14 Gen2 Intel (Tiger Lake) — touchpad and suspend fixes.
+      # i8042.nomux: fixes erratic cursor / ghost touches from AUX mux conflict.
+      # acpi.ec_no_wakeup: prevents spurious EC wakeups on ThinkPads.
+      (optionals (model == "ThinkPadT14Gen2Intel") [
+        "i8042.nomux=1"
+        "acpi.ec_no_wakeup=1"
+      ])
+    ];
 
   };
 
@@ -364,8 +404,16 @@ mkIf behavesAs.bareMetal {
   # but re-applying after suspend is belt-and-suspenders.
   systemd.services.battery-charge-default = mkIf modelIsThinkpad {
     description = "Set battery charge thresholds to care mode";
-    after = [ "multi-user.target" "suspend.target" "hibernate.target" ];
-    wantedBy = [ "multi-user.target" "suspend.target" "hibernate.target" ];
+    after = [
+      "multi-user.target"
+      "suspend.target"
+      "hibernate.target"
+    ];
+    wantedBy = [
+      "multi-user.target"
+      "suspend.target"
+      "hibernate.target"
+    ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${batteryCtl}/bin/battery-ctl care";
@@ -419,8 +467,8 @@ mkIf behavesAs.bareMetal {
       pmBase = {
         powertop.enable = true;
       };
-    in pmBase
-      // (optionalAttrs hasModelSpecificPowerTweaks modelSpecificPowerTweaks."${model}");
+    in
+    pmBase // (optionalAttrs hasModelSpecificPowerTweaks modelSpecificPowerTweaks."${model}");
 
   programs = { };
 
@@ -433,8 +481,7 @@ mkIf behavesAs.bareMetal {
       ++ optionals chipIsIntel intelUtils
       ++ optionals size.large [ v4l-utils ]
       ++ optionals (size.max && behavesAs.edge) waydroidPackages
-      ++ optional modelIsThinkpad batteryCtl
-      ;
+      ++ optional modelIsThinkpad batteryCtl;
 
   };
 

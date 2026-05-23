@@ -54,7 +54,7 @@ The orchestration axes evaluate and cache independently:
 | [`system`](stubs/no-system/) | tiny flake whose only output is a system tuple (`x86_64-linux`, `aarch64-linux`) | per supported arch |
 | `pkgs` (`github:LiGoldragon/CriomOS-pkgs`) | wrapper that instantiates nixpkgs for a given system, plus overlays | per (nixpkgs-rev, system, overlays) |
 | [`horizon`](stubs/no-horizon/) | the projected per-(cluster, node) view | per deploy |
-| [`deployment`](stubs/default-deployment/) | operation shape, currently `includeHome` | per deploy kind |
+| [`deployment`](stubs/default-deployment/) | operation shape, currently `includeHome` and `includeAllFirmware` | per deploy kind |
 
 Each is content-addressed. Identical input → eval-cache hit. The
 `pkgs` axis caches across deploys with the same nixpkgs+system;

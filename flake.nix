@@ -77,7 +77,11 @@
       horizon = inputs.horizon.horizon;
       pkgs = inputs.pkgs.pkgs;
       system = inputs.system.system;
-      deployment = inputs.deployment.deployment or { includeHome = true; };
+      deployment =
+        inputs.deployment.deployment or {
+          includeHome = true;
+          includeAllFirmware = true;
+        };
       includeHome = deployment.includeHome or true;
 
       criomos-lib = inputs.criomos-lib.lib;
@@ -90,6 +94,7 @@
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
+          metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
           repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
