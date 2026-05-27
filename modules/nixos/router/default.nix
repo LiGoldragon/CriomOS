@@ -8,6 +8,7 @@
 }:
 let
   inherit (lib) mkIf;
+  inherit (horizon) cluster;
   inherit (horizon.node) behavesAs;
   # WiFi PKI paths — uncomment when EAP-TLS is deployed
   # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
@@ -26,6 +27,10 @@ let
       routerWifiSopsFiles.${routerWifiPasswordSecretName}
     else
       throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.routerInterfaces.wpa3SaePassword";
+  wirelessCountryCode =
+    routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
+  wirelessNetworkName =
+    routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${cluster.name}.criome";
 
   lanBridgeInterface = "br-lan";
   lanSubnetPrefix = constants.network.lan.subnetPrefix;
@@ -111,14 +116,14 @@ in
           "${routerInterfaces.wlan}" = {
             band = routerInterfaces.wlanBand;
             channel = routerInterfaces.wlanChannel;
-            countryCode = routerInterfaces.country;
+            countryCode = wirelessCountryCode;
             wifi4.enable = routerInterfaces.wlanStandard == "wifi4";
             wifi6.enable = routerInterfaces.wlanStandard == "wifi6" || routerInterfaces.wlanStandard == "wifi7";
             wifi7.enable = routerInterfaces.wlanStandard == "wifi7";
             networks = {
               # WPA3-SAE — primary SSID (EAP-TLS will replace this once PKI is deployed)
               "${routerInterfaces.wlan}" = {
-                ssid = routerInterfaces.ssid;
+                ssid = wirelessNetworkName;
                 authentication = {
                   mode = "wpa3-sae";
                   saePasswordsFile = config.sops.secrets.${routerWifiPasswordSecretName}.path;
