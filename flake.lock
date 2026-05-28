@@ -287,13 +287,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-MJkyNnJXIEBovGKpA3sSW7EUkUj2eXJAQIya4OsQyZ4=",
+        "narHash": "sha256-NW9xZX5G/16xk+SrF5PymRmKumEIcWajclCcqwS5b6M=",
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.145/file/Anthropic.claude-code-2.1.145@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.153/file/Anthropic.claude-code-2.1.153@linux-x64.vsix"
       },
       "original": {
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.145/file/Anthropic.claude-code-2.1.145@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.153/file/Anthropic.claude-code-2.1.153@linux-x64.vsix"
       }
     },
     "clavifaber": {
@@ -327,11 +327,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779246963,
-        "narHash": "sha256-6mEF9tTbrvCN9DLWVPKm79yrGwo00dn4Ia3y6pz05Sc=",
+        "lastModified": 1779824545,
+        "narHash": "sha256-Gx/K9PRYQ0+eKMwjnOX2BqOvkjP+MeXXyFA2M2PvBQg=",
         "owner": "sadjow",
         "repo": "codex-cli-nix",
-        "rev": "b1b44fd7da742655b37e949d3cb4fe329067e271",
+        "rev": "26c2ba2aed14632a04335a2f0a99d14abfb63f14",
         "type": "github"
       },
       "original": {
@@ -620,11 +620,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1779966386,
-        "narHash": "sha256-ZFd6Cpp/FULUCWnoq+yszmWCKyil2GA2GxLpPaa3iuc=",
+        "lastModified": 1779970151,
+        "narHash": "sha256-SzI61KTUrxQgKrEsz893097PqewVSnOR2cSe51rf/yg=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "b796f13d436f97cf997151318c0c1f45835cfd99",
+        "rev": "20e3032cb6555763a753ae5f6b6c3774049d995f",
         "type": "github"
       },
       "original": {
@@ -1318,11 +1318,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779257624,
-        "narHash": "sha256-pXnXgFvoFQKt4gDnOx0OjKSsv0T51QmN5thbzWf9WX0=",
+        "lastModified": 1779968525,
+        "narHash": "sha256-qbXUwqq7Ea+kTWNh0cmaETDVtnG+CJYU9eqev0+XEZ8=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "3c69691d60d50f87cc0d5f6222992b63c90b010d",
+        "rev": "fc273a201e2304e5e9af5d76fedc24a83ac18b08",
         "type": "github"
       },
       "original": {
@@ -1694,29 +1694,29 @@
     "pi-linkup-src": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-r8i04c6tS5HeRDz6ej2L5KM0lX9AHapQxKi/mgn0hZQ=",
+        "narHash": "sha256-rxyaL8vBVQQFoyNlhPOUAUqzlZXBHZfcXHTnzrBKpOc=",
         "type": "file",
-        "url": "https://registry.npmjs.org/@aliou/pi-linkup/-/pi-linkup-0.10.3.tgz"
+        "url": "https://registry.npmjs.org/@aliou/pi-linkup/-/pi-linkup-0.11.0.tgz"
       },
       "original": {
         "type": "file",
-        "url": "https://registry.npmjs.org/@aliou/pi-linkup/-/pi-linkup-0.10.3.tgz"
+        "url": "https://registry.npmjs.org/@aliou/pi-linkup/-/pi-linkup-0.11.0.tgz"
       }
     },
     "pi-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779530872,
-        "narHash": "sha256-RNQ4ospdohOA8hyegCMziJHHbmFGdk/QtkjzJmS/PZc=",
+        "lastModified": 1779912201,
+        "narHash": "sha256-mlnkSmNJbRfDa0DyGvl0hSV1r2aPszW1G6lz5fAqQeY=",
         "owner": "earendil-works",
-        "repo": "pi-mono",
-        "rev": "89ba72c35dcbcdc0144f4e57a0b76568c50c2cbb",
+        "repo": "pi",
+        "rev": "706f8720f8cfe75f562b4e488681486cb70bbe9b",
         "type": "github"
       },
       "original": {
         "owner": "earendil-works",
-        "ref": "v0.75.5",
-        "repo": "pi-mono",
+        "ref": "v0.76.0",
+        "repo": "pi",
         "type": "github"
       }
     },
@@ -1735,13 +1735,13 @@
     "pi-utils-ui-src": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-dBYeEAiX/VweSfiXNGRsdKBTnb4vAfUG1GEPiB2EI7I=",
+        "narHash": "sha256-2O7fxyr0S6ZGGphGdlhrppgdy8pvMjVHQUVUc1aMdWY=",
         "type": "file",
-        "url": "https://registry.npmjs.org/@aliou/pi-utils-ui/-/pi-utils-ui-0.1.5.tgz"
+        "url": "https://registry.npmjs.org/@aliou/pi-utils-ui/-/pi-utils-ui-0.4.1.tgz"
       },
       "original": {
         "type": "file",
-        "url": "https://registry.npmjs.org/@aliou/pi-utils-ui/-/pi-utils-ui-0.1.5.tgz"
+        "url": "https://registry.npmjs.org/@aliou/pi-utils-ui/-/pi-utils-ui-0.4.1.tgz"
       }
     },
     "pi-web-access-boolbase-src": {
