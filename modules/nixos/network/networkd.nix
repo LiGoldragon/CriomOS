@@ -30,7 +30,7 @@ mkIf (behavesAs.center && !behavesAs.router) {
   systemd.network.networks."20-usb-eth" = {
     matchConfig = {
       Type = "ether";
-      Driver = "cdc_ether r8152 ax88179_178a asix";
+      Driver = "cdc_ether cdc_ncm r8152 ax88179_178a asix";
     };
     networkConfig = {
       Address = "${hotplugSubnet}.1/24";

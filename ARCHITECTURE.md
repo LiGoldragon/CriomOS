@@ -54,6 +54,14 @@ render a node name as a hostname, identity, path component, or diagnostic
 label, but role decisions must come from Horizon capabilities such as
 tailnet client/controller or large-AI provider roles.
 
+Router nodes treat local access as the recovery path during upgrades.
+The primary LAN bridge accepts USB Ethernet adapters by driver family,
+and a Horizon-declared backup wireless interface can run as an
+independent hostapd service rather than joining the primary hostapd
+unit. Router network services avoid automatic restart-on-switch so a
+new generation does not casually drop the live management path; reboot
+or an explicit operator restart applies changed network policy.
+
 ## What this repo does not define
 
 - Sema, signal, or any application-layer record kind.

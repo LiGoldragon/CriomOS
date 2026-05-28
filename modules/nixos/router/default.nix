@@ -2,12 +2,19 @@
   config,
   inputs,
   lib,
+  pkgs,
+  utils,
   horizon,
   constants,
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib)
+    concatStringsSep
+    mkIf
+    optional
+    optionalAttrs
+    ;
   inherit (horizon) cluster;
   inherit (horizon.node) behavesAs;
   # WiFi PKI paths — uncomment when EAP-TLS is deployed
@@ -27,15 +34,47 @@ let
       routerWifiSopsFiles.${routerWifiPasswordSecretName}
     else
       throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.routerInterfaces.wpa3SaePassword";
-  wirelessCountryCode =
-    routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
+  wirelessCountryCode = routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
   wirelessNetworkName =
     routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${cluster.name}.criome";
+
+  backupWireless = routerInterfaces.backupWireless or null;
+  hasBackupWireless = backupWireless != null;
+  backupWirelessPasswordSecret = if hasBackupWireless then backupWireless.password else null;
+  backupWirelessPasswordSecretName =
+    if hasBackupWireless then backupWirelessPasswordSecret.name else null;
+  backupWirelessSopsFileExists =
+    hasBackupWireless && builtins.hasAttr backupWirelessPasswordSecretName routerWifiSopsFiles;
+  backupWirelessSopsFile =
+    if !hasBackupWireless then
+      null
+    else if backupWirelessSopsFileExists then
+      routerWifiSopsFiles.${backupWirelessPasswordSecretName}
+    else
+      throw "router: inputs.secrets.sopsFiles.${backupWirelessPasswordSecretName} is required by horizon.node.routerInterfaces.backupWireless.password";
+  backupWirelessRuntimeDirectory = "hostapd-backup-wireless";
+  backupWirelessConfig = "/run/${backupWirelessRuntimeDirectory}/${backupWireless.interface}.hostapd.conf";
+  backupWirelessDeviceUnit = "sys-subsystem-net-devices-${utils.escapeSystemdPath backupWireless.interface}.device";
+  backupWirelessMode =
+    {
+      "2g" = "g";
+      "5g" = "a";
+      "6g" = "a";
+      "60g" = "ad";
+    }
+    .${backupWireless.band};
 
   lanBridgeInterface = "br-lan";
   lanSubnetPrefix = constants.network.lan.subnetPrefix;
   lanAddress = constants.network.lan.gateway;
   lanFullAddress = "${lanAddress}/24";
+  localInputInterfaces = [
+    lanBridgeInterface
+    routerInterfaces.wlan
+    "yggTun"
+  ]
+  ++ optional hasBackupWireless backupWireless.interface;
+  localInputInterfaceSet = concatStringsSep ", " localInputInterfaces;
 
   useNftables = true;
 
@@ -52,13 +91,27 @@ in
         assertion = routerWifiSopsFileExists;
         message = "router Wi-Fi secret ${routerWifiPasswordSecretName} is missing from inputs.secrets.sopsFiles";
       }
-    ];
+    ]
+    ++ optional hasBackupWireless {
+      assertion = backupWirelessSopsFileExists;
+      message = "router backup Wi-Fi secret ${backupWirelessPasswordSecretName} is missing from inputs.secrets.sopsFiles";
+    };
 
-    sops.secrets.${routerWifiPasswordSecretName} = {
-      format = "binary";
-      sopsFile = routerWifiSopsFile;
-      mode = "0400";
-      restartUnits = [ "hostapd.service" ];
+    sops.secrets = {
+      ${routerWifiPasswordSecretName} = {
+        format = "binary";
+        sopsFile = routerWifiSopsFile;
+        mode = "0400";
+        restartUnits = [ "hostapd.service" ];
+      };
+    }
+    // optionalAttrs hasBackupWireless {
+      ${backupWirelessPasswordSecretName} = {
+        format = "binary";
+        sopsFile = backupWirelessSopsFile;
+        mode = "0400";
+        restartUnits = [ "hostapd-backup-wireless.service" ];
+      };
     };
 
     boot.kernel.sysctl = {
@@ -84,7 +137,7 @@ in
 
               tcp dport ssh accept
 
-              iifname { ${lanBridgeInterface}, ${routerInterfaces.wlan}, yggTun } accept comment "Allow local network to access the router"
+              iifname { ${localInputInterfaceSet} } accept comment "Allow local network to access the router"
               iifname "${routerInterfaces.wan}" ct state { established, related } accept comment "Allow established traffic"
               iifname "${routerInterfaces.wan}" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
               iifname "${routerInterfaces.wan}" counter drop comment "Drop all other unsolicited traffic from ${routerInterfaces.wan}"
@@ -176,6 +229,17 @@ in
     };
 
     systemd.services = {
+      # Router access is the recovery path during upgrades. Do not
+      # automatically bounce the live network services just because their
+      # unit text changed; a reboot or an explicit operator restart applies
+      # changed network policy after the new generation is known-good.
+      systemd-networkd.restartIfChanged = false;
+      systemd-networkd.stopIfChanged = false;
+      hostapd.restartIfChanged = false;
+      hostapd.stopIfChanged = false;
+      dnsmasq.restartIfChanged = false;
+      dnsmasq.stopIfChanged = false;
+
       # sops-install-secrets runs as part of system activation (before any
       # service starts), so /run/secrets/routerWifiSaePasswords is already
       # in place by the time hostapd's ExecStartPre reads it. Rotation is
@@ -183,7 +247,90 @@ in
       # declared above. There is no `sops-nix.service` systemd unit in
       # current sops-nix — depending on it would prevent hostapd from
       # starting and break wifi.
-      kea-dhcp4-server.after = [ "systemd-networkd.service" ];
+      kea-dhcp4-server = {
+        after = [ "systemd-networkd.service" ];
+        restartIfChanged = false;
+        stopIfChanged = false;
+      };
+    }
+    // optionalAttrs hasBackupWireless {
+      hostapd-backup-wireless = {
+        description = "Backup Wi-Fi access point for router emergency access";
+        after = [
+          backupWirelessDeviceUnit
+          "systemd-networkd.service"
+        ];
+        bindsTo = [ backupWirelessDeviceUnit ];
+        wantedBy = [ "multi-user.target" ];
+        path = [
+          pkgs.coreutils
+          pkgs.hostapd
+          pkgs.iproute2
+        ];
+        restartIfChanged = false;
+        stopIfChanged = false;
+        preStart = ''
+          set -euo pipefail
+          config_file=${backupWirelessConfig}
+          password_file=${config.sops.secrets.${backupWirelessPasswordSecretName}.path}
+          install -m 0700 -d "$(dirname "$config_file")"
+          password="$(tr -d '\n' < "$password_file")"
+          cat > "$config_file" <<EOF
+          driver=nl80211
+          interface=${backupWireless.interface}
+          bridge=${lanBridgeInterface}
+          ssid=${backupWireless.networkName}
+          utf8_ssid=1
+          country_code=${wirelessCountryCode}
+          ieee80211d=1
+          ieee80211h=1
+          hw_mode=${backupWirelessMode}
+          channel=${toString backupWireless.channel}
+          ieee80211n=1
+          ht_capab=[SHORT-GI-20]
+          wmm_enabled=1
+          auth_algs=1
+          wpa=2
+          wpa_key_mgmt=WPA-PSK-SHA256
+          wpa_pairwise=CCMP
+          rsn_pairwise=CCMP
+          ieee80211w=1
+          wpa_passphrase=$password
+          EOF
+          unset password
+        '';
+        serviceConfig = {
+          ExecStart = "${pkgs.hostapd}/bin/hostapd ${backupWirelessConfig}";
+          Restart = "always";
+          RuntimeDirectory = backupWirelessRuntimeDirectory;
+          RuntimeDirectoryMode = "0700";
+          DeviceAllow = "/dev/rfkill rw";
+          DevicePolicy = "closed";
+          NoNewPrivileges = true;
+          PrivateTmp = false;
+          PrivateUsers = false;
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          RestrictAddressFamilies = [
+            "AF_INET"
+            "AF_INET6"
+            "AF_NETLINK"
+            "AF_UNIX"
+            "AF_PACKET"
+          ];
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          SystemCallArchitectures = "native";
+          UMask = "0077";
+        };
+      };
     };
 
     systemd.network = {
@@ -216,7 +363,7 @@ in
         "30-usb-eth" = {
           matchConfig = {
             Type = "ether";
-            Driver = "cdc_ether r8152 ax88179_178a asix";
+            Driver = "cdc_ether cdc_ncm r8152 ax88179_178a asix";
           };
           networkConfig = {
             Bridge = lanBridgeInterface;
