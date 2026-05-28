@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   horizon,
@@ -27,7 +28,7 @@ let
 
   runtimeUser = "llama";
   runtimeHome = "/var/lib/llama";
-  apiKeyFile = "${runtimeHome}/api-key";
+  apiKeyFile = config.sops.secrets.localLlmApiToken.path;
 
   # Resolve model source to a store path (file or directory of shards)
   mkModelStorePath =
@@ -63,6 +64,17 @@ let
     else
       throw "Unknown source kind: ${source.kind}";
 
+  # Vision projector (mmproj) for multimodal models — fetched as a
+  # standalone file and referenced by absolute path in the model's
+  # preset (`mmproj = <path>`), so the weights directory stays a clean
+  # set of shards the router loads by name.
+  mkMmprojFile =
+    spec:
+    pkgs.fetchurl {
+      url = spec.mmproj.url;
+      sha256 = spec.mmproj.sha256;
+    };
+
   # Build the models-dir: a directory of subdirectories, one per model
   # Router mode uses subdirectory name as model name
   modelsDir = pkgs.runCommand "llm-models-dir" { } (
@@ -92,6 +104,7 @@ let
         "[${spec.modelId}]"
         "ctx-size = ${toString spec.ctxSize}"
       ]
+      ++ lib.optional (spec ? mmproj) "mmproj = ${mkMmprojFile spec}"
       ++ lib.optional (spec.loadOnStartup or false) "load-on-startup = true";
     in
     concatStringsSep "\n" lines + "\n";
@@ -141,9 +154,20 @@ mkIf behavesAs.largeAi {
 
   networking.firewall.allowedTCPPorts = [ serverPort ];
 
+  # API token delivered via sops-nix: minted into gopass, encrypted to
+  # this host's age key in goldragon/secrets, decrypted to /run/secrets
+  # only on activation. The llama runtime user reads it; the start
+  # script passes it via --api-key-file when present.
+  sops.secrets.localLlmApiToken = {
+    format = "binary";
+    sopsFile = inputs.secrets.sopsFiles.localLlmApiToken;
+    owner = runtimeUser;
+    mode = "0400";
+    restartUnits = [ "${serviceName}.service" ];
+  };
+
   systemd.tmpfiles.rules = [
     "d /var/lib/llama 0755 llama llama - -"
-    "f ${apiKeyFile} 0600 llama llama - -"
   ];
 
   systemd.services.${serviceName} = {
