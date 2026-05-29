@@ -59,9 +59,9 @@ The primary LAN bridge accepts USB Ethernet adapters by driver family;
 missing USB devices do not hold boot or network-online, and hotplugged
 USB Ethernet devices join the bridge when they appear. A
 Horizon-declared backup wireless interface runs as an independent
-hostapd service bound to its device unit, so missing USB Wi-Fi leaves the
-primary router online and plugging the adapter in later starts the
-backup AP. Router network services avoid automatic restart-on-switch so
+hostapd service bound to its device unit and triggered by a udev
+`SYSTEMD_WANTS` rule, so missing USB Wi-Fi leaves the primary router
+online and plugging the adapter in later starts the backup AP. Router network services avoid automatic restart-on-switch so
 a new generation does not casually drop the live management path; reboot
 or an explicit operator restart applies changed network policy.
 

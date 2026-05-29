@@ -226,6 +226,11 @@ in
           };
         };
       };
+    }
+    // optionalAttrs hasBackupWireless {
+      udev.extraRules = ''
+        ACTION=="add", SUBSYSTEM=="net", KERNEL=="${backupWireless.interface}", TAG+="systemd", ENV{SYSTEMD_WANTS}+="hostapd-backup-wireless.service"
+      '';
     };
 
     systemd.services = {
