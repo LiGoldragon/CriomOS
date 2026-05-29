@@ -65,6 +65,14 @@ online and plugging the adapter in later starts the backup AP. Router network se
 a new generation does not casually drop the live management path; reboot
 or an explicit operator restart applies changed network policy.
 
+Large-AI provider nodes serve the shared model catalog through
+llama.cpp's router mode. The deployed llama.cpp package is part of the
+model compatibility contract: listing a model in the catalog is not
+enough unless the serving binary can read that model's GGUF architecture
+and chat template. Gemma 4 entries require a llama.cpp generation with
+`gemma4` architecture support, currently carried by the Strix Halo
+package override at b9404 or newer.
+
 ## What this repo does not define
 
 - Sema, signal, or any application-layer record kind.
