@@ -261,7 +261,7 @@ in
           "systemd-networkd.service"
         ];
         bindsTo = [ backupWirelessDeviceUnit ];
-        wantedBy = [ "multi-user.target" ];
+        wantedBy = [ backupWirelessDeviceUnit ];
         path = [
           pkgs.coreutils
           pkgs.hostapd
@@ -359,7 +359,9 @@ in
           linkConfig.RequiredForOnline = "routable";
         };
 
-        # Any USB ethernet dongle auto-bridges to the LAN
+        # USB ethernet dongles are optional hotplug LAN ports: if absent,
+        # boot and router networking continue; if plugged later, networkd
+        # applies this match and joins the dongle to the bridge.
         "30-usb-eth" = {
           matchConfig = {
             Type = "ether";
