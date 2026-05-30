@@ -73,6 +73,16 @@ and chat template. Gemma 4 entries require a llama.cpp generation with
 `gemma4` architecture support, currently carried by the Strix Halo
 package override at b9404 or newer.
 
+Large-AI model identifiers include quantization when multiple variants of
+the same base model are deployed. The shared catalog may keep legacy
+aliases, but new variants use names such as `gemma-4-26b-a4b-bf16`,
+`gemma-4-26b-a4b-ud-q4-k-xl`, and `gemma-4-26b-a4b-ud-q8-k-xl` so
+clients can choose the quality / speed / residency trade-off explicitly.
+Large fixed-output model downloads and hash discovery run on the large-AI
+node itself, preferably as durable systemd work, so wired LAN bandwidth
+and the target Nix store are used instead of the operator workstation's
+Wi-Fi session.
+
 ## What this repo does not define
 
 - Sema, signal, or any application-layer record kind.
