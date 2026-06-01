@@ -58,6 +58,8 @@ let
   receiveDaemonUser = receiveConfiguration.config.users.users."repository-ledger";
   receiveDaemonService = receiveConfiguration.config.systemd.services.repository-ledger;
   receiveDaemonServiceConfig = receiveDaemonService.serviceConfig;
+  daemonConfigurationPath = builtins.elemAt (lib.splitString " " receiveDaemonServiceConfig.ExecStart) 1;
+  daemonConfigurationText = builtins.readFile daemonConfigurationPath;
   receiveSystemPackageNames = lib.concatStringsSep " " (
     map (
       package: package.pname or package.name or "unnamed"
@@ -81,6 +83,9 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'PushObservation'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'CommitObservation'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'FileChange'
+  printf '%s' ${lib.escapeShellArg hookText} | grep -F 'nota_string()'
+  ! printf '%s' ${lib.escapeShellArg hookText} | grep -F '"%s"'
+  ! printf '%s' ${lib.escapeShellArg hookText} | grep -F 'DaemonSocketPresent true'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'rev-list'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F 'diff-tree'
   printf '%s' ${lib.escapeShellArg hookText} | grep -F '/bin/repository-ledger'
@@ -99,6 +104,8 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg (builtins.toJSON receiveDaemonServiceConfig.SupplementaryGroups)} | grep -F repository-ledger-receive
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F '/bin/repository-ledger-daemon'
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F 'repository-ledger-daemon.nota'
+  printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '(DaemonConfiguration ['
+  ! printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '"'
   printf '%s' ${lib.escapeShellArg receiveSystemPackageNames} | grep -F repository-ledger
 
   printf '%s' ${lib.escapeShellArg receiveTmpfiles} | grep -F 'd /var/lib/repository-ledger 2770 repository-ledger repository-ledger-receive -'
