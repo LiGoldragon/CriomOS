@@ -620,11 +620,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1780298558,
-        "narHash": "sha256-ZjNxxaZIYHOzQvRBRHrMFirh0W5vdIIGiyUDFmagXdM=",
+        "lastModified": 1780332108,
+        "narHash": "sha256-TbyqRA+ZYopGDIQcX0jEZt5P/iHLHa0NC79T3ytJIlM=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "b9bef23e823bec738d1c63303ba4d2b8b9183338",
+        "rev": "804547afc43afbfe245e882890e93daef1409949",
         "type": "github"
       },
       "original": {
@@ -1577,11 +1577,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780137420,
-        "narHash": "sha256-ByMRrn647nwlO1+rDug/4zPHFmL/kyJO33O4sNRWOUw=",
+        "lastModified": 1780307548,
+        "narHash": "sha256-D8bG34lXpuNHIYTnmAa6V19Dy8VDm9rgc9u4Ugv+GWY=",
         "owner": "LiGoldragon",
         "repo": "persona-spirit",
-        "rev": "c5a3eb9ba32056e6dc2ed8807d914dc2229f3277",
+        "rev": "df09280a464f8a7be1c20ff433de4bfc4afc7f53",
         "type": "github"
       },
       "original": {
@@ -1677,17 +1677,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1780137420,
-        "narHash": "sha256-ByMRrn647nwlO1+rDug/4zPHFmL/kyJO33O4sNRWOUw=",
+        "lastModified": 1780307548,
+        "narHash": "sha256-D8bG34lXpuNHIYTnmAa6V19Dy8VDm9rgc9u4Ugv+GWY=",
         "owner": "LiGoldragon",
         "repo": "persona-spirit",
-        "rev": "c5a3eb9ba32056e6dc2ed8807d914dc2229f3277",
+        "rev": "df09280a464f8a7be1c20ff433de4bfc4afc7f53",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "v0.3.0.1",
         "repo": "persona-spirit",
+        "rev": "df09280a464f8a7be1c20ff433de4bfc4afc7f53",
         "type": "github"
       }
     },
@@ -1706,16 +1706,16 @@
     "pi-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779912201,
-        "narHash": "sha256-mlnkSmNJbRfDa0DyGvl0hSV1r2aPszW1G6lz5fAqQeY=",
+        "lastModified": 1780098457,
+        "narHash": "sha256-Cw+W5w6yuL+cH+JfgCbEwiyeXloMb7yFd46TXJPZGTg=",
         "owner": "earendil-works",
         "repo": "pi",
-        "rev": "706f8720f8cfe75f562b4e488681486cb70bbe9b",
+        "rev": "0897f175e4d46592c0f59b3a2d399f11b8d078af",
         "type": "github"
       },
       "original": {
         "owner": "earendil-works",
-        "ref": "v0.76.0",
+        "ref": "v0.78.0",
         "repo": "pi",
         "type": "github"
       }
