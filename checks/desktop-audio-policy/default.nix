@@ -35,11 +35,15 @@ let
   loopbackActions = builtins.concatMap (rule: [ (rule.actions.update-props or { }) ]) loopbackRules;
 in
 assert lib.assertMsg (lib.all (role: builtins.elem role bluetoothPolicy."bluez5.roles") [
-  "hsp_hs"
   "hsp_ag"
-  "hfp_hf"
   "hfp_ag"
-]) "desktop Bluetooth policy must register HSP/HFP roles for microphone-only devices";
+]) "desktop Bluetooth policy must register audio-gateway HSP/HFP roles for microphone peripherals";
+assert lib.assertMsg (
+  !(builtins.elem "hsp_hs" bluetoothPolicy."bluez5.roles")
+) "desktop Bluetooth policy must not advertise the host as an HSP headset";
+assert lib.assertMsg (
+  !(builtins.elem "hfp_hf" bluetoothPolicy."bluez5.roles")
+) "desktop Bluetooth policy must not advertise the host as an HFP hands-free device";
 assert lib.assertMsg (
   bluetoothPolicy."bluez5.hfphsp-backend" == "native"
 ) "desktop Bluetooth policy must use PipeWire's native HFP/HSP backend";

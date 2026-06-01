@@ -53,9 +53,10 @@ let
         "a2dp_source"
         "bap_sink"
         "bap_source"
-        "hsp_hs"
+        # CriomOS uses Bluetooth microphones/headsets as peripherals.
+        # The host is the audio gateway; advertising hands-free/headset
+        # roles makes BlueZ probe the wrong direction on some devices.
         "hsp_ag"
-        "hfp_hf"
         "hfp_ag"
       ];
       "bluez5.hfphsp-backend" = "native";
