@@ -32,7 +32,7 @@ let
   repositoryLedgerPackage =
     inputs.repository-ledger.packages.${pkgs.stdenv.hostPlatform.system}.default;
   daemonConfiguration = pkgs.writeText "repository-ledger-daemon.nota" ''
-    (DaemonConfiguration [${daemonSocket}] 432 [${ownerSocket}] 384 [${storePath}] [${spoolDirectory}])
+    ([${daemonSocket}] 432 [${ownerSocket}] 384 [${storePath}] [${spoolDirectory}])
   '';
 
   repositoryLedgerPostReceiveHook = "${pkgs.writeTextDir "post-receive" ''

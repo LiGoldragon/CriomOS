@@ -104,7 +104,7 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg (builtins.toJSON receiveDaemonServiceConfig.SupplementaryGroups)} | grep -F repository-ledger-receive
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F '/bin/repository-ledger-daemon'
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F 'repository-ledger-daemon.nota'
-  printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '(DaemonConfiguration ['
+  printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '([/run/repository-ledger/repository-ledger.sock] 432'
   ! printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '"'
   printf '%s' ${lib.escapeShellArg receiveSystemPackageNames} | grep -F repository-ledger
 
