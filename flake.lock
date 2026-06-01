@@ -2030,18 +2030,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1779202597,
-        "narHash": "sha256-Obc2Wt36Q8iRfkK8VywL0OWP1wi4TlsJ49g07eF6lkU=",
-        "ref": "main",
-        "rev": "2d7aa28cb80ce11bb1d6384a8aea6b17623a7c63",
-        "revCount": 6,
-        "type": "git",
-        "url": "ssh://gitolite@localhost/repository-ledger"
+        "lastModified": 1779633807,
+        "narHash": "sha256-fAz1Fqd0QsZiIwuG08M3aOP2gzsiKFe+C3NeFQN7G2Y=",
+        "owner": "LiGoldragon",
+        "repo": "repository-ledger",
+        "rev": "f8f0e27fae5fb6e29459f673bd34ca028e15e5d9",
+        "type": "github"
       },
       "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "ssh://gitolite@localhost/repository-ledger"
+        "owner": "LiGoldragon",
+        "repo": "repository-ledger",
+        "type": "github"
       }
     },
     "root": {

@@ -33,9 +33,9 @@
     brightness-ctl.url = "github:LiGoldragon/brightness-ctl";
     brightness-ctl.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Local Gitolite repository event ledger. Consumed by
-    # modules/nixos/repository-receive.nix on persona-development hosts.
-    repository-ledger.url = "git+ssh://gitolite@localhost/repository-ledger?ref=main";
+    # Repository event ledger. Consumed by modules/nixos/repository-receive.nix
+    # on persona-development hosts.
+    repository-ledger.url = "github:LiGoldragon/repository-ledger";
     repository-ledger.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
