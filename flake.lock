@@ -2030,11 +2030,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779633807,
-        "narHash": "sha256-fAz1Fqd0QsZiIwuG08M3aOP2gzsiKFe+C3NeFQN7G2Y=",
+        "lastModified": 1780299802,
+        "narHash": "sha256-Ee2to1UoaNqMvAKEd2kRdgw9zrB9kV7lE5zZb2j1bA4=",
         "owner": "LiGoldragon",
         "repo": "repository-ledger",
-        "rev": "f8f0e27fae5fb6e29459f673bd34ca028e15e5d9",
+        "rev": "401f87639dabaf430eb3db537ff041bf877cf8b7",
         "type": "github"
       },
       "original": {
