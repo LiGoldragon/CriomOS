@@ -647,6 +647,7 @@
         "persona-spirit-v0-4-1": "persona-spirit-v0-4-1",
         "persona-spirit-v0-4-2": "persona-spirit-v0-4-2",
         "persona-spirit-v0-5-0": "persona-spirit-v0-5-0",
+        "pi-continue-src": "pi-continue-src",
         "pi-linkup-src": "pi-linkup-src",
         "pi-src": "pi-src",
         "pi-subagents-src": "pi-subagents-src",
@@ -685,11 +686,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1780580650,
-        "narHash": "sha256-q7Hgj37qeP0KP0H3zB2pkLZ7JJVnDHk4LvWyGBXkJ7g=",
+        "lastModified": 1780585645,
+        "narHash": "sha256-F78dggRmME7sGHaYRh1ZzAkr2B0ply56GObbQwKnrws=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "902eded57c62f971c9d2e2d2f4b49ea098d99e9b",
+        "rev": "a2ac795f0e21ffae226e1ee0f99c0807f0f19898",
         "type": "github"
       },
       "original": {
@@ -2071,6 +2072,18 @@
         "repo": "persona-spirit",
         "rev": "c9762df9455392badda3e7298392ef376cb61be4",
         "type": "github"
+      }
+    },
+    "pi-continue-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-6AZRtkFikDnHZ7vnGz1ZYxl7p3X4DFoX6UWAdmp5qk8=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/pi-continue/-/pi-continue-0.8.2.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/pi-continue/-/pi-continue-0.8.2.tgz"
       }
     },
     "pi-linkup-src": {
