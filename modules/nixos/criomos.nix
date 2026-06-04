@@ -35,6 +35,15 @@ in
   ++ [
     ./metal/default.nix
     ./router/default.nix
+    ./vm-testing/default.nix
+  ]
+  # microvm.nix host module — provides the `microvm.vms.*` options the
+  # VM-testing feature's persistent routed test VM is declared with. Inert
+  # unless a `microvm.vms` is defined (only the VmTesting node-service does
+  # so). Imported only when the input is present so downstream consumers that
+  # drop it still evaluate.
+  ++ lib.optionals (inputs ? microvm) [
+    inputs.microvm.nixosModules.host
   ];
 
   # dconf-service is enabled cluster-wide so the system D-Bus always

@@ -1620,6 +1620,27 @@
         "type": "github"
       }
     },
+    "microvm": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "spectrum": "spectrum"
+      },
+      "locked": {
+        "lastModified": 1780522662,
+        "narHash": "sha256-fsiLQSfMmWSUB5KQeKIvaXJv4Dzf24MSl1uB3t4O7eA=",
+        "owner": "astro",
+        "repo": "microvm.nix",
+        "rev": "84b2dedfd03da111a001182ac8c962f1a79007fb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astro",
+        "repo": "microvm.nix",
+        "type": "github"
+      }
+    },
     "niri-flake": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -2435,6 +2456,7 @@
         "deployment": "deployment",
         "home-manager": "home-manager",
         "horizon": "horizon",
+        "microvm": "microvm",
         "nixpkgs": "nixpkgs_2",
         "pkgs": "pkgs",
         "repository-ledger": "repository-ledger",
@@ -2803,6 +2825,22 @@
         "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
+      }
+    },
+    "spectrum": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778940603,
+        "narHash": "sha256-voSM8dZNlaOWN3kbYFky+FNY6fFQOEw0xF+ZMpZKkCQ=",
+        "ref": "refs/heads/main",
+        "rev": "367dd227f539267eae2b62770b4c17b88ac8c1f1",
+        "revCount": 1265,
+        "type": "git",
+        "url": "https://spectrum-os.org/git/spectrum"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://spectrum-os.org/git/spectrum"
       }
     },
     "stylix": {

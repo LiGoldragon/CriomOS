@@ -33,6 +33,14 @@
     brightness-ctl.url = "github:LiGoldragon/brightness-ctl";
     brightness-ctl.inputs.nixpkgs.follows = "nixpkgs";
 
+    # microvm.nix — declarative persistent lightweight guests. Substrate for
+    # the VM-testing node feature's always-on routed test VM (the
+    # vm-testing.<cluster>.criome endpoint). Consumed in
+    # modules/nixos/vm-testing/. Per design report 67 §"Persistent VM
+    # substrate" (chosen default: input = yes).
+    microvm.url = "github:astro/microvm.nix";
+    microvm.inputs.nixpkgs.follows = "nixpkgs";
+
     # Repository event ledger. Consumed by modules/nixos/repository-receive.nix
     # on persona-development hosts.
     repository-ledger.url = "github:LiGoldragon/repository-ledger";
@@ -101,6 +109,9 @@
             inherit inputs;
           };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
+          vm-testing-prometheus-policy = pkgs.callPackage ./checks/vm-testing-prometheus-policy {
+            inherit inputs;
+          };
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
