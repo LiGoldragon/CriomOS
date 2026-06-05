@@ -718,11 +718,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1780671490,
-        "narHash": "sha256-3Fdf0Hfq1XG3bTfB0YkO5hKPNjEmcDRzM8AtOYAe5T4=",
+        "lastModified": 1780671870,
+        "narHash": "sha256-s4BUB7LCDIVS4YsEC1Ny8f6hWq/HP62A1lcT55w45aY=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "bfc473e76603da919dfa70d4d9c6f2a19a390216",
+        "rev": "213c7a3c60d7fe34e5bc06c87ce0a49158efe3e4",
         "type": "github"
       },
       "original": {
