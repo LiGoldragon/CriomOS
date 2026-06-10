@@ -541,11 +541,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1781084234,
-        "narHash": "sha256-5vVIwyPsNI/irO0HS2qeHvXHlexF0Cl5se5k7KMO52g=",
+        "lastModified": 1781113894,
+        "narHash": "sha256-eO2Kp6uhrviuTwvm/ROdgn4HetY9qNfaXiJO8BBBBFU=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "353b9a8f0fde978a69d7268c1bd22efe4d450848",
+        "rev": "85837827c950fcc30aa6e706b76d6c0464a16c71",
         "type": "github"
       },
       "original": {
@@ -1262,11 +1262,11 @@
     "nota-next-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781005074,
-        "narHash": "sha256-FvregqE0LmrSTfW2RXuLwXD5YAd4cBkYSHRMRswhjAY=",
+        "lastModified": 1781101471,
+        "narHash": "sha256-2lxl0B/AzoNuljG3Ak03qaqXAy0v5W/53Hbzf3w7RJ4=",
         "owner": "LiGoldragon",
         "repo": "nota-next",
-        "rev": "d8862b6145445d20caeb973de4851f318cf43591",
+        "rev": "af6a2080d52b88ef5c6c89755ecfd3e818ffdea4",
         "type": "github"
       },
       "original": {
@@ -1865,11 +1865,11 @@
     "schema-next-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781032252,
-        "narHash": "sha256-UW3/uwag+Mqfymt9ov5NAdV+5+KTLn2GJRs5d6en41I=",
+        "lastModified": 1781102140,
+        "narHash": "sha256-sps6oBTB2eL87OhxkqXebCllx+DAdOJ47ZZ4BZXUKxw=",
         "owner": "LiGoldragon",
         "repo": "schema-next",
-        "rev": "cf4cfb9f66b9982aa50bf93998664deb384197c2",
+        "rev": "9a9b769bacd6f24517dce98d341ee63cbb332cf0",
         "type": "github"
       },
       "original": {
@@ -1881,11 +1881,11 @@
     "schema-rust-next-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781041511,
-        "narHash": "sha256-f9kNEcZGS06JdrH8SyAyCsB2sWwoA0TpHeq+R7OBUc8=",
+        "lastModified": 1781102235,
+        "narHash": "sha256-Xnei6RF9mPQ9rXGrVEZSsMKbPeUbclgc0kO2lOeOsNg=",
         "owner": "LiGoldragon",
         "repo": "schema-rust-next",
-        "rev": "9f509205a5198ef161a3b0e23602fbe916094dff",
+        "rev": "b1c36e1ab61756d4f6afc9fafe7b9c9a3ab68611",
         "type": "github"
       },
       "original": {
@@ -2026,11 +2026,11 @@
         "version-projection-source": "version-projection-source"
       },
       "locked": {
-        "lastModified": 1781081221,
-        "narHash": "sha256-Axg2r08PS3l1fL1fJe58IlxguejSwbLhAljRfP/Ah+I=",
+        "lastModified": 1781112638,
+        "narHash": "sha256-mN3UipgYr9hg9omBIsc3lcuVMrxFH7MICYE8R136z0Y=",
         "owner": "LiGoldragon",
         "repo": "spirit",
-        "rev": "8054d30cf3ec56877e3df1f31136356cec1550d7",
+        "rev": "6227215bc4c1a33bb8a021952a7145e5a844d832",
         "type": "github"
       },
       "original": {
