@@ -18,6 +18,7 @@ in
     ./normalize.nix
     ./secrets.nix
     ./repository-receive.nix
+    ./mirror.nix
     ./nix
     ./complex.nix
     ./nspawn.nix

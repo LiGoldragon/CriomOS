@@ -38,6 +38,11 @@
     repository-ledger.url = "github:LiGoldragon/repository-ledger";
     repository-ledger.inputs.nixpkgs.follows = "nixpkgs";
 
+    # SEMA version-control mirror daemon. Consumed by modules/nixos/mirror.nix
+    # on persona-development hosts that join the cluster tailnet.
+    mirror.url = "github:LiGoldragon/mirror";
+    mirror.inputs.nixpkgs.follows = "nixpkgs";
+
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
     # Consumed in modules/nixos/complex.nix.
     clavifaber.url = "github:LiGoldragon/clavifaber";
@@ -100,6 +105,7 @@
           repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
             inherit inputs;
           };
+          mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
