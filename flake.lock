@@ -30,11 +30,11 @@
     "agent-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781270789,
-        "narHash": "sha256-XFB0T9M5iU0o6qEGYb/7gMQ8RXl28U7AoCz2INu7tUg=",
+        "lastModified": 1781333143,
+        "narHash": "sha256-PRQMNPfRFCOSaPU9h1BbF4VusGU703n+zb0z7SjrXlk=",
         "owner": "LiGoldragon",
         "repo": "agent",
-        "rev": "5a2cd5ab9bd9031c979c1c2932bd4e7b8b12b37b",
+        "rev": "dc5cf888344b3c448090dec08a70ed9337cf62e2",
         "type": "github"
       },
       "original": {
@@ -600,11 +600,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1781340345,
-        "narHash": "sha256-OhLziVr84dnToAUGM/aWCfS2GQOJtD3RRBiwz8lHrtY=",
+        "lastModified": 1781362585,
+        "narHash": "sha256-hpj9b02WwBxhipm2rkRjfQc+ev3sp0iDECgTyG01j8s=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "852ad9392483e60351a2c6b8e16fa69fe03d6a00",
+        "rev": "6ac4b7c3cc6f24afdeb72ad9d5e7d0343f17ae22",
         "type": "github"
       },
       "original": {
@@ -1210,11 +1210,11 @@
     "meta-signal-agent-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781207374,
-        "narHash": "sha256-gL+NBzZxkdeFxhgsjhpwEJ92So8ydRG1BaU/WBXc7IE=",
+        "lastModified": 1781333033,
+        "narHash": "sha256-NG6XfID51x1447w2CzgBTaptnk6S6GsnArJIRA02E4Y=",
         "owner": "LiGoldragon",
         "repo": "meta-signal-agent",
-        "rev": "50eb30c7dacf245cba0384ee7afabd9a07af25cb",
+        "rev": "0afa9857642040b821dd02235cc91c825400f498",
         "type": "github"
       },
       "original": {
@@ -2076,11 +2076,11 @@
     "schema-rust-next-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781306986,
-        "narHash": "sha256-H7yyHl1RZ51dtoIDsAdfTo9RQ/S/Db3ZZ34FYkw/zvs=",
+        "lastModified": 1781327325,
+        "narHash": "sha256-rwd2cwsPe6h4PW04R1yTqFuNF0g2mnhfajBhT6mEQ3c=",
         "owner": "LiGoldragon",
         "repo": "schema-rust-next",
-        "rev": "7c15bc3fa3d07f4710acca16f14eef1aa68b02dd",
+        "rev": "00763d676d63395d45b5f8a81dbf9a2287574ca9",
         "type": "github"
       },
       "original": {
@@ -2152,11 +2152,11 @@
     "signal-agent-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781270684,
-        "narHash": "sha256-bMcJONZexaqgZGrpEp5hfk9bIRK0LZOdGS57d4xPH3U=",
+        "lastModified": 1781332787,
+        "narHash": "sha256-AIeBR+DmjkZTW/gmAz6TH9TN3a6TNIIuzRPynRUIed0=",
         "owner": "LiGoldragon",
         "repo": "signal-agent",
-        "rev": "33c2ecacd4c02c3f834d576607d27fcd4ac6b788",
+        "rev": "3c88f388047645b7eb3a1f9cb778ae7eebb1a251",
         "type": "github"
       },
       "original": {
@@ -2200,11 +2200,11 @@
     "signal-spirit-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781182978,
-        "narHash": "sha256-7fSSSuUK3ZXl7lmSqg9Fux705dAcfMzLpZgRRHtUgYw=",
+        "lastModified": 1781358114,
+        "narHash": "sha256-245JTSum9puhZqj/9OjA9/vUW4cXS5DlwcrrmAcjxPg=",
         "owner": "LiGoldragon",
         "repo": "signal-spirit",
-        "rev": "c2bfeb57c0c68febf1870a69702201b4e9077339",
+        "rev": "87cf9bf5158ad3e0c220c68640c5c5b86574850e",
         "type": "github"
       },
       "original": {
@@ -2258,11 +2258,11 @@
         "version-projection-source": "version-projection-source"
       },
       "locked": {
-        "lastModified": 1781308523,
-        "narHash": "sha256-7F2qcETQ0/ZdXhd3ruxu3Ku9GvJMzeeisBMlVo7hnBM=",
+        "lastModified": 1781361302,
+        "narHash": "sha256-eHBtBJNP/ss6y8U5RwvdfeWR7HY89dKCoT7QrINl7Mk=",
         "owner": "LiGoldragon",
         "repo": "spirit",
-        "rev": "a4cc858454864693212580e91e2e021e9378e968",
+        "rev": "f4635c3c2a135e097885eeb4c80a9fe840c58b47",
         "type": "github"
       },
       "original": {
