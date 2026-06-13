@@ -36,6 +36,14 @@ in
     ./metal/default.nix
     ./router/default.nix
     ./vm-testing/default.nix
+    # Lean-guest gate for a TestVm-species node — suppresses the home/doc
+    # weight a test guest never wants while leaving it a real deploy target
+    # (design report 47, surface 4).
+    ./test-vm-guest.nix
+    # TestVm host emission — per projected ex_node hosted here with
+    # behavesAs.testVm, emit a real KVM microVM + additive tap + guest-IP
+    # hosts entry + non-autostart unit (design report 47, surface 5).
+    ./test-vm-host.nix
   ]
   # microvm.nix host module — provides the `microvm.vms.*` options the
   # VM-testing feature's persistent routed test VM is declared with. Inert
