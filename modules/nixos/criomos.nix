@@ -19,6 +19,7 @@ in
     ./secrets.nix
     ./repository-receive.nix
     ./mirror.nix
+    ./lojix.nix
     ./nix
     ./complex.nix
     ./nspawn.nix

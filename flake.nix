@@ -43,6 +43,11 @@
     mirror.url = "github:LiGoldragon/mirror";
     mirror.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Daemon-based deploy orchestrator. Installed on operator/development hosts
+    # so parity checks use the same installed service/socket path as production.
+    lojix.url = "github:LiGoldragon/lojix";
+    lojix.inputs.nixpkgs.follows = "nixpkgs";
+
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
     # Consumed in modules/nixos/complex.nix.
     clavifaber.url = "github:LiGoldragon/clavifaber";
