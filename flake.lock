@@ -1251,11 +1251,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781510817,
-        "narHash": "sha256-fpTfBx+8x8z3aaP7GaHDEYQI7bd+HB09pGlwT/0Lbbs=",
+        "lastModified": 1781511361,
+        "narHash": "sha256-8njW6UhoikD0ESOVP/wat5dWWGes5qIMEgkLlTlDx1E=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "dcdd1397ccb56e0ac82cd77b15f945382fdd3a0c",
+        "rev": "aefc32d238022ac38fc1b03e85233df2cb271224",
         "type": "github"
       },
       "original": {
