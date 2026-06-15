@@ -7,7 +7,7 @@
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkDefault mkIf;
 
   nodeServices = import ./node-services.nix { inherit lib; };
   services = horizon.node.services or [ ];
@@ -15,6 +15,7 @@ let
 
   operatorUser = "li";
   operatorGroup = "users";
+  operatorUid = config.users.users.${operatorUser}.uid;
   lojixPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   runtimeDirectory = "/run/lojix";
@@ -35,6 +36,8 @@ in
       }
     ];
 
+    users.users.${operatorUser}.uid = mkDefault 1001;
+
     environment.systemPackages = [ lojixPackage ];
 
     systemd.services.lojix-daemon = {
@@ -49,7 +52,7 @@ in
         pkgs.openssh
       ];
       environment = {
-        SSH_AUTH_SOCK = "/run/user/%U/gnupg/S.gpg-agent.ssh";
+        SSH_AUTH_SOCK = "/run/user/${toString operatorUid}/gnupg/S.gpg-agent.ssh";
       };
       serviceConfig = {
         Type = "simple";
