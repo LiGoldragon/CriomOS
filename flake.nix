@@ -25,6 +25,7 @@
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
+    criomos-home.inputs.rust-overlay.follows = "rust-overlay";
     criomos-home.inputs.horizon.follows = "horizon";
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";

@@ -604,7 +604,9 @@
         "pkgs": [
           "pkgs"
         ],
-        "rust-overlay": "rust-overlay",
+        "rust-overlay": [
+          "rust-overlay"
+        ],
         "spirit": "spirit",
         "stylix": "stylix",
         "substack-cli": "substack-cli",
@@ -1919,7 +1921,7 @@
         "nixpkgs": "nixpkgs_2",
         "pkgs": "pkgs",
         "repository-ledger": "repository-ledger",
-        "rust-overlay": "rust-overlay_2",
+        "rust-overlay": "rust-overlay",
         "secrets": "secrets",
         "sops-nix": "sops-nix",
         "system": "system"
@@ -2113,27 +2115,6 @@
       }
     },
     "rust-overlay": {
-      "inputs": {
-        "nixpkgs": [
-          "criomos-home",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1781407245,
-        "narHash": "sha256-VzJq4MmD0uyNDAceudSe1hHqcQMe9Tau0U4S+5iRGh0=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "d5f483210eb016d66102eef22baa128b3b3233fc",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
