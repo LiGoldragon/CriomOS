@@ -617,11 +617,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1781502113,
-        "narHash": "sha256-VwIv2zq0SjnbzkrGvUyxZKrpc6NYAQS9d6h4fgMIE2s=",
+        "lastModified": 1781529551,
+        "narHash": "sha256-trv/GS2zZjKKcG3q7JdrQl1BV4Qf6EgsQgCnSXadUkw=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "ce31cc21bfa54646e34504e27d818f6d59fc3de9",
+        "rev": "258d1ac7ca56646d6afc55c269b689df7f29b50e",
         "type": "github"
       },
       "original": {
@@ -1306,16 +1306,15 @@
     "meta-signal-spirit-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781454497,
-        "narHash": "sha256-M81NQpynI1eleesk2FWsiqiTcZ/m3L9gnhtx7wsZwCU=",
+        "lastModified": 1781529253,
+        "narHash": "sha256-fp7AoEbiCEmST9sgkQuosBTF5p8UyXysT6vfmwKNblw=",
         "owner": "LiGoldragon",
         "repo": "meta-signal-spirit",
-        "rev": "cc576705efc7298ca45e0410de546b8612278941",
+        "rev": "7c575825e4bddfe10b6116450b1398cb9a12cf02",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "meta-signal-spirit",
         "type": "github"
       }
@@ -1528,7 +1527,6 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "nota-next",
         "type": "github"
       }
@@ -2155,16 +2153,15 @@
     "schema-next-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781460475,
-        "narHash": "sha256-3E2inZWDW/CMzuN1MEBfdxTQbXdr5fwlhHgt1r1YRX4=",
+        "lastModified": 1781529235,
+        "narHash": "sha256-B82TibBAS7ESWLmyFrrEUculn4x2OLd7DC2WIMEXPhE=",
         "owner": "LiGoldragon",
         "repo": "schema-next",
-        "rev": "a41162aaa7d377b335b36978604c2b9c83cf0474",
+        "rev": "f00a467a9aee9d50980089d07b21b4180073de12",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "schema-next",
         "type": "github"
       }
@@ -2172,16 +2169,15 @@
     "schema-rust-next-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781460292,
-        "narHash": "sha256-vPnVPUBPYlcRI7x1Bf2BtGvisqcWUQwahvAPnoKNY9k=",
+        "lastModified": 1781529243,
+        "narHash": "sha256-kbkVKSHwt/hKqfWrxORSyLzDY/YU6ZtM+uyMvU/JScE=",
         "owner": "LiGoldragon",
         "repo": "schema-rust-next",
-        "rev": "9e57a4cb12b8db2949b0129092878945a0481b6c",
+        "rev": "bb378931c95dcfa7ccb2dfc81bcacfb9c7d1161e",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "schema-rust-next",
         "type": "github"
       }
@@ -2243,7 +2239,6 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "sema-engine",
         "type": "github"
       }
@@ -2315,16 +2310,15 @@
     "signal-spirit-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781460475,
-        "narHash": "sha256-UXyfyPKjYbL5zncc346CMDwPFx5/ZyqEVpln4htfB/c=",
+        "lastModified": 1781529249,
+        "narHash": "sha256-hOYLhOmWZ3BioE5lQwC2pp5NmqDBUJvbOobTBI+3ALo=",
         "owner": "LiGoldragon",
         "repo": "signal-spirit",
-        "rev": "88da88de2e854d918b211e95d0d86914f1e52b9f",
+        "rev": "f81afd2d7fedc00dc5d24871ddc1715c6955a016",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "signal-spirit",
         "type": "github"
       }
@@ -2376,16 +2370,15 @@
         "version-projection-source": "version-projection-source"
       },
       "locked": {
-        "lastModified": 1781470953,
-        "narHash": "sha256-RYX3eSs/3nndnBtxYHoFJW9hPqkhaiRexj72rxFbx3s=",
+        "lastModified": 1781529479,
+        "narHash": "sha256-KlHHIczf4ocYGSI/qIKVvXYeNCUrTgy0DPMi5LYGJOY=",
         "owner": "LiGoldragon",
         "repo": "spirit",
-        "rev": "dcc3a80b53a22835fdf88a492f8d31d1d4e5623d",
+        "rev": "c752e89f48f6dfb5bf1aaa03d6a82682ab070244",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "spirit",
         "type": "github"
       }
@@ -2805,7 +2798,6 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "structural-forms-integration",
         "repo": "triad-runtime",
         "type": "github"
       }
