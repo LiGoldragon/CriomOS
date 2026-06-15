@@ -12,14 +12,31 @@
 #
 #   { guestModule  = <every OS-level prebake — composes onto the guest's own
 #                     CriomOS nixosSystem>;
-#     vmTypeModule = <the qemu machine-type override — composes onto the
-#                     runNixOSTest driver node, where `virtualisation.qemu`
-#                     exists>; }
+#     vmTypeModule = <the qemu machine-type override — for the LIVE / standalone
+#                     microvm.nix-VM path, where the guest boots as a real
+#                     `-M microvm` machine and `virtualisation.qemu` is its own>; }
 #
-# The split exists because the machine type lives on the qemu-vm test node
-# (which declares `virtualisation.qemu`), while every other constraint is an
-# ordinary CriomOS option valid on any guest. The generator composes BOTH onto
-# the test node, so from the author's view it is one substrate.
+# The split exists because the machine type belongs only to a STANDALONE qemu/
+# microvm.nix VM, while every other constraint is an ordinary CriomOS option
+# valid on any guest. Which paths apply which module is the C4 finding:
+#
+#   - The HERMETIC runNixOSTest path (mkVmTest, C4) applies ONLY guestModule.
+#     A bare `-M microvm` machine type CANNOT compose with runNixOSTest: the
+#     python driver hard-codes its control plane on the QEMU PCI bus
+#     (virtio-serial / virtconsole `/dev/hvc0` backdoor, virtio-rng-pci, the 9p
+#     `-virtfs` store/xchg shares, the virtio-blk-pci root), and the `microvm`
+#     machine type has no PCI bus by default, so QEMU rejects the driver's own
+#     backdoor and the VM never connects. The hermetic guest is a qemu-vm.nix
+#     node with DIRECT KERNEL BOOT — already the property `-M microvm` was
+#     wanted for — so it keeps the driver's own (q35) runner machine type and
+#     applies only the OS prebakes. `substrate` there selects the guestModule
+#     prebake SET (microvm vs uefi labels), NOT the runner machine type.
+#   - The LIVE / standalone / future-UEFI paths (a real microvm.nix VM, an OVMF
+#     bootloader deploy) are where vmTypeModule's machine-type override belongs:
+#     there the guest boots as an actual `-M microvm` machine with its own qemu,
+#     so the report-48/49 "userspace only comes up on `-M microvm`, q35 hangs"
+#     finding applies. mkVmTest does NOT reintroduce this override on the
+#     runNixOSTest node — doing so rebreaks the driver backdoor.
 #
 # The difference between "a lean CriomOS guest" and "a lean CriomOS guest that
 # boots and accepts a deploy" IS this profile.
@@ -46,15 +63,24 @@
 #   - (uefi only) ESP/root label alignment (root ext4 `nixos`, ESP vfat `ESP`)
 #     so switch-to-configuration / systemd-boot find what they expect (report 49).
 #
-# vmTypeModule bakes:
+# vmTypeModule bakes (the STANDALONE/live machine-type override — NOT applied on
+# the hermetic runNixOSTest path; see the C4 finding above):
 #   - (microvm) the `-M microvm` machine type (qemu direct kernel boot) — the
-#     lean userspace comes up here; stock q35 hangs it (report 49);
-#   - (uefi) OVMF/UEFI on q35 with a real ESP so BootOnce is possible.
+#     lean userspace comes up here on a STANDALONE microvm.nix VM; stock q35
+#     hangs it there (report 49). On runNixOSTest the runner's own machine type
+#     boots, so the generator never composes this module;
+#   - (uefi) OVMF/UEFI on q35 with a real ESP so BootOnce is possible (the
+#     future full-fidelity standalone path).
 #
-# Usage (from the generator):
+# Usage:
 #
+#   # hermetic runNixOSTest (mkVmTest, C4) — guestModule ONLY:
 #   let sub = import ./test-substrate.nix { substrate = "microvm"; deployKey = k; };
-#   in runNixOSTest { nodes.guest = { imports = [ criomos sub.guestModule sub.vmTypeModule ]; }; ... }
+#   in runNixOSTest { nodes.guest = { imports = [ criomos sub.guestModule ]; }; ... }
+#
+#   # live / standalone microvm.nix VM — both modules (vmTypeModule sets the
+#   # real `-M microvm` machine type there):
+#   in { imports = [ criomos sub.guestModule sub.vmTypeModule ]; }
 
 {
   substrate ? "microvm",
@@ -170,10 +196,14 @@ let
       };
     };
 
-  # ---- vmTypeModule: the qemu machine type, composed onto the test node ---
-  # Lives where `virtualisation.qemu` is declared (the qemu-vm / runNixOSTest
-  # node). runNixOSTest defaults to q35, which hangs the lean userspace
-  # (report 49); force the microvm machine type with direct kernel boot.
+  # ---- vmTypeModule: the qemu machine type, for the STANDALONE / live path ---
+  # Composed ONLY by the live / standalone microvm.nix-VM path, where the guest
+  # boots as a real `-M microvm` machine with its own qemu and direct kernel
+  # boot (the lean userspace comes up there; standalone q35 hangs it, report 49).
+  # The hermetic runNixOSTest generator (mkVmTest, C4) does NOT compose this:
+  # the driver's PCI-bus backdoor cannot coexist with `-M microvm`, and the
+  # runner already direct-boots, so it keeps the runner's own machine type.
+  # Reintroducing this override on a runNixOSTest node rebreaks the backdoor.
   vmTypeModule =
     { lib, ... }:
     {
