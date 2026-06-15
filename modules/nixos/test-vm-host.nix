@@ -224,9 +224,20 @@ let
   # matching ONLY that tap device by name. Gives the host a /32 endpoint
   # SLICED from the declared guest_subnet and a /32 route to the guest's IP.
   # No existing interface, default route, or firewall rule is touched.
+  #
+  # The 05- filename prefix is load-bearing: systemd-networkd binds each link
+  # to the FIRST-sorting matching .network. network/networkd.nix gives a plain
+  # center (center && !router) a broad `10-main-eth` (matchConfig.Type =
+  # "ether", DHCP = yes). A higher-numbered tap network (the original 70-)
+  # sorted AFTER it, so on a plain-center VM host the broad ether DHCP client
+  # claimed the guest tap by type before this by-name network applied — the
+  # latent plain-center DHCP-claim bug (same issue flagged in Unit B). 05-
+  # sorts BEFORE 10-main-eth, so the by-name tap network claims the tap first
+  # on ANY host (plain center or router); a router host has no 10-main-eth, so
+  # the prefix is simply inert there.
   tapNetworks = listToAttrs (
     map (entry: {
-      name = "70-test-vm-${tapId entry.index}";
+      name = "05-test-vm-${tapId entry.index}";
       value = {
         matchConfig.Name = tapId entry.index;
         address = [ "${hostTapAddress entry.index}/32" ];
