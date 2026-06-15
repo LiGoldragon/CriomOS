@@ -48,6 +48,9 @@ in
         pkgs.nix
         pkgs.openssh
       ];
+      environment = {
+        SSH_AUTH_SOCK = "/run/user/%U/gnupg/S.gpg-agent.ssh";
+      };
       serviceConfig = {
         Type = "simple";
         User = operatorUser;
