@@ -26,27 +26,28 @@
 # adminSshPubKeys (users.nix), its own networking.hosts / ssh_known_hosts, and
 # a real root disk (disks/preinstalled.nix from its projected io). None of that
 # is touched here, so lojix deploys into it exactly like any node.
+#
+# HOME: `deployment.includeHome` ALONE decides the home profile (proposal
+# decision 4 — the single cluster-decided home flag). When it is false (the lean
+# TestVm default the VM-test generator derives), criomos.nix never imports
+# userHomes.nix, so home-manager.users is empty and the option set is absent —
+# nothing to suppress. When it is EXPLICITLY true, the operator wants the home
+# profile (the base-home test isolates exactly this: a lean TestVm that keeps
+# the home-manager base profile). So this module does NOT force home-manager.
+# users back to {} — doing so would defeat the very flag that requested home and
+# make a base-home test impossible. Leanness comes from includeHome=false, not
+# from re-wiping an explicitly-requested home.
 
 let
-  inherit (lib) mkIf mkForce optionalAttrs;
+  inherit (lib) mkIf mkForce;
   inherit (horizon.node) behavesAs;
-  includeHome = deployment.includeHome or true;
 in
-mkIf behavesAs.testVm (
-  {
-    # Drop man/nixos doc generation — pointless weight on an on-demand test VM.
-    documentation = {
-      enable = mkForce false;
-      nixos.enable = mkForce false;
-      man.enable = mkForce false;
-    };
-  }
-  # No graphical home profile on a test guest. The home-manager option set
-  # only exists when deployment.includeHome imported it (criomos.nix), so the
-  # suppression is itself gated on includeHome — referencing home-manager.users
-  # when the module is absent would be an unknown-option error. mkForce so it
-  # wins over the includeHome import.
-  // optionalAttrs includeHome {
-    home-manager.users = mkForce { };
-  }
-)
+mkIf behavesAs.testVm {
+  # Drop man/nixos doc generation — pointless weight on an on-demand test VM.
+  # This is the genuine lean win, independent of the home toggle.
+  documentation = {
+    enable = mkForce false;
+    nixos.enable = mkForce false;
+    man.enable = mkForce false;
+  };
+}

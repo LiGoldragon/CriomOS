@@ -137,6 +137,23 @@ let
       # serial console (observability of the boot).
       boot.kernelParams = mkAfter [ "console=ttyS0" ];
 
+      # man/nixos documentation forced OFF — a substrate concern for the
+      # hermetic runNixOSTest path. The test framework's base profile
+      # (nixos-test-base.nix) sets documentation.{enable,nixos.enable} = false;
+      # CriomOS normalize.nix sets them = true at the default priority for any
+      # non-container, non-iso node. A LEAN TestVm guest dodges the clash because
+      # test-vm-guest.nix force-disables docs, but a COMPLEX-OS guest (an Edge
+      # desktop, a Router) is not a TestVm and would hit a conflicting-definition
+      # eval error. Forcing docs off here (where every substrate prebake lives)
+      # unblocks complex profiles under runNixOSTest without touching the
+      # production module or the test author (Spirit [dqg3]). Docs are pure
+      # weight on a throwaway test VM regardless of role.
+      documentation = {
+        enable = mkForce false;
+        nixos.enable = mkForce false;
+        man.enable = mkForce false;
+      };
+
       # uefi-only: ESP/root label alignment so switch-to-configuration /
       # systemd-boot find what they expect (report 49).
       fileSystems = lib.optionalAttrs isUefi {
