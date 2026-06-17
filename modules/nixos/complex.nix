@@ -1,12 +1,17 @@
 {
+  lib,
   pkgs,
   inputs,
   config,
   constants,
+  deployment ? {
+    includeComplex = true;
+  },
   ...
 }:
 let
   inherit (constants.fileSystem.complex) dir;
+  includeComplex = deployment.includeComplex or true;
 
   clavifaber = inputs.clavifaber.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
@@ -30,7 +35,7 @@ let
     (PublicKeyPublicationWriting ${config.networking.hostName} (OpenSshPublicKeyLocation "${sshdHostPublicKey}") None None "${publicationFile}")
   '';
 in
-{
+lib.mkIf includeComplex {
   environment.systemPackages = [ clavifaber ];
 
   # publication.nota lives in the complex directory; restrict it to
