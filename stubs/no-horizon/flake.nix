@@ -1,5 +1,5 @@
 {
-  description = "Default placeholder horizon input. Override with `--override-input horizon path:<lojix-generated-dir>` (or via the wrapper flake lojix prepares) to provide a real projected horizon.";
+  description = "Default placeholder horizon input. Provide a real projected horizon through the deploy materialization tool.";
 
   outputs = _: {
     horizon = throw ''
@@ -9,16 +9,10 @@
       one by overriding the input — typically via the `lojix`
       orchestrator tool, which projects a cluster proposal (in-process
       via horizon-lib, not as a CriomOS dependency) and writes a
-      content-addressed horizon flake whose path it passes as
-      `--override-input horizon path:...`.
+      content-addressed horizon flake for the deploy evaluation.
 
-      For ad-hoc testing:
-        horizon-cli --cluster X --node Y < datom.nota > /tmp/h/horizon.json
-        cat > /tmp/h/flake.nix <<EOF
-          { outputs = _: { horizon = builtins.fromJSON (builtins.readFile ./horizon.json); }; }
-        EOF
-        nix build .#nixosConfigurations.target.config.system.build.toplevel \
-          --override-input horizon path:/tmp/h
+      Use the deploy materialization tool rather than hand-writing
+      local path override commands.
     '';
   };
 }

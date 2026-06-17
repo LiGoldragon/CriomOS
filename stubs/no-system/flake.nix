@@ -1,5 +1,5 @@
 {
-  description = "Default placeholder system input. Override with `--override-input system path:<lojix-generated-system-dir>` to provide the actual target system tuple.";
+  description = "Default placeholder system input. Provide the actual target system tuple through the deploy materialization tool.";
 
   outputs = _: {
     system = throw ''
@@ -14,13 +14,8 @@
       the pkgs-flake's evaluation cache stay warm across deploys
       that target the same system.
 
-      Ad-hoc form:
-        mkdir /tmp/sys && cat > /tmp/sys/flake.nix <<EOF
-          { outputs = _: { system = "x86_64-linux"; }; }
-        EOF
-        nix build .#nixosConfigurations.target.config.system.build.toplevel \
-          --override-input system path:/tmp/sys \
-          --override-input horizon path:<horizon-dir>
+      Use the deploy materialization tool rather than hand-writing
+      local path override commands.
     '';
   };
 }

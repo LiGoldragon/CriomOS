@@ -1,5 +1,5 @@
 {
-  description = "Default deployment-shape input. Override with `--override-input deployment path:<lojix-generated-deployment-dir>` to request variants such as home-off system evaluation.";
+  description = "Default deployment-shape input. Provide deployment variants such as home-off system evaluation through the deploy materialization tool.";
 
   outputs = _: {
     deployment = {
