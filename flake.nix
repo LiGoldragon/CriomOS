@@ -110,6 +110,11 @@
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };
+          image-exchange-keys-scoped-to-co-hosts =
+            pkgs.callPackage ./checks/image-exchange-keys-scoped-to-co-hosts
+              {
+                inherit inputs;
+              };
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };

@@ -51,10 +51,13 @@
 let
   inherit (lib)
     mkIf
+    mkMerge
     foldl'
     listToAttrs
     findFirst
     toInt
+    unique
+    optional
     ;
   inherit (builtins)
     head
@@ -64,6 +67,7 @@ let
     filter
     genList
     length
+    concatMap
     ;
 
   thisNode = horizon.node.name;
@@ -100,13 +104,10 @@ let
   # node IP (preserving 5hir5bnz host-untouched): it is a fresh link-local
   # address carved from the cluster-authored subnet, reachable only over the
   # tap. The guest is reached back via the explicit /32 route to its node IP.
-  subnetBase =
-    if vmHost == null then null else stripCidr (vmHost.guestSubnet or null);
+  subnetBase = if vmHost == null then null else stripCidr (vmHost.guestSubnet or null);
 
   # Split a dotted-decimal IPv4 into its four integer octets.
-  octetsOf =
-    ip:
-    map toInt (filter (s: s != "" && !(builtins.isList s)) (split "\\." ip));
+  octetsOf = ip: map toInt (filter (s: s != "" && !(builtins.isList s)) (split "\\." ip));
 
   # base + offset within the subnet, carrying across the low octets. The
   # endpoints stay well inside a /22 (1024 hosts) for any realistic guest
@@ -145,19 +146,46 @@ let
     in
     "02:00:00:00:00:${twoDigit}";
 
+  hostSetOf =
+    node:
+    (optional ((node.machine.superNode or null) != null) node.machine.superNode)
+    ++ (node.machine.superNodes or [ ]);
+
+  allNodes = [ horizon.node ] ++ attrValues exNodes;
+  publicKeyOf =
+    name:
+    let
+      node = findFirst (candidate: candidate.name == name) null allNodes;
+    in
+    if node == null then null else (node.nixPubKeyLine or null);
+
   # The TestVm guests this node hosts: projected ex_nodes whose machine names
-  # this node as super_node and that derive behavesAs.testVm.
+  # this node as super_node and that derive behavesAs.testVm. Only primary
+  # hosts emit microvm.vms — the additional co-host relation is for image
+  # exchange, not for booting the VM on every peer.
   hostedTestVms = filter (
-    n:
-    (n.machine.superNode or null) == thisNode && (n.behavesAs.testVm or false)
+    node: (node.machine.superNode or null) == thisNode && (node.behavesAs.testVm or false)
   ) (attrValues exNodes);
+
+  # The TestVm guests this node co-hosts: primary OR additional host-set
+  # membership. Unit 3's trust boundary is broader than microvm emission: a
+  # secondary host must trust the primary host's image key (and conversely) so
+  # the declared host-set can exchange the guest image, while non-hosts stay
+  # outside the additive trust set.
+  coHostedTestVirtualMachines = filter (
+    node: (node.behavesAs.testVm or false) && builtins.elem thisNode (hostSetOf node)
+  ) (attrValues exNodes);
+
+  coHostNames = concatMap (
+    node: filter (name: name != thisNode) (hostSetOf node)
+  ) coHostedTestVirtualMachines;
+  imageExchangePublicKeys = unique (filter (key: key != null) (map publicKeyOf coHostNames));
 
   # Respect the declared ceiling: a host that advertises maximum_guests = N
   # must not host more than N TestVm guests. Over-subscription is a cluster
   # authoring error — fail loudly rather than silently truncating the set.
   hostedCount = length hostedTestVms;
-  capacityOk =
-    maximumGuests == null || hostedCount <= maximumGuests;
+  capacityOk = maximumGuests == null || hostedCount <= maximumGuests;
   capacityChecked =
     if capacityOk then
       hostedTestVms
@@ -263,18 +291,31 @@ let
   ) { } indexed;
 
   hasGuests = hostedTestVms != [ ];
+  hasCoHostedGuests = coHostedTestVirtualMachines != [ ];
 in
-# Emit only when the host is cluster-authored as a VM host (declares a VmHost
-# service with KVM Available) AND actually hosts at least one TestVm guest.
-mkIf (hasGuests && kvmAvailable) {
-  microvm.vms = vmDeclarations;
+mkMerge [
+  # Emit only when the host is cluster-authored as a VM host (declares a VmHost
+  # service with KVM Available) AND actually hosts at least one TestVm guest.
+  (mkIf (hasGuests && kvmAvailable) {
+    microvm.vms = vmDeclarations;
 
-  systemd.network.networks = tapNetworks;
-  # systemd.network must be on for the tap .network files to apply. The host
-  # already runs networkd (center/router nodes set useNetworkd); make the
-  # dependency explicit and additive — it only adds the tap networks above.
-  networking.useNetworkd = true;
-  systemd.network.enable = true;
+    systemd.network.networks = tapNetworks;
+    # systemd.network must be on for the tap .network files to apply. The host
+    # already runs networkd (center/router nodes set useNetworkd); make the
+    # dependency explicit and additive — it only adds the tap networks above.
+    networking.useNetworkd = true;
+    systemd.network.enable = true;
 
-  networking.hosts = guestHostEntries;
-}
+    networking.hosts = guestHostEntries;
+  })
+
+  # Unit 3: emit the scoped image-exchange trust set. This is intentionally
+  # additive (`extra-trusted-public-keys`), leaving the cluster-wide
+  # `trusted-public-keys` pool owned by the Nix client module untouched. The
+  # trust set is computed from all co-hosted TestVm guests (primary OR
+  # additional host-set membership), excludes this host's own key, and never
+  # admits keyed cluster nodes outside the declared host-set.
+  (mkIf (hasCoHostedGuests && kvmAvailable) {
+    nix.settings.extra-trusted-public-keys = imageExchangePublicKeys;
+  })
+]
