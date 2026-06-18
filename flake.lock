@@ -617,11 +617,11 @@
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1781720965,
-        "narHash": "sha256-rfauz+LxWMnsFqUCOiOf5f67WHZrPS4xnCwTBZBh6+w=",
+        "lastModified": 1781770959,
+        "narHash": "sha256-HKifqoeG5y51Sp6y5s381iODglKOJIV55hSGX9B24DU=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e9b602426f125f547ebceb3972cc45faf84b39e2",
+        "rev": "228209232aa375cbb5648d4e0e40c73c1fbd715f",
         "type": "github"
       },
       "original": {
@@ -1338,11 +1338,11 @@
     "meta-signal-spirit-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781684222,
-        "narHash": "sha256-5FTUXPQ1KWLBIlROsmvkHaxRYToZvMxUQoZsxdzhQP4=",
+        "lastModified": 1781769935,
+        "narHash": "sha256-+52gTMEbveyylR8jlYvEFu6OZ4tA0YXuC0MYzgCDRjs=",
         "owner": "LiGoldragon",
         "repo": "meta-signal-spirit",
-        "rev": "90d64b1f43317d2924bd9a01e3719e0881cb58cd",
+        "rev": "d26bed810eb5d355fb26cd8e6579beb2531e0496",
         "type": "github"
       },
       "original": {
@@ -2492,11 +2492,11 @@
     "signal-spirit-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1781710569,
-        "narHash": "sha256-KxT2a9BDPAht1r4W1KH3+pn8glI4Ew40jbqv+/1mcmE=",
+        "lastModified": 1781712617,
+        "narHash": "sha256-KDRAtPUWXgae1PCKd93qDSF2oNJQue8V9vK63KRFreg=",
         "owner": "LiGoldragon",
         "repo": "signal-spirit",
-        "rev": "624695746ce311f61e401cc93d0b2454522976f8",
+        "rev": "e5f432b2bda97a250b75fc397eeeb6f7256dff1b",
         "type": "github"
       },
       "original": {
@@ -2578,11 +2578,11 @@
         "version-projection-source": "version-projection-source"
       },
       "locked": {
-        "lastModified": 1781711061,
-        "narHash": "sha256-4HDiAN8s5c+B9KUdgJVTBCnTl8S43GIiJxVp7hkVfSA=",
+        "lastModified": 1781770943,
+        "narHash": "sha256-CNXZPX+YoROf0OoRm5MjTlmF9TIK8YwwgogUPS/pmUo=",
         "owner": "LiGoldragon",
         "repo": "spirit",
-        "rev": "89f955b231630232dfe06227aa9427a8dc34c7a2",
+        "rev": "e046b29e32f0bb4b0e4fe79b84c5361be789a917",
         "type": "github"
       },
       "original": {
