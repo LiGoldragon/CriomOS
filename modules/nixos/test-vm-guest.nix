@@ -42,7 +42,7 @@ let
   inherit (lib) mkIf mkForce;
   inherit (horizon.node) behavesAs;
 in
-mkIf behavesAs.testVm {
+mkIf (behavesAs.testVm or false) {
   # Drop man/nixos doc generation — pointless weight on an on-demand test VM.
   # This is the genuine lean win, independent of the home toggle.
   documentation = {
