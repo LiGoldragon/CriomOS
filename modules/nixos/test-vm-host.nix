@@ -30,8 +30,9 @@
 #   (b) an ADDITIVE host tap: a dedicated systemd.network .network that
 #       matches ONLY the guest's tap device by name, gives the host a /32
 #       endpoint SLICED FROM the host's declared `guest_subnet` (a link-local
-#       endpoint in that subnet, NOT the host's routed node IP) and a /32
-#       route to the guest's IP. It does NOT touch, replace, or reorder the
+#       endpoint in that subnet, NOT the host's routed node IP) and a
+#       single-host route to the guest's node IP (/128 for an IPv6 guest IP,
+#       /32 for IPv4). It does NOT touch, replace, or reorder the
 #       host's existing interfaces / routing / firewall — it is a new tap and
 #       the guest's own address only (psyche constraint 5hir5bnz);
 #   (c) a networking.hosts entry resolving the GUEST's criome domain to the
@@ -203,6 +204,11 @@ let
 
   guestName = entry: entry.guest.name;
   guestIp = entry: stripCidr (entry.guest.nodeIp or null);
+  # A guest's node IP can be either family. An IPv6 host route needs a /128
+  # single-host prefix; an IPv4 host route needs /32. A colon in the bare
+  # address marks IPv6 (the host tap endpoint stays /32 — it is always an
+  # IPv4 link-local address sliced from the IPv4-only guest_subnet).
+  guestRoutePrefix = ip: if lib.hasInfix ":" ip then "128" else "32";
   guestCores = entry: entry.guest.machine.cores or 2;
   guestRamGb = entry: entry.guest.machine.ramGb or 2;
   guestDiskGb = entry: entry.guest.machine.diskGb or 20;
@@ -250,7 +256,8 @@ let
 
   # (b) ADDITIVE host-side tap networking — one .network per guest tap,
   # matching ONLY that tap device by name. Gives the host a /32 endpoint
-  # SLICED from the declared guest_subnet and a /32 route to the guest's IP.
+  # SLICED from the declared (IPv4-only) guest_subnet and a single-host route
+  # to the guest's node IP — /128 when the guest IP is IPv6, /32 when IPv4.
   # No existing interface, default route, or firewall rule is touched.
   #
   # The 05- filename prefix is load-bearing: systemd-networkd binds each link
@@ -270,7 +277,7 @@ let
         matchConfig.Name = tapId entry.index;
         address = [ "${hostTapAddress entry.index}/32" ];
         routes = lib.optionals (guestIp entry != null) [
-          { Destination = "${guestIp entry}/32"; }
+          { Destination = "${guestIp entry}/${guestRoutePrefix (guestIp entry)}"; }
         ];
         # Stay strictly local to this tap — never advertise as the host's
         # online path, never claim a default route.
