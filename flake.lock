@@ -604,6 +604,8 @@
         "pkgs": [
           "pkgs"
         ],
+        "pyproject-build-systems": "pyproject-build-systems",
+        "pyproject-nix": "pyproject-nix",
         "rust-overlay": [
           "rust-overlay"
         ],
@@ -613,15 +615,16 @@
         "system": [
           "system"
         ],
+        "uv2nix": "uv2nix",
         "visualjj-vsix": "visualjj-vsix",
         "whisrs-src": "whisrs-src"
       },
       "locked": {
-        "lastModified": 1781770959,
-        "narHash": "sha256-HKifqoeG5y51Sp6y5s381iODglKOJIV55hSGX9B24DU=",
+        "lastModified": 1781876878,
+        "narHash": "sha256-u+6okEGXokgnVB9txfOdP+Y1RTOPIaapw01M5gJ2ELc=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "228209232aa375cbb5648d4e0e40c73c1fbd715f",
+        "rev": "f4dcf6a8417fda19bf7b28f36a01afa9964aed9c",
         "type": "github"
       },
       "original": {
@@ -1968,6 +1971,56 @@
         "type": "github"
       }
     },
+    "pyproject-build-systems": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ],
+        "pyproject-nix": [
+          "criomos-home",
+          "pyproject-nix"
+        ],
+        "uv2nix": [
+          "criomos-home",
+          "uv2nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781807804,
+        "narHash": "sha256-04KFQME8sE1LSywNiYS1B6Ucf5rEiUD7/vxwFMgooXU=",
+        "ref": "refs/heads/master",
+        "rev": "b84e03a7870c66033d309e0e00abd513e2299627",
+        "revCount": 77,
+        "type": "git",
+        "url": "https://github.com/pyproject-nix/build-system-pkgs"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/pyproject-nix/build-system-pkgs"
+      }
+    },
+    "pyproject-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781812259,
+        "narHash": "sha256-uRqDouxg3b0EuOHQd1HhmFZouHebM7pz+H6EWAXd3FM=",
+        "ref": "refs/heads/master",
+        "rev": "d9847acff422152a03764fd60c96ae0dd9f9fa73",
+        "revCount": 554,
+        "type": "git",
+        "url": "https://github.com/pyproject-nix/pyproject.nix"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/pyproject-nix/pyproject.nix"
+      }
+    },
     "repository-ledger": {
       "inputs": {
         "crane": "crane_11",
@@ -3008,6 +3061,31 @@
         "owner": "LiGoldragon",
         "repo": "triad-runtime",
         "type": "github"
+      }
+    },
+    "uv2nix": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ],
+        "pyproject-nix": [
+          "criomos-home",
+          "pyproject-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781810314,
+        "narHash": "sha256-PQfvfKWaBvCysdHFUO5GewwvwIqI/WL6OcrJhDSUdbc=",
+        "ref": "refs/heads/master",
+        "rev": "14aa44100859a44144878fe079f8089d3fa4dc4e",
+        "revCount": 477,
+        "type": "git",
+        "url": "https://github.com/pyproject-nix/uv2nix"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/pyproject-nix/uv2nix"
       }
     },
     "version-projection-source": {
