@@ -16,6 +16,13 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Shared Rust build flake — fenix-locked nightly toolchain (no
+    # per-crate rust-stable channel hash). Top-level so every LiGoldragon
+    # crate input that declares its own `rust-build` is forced onto this
+    # one nightly build via `follows`, retiring the stale per-crate hash.
+    rust-build.url = "github:LiGoldragon/rust-build";
+    rust-build.inputs.nixpkgs.follows = "nixpkgs";
+
     # Shared constants, helpers, and cross-repo data. Consumed by both
     # CriomOS and CriomOS-home.
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
@@ -61,6 +68,11 @@
     # Consumed in modules/nixos/complex.nix.
     clavifaber.url = "github:LiGoldragon/clavifaber";
     clavifaber.inputs.nixpkgs.follows = "nixpkgs";
+    # clavifaber is the only direct LiGoldragon crate input that declares
+    # a `rust-build` input — force it onto the top-level nightly rust-build.
+    # brightness-ctl, lojix, mirror, repository-ledger build via crane+fenix
+    # directly (no rust-build input), so they take no follows here.
+    clavifaber.inputs.rust-build.follows = "rust-build";
 
     # System tuple — lojix produces a tiny content-addressed flake
     # whose only output is `system = "x86_64-linux"` (or aarch64).
