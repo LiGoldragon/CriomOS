@@ -48,6 +48,7 @@ in
       path = [
         pkgs.coreutils
         pkgs.hostname
+        pkgs.gitMinimal
         pkgs.nix
         pkgs.openssh
       ];
