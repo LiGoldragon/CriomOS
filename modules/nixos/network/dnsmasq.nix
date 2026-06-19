@@ -9,6 +9,7 @@ let
   inherit (builtins)
     attrValues
     concatLists
+    concatMap
     head
     map
     match
@@ -30,6 +31,8 @@ let
     "127.0.0.1"
     lanGateway
   ];
+
+  publicClusterDomains = horizon.cluster.domainConfiguration.publicClusterDomains or [ ];
 
   upstreamServers = [
     "1.1.1.1"
@@ -74,7 +77,7 @@ let
     let
       address = mkPrimaryAddress entry;
       alias = entry.nixCacheDomain;
-      aliasRecords =
+      internalAliasRecords =
         if alias == null || alias == "" || address == null then
           [ ]
         else
@@ -84,6 +87,22 @@ let
               value = address;
             })
           ];
+      publicNodeRecords = concatMap (domain: [
+        (mkAddressRecord {
+          name = "${entry.name}.${domain}";
+          value = address;
+        })
+      ]) publicClusterDomains;
+      publicNixCacheRecords =
+        if alias == null || alias == "" then
+          [ ]
+        else
+          concatMap (domain: [
+            (mkAddressRecord {
+              name = "nix.${entry.name}.${domain}";
+              value = address;
+            })
+          ]) publicClusterDomains;
     in
     if address == null then
       [ ]
@@ -94,7 +113,9 @@ let
           value = address;
         })
       ]
-      ++ aliasRecords;
+      ++ internalAliasRecords
+      ++ publicNodeRecords
+      ++ publicNixCacheRecords;
 
   localAddressRecords = concatLists (map mkPrimaryRecords horizonNodes);
 in

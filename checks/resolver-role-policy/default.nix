@@ -34,6 +34,18 @@ let
     linkLocalIps = [ "fe80::50/64" ];
     nixCacheDomain = null;
     nodeIp = "10.18.0.50/32";
+    routerInterfaces = {
+      wan = "wan-test0";
+      wlan = "wlan-test0";
+      wirelessCountryCode = "PL";
+      wirelessNetworkName = "criome-test";
+      wlanBand = "2g";
+      wlanChannel = 6;
+      wlanStandard = "wifi6";
+      wpa3SaePassword = {
+        name = "routerWifiSaePasswords";
+      };
+    };
     services = [ ];
     wireguardPubKey = "";
     wireguardUntrustedProxies = [ ];
@@ -92,6 +104,10 @@ let
           cluster = {
             name = "goldragon";
             tailnetBaseDomain = "tailnet.goldragon.criome";
+            domainConfiguration = {
+              internalSuffix = "criome";
+              publicClusterDomains = [ "goldragon.criome.net" ];
+            };
           };
           inherit node;
           exNodes = {
@@ -153,7 +169,9 @@ pkgs.runCommand "resolver-role-policy" { } ''
   echo ${lib.escapeShellArg routerDnsmasqInterfaces} | grep -F br-lan
   echo ${lib.escapeShellArg routerDnsmasqListenAddresses} | grep -F ${lib.escapeShellArg constants.network.lan.gateway}
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/router-test.goldragon.criome/200:db8::1'
+  echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/router-test.goldragon.criome.net/200:db8::1'
   echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/peer-test.goldragon.criome/200:db8::51'
+  echo ${lib.escapeShellArg routerDnsmasqAddressRecords} | grep -F '/peer-test.goldragon.criome.net/200:db8::51'
   ! echo ${lib.escapeShellArg routerDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
   echo ${lib.escapeShellArg tailnetControllerRouterDnsmasqServers} | grep -F '/tailnet.goldragon.criome/100.100.100.100'
 
