@@ -37,7 +37,6 @@ in
   ++ [
     ./metal/default.nix
     ./router/default.nix
-    ./vm-testing/default.nix
     # Lean-guest gate for a TestVm-species node — suppresses the home/doc
     # weight a test guest never wants while leaving it a real deploy target
     # (design report 47, surface 4).
@@ -48,10 +47,11 @@ in
     ./test-vm-host.nix
   ]
   # microvm.nix host module — provides the `microvm.vms.*` options the
-  # VM-testing feature's persistent routed test VM is declared with. Inert
-  # unless a `microvm.vms` is defined (only the VmTesting node-service does
-  # so). Imported only when the input is present so downstream consumers that
-  # drop it still evaluate.
+  # TestVm host emission declares each hosted guest with. Inert unless a
+  # `microvm.vms` is defined (only test-vm-host.nix, gated on a VmHost
+  # service with KVM Available hosting a TestVm guest, does so). Imported
+  # only when the input is present so downstream consumers that drop it
+  # still evaluate.
   ++ lib.optionals (inputs ? microvm) [
     inputs.microvm.nixosModules.host
   ];
