@@ -24,7 +24,7 @@ let
   ownerSocket = "${runtimeDirectory}/owner.sock";
   startupArchive = "${runtimeDirectory}/startup.rkyv";
   startupRequest = pkgs.writeText "lojix-daemon-configuration.nota" ''
-    (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${startupArchive}))
+    (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${config.networking.hostName} (goldragon prometheus Hermetic github:LiGoldragon/CriomOS-test-cluster ${stateDirectory}/cluster.nota) ${startupArchive}))
   '';
 in
 {
