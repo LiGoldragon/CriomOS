@@ -347,11 +347,11 @@
         "rust-build": "rust-build"
       },
       "locked": {
-        "lastModified": 1781872317,
-        "narHash": "sha256-b03/fXDeEgg0zCCMaU9JTf1kF5xXV9Tzgzt+t5MmeS4=",
+        "lastModified": 1781894037,
+        "narHash": "sha256-SudxEOPTpu0uZZWGRqOvC5zdLbZFgQTQYVVgCIAnetQ=",
         "owner": "LiGoldragon",
         "repo": "clavifaber",
-        "rev": "1397a6bd228a680f3ccc09c2a3eb9f39c7efa67a",
+        "rev": "39f65fa195c6f17796c82168da579d1a3873716c",
         "type": "github"
       },
       "original": {
