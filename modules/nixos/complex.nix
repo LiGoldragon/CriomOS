@@ -32,7 +32,7 @@ let
   # network/yggdrasil.nix consolidation (primary-8b3) and the
   # WiFi-PKI plumbing land.
   publicationWriting = ''
-    (PublicKeyPublicationWriting ${config.networking.hostName} (OpenSshPublicKeyLocation "${sshdHostPublicKey}") None None "${publicationFile}")
+    (PublicKeyPublicationWriting (${config.networking.hostName} (OpenSshPublicKeyLocation ${sshdHostPublicKey}) None None ${publicationFile}))
   '';
 in
 lib.mkIf includeComplex {

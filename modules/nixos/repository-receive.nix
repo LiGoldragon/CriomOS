@@ -25,14 +25,15 @@ let
   daemonSocket = "/run/repository-ledger/repository-ledger.sock";
   ownerSocket = "/run/repository-ledger/repository-ledger-owner.sock";
   storePath = "/var/lib/repository-ledger/repository-ledger.redb";
+  daemonConfigurationPath = "/run/repository-ledger/repository-ledger-daemon.rkyv";
   daemonUser = "repository-ledger";
   daemonGroup = "repository-ledger";
   clientGroup = "nixdev";
   receiveGroup = "repository-ledger-receive";
   repositoryLedgerPackage =
     inputs.repository-ledger.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  daemonConfiguration = pkgs.writeText "repository-ledger-daemon.nota" ''
-    ([${daemonSocket}] 432 [${ownerSocket}] 384 [${storePath}] [${spoolDirectory}])
+  daemonConfiguration = pkgs.writeText "repository-ledger-daemon-configuration.nota" ''
+    (ConfigurationWriteRequest (${daemonSocket} 432 ${ownerSocket} 384 ${storePath} ${spoolDirectory} ${daemonConfigurationPath}))
   '';
 
   repositoryLedgerPostReceiveHook = "${pkgs.writeTextDir "post-receive" ''
@@ -226,7 +227,8 @@ in
           receiveGroup
         ];
         WorkingDirectory = "/var/lib/repository-ledger";
-        ExecStart = "${repositoryLedgerPackage}/bin/repository-ledger-daemon ${daemonConfiguration}";
+        ExecStartPre = "${repositoryLedgerPackage}/bin/repository-ledger-write-configuration ${daemonConfiguration}";
+        ExecStart = "${repositoryLedgerPackage}/bin/repository-ledger-daemon ${daemonConfigurationPath}";
         Restart = "on-failure";
         RestartSec = "5s";
         UMask = "0007";
