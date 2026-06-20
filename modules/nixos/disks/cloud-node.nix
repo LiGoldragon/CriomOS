@@ -39,13 +39,12 @@ in
     # DigitalOcean public networking. The droplet's primary NIC must DHCP, but
     # CriomOS's DHCP-over-networkd unit (network/networkd.nix) is gated on
     # behaves_as.center — which a CloudNode is not — and NetworkManager is off
-    # for a lean node, while digital-ocean-config only *waits* for DHCP rather
-    # than providing it. Without this the interface never gets an IP and the
-    # node is unreachable (ssh port 22 times out). Mirror the center node's
-    # proven DHCP-over-networkd config for the cloud NIC; networkd, not the
-    # desktop-oriented NetworkManager, owns it.
+    # for a lean node, while digital-ocean-config only waits for DHCP rather
+    # than providing it. Give the cloud NIC a DHCP-over-networkd config so it
+    # gets an address; networkd, not the desktop NetworkManager, owns it.
+    # TODO(audit-75 #10): this duplicates the center node's 10-main-eth unit —
+    # extract a shared cloud/server DHCP module instead of copying it.
     networking.useNetworkd = lib.mkForce true;
-    systemd.network.enable = true;
     networking.networkmanager.enable = lib.mkForce false;
     systemd.network.networks."10-cloud-dhcp" = {
       matchConfig.Type = "ether";
@@ -56,26 +55,26 @@ in
       linkConfig.RequiredForOnline = "routable";
     };
 
-    # sshd is already enabled keys-only on port 22 by normalize.nix (its
-    # openFirewall defaults true); make the firewall open explicit so a lean
-    # cloud node is reachable for the deploy handoff.
-    networking.firewall.allowedTCPPorts = [ 22 ];
-
-    # Assert the MBR / GRUB-on-/dev/vda contract the DigitalOcean BIOS boot
-    # relies on, so a mis-declared node fails the build rather than producing
-    # an unbootable droplet.
-    boot.loader.grub.enable = true;
-    boot.loader.grub.devices = lib.mkForce [ "/dev/vda" ];
+    # Bootloader and ssh firewall are NOT re-asserted here: grub.enable follows
+    # io.bootloader=Mbr in preinstalled.nix, grub.devices=[/dev/vda] comes from
+    # the upstream digital-ocean-config, and sshd (keys-only, port 22 +
+    # openFirewall) is enabled by normalize.nix. Re-setting them would clobber
+    # those seams (audit-75 #9, #34).
 
     # Minimality: a headless cloud node carries no docs, firmware blobs, or
-    # fontconfig. Default kernel/initrd modules are deliberately KEPT — a
-    # droplet needs virtio_blk/virtio_net to boot, so we do NOT strip them.
-    documentation.enable = mkDefault false;
-    documentation.nixos.enable = mkDefault false;
-    documentation.man.enable = mkDefault false;
-    documentation.doc.enable = mkDefault false;
-    hardware.enableAllFirmware = mkDefault false;
-    hardware.enableRedistributableFirmware = mkDefault false;
-    fonts.fontconfig.enable = mkDefault false;
+    # fontconfig. These need mkForce, NOT mkDefault or plain false: normalize.nix
+    # sets documentation.enable=true at normal priority, so mkDefault silently
+    # loses (the knobs were ineffective — audit-75 #33) and plain false
+    # conflicts. mkForce authoritatively suppresses the weight. Default
+    # kernel/initrd modules are deliberately KEPT — a droplet needs
+    # virtio_blk/virtio_net to boot. TODO(audit-75 #17): minimality belongs in a
+    # headless profile/facet, not as mkForce overrides fighting normalize.
+    documentation.enable = lib.mkForce false;
+    documentation.nixos.enable = lib.mkForce false;
+    documentation.man.enable = lib.mkForce false;
+    documentation.doc.enable = lib.mkForce false;
+    hardware.enableAllFirmware = lib.mkForce false;
+    hardware.enableRedistributableFirmware = lib.mkForce false;
+    fonts.fontconfig.enable = lib.mkForce false;
   };
 }
