@@ -36,6 +36,31 @@ in
 
     services.qemuGuest.enable = true;
 
+    # DigitalOcean public networking. The droplet's primary NIC must DHCP, but
+    # CriomOS's DHCP-over-networkd unit (network/networkd.nix) is gated on
+    # behaves_as.center — which a CloudNode is not — and NetworkManager is off
+    # for a lean node, while digital-ocean-config only *waits* for DHCP rather
+    # than providing it. Without this the interface never gets an IP and the
+    # node is unreachable (ssh port 22 times out). Mirror the center node's
+    # proven DHCP-over-networkd config for the cloud NIC; networkd, not the
+    # desktop-oriented NetworkManager, owns it.
+    networking.useNetworkd = lib.mkForce true;
+    systemd.network.enable = true;
+    networking.networkmanager.enable = lib.mkForce false;
+    systemd.network.networks."10-cloud-dhcp" = {
+      matchConfig.Type = "ether";
+      networkConfig = {
+        DHCP = "yes";
+        IPv6AcceptRA = true;
+      };
+      linkConfig.RequiredForOnline = "routable";
+    };
+
+    # sshd is already enabled keys-only on port 22 by normalize.nix (its
+    # openFirewall defaults true); make the firewall open explicit so a lean
+    # cloud node is reachable for the deploy handoff.
+    networking.firewall.allowedTCPPorts = [ 22 ];
+
     # Assert the MBR / GRUB-on-/dev/vda contract the DigitalOcean BIOS boot
     # relies on, so a mis-declared node fails the build rather than producing
     # an unbootable droplet.
