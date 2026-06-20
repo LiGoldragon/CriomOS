@@ -46,6 +46,10 @@ in
     # behavesAs.testVm, emit a real KVM microVM + additive tap + guest-IP
     # hosts entry + non-autostart unit (design report 47, surface 5).
     ./test-vm-host.nix
+    # CloudNode image gate — for a behavesAs.cloudNode node, build a minimal
+    # content-sized DigitalOcean image (GRUB/BIOS on /dev/vda, cloud-init,
+    # growpart); inert for every other species (Spirit 2u57 / ad53).
+    ./disks/cloud-node.nix
   ]
   # microvm.nix host module — provides the `microvm.vms.*` options the
   # VM-testing feature's persistent routed test VM is declared with. Inert

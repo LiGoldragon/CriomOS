@@ -187,5 +187,21 @@
       # pkgs evaluation through the pkgs-flake input. Same `system`
       # input → cached across deploys.
       pkgsProbe = pkgs.stdenv.hostPlatform.system;
+
+      # The minimal, content-sized DigitalOcean image built declaratively from
+      # this node's CriomOS configuration: a bzip2-compressed qcow2 (make-disk-
+      # image, format=qcow2, diskSize="auto" → closure-sized, ~0.5–1 GB, NOT a
+      # 60 GB snapshot — Spirit 2u57). Present ONLY when `target` is a CloudNode
+      # (behaves_as.cloud_node), so evaluating any other node's outputs never
+      # touches it; a non-cloud `target` simply omits the attribute.
+      packages = (blueprintOutputs.packages or { }) // {
+        ${system} =
+          (blueprintOutputs.packages.${system} or { })
+          // inputs.nixpkgs.lib.optionalAttrs
+            (target.config.system.build ? digitalOceanImage)
+            {
+              digitalOceanImage = target.config.system.build.digitalOceanImage;
+            };
+      };
     };
 }
