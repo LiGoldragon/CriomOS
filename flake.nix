@@ -133,6 +133,7 @@
           metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
+          web-host-policy = pkgs.callPackage ./checks/web-host-policy { inherit inputs; };
           repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
             inherit inputs;
           };

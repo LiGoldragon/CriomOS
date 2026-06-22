@@ -20,6 +20,7 @@ in
     ./repository-receive.nix
     ./mirror.nix
     ./lojix.nix
+    ./web-host.nix
     ./nix
     ./complex.nix
     ./nspawn.nix
