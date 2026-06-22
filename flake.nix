@@ -134,6 +134,10 @@
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
           web-host-policy = pkgs.callPackage ./checks/web-host-policy { inherit inputs; };
+          web-host-render-policy = pkgs.callPackage ./checks/web-host-render-policy {
+            inherit inputs;
+          };
+          web-host-serve = pkgs.callPackage ./checks/web-host-serve { inherit inputs; };
           repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
             inherit inputs;
           };
