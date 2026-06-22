@@ -2,6 +2,3 @@ base_url = "https://example.test"
 title = "CriomOS WebHost fixture"
 compile_sass = false
 build_search_index = false
-
-[markdown]
-highlight_code = false
