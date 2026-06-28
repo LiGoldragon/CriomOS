@@ -19,6 +19,7 @@ in
     ./secrets.nix
     ./repository-receive.nix
     ./mirror.nix
+    ./persona-router.nix
     ./lojix.nix
     ./nix
     ./complex.nix

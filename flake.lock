@@ -430,6 +430,21 @@
     },
     "crane_12": {
       "locked": {
+        "lastModified": 1778106249,
+        "narHash": "sha256-cM/AuKy5tMhwOOQIbha8ZRRMHVfNf7cv2aljIw+qoCg=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "6d015ea29630b7ad2402841386da2cb617a470a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_13": {
+      "locked": {
         "lastModified": 1780532242,
         "narHash": "sha256-D+BsdpxmtUwtqGoY0IXPhHgTlmqgcZKCEo1oMyn7ep0=",
         "owner": "ipetkov",
@@ -762,10 +777,32 @@
     "fenix_12": {
       "inputs": {
         "nixpkgs": [
-          "rust-build",
+          "router",
           "nixpkgs"
         ],
         "rust-analyzer-src": "rust-analyzer-src_12"
+      },
+      "locked": {
+        "lastModified": 1781901863,
+        "narHash": "sha256-B3GatmIZGQCnJkYoes3a5OqsMNexf0PO3fpeDJDZND4=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "6914a98b7864cb3ef33cb0a2581f8aed3d354e48",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
+    "fenix_13": {
+      "inputs": {
+        "nixpkgs": [
+          "rust-build",
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src_13"
       },
       "locked": {
         "lastModified": 1781901863,
@@ -2284,11 +2321,34 @@
         "nixpkgs": "nixpkgs_2",
         "pkgs": "pkgs",
         "repository-ledger": "repository-ledger",
+        "router": "router",
         "rust-build": "rust-build_4",
         "rust-overlay": "rust-overlay",
         "secrets": "secrets",
         "sops-nix": "sops-nix",
         "system": "system"
+      }
+    },
+    "router": {
+      "inputs": {
+        "crane": "crane_12",
+        "fenix": "fenix_12",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1782660678,
+        "narHash": "sha256-b5iG1GAPy98LEIomftmMaS4PzFqRd6lEnnUCYl/BZQM=",
+        "owner": "LiGoldragon",
+        "repo": "router",
+        "rev": "98b279cf387c5c8756f29ef13a90e722af65b5d1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "router",
+        "type": "github"
       }
     },
     "router-source": {
@@ -2359,6 +2419,23 @@
       }
     },
     "rust-analyzer-src_12": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781714865,
+        "narHash": "sha256-NIhErKpfs4EUx8N4x8yNYG8/vTzKv9cQn5QmuQI83jM=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "abb1301c3c14a40645bb2588b1cc858fe374b527",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
+      }
+    },
+    "rust-analyzer-src_13": {
       "flake": false,
       "locked": {
         "lastModified": 1781714865,
@@ -2588,8 +2665,8 @@
     },
     "rust-build_4": {
       "inputs": {
-        "crane": "crane_12",
-        "fenix": "fenix_12",
+        "crane": "crane_13",
+        "fenix": "fenix_13",
         "flake-utils": "flake-utils_14",
         "nixpkgs": [
           "nixpkgs"

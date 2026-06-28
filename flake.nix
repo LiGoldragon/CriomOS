@@ -59,6 +59,13 @@
     mirror.url = "github:LiGoldragon/mirror";
     mirror.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Persona message/signal router daemon (router-daemon) — the
+    # daemon-to-daemon delivery fabric, NOT the WiFi router in
+    # modules/nixos/router/. Consumed by modules/nixos/persona-router.nix on
+    # nodes carrying the PersonaRouter node service.
+    router.url = "github:LiGoldragon/router";
+    router.inputs.nixpkgs.follows = "nixpkgs";
+
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
     # so parity checks use the same installed service/socket path as production.
     lojix.url = "github:LiGoldragon/lojix";
@@ -137,6 +144,9 @@
             inherit inputs;
           };
           mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
+          persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
+            inherit inputs;
+          };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
           vm-testing-prometheus-policy = pkgs.callPackage ./checks/vm-testing-prometheus-policy {
             inherit inputs;
