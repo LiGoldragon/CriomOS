@@ -5,7 +5,7 @@
 #   1. reaches active, having sealed its typed NOTA config to rkyv in
 #      ExecStartPre and launched `criome-daemon <config.rkyv>` (one argument, no
 #      flags);
-#   2. binds BOTH its working and meta sockets at 0600;
+#   2. binds its working socket at 0660 (shared IPC) and its meta socket at 0600;
 #   3. answers a real request over the working socket — `LookupIdentity` of its
 #      self-registered `Host("criome")` returns an Active `IdentityReceipt`,
 #      proving the daemon is live and self-registered (not merely that files
@@ -56,12 +56,14 @@ pkgs.testers.runNixOSTest {
     )
     assert not any(a.startswith("--") for a in argv), f"no flags allowed, got {argv!r}"
 
-    # (2) Both sockets are bound at 0600.
+    # (2) The working socket is bound at 0660 (a co-resident persona-router in
+    #     criome's group dials it); the meta socket stays owner-private 0600.
     machine.wait_until_succeeds("test -S /run/criome/criome.sock")
     machine.wait_until_succeeds("test -S /run/criome/criome.sock.meta")
-    for socket in ("/run/criome/criome.sock", "/run/criome/criome.sock.meta"):
-        mode = machine.succeed(f"stat -c '%a' {socket}").strip()
-        assert mode == "600", f"{socket} must be 0600, got {mode}"
+    working_mode = machine.succeed("stat -c '%a' /run/criome/criome.sock").strip()
+    assert working_mode == "660", f"working socket must be 0660, got {working_mode}"
+    meta_mode = machine.succeed("stat -c '%a' /run/criome/criome.sock.meta").strip()
+    assert meta_mode == "600", f"meta socket must be 0600, got {meta_mode}"
 
     # (3) Live round-trip over the working socket: the daemon self-registered
     #     Host("criome") and answers a real request. This is the un-fakeable

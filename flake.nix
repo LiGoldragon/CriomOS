@@ -59,6 +59,22 @@
     mirror.url = "github:LiGoldragon/mirror";
     mirror.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Persona message/signal router daemon (router-daemon) — the
+    # daemon-to-daemon delivery fabric, NOT the WiFi router in
+    # modules/nixos/router/. Consumed by modules/nixos/persona-router.nix on
+    # nodes carrying the PersonaRouter node service. Pinned to the criome-auth
+    # integration branch (real criome attestation + node-identity forward path);
+    # main landing is gated on the T6 audit.
+    router.url = "github:LiGoldragon/router?ref=criome-auth-integration";
+    router.inputs.nixpkgs.follows = "nixpkgs";
+
+    # criome BLS-attestation daemon. Consumed by modules/nixos/criome.nix on
+    # nodes carrying a criome service. Pinned to the criome-auth integration
+    # branch (configurable distinct node_identity + group-accessible working
+    # socket); main landing is gated on the T6 audit.
+    criome.url = "github:LiGoldragon/criome?ref=criome-auth-integration";
+    criome.inputs.nixpkgs.follows = "nixpkgs";
+
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
     # so parity checks use the same installed service/socket path as production.
     lojix.url = "github:LiGoldragon/lojix";
@@ -137,6 +153,9 @@
             inherit inputs;
           };
           mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
+          persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
+            inherit inputs;
+          };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
           vm-testing-prometheus-policy = pkgs.callPackage ./checks/vm-testing-prometheus-policy {
             inherit inputs;

@@ -9,10 +9,11 @@
 # `criome-daemon <config.rkyv>`. This is the criome sibling of mirror's
 # `mirror-write-configuration` ExecStartPre step.
 #
-# TWO 0600 SOCKETS. The daemon binds its working socket (`${socketName}`) and
-# its meta socket (`${socketName}.meta`) under ${runtimeDir}, each at mode 0600,
-# itself (`bind_private_socket`). A co-resident persona-router points its
-# `criome_socket_path` at the working socket.
+# TWO SOCKETS. The daemon binds its working socket (`${socketName}`) at 0660 —
+# a shared IPC surface a co-resident persona-router (in criome's group) dials —
+# and its meta socket (`${socketName}.meta`) at 0600 (owner-only local approval),
+# both under ${runtimeDir}, itself. A co-resident persona-router points its
+# `criome_socket_path` at the working socket and joins criome's group.
 #
 # KEY CUSTODY (Spirit psc6 / key-custody q1le). criome's master signing key is
 # generated on first run and persisted at the store-derived path
@@ -49,13 +50,22 @@ let
   clusterRootField =
     if cfg.clusterRootPublicKey == null then "None" else "(Some ${cfg.clusterRootPublicKey})";
 
+  # The identity this criome signs attestations as. Null keeps the daemon's
+  # historical Host("criome") default; a distinct per-node identity (e.g.
+  # "node-a") lets a peer criome that has registered this node's key under that
+  # identity cross-verify its attestations — the two-node witness trust anchor.
+  # Rendered as the (Optional Identity) NOTA field.
+  nodeIdentityField =
+    if cfg.nodeIdentity == null then "None" else "(Some (Host ${cfg.nodeIdentity}))";
+
   # The single typed CriomeDaemonConfiguration record as positional NOTA, in the
   # signal-criome schema field order: socket_path, store_path, meta_socket_path
-  # (Optional), cluster_root (Optional), AuthorizationMode. The encoder wraps it
-  # in a CriomeConfigurationArtifact carrying the rkyv output path and seals it.
+  # (Optional), cluster_root (Optional), AuthorizationMode, node_identity
+  # (Optional Identity). The encoder wraps it in a CriomeConfigurationArtifact
+  # carrying the rkyv output path and seals it.
   configurationArtifactNota =
     "(CriomeConfigurationArtifact "
-    + "(${socketPath} ${storePath} (Some ${metaSocketPath}) ${clusterRootField} ${cfg.authorizationMode}) "
+    + "(${socketPath} ${storePath} (Some ${metaSocketPath}) ${clusterRootField} ${cfg.authorizationMode} ${nodeIdentityField}) "
     + "${configRkyv})";
 
   encodeConfigurationScript = pkgs.writeShellScript "criome-encode-configuration" ''
@@ -153,6 +163,22 @@ in
       ];
       default = "Quorum";
       description = "The daemon's authorization mode (signal-criome AuthorizationMode).";
+    };
+
+    nodeIdentity = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "node-a";
+      description = ''
+        The `Host` principal name this criome signs attestations as. Left null,
+        the daemon keeps its historical `Host("criome")` identity (single-node
+        deployments are unchanged). Set to a distinct per-node name (e.g.
+        "node-a") so a peer criome that has registered this node's public key
+        under `Host(<name>)` can cross-verify its attestations, while an
+        unregistered or foreign key is refused fail-closed. For the co-resident
+        persona-router's milestone-3 forward path to verify on the peer, this
+        name must equal the local persona-router's `router_identity`.
+      '';
     };
 
     user = mkOption {
