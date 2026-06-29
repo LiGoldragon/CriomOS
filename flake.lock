@@ -602,16 +602,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1782665256,
-        "narHash": "sha256-6uLhaMTkWJKI0FDVOk0D4Xn+er0LN53FlLQikyxfdio=",
+        "lastModified": 1782728282,
+        "narHash": "sha256-s4C5rXpf4h4IIi8zFgmSzG7fYq/+SPUSx7HdBWZbKyw=",
         "owner": "LiGoldragon",
         "repo": "criome",
-        "rev": "4dc374f261db5d8d2bb62cb614f42a8592bca86f",
+        "rev": "4c820a057c3c46eb8d17c5ef55c4468bfc22d85e",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "criome-auth-integration",
         "repo": "criome",
         "type": "github"
       }
@@ -1705,11 +1704,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781908594,
-        "narHash": "sha256-jPXXdiPFKxBNGFK8Eg2EzdSeoUGauJ9szRXDTXbTkrc=",
+        "lastModified": 1782724639,
+        "narHash": "sha256-X09USoVcPIFuZp9OkWSkkqTIWLYPzzResUIAqaIm5DY=",
         "owner": "LiGoldragon",
         "repo": "mirror",
-        "rev": "577f54a78ff683714cacd2094f482a25bc5f9e9b",
+        "rev": "5102f5ed87d10d6a7386358b3b10214a04fdf89d",
         "type": "github"
       },
       "original": {
@@ -2399,16 +2398,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1782665339,
-        "narHash": "sha256-S2zgjM4i22Ctd3SFf2yGujbXdZtP6P/dZZ+8ynCCVko=",
+        "lastModified": 1782732250,
+        "narHash": "sha256-EQOWZfKEwjSf3ivSJBKrnLd99GTHgaEa0SVI2mJDfUg=",
         "owner": "LiGoldragon",
         "repo": "router",
-        "rev": "43572ce3ba96ddaefdf8bf887683e1286c9bf63e",
+        "rev": "14ed682b47bf399aeb25ea8dea674275e15aa7a4",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "criome-auth-integration",
         "repo": "router",
         "type": "github"
       }

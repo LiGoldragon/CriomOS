@@ -64,15 +64,14 @@
     # modules/nixos/router/. Consumed by modules/nixos/persona-router.nix on
     # nodes carrying the PersonaRouter node service. Pinned to the criome-auth
     # integration branch (real criome attestation + node-identity forward path);
-    # main landing is gated on the T6 audit.
-    router.url = "github:LiGoldragon/router?ref=criome-auth-integration";
+    # main landing: the criome-auth witness forward family is on router main.
+    router.url = "github:LiGoldragon/router";
     router.inputs.nixpkgs.follows = "nixpkgs";
 
     # criome BLS-attestation daemon. Consumed by modules/nixos/criome.nix on
-    # nodes carrying a criome service. Pinned to the criome-auth integration
-    # branch (configurable distinct node_identity + group-accessible working
-    # socket); main landing is gated on the T6 audit.
-    criome.url = "github:LiGoldragon/criome?ref=criome-auth-integration";
+    # nodes carrying a criome service. On main: configurable distinct
+    # node_identity + group-accessible working socket.
+    criome.url = "github:LiGoldragon/criome";
     criome.inputs.nixpkgs.follows = "nixpkgs";
 
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
