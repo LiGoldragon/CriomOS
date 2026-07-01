@@ -13,8 +13,7 @@ nexus daemons run as the user-space layer.
 > for deploy, etc.) where eventual Criome's substrate will later
 > sit. Eventually the OS is written in Sema; ClaviFaber-shaped shims
 > are obsoleted by Criome's quorum-signature multi-sig system at
-> that point. See `~/primary/ESSENCE.md` §"Today and eventually —
-> different things, different names".
+> that point. See `~/primary/ARCHITECTURE.md` §"Workspace vision and intent".
 
 CriomOS is **the consumer of forge**, not a member of the criome
 runtime. forge-deploy (currently `lojix-cli`) materialises
