@@ -243,19 +243,19 @@ directly. Schema changes are tracked as horizon-rs beads.
 CriomOS is **network-neutral**: it does not enumerate clusters or nodes.
 The truth source is the lojix-projected horizon input.
 
-For the LiGoldragon kriom, lojix reads `goldragon/datom.nota`, projects
-it through `horizon-rs`, writes content-addressed `horizon` and `system`
-flake inputs plus a deployment-shape input, and invokes this repo's
-single system surface:
-`nixosConfigurations.target`.
+For the LiGoldragon kriom, Lojix reads the cluster proposal, projects it
+through `horizon-rs`, writes content-addressed `horizon` and `system` flake
+inputs plus a deployment-shape input, and invokes this repo's single system
+surface: `nixosConfigurations.target`.
 
 ### Edit flow
 
 - Edit cluster / node / user / trust truth in `goldragon/datom.nota`.
   Any node name, role, connectivity, or identity change begins there.
 - `horizon-rs` validates the proposal and computes the enriched
-  horizon. Use `lojix-cli eval` / `lojix-cli build` when checking the
-  projected view against CriomOS.
+  horizon. Use direct `meta-lojix` evaluation/realization requests when
+  checking the projected view against CriomOS, and use `lojix` typed queries
+  for the observed generation and event state.
 - CriomOS modules read `horizon.node.*`, `horizon.exNodes.*`, and
   `horizon.users.*`; they never add node or cluster literals.
 
@@ -268,7 +268,11 @@ single system surface:
 - Public system surface:
   `github:LiGoldragon/CriomOS/<rev>#nixosConfigurations.target.config.system.build.toplevel`.
 - Normal build/deploy entry point:
-  `lojix-cli '(Deploy (Cluster <cluster>) (Node <node>) (Action switch))'`.
-- Prefer `lojix-cli deploy --action boot` for first-touch deploys. Use
-  `boot-once` for headless/riskier nodes, and `switch` only when live
-  activation is intended.
+  `meta-lojix "(Deploy (Host (<cluster> <node> CompleteHost <proposal-source> <criomos-flake-ref> <host-action> RequireImmutable <builder> [] None)))"`.
+- Use `BaseHost` only when the host closure intentionally omits embedded user
+  environment materialization and broad all-firmware materialization. Use
+  `UserEnvironment` for user-profile activation through the selected CriomOS
+  flake revision.
+- Prefer a boot-profile host action for first-touch deploys. Use a boot-once
+  host action for headless/riskier nodes, and use live host activation only
+  when live activation is intended.

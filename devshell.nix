@@ -17,7 +17,7 @@ let
     "CriomOS-emacs"
     "horizon-rs"
     # adjacent
-    "lojix-cli"
+    "lojix"
     "brightness-ctl"
     "clavifaber"
     "goldragon"

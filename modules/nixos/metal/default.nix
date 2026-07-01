@@ -178,8 +178,8 @@ let
     # ThinkPad T14 Gen 5 Intel / Meteor Lake CNVi exposes Intel AX211
     # Bluetooth as USB 8087:0033 and needs linux-firmware's
     # intel/ibt-0180-0041.{sfi,ddc} after resume or module reload. Keep
-    # it in the model-specific firmware set so OsOnly/home-off generations
-    # do not drop Bluetooth firmware.
+    # it in the model-specific firmware set so BaseHost generations do not
+    # drop Bluetooth firmware.
     ThinkPadT14Gen5Intel = [
       linux-firmware
       sof-firmware

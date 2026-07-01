@@ -1,39 +1,43 @@
 # CriomOS
 
-NixOS platform — modules + module aggregate. Deploys are driven by a
-separate orchestrator (`lojix-cli`) that projects a cluster proposal
-into a per-(cluster, node) horizon and invokes nix against this repo
-with deployment-shape inputs.
+NixOS platform — modules + module aggregate. Deploys are driven by Lojix,
+which projects a cluster proposal into a per-(cluster, node) horizon and
+invokes nix against this repo with deployment-shape inputs.
 
 **Status:** active. The previous repo is archived at
 [`criomos-archive`](../criomos-archive/).
 
 ## How it's used
 
-CriomOS isn't built directly. The orchestrator (`lojix-cli`) is the
-entry point:
+CriomOS isn't built directly. Lojix is the deploy entry point:
 
-1. Reads a cluster proposal nota (e.g.
-   [`goldragon/datom.nota`](../goldragon/datom.nota)) and a node name.
-2. Projects the proposal via `horizon-lib` (in-process Rust) into a
-   per-(cluster, node) horizon JSON.
+1. Reads a cluster proposal nota and a node name.
+2. Projects the proposal via `horizon-rs` into a per-(cluster, node)
+   horizon JSON.
 3. Writes small override flakes for the horizon, system tuple, and
    deployment shape.
-4. Invokes nix against `github:LiGoldragon/CriomOS` with
-   those override inputs.
+4. Invokes nix against `github:LiGoldragon/CriomOS` with those override
+   inputs.
 
-User-facing form is a single Nota command value passed to `lojix-cli`:
+Privileged deploy admission is a single typed request passed to
+`meta-lojix`; observations use the ordinary `lojix` query interface:
 
 ```
-lojix-cli '(Build (Cluster goldragon) (Node prometheus))'
-lojix-cli '(Deploy (Cluster goldragon) (Node prometheus) (Action switch))'
+meta-lojix "(Deploy (Host (<cluster> <node> CompleteHost <proposal-source> <criomos-flake-ref> <host-action> RequireImmutable <builder> [] None)))"
+meta-lojix "(Deploy (Host (<cluster> <node> BaseHost <proposal-source> <criomos-flake-ref> <host-action> RequireImmutable <builder> [] None)))"
+meta-lojix "(Deploy (UserEnvironment (<cluster> <node> <user> <proposal-source> <criomos-flake-ref> <user-environment-action> RequireImmutable <builder> [])))"
+lojix "(Query (ByNode (<cluster> <node> None)))"
 ```
+
+`DeployAccepted DeployHandle` is admission evidence only. Operators use typed
+Lojix observations to prove build, copy, activation, profile, and generation
+state.
 
 CriomOS exposes one configuration —
 `nixosConfigurations.target.config.system.build.toplevel`. The
 `horizon` input override picks which (cluster, node) it materialises;
-the `deployment` input picks the operation shape, such as normal
-system+home vs home-off system evaluation.
+the `deployment` input picks the operation shape, such as `CompleteHost`
+or `BaseHost`.
 
 ## Network-neutral by construction
 
@@ -78,9 +82,8 @@ the requested deploy.
 - `LiGoldragon/horizon-rs` —
   horizon schema + projection logic (Rust). Single source of truth
   for the typed schema.
-- `LiGoldragon/lojix-cli` —
-  the orchestrator (Rust). Today: standalone CLI; eventually a thin
-  client to `lojix` (the daemon, planned).
+- `LiGoldragon/lojix` —
+  the typed deploy daemon and its `lojix` / `meta-lojix` clients.
 - `LiGoldragon/clavifaber` —
   GPG → X.509 WiFi PKI tool. Consumed in `modules/nixos/complex.nix`.
 - `LiGoldragon/brightness-ctl` —
@@ -111,7 +114,7 @@ network-neutral.
 
 - Jujutsu (`jj`) for all VCS. Never `git` CLI.
 - Mentci three-tuple commit format.
-- Never print Nix store paths into agent context; use shell vars /
+- Never print Nix store paths into agent context; use shell variables /
   subshells.
 - See [`AGENTS.md`](AGENTS.md) for the full agent ruleset (reports,
   beads, layers, etc.).
