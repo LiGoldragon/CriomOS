@@ -25,6 +25,16 @@ First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-fi
 - Store paths live in shell variables, never in prose, code blocks, or commit messages. A `/nix/store/<hash>-<name>` literal in the chat log freezes a build artefact into the conversation forever; the hash drifts with every input bump and the next run reads stale context as if it were authoritative. Capture in `X=$(nix build … --print-out-paths --no-link)` and reference `$X`.
 - For one-shot invocations of a nix-built tool, prefer `nix run <flake>#<attr> -- <args>`. Reach for `nix build` only when the store path itself is load-bearing (closure introspection, manual `nix copy`, etc.) — and even then capture it in a shell var.
 - Use flake attrs or `nix shell nixpkgs#jq`, not `<nixpkgs>` / `NIX_PATH`.
+- **Whole-OS eval/build needs the lojix-materialized inputs.** A bare `nix eval` / `nix flake show` / `nix flake check` on this repo throws `CriomOS: no system input was provided` — by design: the `system`, `horizon`, `deployment`, and `secrets` inputs are throwing stubs until lojix materializes them. The OS is not unbuildable; feed the generated inputs with `--override-input`:
+  ```
+  nix build .#nixosConfigurations.target.config.system.build.toplevel \
+    --override-input system     /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/system \
+    --override-input horizon    /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/horizon \
+    --override-input deployment /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/deployment \
+    --override-input secrets    /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/secrets
+  ```
+  Swap the `goldragon/ouranos/full-os` segment for the target `<cluster>/<node>/<full-os|os-only|home>`. Witnessed on ouranos: ~47s eval, 26 trivial drvs (warm cache).
+- **VM inventory is `systemctl` + `/var/lib/microvms`, not `microvm -l`.** `microvm -l` assumes an `/etc/nixos` flake CriomOS hosts don't have and reports empty even when guests are declared (witnessed: blank `microvm -l` beside a live `/var/lib/microvms/vm-testing`). Enumerate guests with `systemctl list-units 'microvm@*'` and `ls /var/lib/microvms`; a guest's runtime is the `microvm@<name>.service` unit.
 - `switch-to-configuration switch` stays out of chroots.
 - niri stays unsignalled (no SIGHUP).
 - SSH keys only — no password auth.
