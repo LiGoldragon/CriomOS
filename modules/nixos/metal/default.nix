@@ -548,7 +548,7 @@ mkIf behavesAs.bareMetal {
     };
 
     xserver = {
-      xkb.variant = "";
+      xkb.variant = optionalString useColemak "colemak";
       xkb.options = "caps:ctrl_modifier, altwin:swap_alt_win";
 
       autoRepeatDelay = 200;

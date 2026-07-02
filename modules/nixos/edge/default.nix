@@ -125,16 +125,9 @@ mkIf behavesAs.edge {
       keyboards.laptop = {
         ids = [ "0001:0001" ];
         extraConfig = ''
-          # Laptop Colemak is per-device here; QMK Colemak boards stay raw.
-          # This is keyd's shipped layouts/colemak, inlined for NixOS's /usr-free runtime.
-          ${builtins.readFile "${pkgs.keyd}/share/keyd/layouts/colemak"}
-
-          [global]
-          default_layout = colemak
-
           [main]
-          leftalt = layer(meta)
-          leftmeta = layer(alt)
+          leftalt = leftmeta
+          leftmeta = leftalt
         '';
       };
     };

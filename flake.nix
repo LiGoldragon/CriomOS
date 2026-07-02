@@ -144,7 +144,6 @@
               };
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
-          laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };

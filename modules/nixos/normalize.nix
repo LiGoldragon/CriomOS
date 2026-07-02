@@ -151,7 +151,7 @@ in
     sessionVariables = (
       optionalAttrs useColemak {
         XKB_DEFAULT_LAYOUT = "us";
-        XKB_DEFAULT_VARIANT = "";
+        XKB_DEFAULT_VARIANT = "colemak";
       }
     );
   };
