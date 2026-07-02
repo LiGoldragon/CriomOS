@@ -137,6 +137,12 @@ in
 
               tcp dport ssh accept
 
+              # test-VM guest taps (vmt*, emitted by test-vm-host.nix only when
+              # this host runs TestVm guests): admit the guests' ICMPv6 so the
+              # host answers their NDP for the fe80::1 gateway and they can ping
+              # the host. Scoped to vmt* — inert on a host with no guests.
+              iifname "vmt*" meta l4proto ipv6-icmp accept comment "Allow NDP/ICMPv6 from test-VM guests"
+
               iifname { ${localInputInterfaceSet} } accept comment "Allow local network to access the router"
               iifname "${routerInterfaces.wan}" ct state { established, related } accept comment "Allow established traffic"
               iifname "${routerInterfaces.wan}" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
@@ -149,6 +155,12 @@ in
 
               iifname { ${lanBridgeInterface} } oifname { "${routerInterfaces.wan}" } accept comment "Allow trusted LAN to WAN"
               iifname { "${routerInterfaces.wan}" } oifname { ${lanBridgeInterface} } ct state { established, related } accept comment "Allow established back to LANs"
+
+              # Route between this host's own test-VM guest taps (vmt*, emitted
+              # by test-vm-host.nix): guest A -> host -> guest B. The guests sit
+              # on point-to-point taps, so peer traffic is FORWARDED (L3) through
+              # the host. Scoped to vmt*<->vmt* — inert on a host with no guests.
+              iifname "vmt*" oifname "vmt*" accept comment "Allow test-VM guest<->guest forwarding"
             }
           }
 

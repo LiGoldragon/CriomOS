@@ -209,6 +209,7 @@ let
   # address marks IPv6 (the host tap endpoint stays /32 — it is always an
   # IPv4 link-local address sliced from the IPv4-only guest_subnet).
   guestRoutePrefix = ip: if lib.hasInfix ":" ip then "128" else "32";
+  guestIsIpv6 = entry: (guestIp entry != null) && lib.hasInfix ":" (guestIp entry);
   guestCores = entry: entry.guest.machine.cores or 2;
   guestRamGb = entry: entry.guest.machine.ramGb or 2;
   guestDiskGb = entry: entry.guest.machine.diskGb or 20;
@@ -248,6 +249,31 @@ let
             ];
           };
           networking.hostName = guestName entry;
+
+          # (e) GUEST-SIDE tap networking — WITHOUT this the guest boots
+          # network-dark (the host route to it is then moot). Bind the guest's
+          # own node IP to its tap NIC (matched by the deterministic tap MAC, so
+          # it is robust to in-guest interface renaming) and send all off-link
+          # IPv6 to the host's tap endpoint (fe80::1), which the host forwards
+          # to peer guests. The guest keeps its kernel link-local for NDP to the
+          # host; GatewayOnLink marks fe80::1 directly reachable on the tap.
+          systemd.network = lib.mkIf (guestIsIpv6 entry) {
+            enable = true;
+            networks."10-vm-guest-tap" = {
+              matchConfig.MACAddress = tapMac entry.index;
+              address = [ "${guestIp entry}/128" ];
+              routes = [
+                {
+                  Destination = "::/0";
+                  Gateway = "fe80::1";
+                  GatewayOnLink = true;
+                }
+              ];
+              linkConfig.RequiredForOnline = "no";
+            };
+          };
+          networking.useNetworkd = lib.mkIf (guestIsIpv6 entry) true;
+
           system.stateVersion = lib.trivial.release;
         };
       };
@@ -275,7 +301,12 @@ let
       name = "05-test-vm-${tapId entry.index}";
       value = {
         matchConfig.Name = tapId entry.index;
-        address = [ "${hostTapAddress entry.index}/32" ];
+        # The IPv4 link-local endpoint sliced from guest_subnet, PLUS a
+        # deterministic IPv6 link-local (fe80::1) the guest uses as its next
+        # hop. fe80::1 is per-link, so the same value on every guest tap is
+        # correct (each tap is a distinct point-to-point link). This lets the
+        # host answer the guest's NDP and act as its IPv6 gateway/forwarder.
+        address = [ "${hostTapAddress entry.index}/32" "fe80::1/64" ];
         routes = lib.optionals (guestIp entry != null) [
           { Destination = "${guestIp entry}/${guestRoutePrefix (guestIp entry)}"; }
         ];
@@ -305,6 +336,12 @@ mkMerge [
   # service with KVM Available) AND actually hosts at least one TestVm guest.
   (mkIf (hasGuests && kvmAvailable) {
     microvm.vms = vmDeclarations;
+
+    # Guest A reaches guest B by being FORWARDED through this host (the guests
+    # are on point-to-point taps). A router host already enables this; set it
+    # as a default so a plain (non-router) VM host also forwards between its
+    # guest taps. The router's explicit `true` overrides this mkDefault.
+    boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = lib.mkDefault true;
 
     systemd.network.networks = tapNetworks;
     # systemd.network must be on for the tap .network files to apply. The host
