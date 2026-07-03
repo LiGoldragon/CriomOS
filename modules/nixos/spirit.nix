@@ -191,6 +191,26 @@ in
       default = "spirit";
       description = "The dedicated group the daemon runs as.";
     };
+
+    workingSocketGroupAccess = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether the working socket is created group-accessible (0660, owned by
+        the daemon group) so a co-resident client that joins `${"\${group}"}` can
+        dial it. Spirit's emitted daemon binder leaves the working socket at the
+        unit UMask (spirit's own Configuration overrides no socket_mode, and no
+        signal-spirit socket-mode field exists), so UMask is the only lever.
+        Enabling this sets the unit UMask to "0007": the working socket AND the
+        regenerated config rkyv become group-accessible, while the durable SEMA
+        store stays owner-private behind the 0700 state directory (its directory
+        bits gate access regardless of file umask, and spirit holds no signing
+        key). Off keeps the hardened owner-only (umask 0077 → 0700) working
+        socket. Required for the persistent Spirit mirror, where the co-resident
+        router (a member of `${"\${group}"}`) applies authorized records over the
+        working socket.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -216,7 +236,11 @@ in
         ExecStart = "${cfg.package}/bin/spirit-daemon ${configRkyv}";
         Restart = "on-failure";
         RestartSec = "5s";
-        UMask = "0077";
+        # 0077 → owner-only working socket (hardened default); 0007 → the working
+        # socket and config rkyv become group-accessible so a co-resident router
+        # in the daemon group can dial the working socket. The 0700 state dir
+        # keeps the durable store owner-private under either umask.
+        UMask = if cfg.workingSocketGroupAccess then "0007" else "0077";
         NoNewPrivileges = true;
         PrivateTmp = true;
         ProtectSystem = "strict";

@@ -44,6 +44,24 @@ let
               process = 0;
               home = "router-b";
             }
+            # Local criome recipient: a co-resident criome actor with a
+            # ComponentSocket endpoint (no home ⇒ local delivery). This is the
+            # RegisterActor{ComponentSocket(criome_socket)} the mirror
+            # solicit-vote path delivers a verified inbound forward's routed
+            # objects to (primary-nbmq.9 criome-recipient wiring).
+            {
+              actor = "criome-router-a";
+              process = 0;
+              endpoint = "/run/criome/criome.sock";
+            }
+          ];
+          # The direct-message channel grant that authorizes the peer criome's
+          # verified inbound forward to be DELIVERED to the local criome actor.
+          grants = [
+            {
+              source = "criome-router-b";
+              destination = "criome-router-a";
+            }
           ];
         };
       }
@@ -110,7 +128,7 @@ pkgs.runCommand "persona-router-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg serviceConfig.ExecStart} | grep -F '/run/persona-router/router-daemon.rkyv'
 
   printf '%s' ${lib.escapeShellArg configurationNota} | grep -F '(ConfigurationWriteRequest /run/persona-router/router.sock /run/persona-router/meta.sock /run/persona-router/supervision.sock /var/lib/persona-router/router.sema (Some /run/persona-router/bootstrap.rkyv) 1000 (Some 0.0.0.0:7440) router-a (Some /run/criome/criome.sock) /run/persona-router/router-daemon.rkyv)'
-  printf '%s' ${lib.escapeShellArg bootstrapNota} | grep -F '(BootstrapWriteRequest /run/persona-router/bootstrap.rkyv [ (router-b 192.168.1.20:7440) ] [ (mirror 0 (Some router-b)) ])'
+  printf '%s' ${lib.escapeShellArg bootstrapNota} | grep -F '(BootstrapWriteRequest /run/persona-router/bootstrap.rkyv [ (router-b 192.168.1.20:7440) ] [ (mirror 0 (Some router-b) None) (criome-router-a 0 None (Some (ComponentSocket /run/criome/criome.sock))) ] [ (criome-router-b criome-router-a) ])'
   ! printf '%s' ${lib.escapeShellArg configurationNota} | grep -F '"'
 
   printf '%s' ${lib.escapeShellArg systemPackageNames} | grep -F router

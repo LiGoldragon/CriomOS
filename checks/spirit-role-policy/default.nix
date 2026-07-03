@@ -44,6 +44,13 @@ let
       timeoutMilliseconds = 60000;
     };
   };
+  # workingSocketGroupAccess flips the unit UMask so a co-resident router (in
+  # the spirit group) can dial the working socket (primary-nbmq.9).
+  groupAccessConfiguration = configurationFor {
+    enable = true;
+    package = spiritPackage;
+    workingSocketGroupAccess = true;
+  };
 
   servicePresent = configuration: builtins.hasAttr "spirit" configuration.config.systemd.services;
 
@@ -77,6 +84,9 @@ pkgs.runCommand "spirit-role-policy" { } ''
   test ${lib.escapeShellArg serviceConfig.User} = spirit
   test ${lib.escapeShellArg serviceConfig.Group} = spirit
   test ${lib.escapeShellArg serviceConfig.UMask} = '0077'
+  # Default is owner-only (0077); enabling group access loosens to 0007 so the
+  # working socket becomes group-accessible for the co-resident router.
+  test ${lib.escapeShellArg groupAccessConfiguration.config.systemd.services.spirit.serviceConfig.UMask} = '0007'
   test ${lib.escapeShellArg (bool serviceConfig.NoNewPrivileges)} = true
 
   printf '%s' ${lib.escapeShellArg encodeScriptText} | grep -F '/bin/spirit-write-configuration'

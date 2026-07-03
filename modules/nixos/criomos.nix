@@ -20,6 +20,13 @@ in
     ./repository-receive.nix
     ./mirror.nix
     ./persona-router.nix
+    # criome + spirit node modules (persistent-Spirit-mirror pieces 6/8). Both
+    # are `mkEnableOption`-gated (default off) so importing them only makes the
+    # `services.criome`/`services.spirit` options available cluster-wide; a node
+    # opts in per deploy (the standing mirror pair enables both alongside
+    # PersonaRouter). Inert on every other node.
+    ./criome.nix
+    ./spirit.nix
     ./lojix.nix
     ./nix
     ./complex.nix

@@ -90,6 +90,59 @@ let
         }
     '';
 
+  # One ExecStartPost per admitted quorum contract: wait for the working socket,
+  # then AdmitContract a k-of-n Threshold over KeyMember Host identities. The
+  # digest is content-addressed (blake3-over-rkyv of the contract), so every node
+  # that admits the identical contract derives the identical ContractDigest that
+  # the mirror quorum round and the Spirit apply gate reference. Admission does
+  # not require the member keys to be registered (that is checked later at
+  # vote/evaluation time); strict majority is enforced at admission. Re-running on
+  # restart is harmless, like the identity seed (a re-admission returns a reply,
+  # not a transport error). Requires authorizationMode = "Quorum" for the admitted
+  # contract to be evaluated (the module default).
+  admitContractScript =
+    contract:
+    let
+      memberNota =
+        lib.concatMapStringsSep " " (member: "(KeyMember (Host ${member}))") contract.keyMembers;
+      admitNota = "(AdmitContract (Threshold (${toString contract.requiredSignatures} [${memberNota}])))";
+    in
+    pkgs.writeShellScript "criome-admit-${contract.name}" ''
+      set -eu
+      for _ in $(seq 1 100); do
+        [ -S ${lib.escapeShellArg socketPath} ] && break
+        sleep 0.1
+      done
+      CRIOME_SOCKET=${lib.escapeShellArg socketPath} ${cfg.package}/bin/criome \
+        ${lib.escapeShellArg admitNota}
+    '';
+
+  quorumContractModule = types.submodule {
+    options = {
+      name = mkOption {
+        type = types.str;
+        description = "A label for this contract's ExecStartPost seed unit fragment (script name only, not sent on the wire).";
+      };
+      requiredSignatures = mkOption {
+        type = types.ints.positive;
+        example = 2;
+        description = "The threshold k for a k-of-n quorum (signal-criome RequiredSignatureThreshold). Strict majority (k > n/2) is enforced at admission.";
+      };
+      keyMembers = mkOption {
+        type = types.listOf types.str;
+        example = [
+          "mirror-alpha"
+          "mirror-beta"
+        ];
+        description = ''
+          The Host identity names that are the quorum members. Each is admitted
+          as `(KeyMember (Host <name>))`; the two-node mirror contract lists both
+          node identities so it is the shared 2-of-2 rule on every node.
+        '';
+      };
+    };
+  };
+
   seedModule = types.submodule {
     options = {
       name = mkOption {
@@ -203,6 +256,29 @@ in
         a single criome node.
       '';
     };
+
+    quorumContracts = mkOption {
+      type = types.listOf quorumContractModule;
+      default = [ ];
+      example = [
+        {
+          name = "mirror-2-of-2";
+          requiredSignatures = 2;
+          keyMembers = [
+            "mirror-alpha"
+            "mirror-beta"
+          ];
+        }
+      ];
+      description = ''
+        Quorum contracts to admit into this daemon's contract store at startup.
+        Each entry issues an `AdmitContract` of a k-of-n `Threshold` over
+        `KeyMember` Host identities over the working socket in `ExecStartPost`.
+        The two-node mirror admits the same 2-of-2 contract on both nodes so the
+        content-addressed digest matches; empty for a node with no quorum
+        contract. Requires `authorizationMode = "Quorum"` (the default).
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -228,7 +304,11 @@ in
         WorkingDirectory = stateDir;
         ExecStartPre = [ encodeConfigurationScript ];
         ExecStart = "${cfg.package}/bin/criome-daemon ${configRkyv}";
-        ExecStartPost = map seedScript cfg.peerIdentitySeeds;
+        # Identity seeds first (the trust anchor), then admit the quorum
+        # contracts. Admission does not depend on the seeds, but keeping this
+        # order makes the startup posture read top-down: who we trust, then what
+        # rule binds them.
+        ExecStartPost = map seedScript cfg.peerIdentitySeeds ++ map admitContractScript cfg.quorumContracts;
         Restart = "on-failure";
         RestartSec = "5s";
         UMask = "0077";

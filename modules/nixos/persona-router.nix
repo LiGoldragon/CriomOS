@@ -55,16 +55,34 @@ let
   # 0600 master key stay owner-private.
   criomeSocketGroup = settings.criomeSocketGroup or "criome";
 
+  # The group that owns the co-resident spirit daemon's working socket when
+  # spirit is configured group-accessible (spirit.nix `workingSocketGroupAccess`,
+  # UMask 0007). The persona-router daemon joins it so the mirror apply path
+  # (authorized-record delivery to spirit's working socket) can connect. Null ⇒
+  # the router does not dial a co-resident spirit (no supplementary group added).
+  spiritSocketGroup = settings.spiritSocketGroup or null;
+
   # The Unix user the daemon records as the owner identity for owner-only meta
   # operations. Independent of the system user the process runs as.
   ownerUserIdentifier = settings.ownerUserIdentifier or 1000;
 
-  # Hardwired tables. peers: [ { identity; address; } ]. actorHomes:
-  # [ { actor; process ? 0; home ? null; } ] where home names the peer the
-  # actor lives behind (null ⇒ local delivery).
+  # Hardwired tables (current router_write_bootstrap.rs shape — five root lists).
+  # peers: [ { identity; address; } ].
+  # actorHomes: [ { actor; process ? 0; home ? null; endpoint ? null; } ] where
+  #   `home` names the peer the actor lives behind (null ⇒ local delivery) and
+  #   `endpoint` names a co-resident component daemon's working socket to relay a
+  #   verified inbound forward's routed objects to (null ⇒ routing/home only). A
+  #   local criome recipient is `{ actor = <criome-actor>; home = null; endpoint
+  #   = "/run/criome/criome.sock"; }` — the RegisterActor{ComponentSocket(...)}
+  #   the mirror solicit-vote path delivers to.
+  # grants: [ { source; destination; } ] — direct-message channel grants; a
+  #   verified inbound forward from `source` is only DELIVERED to the
+  #   locally-homed `destination` actor when such a grant exists (else it parks
+  #   for adjudication and never reaches the component daemon).
   peers = settings.peers or [ ];
   actorHomes = settings.actorHomes or [ ];
-  hasBootstrap = peers != [ ] || actorHomes != [ ];
+  grants = settings.grants or [ ];
+  hasBootstrap = peers != [ ] || actorHomes != [ ] || grants != [ ];
 
   daemonUser = "persona-router";
   daemonGroup = "persona-router";
@@ -76,12 +94,15 @@ let
     let
       home = actorHome.home or null;
       homeNota = if home == null then "None" else "(Some ${home})";
+      endpoint = actorHome.endpoint or null;
+      endpointNota = if endpoint == null then "None" else "(Some (ComponentSocket ${endpoint}))";
     in
-    "(${actorHome.actor} ${toString (actorHome.process or 0)} ${homeNota})"
+    "(${actorHome.actor} ${toString (actorHome.process or 0)} ${homeNota} ${endpointNota})"
   ) actorHomes;
+  grantNota = concatMapStringsSep " " (grant: "(${grant.source} ${grant.destination})") grants;
 
   bootstrapRequestNota = pkgs.writeText "persona-router-bootstrap.nota" ''
-    (BootstrapWriteRequest ${bootstrapPath} [ ${peerNota} ] [ ${actorHomeNota} ])
+    (BootstrapWriteRequest ${bootstrapPath} [ ${peerNota} ] [ ${actorHomeNota} ] [ ${grantNota} ])
   '';
 
   bootstrapField = if hasBootstrap then "(Some ${bootstrapPath})" else "None";
@@ -120,7 +141,12 @@ in
         Group = daemonGroup;
         # Join criome's group so the milestone-3 criome client can dial the
         # co-resident criome working socket (0660). criome must be co-resident.
-        SupplementaryGroups = [ criomeSocketGroup ];
+        # Also join spirit's group when configured, so the mirror apply path can
+        # dial the co-resident spirit working socket (spirit.nix
+        # workingSocketGroupAccess). Membership grants only socket access.
+        SupplementaryGroups = [
+          criomeSocketGroup
+        ] ++ optionals (spiritSocketGroup != null) [ spiritSocketGroup ];
         WorkingDirectory = stateDirectory;
         ExecStartPre = optionals hasBootstrap [ writeBootstrap ] ++ [ writeConfiguration ];
         ExecStart = "${routerPackage}/bin/router-daemon ${daemonConfigurationPath}";

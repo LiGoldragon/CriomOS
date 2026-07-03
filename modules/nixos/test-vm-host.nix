@@ -214,13 +214,21 @@ let
   guestRamGb = entry: entry.guest.machine.ramGb or 2;
   guestDiskGb = entry: entry.guest.machine.diskGb or 20;
   guestDomain = entry: entry.guest.criomeDomainName or "${guestName entry}.${clusterName}.criome";
+  # A TestVm guest defaults NON-autostart (launched to test, stopped after). A
+  # STANDING guest — one the projection marks `behavesAs.standing` (e.g. the
+  # persistent Spirit-mirror pair) — auto-starts so it survives a host reboot
+  # unattended. The standing fact lives in the cluster projection; this predicate
+  # only reads it, defaulting false so ephemeral test guests are unaffected.
+  guestAutostart = entry: entry.guest.behavesAs.standing or false;
 
   # (a) + (d): the microvm.vms.<guest> declarations.
   vmDeclarations = listToAttrs (
     map (entry: {
       name = guestName entry;
       value = {
-        autostart = false; # (d) NON-autostart — launched to test, stopped after.
+        # (d) NON-autostart for an ephemeral test guest; a projected standing
+        # guest (behavesAs.standing) auto-starts to survive a host reboot.
+        autostart = guestAutostart entry;
         config = {
           microvm = {
             hypervisor = "qemu"; # real KVM-accelerated VM, own kernel.
