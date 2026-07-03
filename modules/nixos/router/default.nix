@@ -142,6 +142,13 @@ in
               # host answers their NDP for the fe80::1 gateway and they can ping
               # the host. Scoped to vmt* — inert on a host with no guests.
               iifname "vmt*" meta l4proto ipv6-icmp accept comment "Allow NDP/ICMPv6 from test-VM guests"
+              # Return traffic for connections the HOST initiates TO a guest
+              # (ssh into the guest, lojix deploy-into): the guest's replies
+              # arrive on its vmt* tap destined to the host, and without this the
+              # default-drop input policy silently drops the SYN-ACK (host->guest
+              # TCP times out). Scoped to vmt* + established/related — inert
+              # without guests, and never admits unsolicited guest-to-host flows.
+              iifname "vmt*" ct state { established, related } accept comment "Allow return traffic for host-initiated guest connections"
 
               iifname { ${localInputInterfaceSet} } accept comment "Allow local network to access the router"
               iifname "${routerInterfaces.wan}" ct state { established, related } accept comment "Allow established traffic"
