@@ -274,6 +274,27 @@ let
           };
           networking.useNetworkd = lib.mkIf (guestIsIpv6 entry) true;
 
+          # (f) GUEST-SIDE login surface — sshd (keys only) + the cluster's
+          # admin SSH keys on root. Without it the emitted boot image comes up
+          # network-reachable (e) but has no daemon to answer and no authorized
+          # key, so it is neither enterable nor deployable-into: lojix can only
+          # activate the full CriomOS node INSIDE the guest once it can ssh in.
+          # This lifts the full-node login identity (normalize.nix sshd
+          # keys-only + users.nix root authorizedKeys = adminSshPubKeys) down to
+          # the bootstrap layer. Generic to EVERY TestVm guest (the vm-testing
+          # node and the mirror alpha/beta endpoints alike), never
+          # guest-specific. Keys are the HOST's projected adminSshPubKeys: an
+          # ex_node projection carries no admin keys of its own, and the
+          # operator who governs the VM host governs its guests. openssh
+          # openFirewall (default true) opens 22 on the guest's tap-facing
+          # firewall; PermitRootLogin stays the NixOS default (prohibit-password)
+          # so the authorized key logs in but no password ever does.
+          services.openssh = {
+            enable = true;
+            settings.PasswordAuthentication = false;
+          };
+          users.users.root.openssh.authorizedKeys.keys = horizon.node.adminSshPubKeys or [ ];
+
           system.stateVersion = lib.trivial.release;
         };
       };
