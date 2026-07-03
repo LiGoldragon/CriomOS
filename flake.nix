@@ -36,6 +36,14 @@
     criomos-home.inputs.horizon.follows = "horizon";
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
+    # Unify the spirit input with CriomOS's own, completing the shared-input
+    # follows set above. CriomOS-home's home modules receive CriomOS-home's
+    # flake inputs (userHomes.nix keeps `inputs` out of extraSpecialArgs), so
+    # the system-embedded home builds its guardian-carrying spirit package from
+    # THIS input. Following it onto CriomOS's `spirit` pin makes the guardian
+    # prompt the System Switch bakes reboot-persistent identical to the spirit
+    # the system spirit daemon runs — one spirit revision for the whole closure.
+    criomos-home.inputs.spirit.follows = "spirit";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
     brightness-ctl.url = "github:LiGoldragon/brightness-ctl";
@@ -158,6 +166,9 @@
             inherit inputs;
           };
           mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
+          lojix-daemon-config-roundtrip = pkgs.callPackage ./checks/lojix-daemon-config-roundtrip {
+            inherit inputs;
+          };
           spirit-role-policy = pkgs.callPackage ./checks/spirit-role-policy { inherit inputs; };
           persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
             inherit inputs;

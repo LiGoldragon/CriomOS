@@ -11,8 +11,23 @@ let
 
   nodeServices = import ./node-services.nix { inherit lib; };
   services = horizon.node.services or [ ];
-  mirrorEnabled =
+
+  # The node shapes that WOULD run the legacy standalone mirror daemon: cluster
+  # tailnet members that also carry PersonaDevelopment. Kept as the re-enable
+  # target for `mirrorEnabled` below.
+  mirrorEligible =
     (nodeServices.has services "TailnetClient") && (nodeServices.has services "PersonaDevelopment");
+
+  # mirror.service is DISABLED on ALL hosts (primary-h945.1): the leading
+  # `false` force-disables it regardless of node eligibility. The legacy
+  # standalone mirror-0.1.2 daemon crash-loops on a redb HeadFamily table
+  # type-signature mismatch, so `switch-to-configuration switch` exits 4 and
+  # blocks System deploys (agent-outputs/LojixDeployAuthMap/
+  # Scout-H945-NoPermissionDiagnosis.md). The module and its `mirror` flake
+  # input stay fully wired, so re-enabling once the real (router-mediated)
+  # mirror of primary-nbmq lands is dropping the `false &&`. Live enablement
+  # stays deferred until then.
+  mirrorEnabled = false && mirrorEligible;
 
   workingSocket = "/run/mirror/working.sock";
   metaSocket = "/run/mirror/meta.sock";

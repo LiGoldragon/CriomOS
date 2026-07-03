@@ -1,5 +1,14 @@
 { inputs, pkgs, ... }:
 
+# mirror.service is force-disabled on ALL hosts (primary-h945.1). The legacy
+# standalone mirror-0.1.2 daemon crash-loops on a redb HeadFamily table
+# type-signature mismatch, which makes `switch-to-configuration switch` exit 4
+# and blocks System deploys (agent-outputs/LojixDeployAuthMap/
+# Scout-H945-NoPermissionDiagnosis.md). This policy check pins the disabled
+# posture — the unit is absent even on the previously mirror-eligible node
+# shape (TailnetClient + PersonaDevelopment, i.e. ouranos) — while proving the
+# module + `mirror` flake input stay wired so re-enabling is reversible.
+
 let
   inherit (inputs.nixpkgs) lib;
   inherit (pkgs.stdenv.hostPlatform) system;
@@ -22,7 +31,10 @@ let
     ];
   };
 
-  mirrorNode = {
+  # The previously mirror-eligible shape: a cluster tailnet member that also
+  # carries PersonaDevelopment (ouranos). Before the disable, mirror.service ran
+  # here; it must now be absent too.
+  mirrorEligibleNode = {
     services = [
       { TailnetClient = { }; }
       {
@@ -53,44 +65,27 @@ let
 
   baseConfiguration = configurationFor baseNode;
   personaOnlyConfiguration = configurationFor personaOnlyNode;
-  mirrorConfiguration = configurationFor mirrorNode;
+  mirrorEligibleConfiguration = configurationFor mirrorEligibleNode;
 
   servicePresent = configuration: builtins.hasAttr "mirror" configuration.config.systemd.services;
-  mirrorService = mirrorConfiguration.config.systemd.services.mirror;
-  mirrorServiceConfig = mirrorService.serviceConfig;
-  execStartPreParts = lib.splitString " " mirrorServiceConfig.ExecStartPre;
-  daemonConfigurationNota = builtins.readFile (builtins.elemAt execStartPreParts 1);
-  mirrorSystemPackageNames = lib.concatStringsSep " " (
-    map (
-      package: package.pname or package.name or "unnamed"
-    ) mirrorConfiguration.config.environment.systemPackages
-  );
-  tmpfiles = lib.concatStringsSep "\n" mirrorConfiguration.config.systemd.tmpfiles.rules;
-  tailscaleTcpPorts =
-    mirrorConfiguration.config.networking.firewall.interfaces.tailscale0.allowedTCPPorts or [ ];
+
+  # Reversibility witness: the mirror flake input stays wired to a buildable
+  # package, so re-enabling the service is a one-line change to the module gate.
+  mirrorPackage = inputs.mirror.packages.${system}.default;
+  mirrorPackageName = mirrorPackage.pname or mirrorPackage.name or "unnamed";
 in
 pkgs.runCommand "mirror-role-policy" { } ''
   set -eu
 
+  # Disabled on ALL hosts: absent on the empty, persona-only, AND the
+  # previously mirror-eligible (ouranos-shaped) node.
   test ${lib.escapeShellArg (bool (servicePresent baseConfiguration))} = false
   test ${lib.escapeShellArg (bool (servicePresent personaOnlyConfiguration))} = false
-  test ${lib.escapeShellArg (bool (servicePresent mirrorConfiguration))} = true
+  test ${lib.escapeShellArg (bool (servicePresent mirrorEligibleConfiguration))} = false
 
-  test ${lib.escapeShellArg mirrorService.description} = 'SEMA version-control mirror daemon'
-  test ${lib.escapeShellArg mirrorServiceConfig.User} = mirror
-  test ${lib.escapeShellArg mirrorServiceConfig.Group} = nixdev
-  printf '%s' ${lib.escapeShellArg (builtins.toJSON mirrorServiceConfig.SupplementaryGroups)} | grep -F mirror
-  printf '%s' ${lib.escapeShellArg mirrorServiceConfig.ExecStartPre} | grep -F '/bin/mirror-write-configuration'
-  printf '%s' ${lib.escapeShellArg mirrorServiceConfig.ExecStartPre} | grep -F 'mirror-daemon-configuration.nota'
-  printf '%s' ${lib.escapeShellArg mirrorServiceConfig.ExecStart} | grep -F '/bin/mirror-daemon'
-  printf '%s' ${lib.escapeShellArg mirrorServiceConfig.ExecStart} | grep -F '/run/mirror/mirror-daemon.rkyv'
-  printf '%s' ${lib.escapeShellArg daemonConfigurationNota} | grep -F '(/run/mirror/mirror-daemon.rkyv (/var/lib/mirror/mirror.sema /run/mirror/working.sock 432 /run/mirror/meta.sock 384 0.0.0.0:7474))'
-  ! printf '%s' ${lib.escapeShellArg daemonConfigurationNota} | grep -F '"'
-
-  printf '%s' ${lib.escapeShellArg mirrorSystemPackageNames} | grep -F mirror
-  printf '%s' ${lib.escapeShellArg tmpfiles} | grep -F 'd /var/lib/mirror 2770 mirror mirror -'
-  printf '%s' ${lib.escapeShellArg tmpfiles} | grep -F 'd /run/mirror 0755 mirror nixdev -'
-  printf '%s' ${lib.escapeShellArg (builtins.toJSON tailscaleTcpPorts)} | grep -F 7474
+  # Wiring preserved (reversible): the `mirror` flake input still resolves to
+  # the mirror package.
+  printf '%s' ${lib.escapeShellArg mirrorPackageName} | grep -F mirror
 
   touch "$out"
 ''
