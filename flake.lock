@@ -2085,13 +2085,13 @@
         "lastModified": 1782838308,
         "narHash": "sha256-iJ2qwoFSnYkQlHGdHuJ3bYoWVW7Kwuo8bpTkqU6/yWg=",
         "owner": "LiGoldragon",
-        "repo": "nota-next",
+        "repo": "nota",
         "rev": "bea7e2840ac2cf3e384f07b5c10eeb0890cead25",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "repo": "nota-next",
+        "repo": "nota",
         "type": "github"
       }
     },
@@ -3095,12 +3095,12 @@
         "rev": "6218fb64f98c909de1eaa5c35744bd48a97a6f87",
         "revCount": 207,
         "type": "git",
-        "url": "https://github.com/LiGoldragon/schema-rust-next.git"
+        "url": "https://github.com/LiGoldragon/schema-rust.git"
       },
       "original": {
         "ref": "main",
         "type": "git",
-        "url": "https://github.com/LiGoldragon/schema-rust-next.git"
+        "url": "https://github.com/LiGoldragon/schema-rust.git"
       }
     },
     "schema-source": {
@@ -3112,12 +3112,12 @@
         "rev": "9af2c546f10c9aec5fd6669592aed32f72077df2",
         "revCount": 161,
         "type": "git",
-        "url": "https://github.com/LiGoldragon/schema-next.git"
+        "url": "https://github.com/LiGoldragon/schema.git"
       },
       "original": {
         "ref": "main",
         "type": "git",
-        "url": "https://github.com/LiGoldragon/schema-next.git"
+        "url": "https://github.com/LiGoldragon/schema.git"
       }
     },
     "secrets": {
