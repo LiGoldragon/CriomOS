@@ -198,6 +198,18 @@ literal, a cluster / node / trust value used as a deploy-target constant, or a
 credential-socket path as a source constant; and the deploy orchestrator is
 declared as a user service, not a system service.
 
+A production node's lojix daemon likewise carries no baked test-op fixture. The
+`lojix-daemon` module emits `NoTestDefaults` for the daemon's startup
+`ConfigurationWriteRequest`, so `test_defaults` lowers to `None`: a bare
+`(Check …)`/`(Run …)` against an on-host daemon is rejected with
+`NoTestDefaults` rather than silently building a per-node baked test cluster. A
+test fixture — the `test_flake` and its cluster, host, and mode — is supplied
+only by the test invocation that runs the op, never per-node in this module.
+This instances the deployment-independence discipline (the `micro-components`
+skill: test clusters and fixtures are the sole exception and live only in test
+code), and requires a pinned lojix carrying the optional-`test_defaults` shape
+(`WriterTestDefaultsChoice`, lojix ≥ 0.4.1).
+
 ### Direction: the LojixOS split
 
 A planned rename-and-configuration split moves the generic OS substrate

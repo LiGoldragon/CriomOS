@@ -23,8 +23,16 @@ let
   ordinarySocket = "${runtimeDirectory}/ordinary.sock";
   ownerSocket = "${runtimeDirectory}/owner.sock";
   startupArchive = "${runtimeDirectory}/startup.rkyv";
+  # A production node bakes no test-op fixture: field 7 is `NoTestDefaults`, so
+  # the daemon's `test_defaults` lowers to `None` and a bare `(Check …)`/`(Run
+  # …)` is rejected with `NoTestDefaults` rather than silently building a
+  # per-node baked test cluster. The test fixture (test_flake, its cluster,
+  # host, mode) is supplied only by the test invocation that runs the op — never
+  # per-node here. Deployment-independence discipline (micro-components skill:
+  # test clusters and fixtures live only in test code). Requires a pinned lojix
+  # carrying the optional-`test_defaults` shape (`WriterTestDefaultsChoice`).
   startupRequest = pkgs.writeText "lojix-daemon-configuration.nota" ''
-    (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${config.networking.hostName} (goldragon prometheus Hermetic github:LiGoldragon/CriomOS-test-cluster ${stateDirectory}/cluster.nota) ${startupArchive}))
+    (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${config.networking.hostName} NoTestDefaults ${startupArchive}))
   '';
 in
 {
