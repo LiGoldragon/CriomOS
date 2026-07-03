@@ -74,6 +74,11 @@
     criome.url = "github:LiGoldragon/criome";
     criome.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Spirit journal daemon — the durable versioned intent record log.
+    # Consumed by modules/nixos/spirit.nix on nodes carrying a spirit service.
+    spirit.url = "github:LiGoldragon/spirit";
+    spirit.inputs.nixpkgs.follows = "nixpkgs";
+
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
     # so parity checks use the same installed service/socket path as production.
     lojix.url = "github:LiGoldragon/lojix";
@@ -153,6 +158,7 @@
             inherit inputs;
           };
           mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
+          spirit-role-policy = pkgs.callPackage ./checks/spirit-role-policy { inherit inputs; };
           persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
             inherit inputs;
           };
