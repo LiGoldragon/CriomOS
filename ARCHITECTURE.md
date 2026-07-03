@@ -177,6 +177,27 @@ window over routine full charging. Synthetic bare-metal firmware-gating
 work stays generic, avoids unrelated unfree firmware, and is verified
 with constrained Nix checks.
 
+### Deployment-agnostic OS layer
+
+CriomOS is deployment-agnostic. Deployment specifics — which host, which user,
+whether a service runs at system or user level, and how a remote deploy
+authenticates — do not belong hard-wired in the OS layer; hard-wiring such a
+specific into a CriomOS module is a defect. This generalizes the network-neutral
+rule above from node names to every deployment fact: cluster, node, user, and
+deployment identity enter as projected data (Horizon and the per-deploy flake
+inputs), and modules render that data rather than baking an operator name, a
+cluster-proposal source, a trust mode, or a credential path as a literal.
+
+The deploy orchestrator (Lojix) runs as the operator's user-level service, not a
+system service pinned to a fixed user. Its unattended identity and remote-deploy
+credentials are a deployment concern owned outside the OS module — not the
+operator's login session borrowed in through a system unit.
+
+Constraints (test seeds): a CriomOS module must not contain an operator-username
+literal, a cluster / node / trust value used as a deploy-target constant, or a
+credential-socket path as a source constant; and the deploy orchestrator is
+declared as a user service, not a system service.
+
 ### Direction: the LojixOS split
 
 A planned rename-and-configuration split moves the generic OS substrate
