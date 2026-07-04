@@ -73,17 +73,11 @@ pkgs.testers.runNixOSTest {
         # The distinct per-node signing identity — equal to the co-resident
         # persona-router's identity so the milestone-3 forward verifies on a peer.
         nodeIdentity = nodeIdentity;
-        # The peer node's key is seeded into this criome's registry at startup
-        # (the v1 hardwired cross-instance trust anchor). Placeholder key/finger
-        # for the single-node build; T4 supplies the peer's real public key.
-        peerIdentitySeeds = [
-          {
-            name = peerIdentity;
-            publicKey = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
-            fingerprint = "${peerIdentity}-fingerprint";
-            purpose = "CriomeRoot";
-          }
-        ];
+        # No peer-identity hand-seed: the criome module retired `peerIdentitySeeds`
+        # for the clean-genesis founding posture (primary-79z1.3). The peer's key
+        # is now enrolled by the founding ceremony (its founding-cohort keys seed
+        # the registry), read from the peer via `ObserveNodePublicKey`. This
+        # single-node build witness never contacts the peer, so it needs no seed.
       };
     };
 

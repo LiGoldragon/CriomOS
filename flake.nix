@@ -169,6 +169,9 @@
           lojix-daemon-config-roundtrip = pkgs.callPackage ./checks/lojix-daemon-config-roundtrip {
             inherit inputs;
           };
+          criome-daemon-config-roundtrip = pkgs.callPackage ./checks/criome-daemon-config-roundtrip {
+            inherit inputs;
+          };
           spirit-role-policy = pkgs.callPackage ./checks/spirit-role-policy { inherit inputs; };
           persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
             inherit inputs;

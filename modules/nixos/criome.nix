@@ -4,16 +4,23 @@
 # DEPLOY DISCIPLINE. criome-daemon takes exactly one pre-generated rkyv
 # `SignalFile` argument and parses no NOTA (no flags). So the typed
 # `CriomeDaemonConfiguration` this module authors as a single positional NOTA
-# record is sealed into the rkyv artifact in `ExecStartPre` by the one-argument
-# `criome-encode-configuration` deploy encoder, then `ExecStart` launches
-# `criome-daemon <config.rkyv>`. This is the criome sibling of mirror's
-# `mirror-write-configuration` ExecStartPre step.
+# record is written to an inspectable `criome-config.nota` store artifact, then
+# sealed into the rkyv artifact in `ExecStartPre` by the one-argument
+# `criome-encode-configuration` deploy encoder (which reads that `.nota` file),
+# and `ExecStart` launches `criome-daemon <config.rkyv>`. This is the criome
+# sibling of mirror's `mirror-write-configuration` ExecStartPre step. Emitting
+# the NOTA as a named file (rather than an embedded shell argument) lets the
+# `criome-daemon-config-roundtrip` flake check feed the module's exact record to
+# the pinned encoder and fail the build on any positional-schema drift.
 #
 # TWO SOCKETS. The daemon binds its working socket (`${socketName}`) at 0660 —
-# a shared IPC surface a co-resident persona-router (in criome's group) dials —
-# and its meta socket (`${socketName}.meta`) at 0600 (owner-only local approval),
-# both under ${runtimeDir}, itself. A co-resident persona-router points its
-# `criome_socket_path` at the working socket and joins criome's group.
+# a shared IPC surface a co-resident persona-router (in criome's group) dials,
+# and the PUBLIC read surface that answers `ObserveNodePublicKey` (a node's
+# Criome master pubkey is read here during the founding ceremony) — and its meta
+# socket (`${socketName}.meta`) at 0600, the OWNER-ONLY control surface that
+# answers `AcceptRootFounding` (the explicit owner accept that founds the root,
+# no auto-approval), both under ${runtimeDir}. A co-resident persona-router
+# points its `criome_socket_path` at the working socket and joins criome's group.
 #
 # KEY CUSTODY (Spirit psc6 / key-custody q1le). criome's master signing key is
 # generated on first run and persisted at the store-derived path
@@ -22,11 +29,27 @@
 # the dedicated `criome` user so the daemon can create the key there. The secret
 # never leaves criome and is never placed in the Nix store.
 #
-# CROSS-INSTANCE IDENTITY SEED. `peerIdentitySeeds` issues a `RegisterIdentity`
-# for each peer criome's public key over the working socket in `ExecStartPost`,
-# the v1 hardwired trust anchor: with no `clusterRootPublicKey` configured the
-# registry admits the seed unconditionally; with one configured the seed must
-# carry a cluster-root admission. Empty for a single criome node.
+# CLEAN GENESIS — FOUNDED ROOT, NOT HAND-SEEDED (spec A1/A3, bead primary-79z1.3).
+# The authorized signer set is no longer hand-seeded at deploy time. The founding
+# ceremony (`AcceptRootFounding` on the owner-only meta socket, unanimous +
+# explicit owner accept) establishes the persistent root contract and seeds the
+# identity registry from its founding cohort keys, replacing the former single-key
+# `ClusterRoot` admission anchor. So this module RETIRES the old hand-seeding
+# surface entirely — no `RegisterIdentity` peer seeds, no `AdmitContract` quorum
+# contract, no `clusterRootPublicKey` anchor — because those wrote a pre-`parent`
+# (schema-v4) contract/identity shape that would fight the ceremony and cannot be
+# re-digested under the parent-bearing v5 `Contract`. `cluster_root` is therefore
+# always `None` in the emitted config. A founding node must set `nodeIdentity` to
+# its distinct `Host(<name>)` so it signs as a distinct cohort member.
+#
+# The v5 daemon REFUSES to open a pre-`parent` (v4) contract store, so a
+# clean-genesis boot requires an empty `${stateDir}` on first start. A fresh
+# TestVm disk satisfies this by construction; the daemon then self-registers its
+# own identity, awaits founding, and — once founded — persists the root and
+# self-resumes it across reboot (it never re-founds). This module deliberately
+# adds NO store wipe: an unconditional wipe would destroy the founded root on
+# every boot. A test VM carrying a stale v4 store (nothing to preserve) is reset
+# by recreating its disk, an operator/host action outside this module.
 
 {
   config,
@@ -47,129 +70,35 @@ let
   storePath = "${stateDir}/criome.sema";
   configRkyv = "${runtimeDir}/criome-config.rkyv";
 
-  clusterRootField =
-    if cfg.clusterRootPublicKey == null then "None" else "(Some ${cfg.clusterRootPublicKey})";
-
   # The identity this criome signs attestations as. Null keeps the daemon's
-  # historical Host("criome") default; a distinct per-node identity (e.g.
-  # "node-a") lets a peer criome that has registered this node's key under that
-  # identity cross-verify its attestations — the two-node witness trust anchor.
-  # Rendered as the (Optional Identity) NOTA field.
+  # historical Host("criome") default (single-node use); a founding cohort node
+  # MUST set a distinct per-node identity (e.g. "mirror-alpha") so it signs as a
+  # distinct `Host(<name>)` cohort member and a peer criome that has read this
+  # node's master pubkey (via `ObserveNodePublicKey`) can enroll and cross-verify
+  # it. Rendered as the (Optional Identity) NOTA field.
   nodeIdentityField =
     if cfg.nodeIdentity == null then "None" else "(Some (Host ${cfg.nodeIdentity}))";
 
   # The single typed CriomeDaemonConfiguration record as positional NOTA, in the
   # signal-criome schema field order: socket_path, store_path, meta_socket_path
-  # (Optional), cluster_root (Optional), AuthorizationMode, node_identity
-  # (Optional Identity). The encoder wraps it in a CriomeConfigurationArtifact
-  # carrying the rkyv output path and seals it.
+  # (Optional), cluster_root (Optional — always None under founding), Authorization-
+  # Mode, node_identity (Optional Identity). The encoder wraps it in a
+  # CriomeConfigurationArtifact carrying the rkyv output path and seals it.
   configurationArtifactNota =
     "(CriomeConfigurationArtifact "
-    + "(${socketPath} ${storePath} (Some ${metaSocketPath}) ${clusterRootField} ${cfg.authorizationMode} ${nodeIdentityField}) "
+    + "(${socketPath} ${storePath} (Some ${metaSocketPath}) None ${cfg.authorizationMode} ${nodeIdentityField}) "
     + "${configRkyv})";
 
-  encodeConfigurationScript = pkgs.writeShellScript "criome-encode-configuration" ''
-    set -eu
-    ${cfg.package}/bin/criome-encode-configuration ${lib.escapeShellArg configurationArtifactNota}
-  '';
+  # The record as an inspectable, checkable .nota artifact. The encoder classifies
+  # an existing path argument as a NotaFile and reads it (triad-runtime
+  # RawArgument::from_single), so ExecStartPre passes this file directly rather
+  # than an embedded shell argument. The `.nota` suffix documents the content
+  # type. Passing the file as the sole ExecStartPre token (no wrapper script) lets
+  # `criome-daemon-config-roundtrip` read the exact `.nota` from the emitted unit.
+  configurationArtifactNotaFile = pkgs.writeText "criome-config.nota" configurationArtifactNota;
 
-  # One ExecStartPost per peer seed: wait for the freshly-bound working socket,
-  # then register the peer identity. Re-running on restart is harmless (a
-  # duplicate Active identity returns a rejection reply, not a transport error).
-  seedScript =
-    seed:
-    pkgs.writeShellScript "criome-seed-${seed.name}" ''
-      set -eu
-      for _ in $(seq 1 100); do
-        [ -S ${lib.escapeShellArg socketPath} ] && break
-        sleep 0.1
-      done
-      CRIOME_SOCKET=${lib.escapeShellArg socketPath} ${cfg.package}/bin/criome \
-        ${
-          lib.escapeShellArg "(RegisterIdentity ((Host ${seed.name}) ${seed.publicKey} ${seed.fingerprint} ${seed.purpose} None))"
-        }
-    '';
-
-  # One ExecStartPost per admitted quorum contract: wait for the working socket,
-  # then AdmitContract a k-of-n Threshold over KeyMember Host identities. The
-  # digest is content-addressed (blake3-over-rkyv of the contract), so every node
-  # that admits the identical contract derives the identical ContractDigest that
-  # the mirror quorum round and the Spirit apply gate reference. Admission does
-  # not require the member keys to be registered (that is checked later at
-  # vote/evaluation time); strict majority is enforced at admission. Re-running on
-  # restart is harmless, like the identity seed (a re-admission returns a reply,
-  # not a transport error). Requires authorizationMode = "Quorum" for the admitted
-  # contract to be evaluated (the module default).
-  admitContractScript =
-    contract:
-    let
-      memberNota =
-        lib.concatMapStringsSep " " (member: "(KeyMember (Host ${member}))") contract.keyMembers;
-      admitNota = "(AdmitContract (Threshold (${toString contract.requiredSignatures} [${memberNota}])))";
-    in
-    pkgs.writeShellScript "criome-admit-${contract.name}" ''
-      set -eu
-      for _ in $(seq 1 100); do
-        [ -S ${lib.escapeShellArg socketPath} ] && break
-        sleep 0.1
-      done
-      CRIOME_SOCKET=${lib.escapeShellArg socketPath} ${cfg.package}/bin/criome \
-        ${lib.escapeShellArg admitNota}
-    '';
-
-  quorumContractModule = types.submodule {
-    options = {
-      name = mkOption {
-        type = types.str;
-        description = "A label for this contract's ExecStartPost seed unit fragment (script name only, not sent on the wire).";
-      };
-      requiredSignatures = mkOption {
-        type = types.ints.positive;
-        example = 2;
-        description = "The threshold k for a k-of-n quorum (signal-criome RequiredSignatureThreshold). Strict majority (k > n/2) is enforced at admission.";
-      };
-      keyMembers = mkOption {
-        type = types.listOf types.str;
-        example = [
-          "mirror-alpha"
-          "mirror-beta"
-        ];
-        description = ''
-          The Host identity names that are the quorum members. Each is admitted
-          as `(KeyMember (Host <name>))`; the two-node mirror contract lists both
-          node identities so it is the shared 2-of-2 rule on every node.
-        '';
-      };
-    };
-  };
-
-  seedModule = types.submodule {
-    options = {
-      name = mkOption {
-        type = types.str;
-        description = "The peer criome host identity name (the `Host` principal registered).";
-      };
-      publicKey = mkOption {
-        type = types.str;
-        description = "The peer criome's BLS public key (hex), a bare NOTA atom.";
-      };
-      fingerprint = mkOption {
-        type = types.str;
-        description = "The peer key fingerprint, a bare NOTA atom.";
-      };
-      purpose = mkOption {
-        type = types.enum [
-          "CriomeRoot"
-          "PersonaRequest"
-          "AgentRequest"
-          "ReleaseAuthorization"
-          "HostPublication"
-        ];
-        default = "CriomeRoot";
-        description = "The peer key's purpose (signal-criome KeyPurpose).";
-      };
-    };
-  };
+  encodeConfigurationCommand =
+    "${cfg.package}/bin/criome-encode-configuration ${configurationArtifactNotaFile}";
 in
 {
   options.services.criome = {
@@ -180,8 +109,11 @@ in
       description = ''
         The criome package providing `criome-daemon` (the rkyv-only daemon),
         `criome-encode-configuration` (the deploy-time NOTA→rkyv encoder), and
-        the `criome` CLI client (used for the peer-identity seed). The criome
-        flake's `packages.default` provides all three.
+        the `criome` CLI client (the working-socket client used to read
+        `ObserveNodePublicKey`). The criome flake's `packages.default` provides
+        all three. Note: no meta-socket CLI ships in `packages.default` today, so
+        `AcceptRootFounding` (the founding accept) has no operator-facing tool yet
+        — see primary-79z1.3 return notes.
       '';
     };
 
@@ -190,21 +122,10 @@ in
       default = "criome.sock";
       description = ''
         The working Unix socket file name under ${runtimeDir}. The daemon binds
-        this socket — and its `${"\${socketName}"}.meta` sibling — at 0600
-        itself; clients (e.g. a co-resident persona-router) point their
-        `criome_socket_path` at the working socket.
-      '';
-    };
-
-    clusterRootPublicKey = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "b1c2...";
-      description = ''
-        The cluster-root BLS public key (hex), the trust anchor whose signature
-        admits keys into the registry. A bare NOTA atom. Left null starts the
-        daemon without a configured anchor (virgin bootstrap), under which the
-        registry admits `peerIdentitySeeds` unconditionally.
+        this socket at 0660 (the shared IPC + public read surface) — and its
+        `${"\${socketName}"}.meta` sibling at 0600 (owner-only) — itself; clients
+        (e.g. a co-resident persona-router) point their `criome_socket_path` at
+        the working socket.
       '';
     };
 
@@ -215,22 +136,27 @@ in
         "ClientApproval"
       ];
       default = "Quorum";
-      description = "The daemon's authorization mode (signal-criome AuthorizationMode).";
+      description = ''
+        The daemon's authorization mode (signal-criome AuthorizationMode). Quorum
+        is correct for a founded root: the founded root contract is a Threshold
+        evaluated under quorum.
+      '';
     };
 
     nodeIdentity = mkOption {
       type = types.nullOr types.str;
       default = null;
-      example = "node-a";
+      example = "mirror-alpha";
       description = ''
         The `Host` principal name this criome signs attestations as. Left null,
         the daemon keeps its historical `Host("criome")` identity (single-node
-        deployments are unchanged). Set to a distinct per-node name (e.g.
-        "node-a") so a peer criome that has registered this node's public key
-        under `Host(<name>)` can cross-verify its attestations, while an
-        unregistered or foreign key is refused fail-closed. For the co-resident
-        persona-router's milestone-3 forward path to verify on the peer, this
-        name must equal the local persona-router's `router_identity`.
+        deployments are unchanged). A founding cohort node MUST set a distinct
+        per-node name (e.g. "mirror-alpha") so it signs as a distinct
+        `Host(<name>)` cohort member; a peer criome that has enrolled this node's
+        master public key under `Host(<name>)` then cross-verifies its
+        attestations, while an unregistered or foreign key is refused fail-closed.
+        For a co-resident persona-router's forward path to verify on the peer,
+        this name must equal the local persona-router's `router_identity`.
       '';
     };
 
@@ -244,40 +170,6 @@ in
       type = types.str;
       default = "criome";
       description = "The dedicated group the daemon runs as.";
-    };
-
-    peerIdentitySeeds = mkOption {
-      type = types.listOf seedModule;
-      default = [ ];
-      description = ''
-        Peer criome identities to seed into this daemon's registry at startup
-        (the v1 hardwired cross-instance trust anchor). Each entry issues a
-        `RegisterIdentity` over the working socket in `ExecStartPost`. Empty for
-        a single criome node.
-      '';
-    };
-
-    quorumContracts = mkOption {
-      type = types.listOf quorumContractModule;
-      default = [ ];
-      example = [
-        {
-          name = "mirror-2-of-2";
-          requiredSignatures = 2;
-          keyMembers = [
-            "mirror-alpha"
-            "mirror-beta"
-          ];
-        }
-      ];
-      description = ''
-        Quorum contracts to admit into this daemon's contract store at startup.
-        Each entry issues an `AdmitContract` of a k-of-n `Threshold` over
-        `KeyMember` Host identities over the working socket in `ExecStartPost`.
-        The two-node mirror admits the same 2-of-2 contract on both nodes so the
-        content-addressed digest matches; empty for a node with no quorum
-        contract. Requires `authorizationMode = "Quorum"` (the default).
-      '';
     };
   };
 
@@ -302,13 +194,12 @@ in
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = stateDir;
-        ExecStartPre = [ encodeConfigurationScript ];
+        # Seal the typed NOTA config into the rkyv the daemon reads. No
+        # ExecStartPost: the founding ceremony (owner-driven, over the meta
+        # socket) establishes the signer set at runtime — the module seeds
+        # nothing into the registry or contract store at deploy time.
+        ExecStartPre = encodeConfigurationCommand;
         ExecStart = "${cfg.package}/bin/criome-daemon ${configRkyv}";
-        # Identity seeds first (the trust anchor), then admit the quorum
-        # contracts. Admission does not depend on the seeds, but keeping this
-        # order makes the startup posture read top-down: who we trust, then what
-        # rule binds them.
-        ExecStartPost = map seedScript cfg.peerIdentitySeeds ++ map admitContractScript cfg.quorumContracts;
         Restart = "on-failure";
         RestartSec = "5s";
         UMask = "0077";
@@ -325,10 +216,11 @@ in
 
     systemd.tmpfiles.rules = [
       # 0700 state dir: holds the durable SEMA store and the daemon's 0600
-      # master key, preserved across restarts so the daemon self-resumes.
+      # master key, preserved across restarts so the daemon self-resumes and,
+      # once founded, re-verifies its persisted root (never re-founds).
       "d ${stateDir} 0700 ${cfg.user} ${cfg.group} -"
-      # 0755 runtime dir: holds the regenerated config rkyv + the two 0600
-      # sockets the daemon binds.
+      # 0755 runtime dir: holds the regenerated config rkyv + the two sockets the
+      # daemon binds (working 0660, meta 0600).
       "d ${runtimeDir} 0755 ${cfg.user} ${cfg.group} -"
     ];
   };
