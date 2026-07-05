@@ -36,6 +36,7 @@
     criomos-home.inputs.horizon.follows = "horizon";
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
+    criomos-home.inputs.lojix.follows = "lojix";
     # Unify the spirit input with CriomOS's own, completing the shared-input
     # follows set above. CriomOS-home's home modules receive CriomOS-home's
     # flake inputs (userHomes.nix keeps `inputs` out of extraSpecialArgs), so
@@ -215,6 +216,8 @@
     blueprintOutputs
     // {
       checks = projectChecks;
+
+      homeConfigurations = inputs.criomos-home.homeConfigurations;
 
       nixosConfigurations.target = target;
 
