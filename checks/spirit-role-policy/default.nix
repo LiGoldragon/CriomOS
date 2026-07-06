@@ -2,12 +2,13 @@
 
 # Witness for modules/nixos/spirit.nix. Evaluates a nixosSystem carrying only
 # the spirit module (a plain enable-option service, not horizon-gated — unlike
-# mirror/persona-router), then asserts the systemd unit shape and the exact
-# ConfigurationWriteRequest NOTA the ExecStartPre encode script embeds. The
+# mirror/persona-router), then asserts the systemd unit shape, the exact
+# StoreMigrationRequest NOTA the first ExecStartPre script embeds, and the exact
+# ConfigurationWriteRequest NOTA the second ExecStartPre script embeds. The
 # `${spiritPackage}/bin/...` store-path references force the real spirit
-# package (spirit-daemon + spirit-write-configuration) to build, so a green
-# here proves both that the module evaluates and that the spirit service
-# closure builds.
+# package (spirit-daemon + spirit-migrate-store + spirit-write-configuration)
+# to build, so a green here proves both that the module evaluates and that the
+# spirit service closure builds.
 
 let
   inherit (inputs.nixpkgs) lib;
@@ -57,14 +58,15 @@ let
   service = enabledConfiguration.config.systemd.services.spirit;
   serviceConfig = service.serviceConfig;
 
-  # ExecStartPre is a one-element list holding the writeShellScript
-  # derivation itself (criome.nix's pattern, not persona-router's
-  # writeText-plus-CLI-arg pattern) — read the built script's own text to
-  # recover the embedded, shell-escaped NOTA record.
-  encodeScript = builtins.elemAt serviceConfig.ExecStartPre 0;
+  # ExecStartPre holds writeShellScript derivations themselves (criome.nix's
+  # pattern, not persona-router's writeText-plus-CLI-arg pattern) — read the
+  # built scripts' own text to recover the embedded, shell-escaped NOTA records.
+  storeMigrationScript = builtins.elemAt serviceConfig.ExecStartPre 0;
+  storeMigrationScriptText = builtins.readFile storeMigrationScript;
+  encodeScript = builtins.elemAt serviceConfig.ExecStartPre 1;
   encodeScriptText = builtins.readFile encodeScript;
 
-  guardianEncodeScript = builtins.elemAt guardianConfiguration.config.systemd.services.spirit.serviceConfig.ExecStartPre 0;
+  guardianEncodeScript = builtins.elemAt guardianConfiguration.config.systemd.services.spirit.serviceConfig.ExecStartPre 1;
   guardianEncodeScriptText = builtins.readFile guardianEncodeScript;
 
   systemPackageNames = lib.concatStringsSep " " (
@@ -88,6 +90,11 @@ pkgs.runCommand "spirit-role-policy" { } ''
   # working socket becomes group-accessible for the co-resident router.
   test ${lib.escapeShellArg groupAccessConfiguration.config.systemd.services.spirit.serviceConfig.UMask} = '0007'
   test ${lib.escapeShellArg (bool serviceConfig.NoNewPrivileges)} = true
+
+  test ${toString (builtins.length serviceConfig.ExecStartPre)} = 2
+  printf '%s' ${lib.escapeShellArg storeMigrationScriptText} | grep -F '/bin/spirit-migrate-store'
+  printf '%s' ${lib.escapeShellArg storeMigrationScriptText} | grep -F \
+    '(/var/lib/spirit/spirit.sema)'
 
   printf '%s' ${lib.escapeShellArg encodeScriptText} | grep -F '/bin/spirit-write-configuration'
   printf '%s' ${lib.escapeShellArg encodeScriptText} | grep -F \

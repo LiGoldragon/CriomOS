@@ -13,7 +13,11 @@
 # `spirit-write-configuration.rs` and `tests/process_boundary.rs`:
 # socket_path, meta_socket_path (Optional), database_path, trace_socket_path
 # (Optional), authorization_mode, guardian_agent_configuration (Optional),
-# output_path), then `ExecStart` launches `spirit-daemon <config.rkyv>`.
+# output_path). Before writing the config archive, `ExecStartPre` also runs
+# `spirit-migrate-store` against the durable store path. The migration command
+# is idempotent: a missing or current store reports `Current`, while pre-v13
+# production stores are folded forward before `spirit-daemon <config.rkyv>`
+# opens them.
 #
 # TWO SOCKETS, DIFFERENT ORIGIN. Spirit's `SpiritDaemonConfiguration` carries
 # no socket-mode field at all (unlike mirror's, which does): the generic
@@ -121,6 +125,16 @@ let
   guardianAgentField =
     if cfg.guardianAgent == null then "None" else "(Some ${guardianAgentNota cfg.guardianAgent})";
 
+  # spirit-migrate-store parses StoreMigrationRequest as the bare one-field
+  # tuple shape (database_path) because it is the root decoded type, not a
+  # variant carried under another enum.
+  storeMigrationRequestNota = "(${storePath})";
+
+  storeMigrationScript = pkgs.writeShellScript "spirit-store-migration" ''
+    set -eu
+    ${cfg.package}/bin/spirit-migrate-store ${lib.escapeShellArg storeMigrationRequestNota}
+  '';
+
   # The single ConfigurationWriteRequest NOTA record, in
   # spirit-write-configuration's field order: socket_path, meta_socket_path
   # (Optional), database_path, trace_socket_path (always None — see above),
@@ -144,9 +158,10 @@ in
       type = types.package;
       description = ''
         The spirit package providing `spirit-daemon` (the rkyv-only daemon),
-        `spirit-write-configuration` (the deploy-time NOTA→rkyv encoder), and
-        the `spirit`/`meta-spirit` CLI clients. The spirit flake's
-        `packages.default` provides all four.
+        `spirit-write-configuration` (the deploy-time NOTA→rkyv encoder),
+        `spirit-migrate-store` (the idempotent store-schema migration tool),
+        and the `spirit`/`meta-spirit` CLI clients. The spirit flake's
+        `packages.default` provides all required binaries.
       '';
     };
 
@@ -232,7 +247,10 @@ in
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = stateDir;
-        ExecStartPre = [ encodeConfigurationScript ];
+        ExecStartPre = [
+          storeMigrationScript
+          encodeConfigurationScript
+        ];
         ExecStart = "${cfg.package}/bin/spirit-daemon ${configRkyv}";
         Restart = "on-failure";
         RestartSec = "5s";
