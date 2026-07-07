@@ -1,7 +1,5 @@
 # Agent instructions — CriomOS
 
-You **MUST** read AGENTS.md at `github:ligoldragon/lore` — the workspace contract. After devshell entry it's also symlinked locally at `repos/lore/AGENTS.md`.
-
 ## Repo role
 
 NixOS-based host OS for the sema ecosystem. Network-neutral system surface (`nixosConfigurations.target`) consumed by lojix-projected `horizon`, `system`, and `deployment` flake inputs.
