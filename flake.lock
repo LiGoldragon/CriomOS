@@ -783,15 +783,14 @@
           "system"
         ],
         "uv2nix": "uv2nix",
-        "visualjj-vsix": "visualjj-vsix",
-        "whisrs-src": "whisrs-src"
+        "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783499409,
-        "narHash": "sha256-TBcu0CGn8HDI/ivjp17Q4fYM1ejb3XsfNd56TX1UPfY=",
+        "lastModified": 1783503332,
+        "narHash": "sha256-ZAjkbonKf/SRlcV9619ldsybMHWwu/hBklHUvDKpfr4=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "ef2184c58eee789882dc0237f708bae392b093ba",
+        "rev": "74e309a75e85f39c1e7e0e01eaf480999285e980",
         "type": "github"
       },
       "original": {
@@ -4276,23 +4275,6 @@
       "original": {
         "type": "file",
         "url": "https://open-vsx.org/api/visualjj/visualjj/linux-x64/0.28.1/file/visualjj.visualjj-0.28.1@linux-x64.vsix"
-      }
-    },
-    "whisrs-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1779095656,
-        "narHash": "sha256-JHq219h8IFTaJJCXe2ZC6ZFuI1eF9ZT3s6fTPPRqZEk=",
-        "owner": "LiGoldragon",
-        "repo": "whisrs",
-        "rev": "c32c8bcf793abbe4492398c2b10738950972f2e5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "ref": "criomos",
-        "repo": "whisrs",
-        "type": "github"
       }
     },
     "xwayland-satellite-stable": {
