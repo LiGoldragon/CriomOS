@@ -28,7 +28,9 @@
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home";
+    # OS update branches pin the matching CriomOS-home update branch so the
+    # full-system rebuild proves the same home lock that was just updated.
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/criomos-home-update-2026-07-08";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
