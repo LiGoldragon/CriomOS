@@ -741,7 +741,6 @@
         "pi-subagents-tintinweb-croner-src": "pi-subagents-tintinweb-croner-src",
         "pi-subagents-tintinweb-nanoid-src": "pi-subagents-tintinweb-nanoid-src",
         "pi-subagents-tintinweb-src": "pi-subagents-tintinweb-src",
-        "pi-subagents-tintinweb-testing-src": "pi-subagents-tintinweb-testing-src",
         "pi-subagents-tintinweb-typebox-src": "pi-subagents-tintinweb-typebox-src",
         "pi-ultra-subagents-src": "pi-ultra-subagents-src",
         "pi-ultra-subagents-typebox-src": "pi-ultra-subagents-typebox-src",
@@ -787,11 +786,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783514868,
-        "narHash": "sha256-0MoIkRWuT8ywY+YrGvAHKJl9XhuegMvUzOixzojxP2g=",
+        "lastModified": 1783527061,
+        "narHash": "sha256-wwsTvaqve1xi+81zHcz2owaLQK3DoaZpwbtqEX7buig=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "75e5d79b2f1177970dedc3d491d22cc20a7307cd",
+        "rev": "24e84ce70cd4862347bb4b039d361266dc89f45e",
         "type": "github"
       },
       "original": {
@@ -2317,18 +2316,6 @@
       }
     },
     "pi-subagents-tintinweb-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-e6Alht5zETUCpx7oNZ/VRcDTZ25OuPsIxBOr4SrAWio=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/@tintinweb/pi-subagents/-/pi-subagents-0.13.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/@tintinweb/pi-subagents/-/pi-subagents-0.13.0.tgz"
-      }
-    },
-    "pi-subagents-tintinweb-testing-src": {
       "flake": false,
       "locked": {
         "lastModified": 1783514477,
