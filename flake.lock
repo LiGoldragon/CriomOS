@@ -786,11 +786,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783584412,
-        "narHash": "sha256-m9bFTi4m11lfPDAmtx14Aws6Ppr+9v6yd8skklN4in4=",
+        "lastModified": 1783589855,
+        "narHash": "sha256-roOZatz7TIQ5PG8msIzIcsM3G7ZBkkudAGovwmOco0M=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "65bc526fd8be92e7fbc88f3ae060c83b9d5509d1",
+        "rev": "61731b881052a33955982685abc5098da7cdb601",
         "type": "github"
       },
       "original": {
@@ -1806,15 +1806,16 @@
         "rust-build": "rust-build_3"
       },
       "locked": {
-        "lastModified": 1783442028,
-        "narHash": "sha256-vUBAZzZe9EFhQITxGNM/gBYCLgqpMKkk7k76YcoJBO8=",
+        "lastModified": 1783589693,
+        "narHash": "sha256-z8h10TGFQaNjuJmrLlkwlaJlRnkJgWYuSQoycPaDwdU=",
         "owner": "LiGoldragon",
         "repo": "mentci-egui",
-        "rev": "6b1b38bec868e2d1a4ee18121e305497c9de6aee",
+        "rev": "ca655f3287c05e3bbe27be1e06a05473c54c08c1",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "mentci-egui-os-update-2026-07-08",
         "repo": "mentci-egui",
         "type": "github"
       }
@@ -1822,15 +1823,16 @@
     "mentci-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1783244812,
-        "narHash": "sha256-tbX6SM/M1YhaFoFlZx33cBo916/5J3i/0YWxce0CKaY=",
+        "lastModified": 1783589209,
+        "narHash": "sha256-Kbjby3CMMMP8aF3iUTLeuKWBL4hVnCGjMBAdZM1LOjU=",
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "dfb073069e45597e47ddc507198924f5a7952512",
+        "rev": "f2b20cdf60b264b039d16e7e3087b744d7e9fd78",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "mentci-os-update-2026-07-08",
         "repo": "mentci",
         "type": "github"
       }
