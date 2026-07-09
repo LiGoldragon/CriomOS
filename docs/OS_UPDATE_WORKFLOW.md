@@ -1,6 +1,6 @@
 # CriomOS OS update workflow
 
-This workflow updates the operator home environment and the host OS lockfiles without activating a host. A later activation or boot-profile change is a separate authorized operation.
+This workflow updates the operator home environment and the host OS lockfiles without activating a host. A later activation or boot-profile change is a separate authorized operation. The update is a forward-fix loop: keep the update branches moving, repair ordinary evaluation and build fallout in source, repin dependents, and retry the remote-only rebuild until it completes or reaches a true policy or safety stop.
 
 ## Coordination and source shape
 
@@ -50,6 +50,19 @@ jj git push --bookmark criomos-update-YYYY-MM-DD
 ```
 
 This makes the rebuild self-contained: a build from the pushed CriomOS update revision includes the pushed CriomOS-home update branch through the committed `flake.nix` and `flake.lock`.
+
+## Compatibility breakage loop
+
+Small update breakages are part of the update, not a reason to abandon the branch. Continue forward when the failure is ordinary flake-update fallout: renamed Home Manager options, upstream module migrations, lock repins, package build fixes, or evaluation compatibility changes that are contained in CriomOS or its source inputs.
+
+1. Read the failing upstream module or source at the locked revision before editing; do not guess from memory.
+2. Fix the compatibility issue in the owning source repository, preserving behavior where practical.
+3. When exact parity is not safe or the upstream model changed shape, choose the closest safe equivalent and document the migration note in the source or workflow guidance.
+4. Commit and push the producer branch.
+5. Repin the consuming CriomOS lock to the new producer commit without resolving unrelated mutable heads.
+6. Commit and push CriomOS, then rerun the full remote-only rebuild from the pushed CriomOS revision.
+
+Stop only for an activation or switch request, destructive or irreversible action, secrets/private exposure, credential or account requirements, high-blast-radius redesign, or a true policy/design fork. Do not stop for ordinary evaluation/build fallout that can be fixed forward on the update branches.
 
 ## Remote-only full OS rebuild
 
