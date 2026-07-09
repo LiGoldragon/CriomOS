@@ -57,17 +57,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1783597505,
-        "narHash": "sha256-Kv6c/DVO8cd+uG9lWUeTnd5nQUAGApGqzDoszEoWBVo=",
+        "lastModified": 1783617841,
+        "narHash": "sha256-tfWN3R96/y0N3673MyBronN/TnIaNdWpbU4i49DW1ds=",
         "owner": "LiGoldragon",
         "repo": "aggregator",
-        "rev": "dbd1857dc557bb3e485718dc57d1418dc93e2c96",
+        "rev": "5853dcb8f2876f78c5032978f9482c879a5eb627",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "aggregator",
-        "rev": "dbd1857dc557bb3e485718dc57d1418dc93e2c96",
+        "rev": "5853dcb8f2876f78c5032978f9482c879a5eb627",
         "type": "github"
       }
     },
@@ -786,11 +786,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783605650,
-        "narHash": "sha256-lPfYqWIsY5f5Poc0yIpsZjMt6dvdVKhQLdJTbo1dbbo=",
+        "lastModified": 1783619125,
+        "narHash": "sha256-2tge/ROwtNhwToI58qQg/S5smTJpjqVRZXZjcpsqEGQ=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "50513922e795fdf801e5213134d23190cca69db8",
+        "rev": "bef9b9df1e711b92fff2443436d741b77fb7c0b8",
         "type": "github"
       },
       "original": {
@@ -2318,17 +2318,17 @@
     "pi-subagents-tintinweb-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1783605215,
-        "narHash": "sha256-z4PtpLixJaMX64jb+vo5LpOoBYItU+4QMI5KLGWDZOk=",
+        "lastModified": 1783618882,
+        "narHash": "sha256-trDD4bPUhp8bUWa1rBmP0L22ciQt3V8eKL9x1CrvffQ=",
         "owner": "LiGoldragon",
         "repo": "pi-subagents",
-        "rev": "1a26c0dca1392fcd3cef50f2cbdb41e446beed6d",
+        "rev": "068026a8f410973fdb5dac47d0f2d2ff0b613b02",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "pi-subagents",
-        "rev": "1a26c0dca1392fcd3cef50f2cbdb41e446beed6d",
+        "rev": "068026a8f410973fdb5dac47d0f2d2ff0b613b02",
         "type": "github"
       }
     },
