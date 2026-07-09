@@ -2707,15 +2707,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1783443370,
-        "narHash": "sha256-o9fWNURy9e05whD2GWmww4vpRe+apHVC/JlyWfvbMHU=",
+        "lastModified": 1783585000,
+        "narHash": "sha256-ThiM0xyyko0SltgymRKLxm41QQurblrhqkzEyAJHlco=",
         "owner": "LiGoldragon",
         "repo": "repository-ledger",
-        "rev": "b4fb536a7f6548b98844bc65aba7fce16bac396c",
+        "rev": "33dc91bf53a1c155695802022722a658022d63e8",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "repository-ledger-os-update-2026-07-08",
         "repo": "repository-ledger",
         "type": "github"
       }

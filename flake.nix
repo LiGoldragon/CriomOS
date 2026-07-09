@@ -62,7 +62,7 @@
 
     # Repository event ledger. Consumed by modules/nixos/repository-receive.nix
     # on persona-development hosts.
-    repository-ledger.url = "github:LiGoldragon/repository-ledger";
+    repository-ledger.url = "github:LiGoldragon/repository-ledger/repository-ledger-os-update-2026-07-08";
     repository-ledger.inputs.nixpkgs.follows = "nixpkgs";
 
     # SEMA version-control mirror daemon. Consumed by modules/nixos/mirror.nix
