@@ -786,11 +786,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783670542,
-        "narHash": "sha256-m1vfKWg/RqWsOgInt9+JJHFjmtlrJBNyryq9dOGPtME=",
+        "lastModified": 1783678605,
+        "narHash": "sha256-dIYWhh4CvaBEx/HxaKnjg5Wb6KEKmnAbnm12/ci54ak=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e4ca8c53346252fee3dbf1b0407998b8ddacf55d",
+        "rev": "5032a17c4f927e79d9c4a15e234084b01e8bf6fa",
         "type": "github"
       },
       "original": {
