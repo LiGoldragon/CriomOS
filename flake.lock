@@ -734,6 +734,13 @@
         "noctalia": "noctalia",
         "orchestrate": "orchestrate",
         "pi-continue-src": "pi-continue-src",
+        "pi-intercom-esbuild-linux-x64-src": "pi-intercom-esbuild-linux-x64-src",
+        "pi-intercom-esbuild-src": "pi-intercom-esbuild-src",
+        "pi-intercom-get-tsconfig-src": "pi-intercom-get-tsconfig-src",
+        "pi-intercom-resolve-pkg-maps-src": "pi-intercom-resolve-pkg-maps-src",
+        "pi-intercom-src": "pi-intercom-src",
+        "pi-intercom-tsx-src": "pi-intercom-tsx-src",
+        "pi-intercom-typebox-src": "pi-intercom-typebox-src",
         "pi-linkup-src": "pi-linkup-src",
         "pi-session-namer": "pi-session-namer",
         "pi-src": "pi-src",
@@ -786,11 +793,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783678605,
-        "narHash": "sha256-dIYWhh4CvaBEx/HxaKnjg5Wb6KEKmnAbnm12/ci54ak=",
+        "lastModified": 1783679034,
+        "narHash": "sha256-VJXUBkiIzj0kOxCSM0yUFg9y6geZ9mRQyz+2eNMAXl8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5032a17c4f927e79d9c4a15e234084b01e8bf6fa",
+        "rev": "e0b302db57da4e426c41fcbfe4e0418c2470b0a4",
         "type": "github"
       },
       "original": {
@@ -2226,6 +2233,90 @@
       "original": {
         "type": "file",
         "url": "https://registry.npmjs.org/pi-continue/-/pi-continue-0.9.3.tgz"
+      }
+    },
+    "pi-intercom-esbuild-linux-x64-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-E7jYAxlpkdsBMtDodAtHYvM8NLk2/2VsXcpNUkPnZe8=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.0.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.0.tgz"
+      }
+    },
+    "pi-intercom-esbuild-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-3qJWv2y1iC99w1fTdW00fC2GcQdUZf1wYGs8zLe7608=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.0.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.0.tgz"
+      }
+    },
+    "pi-intercom-get-tsconfig-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-UjZrrD+jeyxEBji+YVm0Ay51X/NXtsGuu0aoXLLPt7s=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/get-tsconfig/-/get-tsconfig-4.7.5.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/get-tsconfig/-/get-tsconfig-4.7.5.tgz"
+      }
+    },
+    "pi-intercom-resolve-pkg-maps-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-RaYiDs2GiN3/BZdLwoz69w4oOhb3RmtcU9kBUnpEfKQ=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz"
+      }
+    },
+    "pi-intercom-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-S3IJYICzhXtJZsazq/scywd5GoYZzZfjtIWzY7UOw2s=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/pi-intercom/-/pi-intercom-0.6.0.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/pi-intercom/-/pi-intercom-0.6.0.tgz"
+      }
+    },
+    "pi-intercom-tsx-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-ouVzRxrh+WEZWE5UsQgTfkPLtZt91sJUd5gXqegaanQ=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/tsx/-/tsx-4.20.0.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/tsx/-/tsx-4.20.0.tgz"
+      }
+    },
+    "pi-intercom-typebox-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-rC5tVD5KCgApBcWKCOQlU2G/36vetIQGaU2JsUYUKQE=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/typebox/-/typebox-1.1.38.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/typebox/-/typebox-1.1.38.tgz"
       }
     },
     "pi-linkup-src": {
