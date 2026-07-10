@@ -759,20 +759,7 @@
         "pi-linkup-src": "pi-linkup-src",
         "pi-session-namer": "pi-session-namer",
         "pi-src": "pi-src",
-        "pi-subagents-chalk-src": "pi-subagents-chalk-src",
-        "pi-subagents-get-east-asian-width-src": "pi-subagents-get-east-asian-width-src",
-        "pi-subagents-jiti-src": "pi-subagents-jiti-src",
-        "pi-subagents-marked-src": "pi-subagents-marked-src",
-        "pi-subagents-mime-db-src": "pi-subagents-mime-db-src",
-        "pi-subagents-mime-types-src": "pi-subagents-mime-types-src",
-        "pi-subagents-mime-types-types-src": "pi-subagents-mime-types-types-src",
-        "pi-subagents-pi-tui-src": "pi-subagents-pi-tui-src",
         "pi-subagents-src": "pi-subagents-src",
-        "pi-subagents-tintinweb-croner-src": "pi-subagents-tintinweb-croner-src",
-        "pi-subagents-tintinweb-nanoid-src": "pi-subagents-tintinweb-nanoid-src",
-        "pi-subagents-tintinweb-src": "pi-subagents-tintinweb-src",
-        "pi-subagents-tintinweb-typebox-src": "pi-subagents-tintinweb-typebox-src",
-        "pi-subagents-typebox-src": "pi-subagents-typebox-src",
         "pi-ultra-subagents-src": "pi-ultra-subagents-src",
         "pi-ultra-subagents-typebox-src": "pi-ultra-subagents-typebox-src",
         "pi-utils-ui-src": "pi-utils-ui-src",
@@ -819,11 +806,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783710786,
-        "narHash": "sha256-vwDJ8SKGHZ7wKFSJXAkoIWIut6jRpqkxn3bq4yfvPh0=",
+        "lastModified": 1783713265,
+        "narHash": "sha256-jiOdu6Szvle6yJjPoqoBA4qRDAzpdJeAQjU7/lIemeg=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e9ede4faaf2191e264024c0d5aaac633e0160c24",
+        "rev": "c8209627dfead81712dfec54f69b7a3a5a5be304",
         "type": "github"
       },
       "original": {
@@ -2471,177 +2458,21 @@
         "type": "github"
       }
     },
-    "pi-subagents-chalk-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-gAgABZFORwqCqGH3Q7O7TIhMGB2A5wPTDc0zfmhnnHo=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/chalk/-/chalk-5.5.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/chalk/-/chalk-5.5.0.tgz"
-      }
-    },
-    "pi-subagents-get-east-asian-width-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-04+KflICgqkf+uuYKdWZ+hIwSd8lFMdOXzs88xe8v/k=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/get-east-asian-width/-/get-east-asian-width-1.3.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/get-east-asian-width/-/get-east-asian-width-1.3.0.tgz"
-      }
-    },
-    "pi-subagents-jiti-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-WGZkCg3u7QFTcbTRJIVVI7E+WrjgYb8rBxVFDSZOBdc=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/jiti/-/jiti-2.7.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/jiti/-/jiti-2.7.0.tgz"
-      }
-    },
-    "pi-subagents-marked-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-nPh3vtJjHL/5i524e9dyI0UVuQt/fCGIpJ2gqYIFlVE=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/marked/-/marked-15.0.12.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/marked/-/marked-15.0.12.tgz"
-      }
-    },
-    "pi-subagents-mime-db-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-GxYLLR598lHq8hf0xn4qOhwNwSo/em7AmsSBEOa0OpI=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/mime-db/-/mime-db-1.54.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/mime-db/-/mime-db-1.54.0.tgz"
-      }
-    },
-    "pi-subagents-mime-types-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-RFIIx7j6+07mDFsrA0UsfDsbwI03fNECjMO+/ErCrQk=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/mime-types/-/mime-types-3.0.1.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/mime-types/-/mime-types-3.0.1.tgz"
-      }
-    },
-    "pi-subagents-mime-types-types-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-/KDYXd2PNAvtlON7MLRu3mnX63U0vp2BYSXGlflHgM0=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/@types/mime-types/-/mime-types-2.1.4.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/@types/mime-types/-/mime-types-2.1.4.tgz"
-      }
-    },
-    "pi-subagents-pi-tui-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-qGVD6oEEjQTNbBWGjpDHPWQiC5RnBXQdGHZPqVmcDh0=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.74.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.74.0.tgz"
-      }
-    },
     "pi-subagents-src": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-EmDqAPVqJ6hxuA3Yj8SikM2kA/oI6D1QEe/gPvJbIVw=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/pi-subagents/-/pi-subagents-0.31.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/pi-subagents/-/pi-subagents-0.31.0.tgz"
-      }
-    },
-    "pi-subagents-tintinweb-croner-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-ALwrNx3dmFs1vGdzV/T1xwQG4uS24OUi9JKw1C9AlRg=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/croner/-/croner-10.0.1.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/croner/-/croner-10.0.1.tgz"
-      }
-    },
-    "pi-subagents-tintinweb-nanoid-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-2rkaMwLJwBs5Ae/rF9niIE8GVsQMXRDWDP7NCYbawCU=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/nanoid/-/nanoid-5.1.16.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/nanoid/-/nanoid-5.1.16.tgz"
-      }
-    },
-    "pi-subagents-tintinweb-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1783620796,
-        "narHash": "sha256-FSFWALDcmEX5EE3bfm9iCm7RaNqGH7H1A6dJCKsiDm0=",
+        "lastModified": 1783712827,
+        "narHash": "sha256-4q7+0eV2V43x4ofhjcgcCZIJ5/6q6WmEMKKqIUHEwFQ=",
         "owner": "LiGoldragon",
-        "repo": "pi-subagents",
-        "rev": "49697bccba12aaa50ac90f2dd54fbe71d4fd0265",
+        "repo": "pi-subagents-nicobailon",
+        "rev": "41c3048a3182fc2c874943f4768260677e1da967",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "repo": "pi-subagents",
-        "rev": "49697bccba12aaa50ac90f2dd54fbe71d4fd0265",
+        "repo": "pi-subagents-nicobailon",
+        "rev": "41c3048a3182fc2c874943f4768260677e1da967",
         "type": "github"
-      }
-    },
-    "pi-subagents-tintinweb-typebox-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-C5ciWoqbrQO23eenDCqavyW1DowP6JToLLgOYlFqRso=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.34.49.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.34.49.tgz"
-      }
-    },
-    "pi-subagents-typebox-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-E3MPFd7hwFYooj0LIEjSsecn3K45/oxEdq+kYjvdokc=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/typebox/-/typebox-1.1.24.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/typebox/-/typebox-1.1.24.tgz"
       }
     },
     "pi-ultra-subagents-src": {
