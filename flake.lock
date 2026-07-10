@@ -819,11 +819,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783705218,
-        "narHash": "sha256-VKdI53Voynzec9M/DWn6E6HtOlpMvIMnM3qJxhZb9nI=",
+        "lastModified": 1783705898,
+        "narHash": "sha256-WxnTECQL3gTZJZpHv2BT0PgukfjlsO74F4d8EPFSObk=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "1011c1e9e4c1743f2519dd44cf3c287ceed10fa2",
+        "rev": "3547d1fda067fdc64f45ff2a9b36f1b583145fed",
         "type": "github"
       },
       "original": {
@@ -4064,11 +4064,11 @@
         "rust-build": "rust-build_5"
       },
       "locked": {
-        "lastModified": 1783701041,
-        "narHash": "sha256-x0hac5Ryt4zMZjNzGu6CugOSGhhb1PHhaemNR4iOnRc=",
+        "lastModified": 1783705692,
+        "narHash": "sha256-PUDtpngsHW2jZ0udqKCKfc91IVUZqz39p7zA8Pn8CEk=",
         "owner": "LiGoldragon",
         "repo": "spirit-judge",
-        "rev": "eb9f9daf8bd9b71540707c027955b580dcf0f98d",
+        "rev": "53951d5102248fddc3fb479db44b103e92f8b69a",
         "type": "github"
       },
       "original": {
@@ -4080,11 +4080,11 @@
     "spirit-judge-config": {
       "flake": false,
       "locked": {
-        "lastModified": 1783543769,
-        "narHash": "sha256-0W+7MHxSWWeO60whAAQ7SpyUHcfFe/OlW6OZrzpXBZ8=",
+        "lastModified": 1783705588,
+        "narHash": "sha256-R/+o3UB7WHdn/NtRtl17MePADNt+hAZoo9mhfWj6Ya8=",
         "owner": "LiGoldragon",
         "repo": "spirit-judge-config",
-        "rev": "d2f8a8f390edfb599856d94773ff4b17d92df267",
+        "rev": "1daae413aa85753f49d2f3b849ff1b81fca39e4e",
         "type": "github"
       },
       "original": {
