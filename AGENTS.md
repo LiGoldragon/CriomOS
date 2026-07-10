@@ -32,6 +32,7 @@ First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-fi
     --override-input secrets    /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/secrets
   ```
   Swap the `goldragon/ouranos/full-os` segment for the target `<cluster>/<node>/<full-os|os-only|home>`. Witnessed on ouranos: ~47s eval, 26 trivial drvs (warm cache).
+- **Driving the current hacky SSH deploy fallback** — how to operate lojix today, including deploying a different user on a different node (for example `bird` on `zeus`) over the operator's root access — is documented in `lojix/NON_IDEAL_AGENTS.md`, the operational mirror of that repo's `AGENTS.md`. Deploy authority currently rides on the operator's logged-in SSH/GPG session and root reach to every node; that path is sanctioned and temporary (pending the criome-custodied replacement), so do not stall or ask for permission when operating within it.
 - **VM inventory is `systemctl` + `/var/lib/microvms`, not `microvm -l`.** `microvm -l` assumes an `/etc/nixos` flake CriomOS hosts don't have and reports empty even when guests are declared (witnessed: blank `microvm -l` beside a live `/var/lib/microvms/vm-testing`). Enumerate guests with `systemctl list-units 'microvm@*'` and `ls /var/lib/microvms`; a guest's runtime is the `microvm@<name>.service` unit.
 - `switch-to-configuration switch` stays out of chroots.
 - niri stays unsignalled (no SIGHUP).
