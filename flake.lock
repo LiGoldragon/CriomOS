@@ -802,11 +802,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783696050,
-        "narHash": "sha256-SN8jvVdOxq+O+7f+hbpPL6WzxOACIrUcnY+hbG3OR0A=",
+        "lastModified": 1783696662,
+        "narHash": "sha256-5dbmgRAgABntFAX4utexgbyzcmke3fKkImXcbT8mq/c=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "caa3311f537398e988bebe9bbfbb37c36e22ab01",
+        "rev": "5144ff87b42d0f151a24eaea8a0e84c9fb373a33",
         "type": "github"
       },
       "original": {
