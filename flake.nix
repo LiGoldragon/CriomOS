@@ -215,12 +215,12 @@
     in
     blueprintOutputs
     // {
-      checks = {
-        x86_64-linux.spirit-judge-pin-chain = import ./checks/spirit-judge-pin-chain {
-          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
-          inherit inputs;
-        };
-      } // projectChecks;
+      checks = projectChecks;
+
+      spiritJudgePinChain = import ./checks/spirit-judge-pin-chain {
+        pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+        inherit inputs;
+      };
 
       homeConfigurations = inputs.criomos-home.homeConfigurations;
 
