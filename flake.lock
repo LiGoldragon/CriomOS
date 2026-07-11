@@ -806,11 +806,11 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1783776925,
-        "narHash": "sha256-KDYqmCgfxKMfXAOjOP3M2nSsosYbxZfmB1xN1jMMSJ8=",
+        "lastModified": 1783791343,
+        "narHash": "sha256-yBADPhGOOjFnYolH0StTex2JpxCE0vxIwjjT26kwGVQ=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "dc0a8943e7e0c32121cebca3df16474ed84c9a16",
+        "rev": "a3bf6ec09c33a3548a52a4f07843ea4998694dd9",
         "type": "github"
       },
       "original": {
@@ -1816,11 +1816,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783409478,
-        "narHash": "sha256-tVKIXHL8GTOeGi5hPN+fBCh2v8O2LbIrc2mnwOsguas=",
+        "lastModified": 1783781643,
+        "narHash": "sha256-KwMmtoTclYKDuZNYpS+lDc2joxplZYATjFDx4C6B0Zw=",
         "owner": "LiGoldragon",
         "repo": "listener",
-        "rev": "53440ca5e19a0fc88222b56c0d83691eaf764da8",
+        "rev": "c2483a507b9559c0610caadefe2eaf83fdb344e1",
         "type": "github"
       },
       "original": {
@@ -2374,13 +2374,18 @@
     "pi-intercom-src": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-S3IJYICzhXtJZsazq/scywd5GoYZzZfjtIWzY7UOw2s=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/pi-intercom/-/pi-intercom-0.6.0.tgz"
+        "lastModified": 1783781272,
+        "narHash": "sha256-y7hc6WCM4bskqd5wiJqKqsMuVHxLXcv9BA5oKY2fsdY=",
+        "owner": "LiGoldragon",
+        "repo": "pi-intercom",
+        "rev": "1fe0fcb210f235890363fbb5c667db4d0896f332",
+        "type": "github"
       },
       "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/pi-intercom/-/pi-intercom-0.6.0.tgz"
+        "owner": "LiGoldragon",
+        "repo": "pi-intercom",
+        "rev": "1fe0fcb210f235890363fbb5c667db4d0896f332",
+        "type": "github"
       }
     },
     "pi-intercom-tsx-src": {
@@ -2461,17 +2466,17 @@
     "pi-subagents-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1783714338,
-        "narHash": "sha256-dWHzsRUJ3Ol2jElEdjMupekrOSUKOccQJQkvlohS5Es=",
+        "lastModified": 1783781745,
+        "narHash": "sha256-IdlgfBzORnpEfDGhJEzmjXKnd155HNUliX0Poc5IwRY=",
         "owner": "LiGoldragon",
         "repo": "pi-subagents-nicobailon",
-        "rev": "68733be4dbeea1b1a99018c8745d044c9c472f37",
+        "rev": "30a81e484f8ab19aca1aeee87c46e08b95cf0aea",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "pi-subagents-nicobailon",
-        "rev": "68733be4dbeea1b1a99018c8745d044c9c472f37",
+        "rev": "30a81e484f8ab19aca1aeee87c46e08b95cf0aea",
         "type": "github"
       }
     },
