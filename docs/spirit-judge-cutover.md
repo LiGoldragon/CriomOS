@@ -30,7 +30,7 @@ Before live cutover, machine-check the deployment lock chain is exactly:
 - `spirit-judge` `c2303a30ff88fea527a8075b22f1d598a80fdb80`;
 - `spirit-judge-config` `b6a3fe7e0f91f2e5ff8ddec94ebfe2b489fc355d`;
 - `spirit` `f9f5266abec8a0bcf43b8bcc93cf066aa9f97ea2`; and
-- `CriomOS-home` `3391ee776da7c0d2d09b0609a58177009e1236b0`.
+- `CriomOS-home` `a0be781fa20f90caaa84aba1ad2d7e1bf6ac3c47`.
 
 The Home fake deployment check proves only rendered service wiring and argv.
 The separate `spirit-judge-cli-contract` check invokes the real package's
