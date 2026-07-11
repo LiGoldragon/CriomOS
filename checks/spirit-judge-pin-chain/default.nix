@@ -10,6 +10,12 @@ let
   require = condition: message: if condition then true else throw message;
   deploymentNodes = deploymentLock.nodes;
   homeNodes = homeLock.nodes;
+  pinGraph = builtins.toJSON {
+    criomosHome = deploymentNodes.criomos-home.locked.rev;
+    signalSpiritJudge = "7c25b71a34858c0d912dff8fd0b4f4ac213d7cd1";
+    spirit = deploymentNodes.spirit.locked.rev;
+    spiritJudge = deploymentNodes.spirit-judge.locked.rev;
+  };
 in
 assert require (deploymentNodes.criomos-home.locked.rev == "8cc609ebc2c5f145024510bd3fdbd7cd9f406f67") "unexpected CriomOS-home revision";
 assert require (deploymentNodes.spirit.locked.rev == "f9f5266abec8a0bcf43b8bcc93cf066aa9f97ea2") "unexpected Spirit revision";
@@ -20,5 +26,5 @@ pkgs.runCommand "spirit-judge-pin-chain" {
   allowSubstitutes = false;
   preferLocalBuild = false;
 } ''
-  touch "$out"
+  printf '%s\n' ${pkgs.lib.escapeShellArg pinGraph} > "$out"
 ''
