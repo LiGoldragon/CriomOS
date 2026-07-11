@@ -22,6 +22,20 @@ The catalogue policy file is declarative. The Home service command is the
 operative selection source and must be inspected or tested for the exact
 `openai-codex`, model, effort, timeout, and external-session reference.
 
+## Source-ready pin preflight
+
+Before live cutover, machine-check the deployment lock chain is exactly:
+
+- `signal-spirit-judge` `7c25b71a34858c0d912dff8fd0b4f4ac213d7cd1`;
+- `spirit-judge` `c2303a30ff88fea527a8075b22f1d598a80fdb80`;
+- `spirit-judge-config` `b6a3fe7e0f91f2e5ff8ddec94ebfe2b489fc355d`;
+- `spirit` `f9f5266abec8a0bcf43b8bcc93cf066aa9f97ea2`; and
+- `CriomOS-home` `3391ee776da7c0d2d09b0609a58177009e1236b0`.
+
+The Home fake deployment check proves only rendered service wiring and argv.
+The separate `spirit-judge-cli-contract` check invokes the real package's
+unauthenticated usage boundary; neither check authenticates or calls a model.
+
 ## Authorization and provider witnesses
 
 `codex-login` means the configured Codex executable's pre-existing ambient
@@ -41,6 +55,32 @@ For Luna compatibility and Terra production witnesses, record only:
 Do not retain prompts, record text, provider output, diagnostics, account data,
 or credentials. Run fake-executable tests for argv/auth/timeout mechanics and
 use at most one approved authenticated call for each live model witness.
+
+Use the locked Nix package rather than an ad-hoc Cargo project for every live
+component witness. The command accepts only a running typed judge socket and
+sends its own synthetic, public, non-database admission packet. For Luna, the
+socket must belong to an isolated judge process built from the same immutable
+package and configured with the approved Luna model; it must not be the Spirit
+daemon or open the production store. For Terra after activation, use the managed
+judge socket.
+
+```sh
+nix run --max-jobs 1 --cores 1 \
+  github:LiGoldragon/spirit-judge/c2303a30ff88fea527a8075b22f1d598a80fdb80#witness -- \
+  --socket "$SPIRIT_JUDGE_WITNESS_SOCKET" \
+  --model gpt-5.6-luna --effort medium \
+  --revision c2303a30ff88fea527a8075b22f1d598a80fdb80
+
+nix run --max-jobs 1 --cores 1 \
+  github:LiGoldragon/spirit-judge/c2303a30ff88fea527a8075b22f1d598a80fdb80#witness -- \
+  --socket "$HOME/.local/state/spirit/spirit-judge.sock" \
+  --model gpt-5.6-terra --effort medium \
+  --revision c2303a30ff88fea527a8075b22f1d598a80fdb80
+```
+
+The witness emits only parsed verdict class, model, effort, revision, and exit
+status. Treat a nonzero exit or `request-rejected`/`unavailable` class as a
+failed gate without preserving any additional output.
 
 ## Database safety
 
