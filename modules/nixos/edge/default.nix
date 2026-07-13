@@ -30,7 +30,11 @@ in
 mkIf behavesAs.edge {
 
   hardware = {
-    bluetooth.enable = true;
+    bluetooth = {
+      enable = true;
+      # Keep each adapter powered across BlueZ startup and hotplug events.
+      powerOnBoot = true;
+    };
     graphics.enable32Bit = size.large;
   };
 
