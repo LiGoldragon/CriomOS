@@ -102,8 +102,6 @@ mkIf behavesAs.edge {
     displayManager.sessionPackages = [ pkgs.niri ];
     avahi.enable = size.min;
 
-    blueman.enable = size.min;
-
     power-profiles-daemon.enable = false;
     upower.enable = size.min;
 
