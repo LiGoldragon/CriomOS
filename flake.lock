@@ -656,11 +656,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783232041,
-        "narHash": "sha256-MMgNcREN9p33u+MZ/9+1xgqYwK5LMWg9QTKSP2mQpA0=",
+        "lastModified": 1784123861,
+        "narHash": "sha256-WO4CGF5MHUEzZleStHy1L/luwGNEdBFtzs0pqqTyubM=",
         "owner": "LiGoldragon",
         "repo": "criome",
-        "rev": "95c70e014b60526e72b52e947134a2ff6f5b3d25",
+        "rev": "76ae4a9163c3f647a045719330efe125db540f70",
         "type": "github"
       },
       "original": {
