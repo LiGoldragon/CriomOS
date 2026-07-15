@@ -146,8 +146,11 @@
 
       criomos-lib = inputs.criomos-lib.lib;
       constants = criomos-lib.constants;
-      projectChecks = (blueprintOutputs.checks or { }) // {
-        ${system} = (blueprintOutputs.checks.${system} or { }) // {
+      blueprintChecks = inputs.nixpkgs.lib.mapAttrs (
+        _: checks: inputs.nixpkgs.lib.filterAttrs (_: inputs.nixpkgs.lib.isDerivation) checks
+      ) (blueprintOutputs.checks or { });
+      projectChecks = blueprintChecks // {
+        ${system} = (blueprintChecks.${system} or { }) // {
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };

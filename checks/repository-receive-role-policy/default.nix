@@ -58,7 +58,7 @@ let
   receiveDaemonUser = receiveConfiguration.config.users.users."repository-ledger";
   receiveDaemonService = receiveConfiguration.config.systemd.services.repository-ledger;
   receiveDaemonServiceConfig = receiveDaemonService.serviceConfig;
-  daemonConfigurationPath = builtins.elemAt (lib.splitString " " receiveDaemonServiceConfig.ExecStart) 1;
+  daemonConfigurationPath = builtins.elemAt (lib.splitString " " receiveDaemonServiceConfig.ExecStartPre) 1;
   daemonConfigurationText = builtins.readFile daemonConfigurationPath;
   receiveSystemPackageNames = lib.concatStringsSep " " (
     map (
@@ -103,8 +103,8 @@ pkgs.runCommand "repository-receive-role-policy" { } ''
   test ${lib.escapeShellArg receiveDaemonServiceConfig.Group} = nixdev
   printf '%s' ${lib.escapeShellArg (builtins.toJSON receiveDaemonServiceConfig.SupplementaryGroups)} | grep -F repository-ledger-receive
   printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F '/bin/repository-ledger-daemon'
-  printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F 'repository-ledger-daemon.nota'
-  printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '([/run/repository-ledger/repository-ledger.sock] 432'
+  printf '%s' ${lib.escapeShellArg receiveDaemonServiceConfig.ExecStart} | grep -F 'repository-ledger-daemon.rkyv'
+  printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '(ConfigurationWriteRequest (/run/repository-ledger/repository-ledger.sock 432'
   ! printf '%s' ${lib.escapeShellArg daemonConfigurationText} | grep -F '"'
   printf '%s' ${lib.escapeShellArg receiveSystemPackageNames} | grep -F repository-ledger
 
