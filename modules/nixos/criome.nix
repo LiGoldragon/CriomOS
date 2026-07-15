@@ -82,11 +82,14 @@ let
   # The single typed CriomeDaemonConfiguration record as positional NOTA, in the
   # signal-criome schema field order: socket_path, store_path, meta_socket_path
   # (Optional), cluster_root (Optional — always None under founding), Authorization-
-  # Mode, node_identity (Optional Identity). The encoder wraps it in a
-  # CriomeConfigurationArtifact carrying the rkyv output path and seals it.
+  # Mode, node_identity (Optional Identity), router submission (Optional), and
+  # quorum window (Optional). The latter two stay absent until CriomOS projects
+  # their deployment configuration; absence selects Criome's own safe defaults.
+  # The encoder wraps it in a CriomeConfigurationArtifact carrying the rkyv
+  # output path and seals it.
   configurationArtifactNota =
     "(CriomeConfigurationArtifact "
-    + "(${socketPath} ${storePath} (Some ${metaSocketPath}) None ${cfg.authorizationMode} ${nodeIdentityField}) "
+    + "(${socketPath} ${storePath} (Some ${metaSocketPath}) None ${cfg.authorizationMode} ${nodeIdentityField} None None) "
     + "${configRkyv})";
 
   # The record as an inspectable, checkable .nota artifact. The encoder classifies

@@ -61,7 +61,7 @@ let
   moduleNotaPath = builtins.elemAt execStartPreParts 1;
   moduleNotaText = lib.removeSuffix "\n" (builtins.readFile moduleNotaPath);
 
-  # The record is `(CriomeConfigurationArtifact (<6-field record>) <output_path>)`.
+  # The record is `(CriomeConfigurationArtifact (<8-field record>) <output_path>)`.
   # Swap only the trailing <output_path> token (a plain deploy path, not a schema
   # surface) for a relative name so the pinned encoder writes into the build cwd;
   # keep every preceding schema-bearing token verbatim. The final token carries a
