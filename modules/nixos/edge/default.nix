@@ -98,6 +98,26 @@ mkIf behavesAs.edge {
   security.pam.services.noctalia = { };
   hardware.graphics.enable = lib.mkDefault true;
 
+  # `powerOnBoot` is BlueZ's startup and hotplug policy.  A controller that
+  # remains present across suspend can still return with Powered=false, so
+  # reassert power after systemd-suspend has returned.  This oneshot deliberately
+  # does not remain active: every suspend target transition gets a fresh D-Bus
+  # request, and a missing controller or rejected request is reported as a unit
+  # failure in the journal rather than hidden behind a retry loop.
+  systemd.services.bluetooth-resume-power = {
+    description = "Restore Bluetooth adapter power after resume";
+    after = [
+      "systemd-suspend.service"
+      "bluetooth.service"
+    ];
+    requires = [ "bluetooth.service" ];
+    wantedBy = [ "suspend.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bluez}/bin/bluetoothctl --timeout 10 power on";
+    };
+  };
+
   services = {
     displayManager.sessionPackages = [ pkgs.niri ];
     avahi.enable = size.min;

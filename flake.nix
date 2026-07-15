@@ -156,6 +156,9 @@
               {
                 inherit inputs;
               };
+          bluetooth-resume-power-policy = pkgs.callPackage ./checks/bluetooth-resume-power-policy {
+            inherit inputs;
+          };
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
           laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
