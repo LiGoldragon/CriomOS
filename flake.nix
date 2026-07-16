@@ -28,7 +28,7 @@
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/cf394233384a640b45c48c762109ef15ed9fe3be";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/49c0842a67c6cd3ebeb576a98cc1cb06c43b25d7";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -85,7 +85,7 @@
 
     # Spirit journal daemon — the durable versioned intent record log.
     # Consumed by modules/nixos/spirit.nix on nodes carrying a spirit service.
-    spirit.url = "github:LiGoldragon/spirit";
+    spirit.url = "github:LiGoldragon/spirit/1049b8a1a9e3c2be7ece3553b89c7e3815939d43";
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
