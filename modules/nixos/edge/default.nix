@@ -26,6 +26,69 @@ let
 
   maxPackages = with pkgs; [ ];
 
+  bluetoothPowerWitness = pkgs.writeShellApplication {
+    name = "bluetooth-power-witness";
+    runtimeInputs = with pkgs; [
+      coreutils
+      dbus
+      gawk
+      systemd
+    ];
+    text = ''
+      set -euo pipefail
+
+      printf '%s\n' 'event=witness-started scope=bluez-adapter-power duration=11h55m'
+
+      set +e
+      timeout --signal=TERM --kill-after=5s 11h55m \
+        dbus-monitor --system \
+          "type='method_call',destination='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='Set'" \
+          "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged'" \
+          "type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged',arg0='org.bluez'" \
+        | gawk '
+          function flush(    sender, state, kind) {
+            if (event ~ /member=NameOwnerChanged/ && event ~ /string "org.bluez"/) {
+              print "bluez-owner-changed unavailable unavailable"
+            } else if (event ~ /string "Powered"/) {
+              sender = "unavailable"
+              if (match(event, /sender=[^ ]+/)) {
+                sender = substr(event, RSTART + 7, RLENGTH - 7)
+              }
+              state = event ~ /boolean true/ ? "true" : (event ~ /boolean false/ ? "false" : "unavailable")
+              kind = event ~ /^method call / ? "power-request" : "adapter-powered"
+              printf "%s %s %s\n", kind, sender, state
+            }
+            event = ""
+          }
+
+          /^(method call|signal) / {
+            flush()
+            event = $0
+            next
+          }
+
+          {
+            event = event ORS $0
+          }
+
+          END {
+            flush()
+          }
+        ' \
+        | while read -r eventKind sender state; do
+            writerPid="$(busctl --system call org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus GetConnectionUnixProcessID s "$sender" 2>/dev/null | gawk '{ print $2 }' || true)"
+            printf '%s\n' "event=$eventKind powered=$state sender=$sender pid=''${writerPid:-unavailable}"
+          done
+      monitorStatus="''${PIPESTATUS[0]}"
+      set -e
+
+      case "$monitorStatus" in
+        0 | 124 | 143) printf '%s\n' 'event=witness-ended' ;;
+        *) exit "$monitorStatus" ;;
+      esac
+    '';
+  };
+
 in
 mkIf behavesAs.edge {
 
@@ -104,17 +167,42 @@ mkIf behavesAs.edge {
   # does not remain active: every suspend target transition gets a fresh D-Bus
   # request, and a missing controller or rejected request is reported as a unit
   # failure in the journal rather than hidden behind a retry loop.
-  systemd.services.bluetooth-resume-power = {
-    description = "Restore Bluetooth adapter power after resume";
-    after = [
-      "systemd-suspend.service"
-      "bluetooth.service"
-    ];
-    requires = [ "bluetooth.service" ];
-    wantedBy = [ "suspend.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.bluez}/bin/bluetoothctl --timeout 10 power on";
+  systemd.services = {
+    bluetooth-resume-power = {
+      description = "Restore Bluetooth adapter power after resume";
+      after = [
+        "systemd-suspend.service"
+        "bluetooth.service"
+      ];
+      requires = [ "bluetooth.service" ];
+      wantedBy = [ "suspend.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.bluez}/bin/bluetoothctl --timeout 10 power on";
+      };
+    };
+
+    # Existing journals establish an Adapter1 power-down but not the D-Bus caller.
+    # This temporary observer is event-driven and emits only adapter power state,
+    # sender identity, and a process ID for journal correlation; it never records
+    # device objects, names, addresses, or other connection metadata.
+    bluetooth-power-witness = {
+      description = "Observe BlueZ adapter power writers for one diagnostic window";
+      after = [
+        "dbus.service"
+        "bluetooth.service"
+      ];
+      requires = [ "dbus.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "exec";
+        ExecStart = "${bluetoothPowerWitness}/bin/bluetooth-power-witness";
+        RuntimeMaxSec = "12h";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+      };
     };
   };
 

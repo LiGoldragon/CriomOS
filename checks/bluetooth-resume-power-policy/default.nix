@@ -32,6 +32,7 @@ let
   };
 
   resumePower = edgeSystem.config.systemd.services.bluetooth-resume-power;
+  powerWitness = edgeSystem.config.systemd.services.bluetooth-power-witness;
 in
 assert lib.assertMsg edgeSystem.config.hardware.bluetooth.powerOnBoot
   "edge Bluetooth must retain BlueZ boot and hotplug power policy";
@@ -57,6 +58,20 @@ assert lib.assertMsg (
 ) "edge Bluetooth ownership must not regress to Blueman";
 assert lib.assertMsg edgeSystem.config.services.gnome.gnome-settings-daemon.enable
   "edge Bluetooth must retain GNOME rfkill integration";
+assert lib.assertMsg (builtins.elem "multi-user.target" powerWitness.wantedBy)
+  "Bluetooth writer witness must start with the deployed edge generation";
+assert lib.assertMsg (
+  powerWitness.serviceConfig.Type == "exec"
+) "Bluetooth writer witness must run as an event observer";
+assert lib.assertMsg (
+  powerWitness.serviceConfig.RuntimeMaxSec == "12h"
+) "Bluetooth writer witness must have a hard bounded diagnostic lifetime";
+assert lib.assertMsg powerWitness.serviceConfig.NoNewPrivileges
+  "Bluetooth writer witness must not gain privileges beyond D-Bus observation";
+assert lib.assertMsg powerWitness.serviceConfig.PrivateTmp
+  "Bluetooth writer witness must not share temporary state";
+assert lib.assertMsg powerWitness.serviceConfig.ProtectHome
+  "Bluetooth writer witness must not read user homes";
 
 pkgs.runCommand "bluetooth-resume-power-policy-check" { } ''
   touch "$out"
