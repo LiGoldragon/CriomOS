@@ -504,7 +504,7 @@ mkIf behavesAs.bareMetal {
     geoclue2 = {
       enable = size.min;
       enableDemoAgent = lib.mkOverride 0 true;
-      geoProviderUrl = "https://beacondb.net/v1/geolocate";
+      geoProviderUrl = "https://api.beacondb.net/v1/geolocate";
       appConfig.redshift = {
         isAllowed = true;
         isSystem = true;
