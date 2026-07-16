@@ -355,13 +355,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-UxBDCLPwfEFWO/j+o2XUwHIWQ8KevXm+cJtLR7RSAlY=",
+        "narHash": "sha256-xP6+ZfjtBYAxrImOFHnLR8lQzlHkRcekvwvtLsYzX1U=",
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.208/file/Anthropic.claude-code-2.1.208@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.211/file/Anthropic.claude-code-2.1.211@linux-x64.vsix"
       },
       "original": {
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.208/file/Anthropic.claude-code-2.1.208@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.211/file/Anthropic.claude-code-2.1.211@linux-x64.vsix"
       }
     },
     "clavifaber": {
@@ -396,12 +396,13 @@
         ]
       },
       "locked": {
-        "lastModified": 1784011846,
-        "narHash": "sha256-ZwToJMUbcoTxdLV7KKWUQp3b1bL3oCy+/utM4OyaPJ4=",
-        "owner": "sadjow",
-        "repo": "codex-cli-nix",
-        "rev": "be1c5810b72def4f03b92c6717df97480f318796",
-        "type": "github"
+        "lastModified": 1784171300,
+        "narHash": "sha256-LiWzndOW88994z4SCnenv+2rKe/ryEgvWSsBjFpNvrc=",
+        "ref": "refs/heads/main",
+        "rev": "c4b3fc9d761797a813b5f8b1d38a9a81cdba6e45",
+        "revCount": 150,
+        "type": "git",
+        "url": "https://github.com/sadjow/codex-cli-nix"
       },
       "original": {
         "owner": "sadjow",
@@ -782,18 +783,18 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784245351,
-        "narHash": "sha256-ND1850n9Y7Bdbc/8af2Ml13i2tXnErX9VEN3uKQ2Wb0=",
+        "lastModified": 1784245881,
+        "narHash": "sha256-7KXO1PsTMm5wd/sl9BI3+sNonDFcGRCutjmv54MKRg4=",
         "ref": "refs/heads/main",
-        "rev": "e2864449fd4315063c9c395097b984b43493b5c5",
-        "revCount": 552,
+        "rev": "18f1c156e19d2e7e8dd23ed46b6ecb4a45c70808",
+        "revCount": 553,
         "type": "git",
         "url": "https://github.com/LiGoldragon/CriomOS-home.git"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e2864449fd4315063c9c395097b984b43493b5c5",
+        "rev": "18f1c156e19d2e7e8dd23ed46b6ecb4a45c70808",
         "type": "github"
       }
     },
@@ -1816,12 +1817,13 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1784012825,
-        "narHash": "sha256-lbdkOH57StVOFMEpFASzEmi+GlK3iX6Uu7Y2zGUgVFE=",
-        "owner": "numtide",
-        "repo": "llm-agents.nix",
-        "rev": "5c73869318afcf796a7a465b4b5e31b27f0819d4",
-        "type": "github"
+        "lastModified": 1784240587,
+        "narHash": "sha256-U02S4TzJ0OUyAF60dtzWaCtfKsjj0Vjywqt1aj9Fegc=",
+        "ref": "refs/heads/main",
+        "rev": "b384352cb2f0bfd8ec2ce984f87ec2ad0a293e2c",
+        "revCount": 13146,
+        "type": "git",
+        "url": "https://github.com/numtide/llm-agents.nix"
       },
       "original": {
         "owner": "numtide",
@@ -2113,11 +2115,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1783816212,
-        "narHash": "sha256-2aZisVTVGSFEk3MYcOiWQp3zvwyzbqpktB69Rcfp150=",
+        "lastModified": 1784115452,
+        "narHash": "sha256-BoYPdqk6jlKXy+DyUzyGV/CtRGfAhk2MmIgBhsemTGI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3b32825de172d0bc85664f495edb096b10862524",
+        "rev": "35d3407a3816f3b341d8cf1d60abaf2b7b8166ac",
         "type": "github"
       },
       "original": {
@@ -2426,16 +2428,17 @@
     "pi-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784047006,
-        "narHash": "sha256-s7dD82fugvWRvqL1VTcEwCIR5JI6t7VeFHR9NdMtG00=",
-        "owner": "earendil-works",
-        "repo": "pi",
-        "rev": "818d67457cdd6b60bce6b121d16b23141c252dd8",
-        "type": "github"
+        "lastModified": 1784239181,
+        "narHash": "sha256-m5J+XvVytNA97NLZ0NjHNh8rHXZQYU6zfF9RtMHc9T0=",
+        "ref": "refs/tags/v0.80.10",
+        "rev": "8dc78834cde4e329284cf505f9e3f99763df5529",
+        "revCount": 4967,
+        "type": "git",
+        "url": "https://github.com/earendil-works/pi"
       },
       "original": {
         "owner": "earendil-works",
-        "ref": "v0.80.7",
+        "ref": "v0.80.10",
         "repo": "pi",
         "type": "github"
       }
