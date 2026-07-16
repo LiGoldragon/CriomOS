@@ -37,10 +37,10 @@ let
     text = ''
       set -euo pipefail
 
-      printf '%s\n' 'event=witness-started scope=bluez-adapter-power duration=11h55m'
+      printf '%s\n' 'event=witness-started scope=bluez-adapter-power duration=42900s'
 
       set +e
-      timeout --signal=TERM --kill-after=5s 11h55m \
+      timeout --signal=TERM --kill-after=5s 42900s \
         dbus-monitor --system \
           "type='method_call',destination='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='Set'" \
           "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged'" \
