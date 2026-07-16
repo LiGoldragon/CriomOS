@@ -323,7 +323,7 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "solar-time-status-bar-chroma",
+        "ref": "main",
         "repo": "chroma",
         "type": "github"
       }
@@ -780,17 +780,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784204833,
-        "narHash": "sha256-js+prh3w72DOQWIH5ahxqW3hnCzfDc2HiFhCZ7FeOUY=",
+        "lastModified": 1784210179,
+        "narHash": "sha256-TdScbOjO8eEkY5o1OrbdzUvtTI6RWGtajy4x3YKa1KE=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "3a3004f657ae8fc364164690a5ecb5ee11a7a4bf",
+        "rev": "9c57087696612762c4959208fc92ab81b9046000",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "3a3004f657ae8fc364164690a5ecb5ee11a7a4bf",
+        "rev": "9c57087696612762c4959208fc92ab81b9046000",
         "type": "github"
       }
     },
@@ -2271,17 +2271,16 @@
         "rust-build": "rust-build_4"
       },
       "locked": {
-        "lastModified": 1783760938,
-        "narHash": "sha256-fWl+XLaDZ1AoQ5KhSSgbfDK8CXuzgd1KMsxv9NRVpgo=",
+        "lastModified": 1784207904,
+        "narHash": "sha256-jCjL55yUhYxCsqBpAIgxTQ/ZacINkyhOi33qHjOIm7I=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "d7398eee44d27f22661bef0cb74c380bf8c3a0ab",
+        "rev": "37fac7453c1f35f0b269feeb18341e8a59906098",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "d7398eee44d27f22661bef0cb74c380bf8c3a0ab",
         "type": "github"
       }
     },
