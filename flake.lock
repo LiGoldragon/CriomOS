@@ -783,18 +783,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784246254,
-        "narHash": "sha256-3aiJWQiUYVjj+MSp6d7vg7hz39XS82QGSps6fNZyczo=",
-        "ref": "refs/heads/main",
-        "rev": "da8c0da3c994694631aeddf9c91d27b05efa6adc",
-        "revCount": 554,
-        "type": "git",
-        "url": "https://github.com/LiGoldragon/CriomOS-home.git"
+        "lastModified": 1784252271,
+        "narHash": "sha256-J8nOqmd8wRl8aCoVF1D2kx6f9yEZYaCU2xLxKgE9u1M=",
+        "owner": "LiGoldragon",
+        "repo": "CriomOS-home",
+        "rev": "a77722c46e1b61266a229959e63ddf4654eb3706",
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "da8c0da3c994694631aeddf9c91d27b05efa6adc",
+        "rev": "a77722c46e1b61266a229959e63ddf4654eb3706",
         "type": "github"
       }
     },
@@ -2446,17 +2445,17 @@
     "pi-subagents-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784213024,
-        "narHash": "sha256-63TQyh/PZsnzyBU4AAiuGAMQ/g2B3woOP++LVr1BRjo=",
+        "lastModified": 1784251887,
+        "narHash": "sha256-cLooOGko1A+qwgVIYODtInbWGTRXyQWu5SElD4WBUS8=",
         "owner": "LiGoldragon",
         "repo": "pi-subagents-nicobailon",
-        "rev": "858f57b768be604306231008d203fd9dc98dc6a2",
+        "rev": "872abad31473efe8f9476103a86cfe4b98952b33",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "pi-subagents-nicobailon",
-        "rev": "858f57b768be604306231008d203fd9dc98dc6a2",
+        "rev": "872abad31473efe8f9476103a86cfe4b98952b33",
         "type": "github"
       }
     },
@@ -2775,17 +2774,17 @@
     "primary-generated-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784211764,
-        "narHash": "sha256-Cc/b1E4DazZ+C9XszCInJV/r2vwhKqF/rS22xXCTZVc=",
+        "lastModified": 1784250738,
+        "narHash": "sha256-VZILdV2zM1wnbtmDzsdERTCYkIrbH1sJfgGY18sYI5Y=",
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "ee0e3c785393243b2022b4eeed5245ae72a790f0",
+        "rev": "a087fdf3c2be209c03790a00273a736bce485d63",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "ee0e3c785393243b2022b4eeed5245ae72a790f0",
+        "rev": "a087fdf3c2be209c03790a00273a736bce485d63",
         "type": "github"
       }
     },
