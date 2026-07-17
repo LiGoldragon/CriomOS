@@ -29,11 +29,11 @@
 
     # Keep the live coordination daemon on the self-healing v0.7.1 revision;
     # CriomOS-home follows this shared input rather than downgrading it.
-    orchestrate.url = "github:LiGoldragon/orchestrate/4c047209253a41efd7055f77bf79e1565abb53ec";
+    orchestrate.url = "github:LiGoldragon/orchestrate/e86502a116c1eba1280b5c93c00ed0b74c7fa020";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/bb3f96bd12fa28f50724f971110a6538b875b8a3";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/2442e9973424a94f96e39dcf706851a715b23446";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
