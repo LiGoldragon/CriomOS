@@ -28,7 +28,7 @@
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/4c211bdb65531500f5d29a444a754427ab113df5";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/2c34f2d09249573e70dbbaa8795f2a7cac1f0978";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
