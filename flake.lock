@@ -314,17 +314,16 @@
         "rust-build": "rust-build"
       },
       "locked": {
-        "lastModified": 1784246199,
-        "narHash": "sha256-hxawwpa12N+yZr6ocjfd+bMOezyUSijms/e2ZzEQexY=",
-        "ref": "refs/heads/main",
-        "rev": "8958918cc2ebfee8b58f85f786f7f05c5248d977",
-        "revCount": 55,
-        "type": "git",
-        "url": "https://github.com/LiGoldragon/chroma.git"
+        "lastModified": 1784274884,
+        "narHash": "sha256-TdHcvBRHcE2GmLb9HL6lgiouEAgADsvUIL4+WgDEWlc=",
+        "owner": "LiGoldragon",
+        "repo": "chroma",
+        "rev": "2597c3f77a679c99d513b2ea37c14345bc93bd26",
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "main",
+        "ref": "2597c3f77a67",
         "repo": "chroma",
         "type": "github"
       }
@@ -783,17 +782,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784274530,
-        "narHash": "sha256-J/aG8zIv+l7fpbA0gf5Zjy5C/K2o6YEHidZF8a52KHo=",
+        "lastModified": 1784275372,
+        "narHash": "sha256-FX5qIfVQIXPE7PMPzwnipZRiFWIzBQ6jt/sX/4lbmoI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "7e3823355bfea07406dbaa503f0ad6fe8a4553eb",
+        "rev": "7a087de7f039e9558f14a3c4b697edfc9f33972b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "7e3823355bfea07406dbaa503f0ad6fe8a4553eb",
+        "rev": "7a087de7f039e9558f14a3c4b697edfc9f33972b",
         "type": "github"
       }
     },

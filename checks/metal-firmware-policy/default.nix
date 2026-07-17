@@ -5,6 +5,8 @@ let
   inherit (pkgs.stdenv.hostPlatform) system;
 
   bool = value: if value then "true" else "false";
+  metalModule = ../../modules/nixos/metal/default.nix;
+  normalizeModule = ../../modules/nixos/normalize.nix;
 
   baseBehavesAs = {
     bareMetal = true;
@@ -73,6 +75,7 @@ let
     includeHome = true;
     includeAllFirmware = false;
   };
+
 in
 pkgs.runCommand "metal-firmware-policy" { } ''
   set -eu
@@ -81,6 +84,13 @@ pkgs.runCommand "metal-firmware-policy" { } ''
   test ${lib.escapeShellArg (bool homeOffConfiguration.hardware.enableAllFirmware)} = false
   test ${lib.escapeShellArg (bool explicitFirmwareConfiguration.hardware.enableAllFirmware)} = true
   test ${lib.escapeShellArg (bool explicitSyntheticConfiguration.hardware.enableAllFirmware)} = false
+  ${pkgs.gawk}/bin/awk '
+    /ThinkPadT14Gen5Intel = \[/ { inTarget = 1; next }
+    inTarget && /linux-firmware/ { found = 1 }
+    inTarget && /\];/ { exit(found ? 0 : 1) }
+    END { exit(found ? 0 : 1) }
+  ' ${metalModule}
+  ${pkgs.gnugrep}/bin/grep -F 'kernelPackages = pkgs.linuxPackages_latest;' ${normalizeModule}
 
   touch "$out"
 ''
