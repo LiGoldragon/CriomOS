@@ -37,6 +37,9 @@
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
     criomos-home.inputs.lojix.follows = "lojix";
+    # Keep the coordination client and daemon on the worktree-lifecycle
+    # contract even while CriomOS-home's standalone pin catches up.
+    criomos-home.inputs.orchestrate.url = "github:LiGoldragon/orchestrate/37fac7453c1f";
     # Unify the spirit input with CriomOS's own, completing the shared-input
     # follows set above. CriomOS-home's home modules receive CriomOS-home's
     # flake inputs (userHomes.nix keeps `inputs` out of extraSpecialArgs), so
