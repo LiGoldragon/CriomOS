@@ -783,17 +783,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784280464,
-        "narHash": "sha256-VS2EkRxSR079wXbZQUJRkUy6YfqVldDFCwjFLADI9Ao=",
+        "lastModified": 1784281129,
+        "narHash": "sha256-M3//S1+NwCD3KFzqEWG5/BY4zI/FRJtwMKSJYQq9BYI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c69bac02926c9751b4e76d90a170cffcf264490e",
+        "rev": "4c211bdb65531500f5d29a444a754427ab113df5",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c69bac02926c9751b4e76d90a170cffcf264490e",
+        "rev": "4c211bdb65531500f5d29a444a754427ab113df5",
         "type": "github"
       }
     },
@@ -2275,17 +2275,17 @@
         "rust-build": "rust-build_4"
       },
       "locked": {
-        "lastModified": 1784280240,
-        "narHash": "sha256-rrEXdShUtZi2k2lFxKIN8/Vq4gSDwL/Kxf+jE5GDPz0=",
+        "lastModified": 1783760938,
+        "narHash": "sha256-fWl+XLaDZ1AoQ5KhSSgbfDK8CXuzgd1KMsxv9NRVpgo=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "964f3d55f6d5713c78dd5e65f6108ae90a22e539",
+        "rev": "d7398eee44d27f22661bef0cb74c380bf8c3a0ab",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "964f3d55f6d5713c78dd5e65f6108ae90a22e539",
+        "rev": "d7398eee44d27f22661bef0cb74c380bf8c3a0ab",
         "type": "github"
       }
     },
@@ -2445,17 +2445,17 @@
     "pi-subagents-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784251887,
-        "narHash": "sha256-cLooOGko1A+qwgVIYODtInbWGTRXyQWu5SElD4WBUS8=",
+        "lastModified": 1784280512,
+        "narHash": "sha256-k0N4GE4HLjrzxtMb5g87F+gQwq/hvIufgHIrd4FmXHQ=",
         "owner": "LiGoldragon",
         "repo": "pi-subagents-nicobailon",
-        "rev": "872abad31473efe8f9476103a86cfe4b98952b33",
+        "rev": "d87cd2b11477288db53ad161afb9fd82c6cae632",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "d87cd2b11477",
         "repo": "pi-subagents-nicobailon",
-        "rev": "872abad31473efe8f9476103a86cfe4b98952b33",
         "type": "github"
       }
     },
