@@ -785,17 +785,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784371722,
-        "narHash": "sha256-d72Un+qAsyRY9hS1IPgUfp/QI14c1ViCSDiSYfC08e8=",
+        "lastModified": 1784395614,
+        "narHash": "sha256-RTAaAb7N/DjL82jdSPoE2qQvn2W4pJ7xyq2qEWDf8bo=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "a0ab86c096b8867b1545a11285d8de8d5d9e9200",
+        "rev": "cb2b26613415f3dd694dd0156922b2eb504ce91b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "a0ab86c096b8867b1545a11285d8de8d5d9e9200",
+        "rev": "cb2b26613415f3dd694dd0156922b2eb504ce91b",
         "type": "github"
       }
     },
@@ -2325,17 +2325,17 @@
         "rust-build": "rust-build_5"
       },
       "locked": {
-        "lastModified": 1784370587,
-        "narHash": "sha256-KkdNSrstM3xPqgRbZ4R4lmKY+hZMxuWfQv7clzPcEgY=",
+        "lastModified": 1784395573,
+        "narHash": "sha256-opx4bIrbuppDQ4St8f4JhO9RXNu5HZFgWXkwEXyQwnw=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "eafd7ef05396025284327c91a08e2e831b3cea29",
+        "rev": "9613b41271a015e898ff3da1bb86d75ba19176e5",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "eafd7ef05396025284327c91a08e2e831b3cea29",
+        "rev": "9613b41271a015e898ff3da1bb86d75ba19176e5",
         "type": "github"
       }
     },
