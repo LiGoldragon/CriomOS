@@ -33,6 +33,9 @@ in
     ./nspawn.nix
     ./llm.nix
     ./users.nix
+    # Agent Intercom's node-level SSH and accessibility prerequisites;
+    # user broker/adapters and session state remain in CriomOS-home.
+    ./agent-intercom.nix
     ./network
     # aggregator — pulls in dnsmasq, yggdrasil, tailscale,
     # headscale, nordvpn, wifi-eap, networkd, wireguard,

@@ -27,6 +27,132 @@
         "type": "github"
       }
     },
+    "agent-intercom-claude-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784257925,
+        "narHash": "sha256-NDwkbZ3OYxo8nXULxsvWQpNrwRzqkoASH5G3u+gUfL4=",
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-claude",
+        "rev": "f558e3bfa0d0df799b57f729a2be903e85760df4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-claude",
+        "rev": "f558e3bfa0d0df799b57f729a2be903e85760df4",
+        "type": "github"
+      }
+    },
+    "agent-intercom-codex-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784257924,
+        "narHash": "sha256-9wjthAAWHkKPq6rn3R2fOyjhPM2bAMYQURu/gMuMKw0=",
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-codex",
+        "rev": "118c85391b525982f00f38a3e3b67278e20e2774",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-codex",
+        "rev": "118c85391b525982f00f38a3e3b67278e20e2774",
+        "type": "github"
+      }
+    },
+    "agent-intercom-core-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784252528,
+        "narHash": "sha256-pfEIXEWL7wf1m6batfJKh4d5e5rqSZ+2xaOFnHDnkpY=",
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-core",
+        "rev": "cb5d2212912db0cd8abbb16ab08e4b539424a05d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-core",
+        "rev": "cb5d2212912db0cd8abbb16ab08e4b539424a05d",
+        "type": "github"
+      }
+    },
+    "agent-intercom-esbuild-linux-x64-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-AU4lTkKsSNHah6+iBtsRSpKYL2N80QciuALe9SXKLX0=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.1.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.1.tgz"
+      }
+    },
+    "agent-intercom-esbuild-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-DCNt27+X31Si1/yaK58KkzanBV5kIs1cAyY2VTXO/9U=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.1.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.1.tgz"
+      }
+    },
+    "agent-intercom-opencode-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784473775,
+        "narHash": "sha256-e+meKjOgco5QJNukctWDW5mqzHAAkGBfl0alW+HKFQk=",
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-opencode",
+        "rev": "5aea7545e00af04f2dd14a05bff69436917a4f46",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-opencode",
+        "rev": "5aea7545e00af04f2dd14a05bff69436917a4f46",
+        "type": "github"
+      }
+    },
+    "agent-intercom-orchestrator-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784473772,
+        "narHash": "sha256-yQzkzwnQUnlIqgIlSRLyLCu+2/PadCtpPaG4zndKa0w=",
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-orchestrator",
+        "rev": "fb3a74c9bf96373c82d8be31da7bae97d6ac0119",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-orchestrator",
+        "rev": "fb3a74c9bf96373c82d8be31da7bae97d6ac0119",
+        "type": "github"
+      }
+    },
+    "agent-intercom-pi-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784473769,
+        "narHash": "sha256-BpKS4WEduALLe0xJCOaMkbv4yAdNKnY44iMhjv+6K1Q=",
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-pi",
+        "rev": "d539a5476c26679f558d74b894b902d6366770a4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dataforxyz",
+        "repo": "agent-intercom-pi",
+        "rev": "d539a5476c26679f558d74b894b902d6366770a4",
+        "type": "github"
+      }
+    },
     "agent-source": {
       "flake": false,
       "locked": {
@@ -228,7 +354,7 @@
           "hexis",
           "nixpkgs"
         ],
-        "systems": "systems_12"
+        "systems": "systems_13"
       },
       "locked": {
         "lastModified": 1776249299,
@@ -405,6 +531,28 @@
       "original": {
         "owner": "sadjow",
         "repo": "codex-cli-nix",
+        "type": "github"
+      }
+    },
+    "codex-desktop-linux": {
+      "inputs": {
+        "flake-utils": "flake-utils_8",
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1784540732,
+        "narHash": "sha256-st09ormXaWteYvC6RDlRO796WWZmDnmxCAsJG3lITG8=",
+        "owner": "ilysenko",
+        "repo": "codex-desktop-linux",
+        "rev": "2b8f610faddc576088732395df3734b1d19cd62f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ilysenko",
+        "repo": "codex-desktop-linux",
         "type": "github"
       }
     },
@@ -690,6 +838,14 @@
     "criomos-home": {
       "inputs": {
         "agent": "agent",
+        "agent-intercom-claude-src": "agent-intercom-claude-src",
+        "agent-intercom-codex-src": "agent-intercom-codex-src",
+        "agent-intercom-core-src": "agent-intercom-core-src",
+        "agent-intercom-esbuild-linux-x64-src": "agent-intercom-esbuild-linux-x64-src",
+        "agent-intercom-esbuild-src": "agent-intercom-esbuild-src",
+        "agent-intercom-opencode-src": "agent-intercom-opencode-src",
+        "agent-intercom-orchestrator-src": "agent-intercom-orchestrator-src",
+        "agent-intercom-pi-src": "agent-intercom-pi-src",
         "aggregator": "aggregator",
         "annas-mcp": "annas-mcp",
         "blueprint": "blueprint_3",
@@ -697,6 +853,7 @@
         "claude-answers": "claude-answers",
         "claude-code-vsix": "claude-code-vsix",
         "codex-cli": "codex-cli",
+        "codex-desktop-linux": "codex-desktop-linux",
         "crane": "crane_5",
         "criomos-lib": [
           "criomos-lib"
@@ -730,7 +887,6 @@
         "pi-intercom-esbuild-src": "pi-intercom-esbuild-src",
         "pi-intercom-get-tsconfig-src": "pi-intercom-get-tsconfig-src",
         "pi-intercom-resolve-pkg-maps-src": "pi-intercom-resolve-pkg-maps-src",
-        "pi-intercom-src": "pi-intercom-src",
         "pi-intercom-tsx-src": "pi-intercom-tsx-src",
         "pi-intercom-typebox-src": "pi-intercom-typebox-src",
         "pi-linkup-src": "pi-linkup-src",
@@ -784,17 +940,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1784539727,
-        "narHash": "sha256-N1a/SnsymlFSKeVB1Vnr+1U7KLeGTz1cAaoYcMCSN4M=",
+        "lastModified": 1784545370,
+        "narHash": "sha256-CDPcltRVGvQz/tdxscJtuD24abUptbTWspNh0rFMOG8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0fb544fd9b2aee84e5deb4c6eb2d0fe3f851770c",
+        "rev": "ff7ce5e702b85c58e5b4f31010601183e55cf61a",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0fb544fd9b2aee84e5deb4c6eb2d0fe3f851770c",
+        "rev": "ff7ce5e702b85c58e5b4f31010601183e55cf61a",
         "type": "github"
       }
     },
@@ -1356,7 +1512,7 @@
     },
     "flake-utils_11": {
       "inputs": {
-        "systems": "systems_17"
+        "systems": "systems_16"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -1392,7 +1548,7 @@
     },
     "flake-utils_13": {
       "inputs": {
-        "systems": "systems_20"
+        "systems": "systems_19"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -1552,6 +1708,24 @@
         "type": "github"
       }
     },
+    "flake-utils_21": {
+      "inputs": {
+        "systems": "systems_28"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "flake-utils_3": {
       "inputs": {
         "systems": "systems_6"
@@ -1662,7 +1836,7 @@
     },
     "flake-utils_9": {
       "inputs": {
-        "systems": "systems_14"
+        "systems": "systems_12"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -1713,7 +1887,7 @@
     },
     "google-workspace-cli": {
       "inputs": {
-        "flake-utils": "flake-utils_8",
+        "flake-utils": "flake-utils_9",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -1835,7 +2009,7 @@
         "bun2nix": "bun2nix",
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
-        "systems": "systems_13",
+        "systems": "systems_14",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
@@ -1856,7 +2030,7 @@
       "inputs": {
         "crane": "crane_10",
         "fenix": "fenix_13",
-        "flake-utils": "flake-utils_14",
+        "flake-utils": "flake-utils_15",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -1877,7 +2051,7 @@
     },
     "mentci-egui": {
       "inputs": {
-        "flake-utils": "flake-utils_9",
+        "flake-utils": "flake-utils_10",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -2238,7 +2412,7 @@
           "noctalia",
           "nixpkgs"
         ],
-        "systems": "systems_16",
+        "systems": "systems_17",
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
@@ -2316,7 +2490,7 @@
     },
     "orchestrate": {
       "inputs": {
-        "flake-utils": "flake-utils_15",
+        "flake-utils": "flake-utils_16",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -2395,23 +2569,6 @@
       "original": {
         "type": "file",
         "url": "https://registry.npmjs.org/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz"
-      }
-    },
-    "pi-intercom-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1783781272,
-        "narHash": "sha256-y7hc6WCM4bskqd5wiJqKqsMuVHxLXcv9BA5oKY2fsdY=",
-        "owner": "LiGoldragon",
-        "repo": "pi-intercom",
-        "rev": "1fe0fcb210f235890363fbb5c667db4d0896f332",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "pi-intercom",
-        "rev": "1fe0fcb210f235890363fbb5c667db4d0896f332",
-        "type": "github"
       }
     },
     "pi-intercom-tsx-src": {
@@ -2890,7 +3047,7 @@
       "inputs": {
         "crane": "crane_13",
         "fenix": "fenix_16",
-        "flake-utils": "flake-utils_17",
+        "flake-utils": "flake-utils_18",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -3351,7 +3508,7 @@
       "inputs": {
         "crane": "crane_7",
         "fenix": "fenix_9",
-        "flake-utils": "flake-utils_10",
+        "flake-utils": "flake-utils_11",
         "nixpkgs": [
           "criomos-home",
           "mentci-egui",
@@ -3376,7 +3533,7 @@
       "inputs": {
         "crane": "crane_8",
         "fenix": "fenix_11",
-        "flake-utils": "flake-utils_12",
+        "flake-utils": "flake-utils_13",
         "nixpkgs": [
           "criomos-home",
           "spirit-judge",
@@ -3401,7 +3558,7 @@
       "inputs": {
         "crane": "crane_12",
         "fenix": "fenix_15",
-        "flake-utils": "flake-utils_16",
+        "flake-utils": "flake-utils_17",
         "nixpkgs": [
           "orchestrate",
           "nixpkgs"
@@ -3425,7 +3582,7 @@
       "inputs": {
         "crane": "crane_15",
         "fenix": "fenix_18",
-        "flake-utils": "flake-utils_18",
+        "flake-utils": "flake-utils_19",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -3448,7 +3605,7 @@
       "inputs": {
         "crane": "crane_16",
         "fenix": "fenix_19",
-        "flake-utils": "flake-utils_20",
+        "flake-utils": "flake-utils_21",
         "nixpkgs": [
           "spirit",
           "nixpkgs"
@@ -3897,7 +4054,7 @@
       "inputs": {
         "agent-source": "agent-source",
         "criome-source": "criome-source",
-        "flake-utils": "flake-utils_19",
+        "flake-utils": "flake-utils_20",
         "kameo-source": "kameo-source",
         "meta-signal-agent-source": "meta-signal-agent-source",
         "meta-signal-criome-source": "meta-signal-criome-source",
@@ -3953,7 +4110,7 @@
     },
     "spirit-judge": {
       "inputs": {
-        "flake-utils": "flake-utils_11",
+        "flake-utils": "flake-utils_12",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -4004,7 +4161,7 @@
           "nixpkgs"
         ],
         "nur": "nur",
-        "systems": "systems_19",
+        "systems": "systems_20",
         "tinted-kitty": "tinted-kitty",
         "tinted-schemes": "tinted-schemes",
         "tinted-tmux": "tinted-tmux",
@@ -4028,7 +4185,7 @@
       "inputs": {
         "crane": "crane_9",
         "fenix": "fenix_12",
-        "flake-utils": "flake-utils_13",
+        "flake-utils": "flake-utils_14",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -4166,21 +4323,6 @@
     },
     "systems_16": {
       "locked": {
-        "lastModified": 1689347949,
-        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
-        "owner": "nix-systems",
-        "repo": "default-linux",
-        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default-linux",
-        "type": "github"
-      }
-    },
-    "systems_17": {
-      "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
         "owner": "nix-systems",
@@ -4191,6 +4333,21 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_17": {
+      "locked": {
+        "lastModified": 1689347949,
+        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
+        "owner": "nix-systems",
+        "repo": "default-linux",
+        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default-linux",
         "type": "github"
       }
     },
@@ -4345,6 +4502,21 @@
       }
     },
     "systems_27": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_28": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

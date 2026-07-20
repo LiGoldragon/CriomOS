@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/0fb544fd9b2aee84e5deb4c6eb2d0fe3f851770c";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/ff7ce5e702b85c58e5b4f31010601183e55cf61a";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -196,6 +196,9 @@
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
+          agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
+            inherit inputs;
+          };
         };
       };
 

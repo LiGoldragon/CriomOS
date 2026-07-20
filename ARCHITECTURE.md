@@ -226,6 +226,14 @@ definition itself.
 
 ## Boundary with CriomOS-home
 
+Agent Intercom's cluster transport boundary follows the same split. CriomOS
+consumes projected `AgentIntercomGateway` and `AgentIntercomPeer` roles to
+configure peer SSH Unix-socket forwarding policy, the upstream health-probe
+prerequisite, and desktop accessibility support. It never selects a node by
+name, exposes a TCP gateway, or forwards the authoritative local broker socket.
+CriomOS-home owns the user broker, adapters, authenticated remote gateway,
+reverse-tunnel lifecycle, credentials references, and session state.
+
 NixOS-level capabilities live here. Home Manager profile selection, user
 packages, and desktop-owned configuration live in CriomOS-home. Cluster,
 node, user, and deployment identity all enter through lojix-projected
