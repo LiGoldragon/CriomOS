@@ -12,6 +12,13 @@ let
   gatewayNodes = builtins.filter (
     node: nodeServices.has (node.services or [ ]) "AgentIntercomGateway"
   ) clusterNodes;
+  gatewayUsers = builtins.filter (
+    user: (user.agentIntercomGatewaySshPubKey or null) != null
+  ) (lib.attrValues (horizon.users or { }));
+  remoteForwardingConfiguration = lib.concatMapStringsSep "\n" (user: ''
+    Match User ${user.name}
+      AllowStreamLocalForwarding remote
+  '') gatewayUsers;
   isGateway = nodeServices.has (horizon.node.services or [ ]) "AgentIntercomGateway";
   isPeer = nodeServices.has (horizon.node.services or [ ]) "AgentIntercomPeer";
   enabled = isGateway || isPeer;
@@ -28,15 +35,21 @@ lib.mkIf enabled {
       assertion = !isGateway || gatewayNodes == [ horizon.node ];
       message = "Agent Intercom gateway selection must resolve to the current projected gateway node";
     }
+    {
+      assertion = !isPeer || gatewayUsers != [ ];
+      message = "Agent Intercom peers require at least one projected gateway SSH public key";
+    }
   ];
 
-  # The peer accepts only Unix-domain forwarding. The user environment owns
-  # the authenticated client and its state; this host-level policy neither
-  # exposes TCP nor forwards the authoritative broker socket.
+  # OpenSSH supports `remote` as the reverse Unix-socket-only mode. The global
+  # denial is overridden only for Horizon-derived identities whose matching
+  # public keys users.nix installs. This preserves ordinary SSH access without
+  # granting arbitrary authenticated users stream-local forwarding.
   services.openssh.settings = lib.mkIf isPeer {
-    AllowStreamLocalForwarding = "yes";
+    AllowStreamLocalForwarding = "no";
     StreamLocalBindUnlink = "yes";
   };
+  services.openssh.extraConfig = lib.mkIf isPeer remoteForwardingConfiguration;
 
   # The remote tunnel health probe runs on the peer through the normal system
   # profile, so it has no store-path or per-user-profile assumption. Python is

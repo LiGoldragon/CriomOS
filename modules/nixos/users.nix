@@ -11,6 +11,7 @@ let
   inherit (lib)
     optional
     optionalAttrs
+    unique
     ;
 
   inherit (horizon) node users;
@@ -20,6 +21,10 @@ let
     _attrName: user:
     let
       inherit (user) trust sshPubKeys;
+      agentIntercomGatewaySshPubKey = user.agentIntercomGatewaySshPubKey or null;
+      authorizedSshPubKeys = unique (
+        sshPubKeys ++ optional (agentIntercomGatewaySshPubKey != null) agentIntercomGatewaySshPubKey
+      );
     in
     optionalAttrs trust.min {
       name = user.name;
@@ -27,7 +32,10 @@ let
       useDefaultShell = true;
       isNormalUser = true;
 
-      openssh.authorizedKeys.keys = sshPubKeys;
+      # When Agent Intercom has a projected gateway, this explicitly retains
+      # that gateway's public identity in the peer user's authorization set.
+      # `unique` keeps the ordinary per-user key policy canonical.
+      openssh.authorizedKeys.keys = authorizedSshPubKeys;
 
       # horizon-rs gives us the trust-derived list (audio + size.medium:video
       # + size.max:[adbusers,…]); add nixos-module-context groups here.
