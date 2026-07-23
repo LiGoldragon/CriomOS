@@ -226,21 +226,35 @@ definition itself.
 
 ## Boundary with CriomOS-home
 
-Agent Intercom's cluster transport boundary follows the same split. CriomOS
-consumes projected `AgentIntercomGateway` and `AgentIntercomPeer` roles to
-configure peer SSH Unix-socket forwarding policy, the upstream health-probe
-prerequisite, and desktop accessibility support. It never selects a node by
-name, exposes a TCP gateway, or forwards the authoritative local broker socket.
-CriomOS-home owns the user broker, adapters, authenticated remote gateway,
-reverse-tunnel lifecycle, credentials references, and session state.
+Agent Intercom is local-only. CriomOS consumes only the typed
+`AgentIntercomLocal` and `AgentIntercomGraphical` projections: Local supplies the
+host-local package prerequisite for the full local family, and Graphical is
+additive only with Local. Graphical configures supported portal screencast,
+accessibility, and declarative `/dev/uinput` access while preserving the Electron
+sandbox. A headless capability set receives none of those graphical facilities.
+Neither capability declares a listener, forwarding rule, system socket, identity,
+authorization record, ownership transport, credential, OAuth, pairing, or private
+input. `broker.sock` remains user-local in the matching Home profile.
+
+CriomOS-home owns the user broker, Pi/Codex/Claude/OpenCode adapters, core and
+orchestrator packaging, MCP/plugin registration, normal wakeable launchers, and
+all command-family behavior. The normal Codex entry is `coi --yolo`; the normal
+Claude entry is `cci --dangerously-skip-permissions`. `codex-raw` and
+`claude-raw` remain explicit recovery names, not normal aliases, and no legacy
+family coexists with the local family.
+
+Desktop is a Home-level hard blocker even on a graphical-capable host. The pinned
+Desktop module owns `CODEX_CLI_PATH` and its own `codex app-server`, while `coi`
+owns a distinct raw-Codex app-server and remote TUI. CriomOS therefore provides
+only capability-gated prerequisites: it does not claim that Desktop, Computer
+Use, or Mobile Control is activated or wakeable.
 
 NixOS-level capabilities live here. Home Manager profile selection, user
-packages, and desktop-owned configuration live in CriomOS-home. Cluster,
-node, user, and deployment identity all enter through lojix-projected
-inputs; CriomOS modules render those projected facts and never branch on
-concrete cluster or node names. Swap and compressed-swap policy for a
-node is authored as cluster data, projected through Horizon, and rendered
-here into NixOS swap / zram options.
+packages, and desktop-owned configuration live in CriomOS-home. Cluster, node,
+user, and deployment identity all enter through lojix-projected inputs; CriomOS
+modules render those projected facts and never branch on concrete cluster or node
+names. Swap and compressed-swap policy for a node is authored as cluster data,
+projected through Horizon, and rendered here into NixOS swap / zram options.
 
 ## What this repo does not define
 

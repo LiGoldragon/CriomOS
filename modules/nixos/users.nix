@@ -5,6 +5,11 @@
   ...
 }:
 let
+  nodeServices = import ./node-services.nix { inherit lib; };
+  agentIntercomLocal = nodeServices.has (horizon.node.services or [ ]) "AgentIntercomLocal";
+  agentIntercomGraphical =
+    agentIntercomLocal && nodeServices.has (horizon.node.services or [ ]) "AgentIntercomGraphical";
+
   inherit (builtins)
     mapAttrs
     ;
@@ -16,15 +21,13 @@ let
 
   inherit (horizon) node users;
   inherit (node) adminSshPubKeys behavesAs;
+  needsUinputGroup = behavesAs.edge || agentIntercomGraphical;
 
   mkUser =
     _attrName: user:
     let
       inherit (user) trust sshPubKeys;
-      agentIntercomGatewaySshPubKey = user.agentIntercomGatewaySshPubKey or null;
-      authorizedSshPubKeys = unique (
-        sshPubKeys ++ optional (agentIntercomGatewaySshPubKey != null) agentIntercomGatewaySshPubKey
-      );
+      authorizedSshPubKeys = unique sshPubKeys;
     in
     optionalAttrs trust.min {
       name = user.name;
@@ -32,16 +35,15 @@ let
       useDefaultShell = true;
       isNormalUser = true;
 
-      # When Agent Intercom has a projected gateway, this explicitly retains
-      # that gateway's public identity in the peer user's authorization set.
-      # `unique` keeps the ordinary per-user key policy canonical.
+      # `unique` keeps ordinary projected user-key policy canonical. Agent
+      # Intercom adds no identity or authorization material.
       openssh.authorizedKeys.keys = authorizedSshPubKeys;
 
       # horizon-rs gives us the trust-derived list (audio + size.medium:video
       # + size.max:[adbusers,…]); add nixos-module-context groups here.
       extraGroups =
         user.extraGroups
-        ++ (optional behavesAs.edge "uinput")
+        ++ (optional needsUinputGroup "uinput")
         ++ (optional (config.programs.sway.enable == true) "sway")
         ++ (optional (trust.medium && config.networking.networkmanager.enable == true) "networkmanager");
 
@@ -59,7 +61,9 @@ let
 in
 {
   users = {
-    groups.uinput = { };
+    # Retain the existing edge policy, and add the group for the valid
+    # local-plus-graphical capability only. Headless capability sets add none.
+    groups = optionalAttrs needsUinputGroup { uinput = { }; };
     users = mkUserUsers // rootUserAkses;
   };
 }
