@@ -36,6 +36,22 @@ lib.mkMerge [
       xdgOpenUsePortal = true;
       wlr.enable = true;
       extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+      config = {
+        # Keep GTK as the fallback, but require the WLR backend for the
+        # capture interfaces Computer Use needs.
+        common = {
+          default = [ "gtk" ];
+          "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+          "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+        };
+        # niri-portals.conf takes precedence over portals.conf, so carry the
+        # capture selection into its desktop-specific configuration too.
+        niri = {
+          default = lib.mkDefault [ "gtk" ];
+          "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+          "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+        };
+      };
     };
   })
 ]

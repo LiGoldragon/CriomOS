@@ -9,10 +9,16 @@ let
     };
   };
 
-  node = name: services: {
+  node = name: services: edge: {
     inherit name services;
     adminSshPubKeys = [ ];
-    behavesAs.edge = false;
+    size = {
+      min = edge;
+      medium = false;
+      large = false;
+      max = false;
+    };
+    behavesAs.edge = edge;
   };
   localUser = {
     name = "intercom-user";
@@ -38,6 +44,7 @@ let
       modules = [
         ../../modules/nixos/users.nix
         ../../modules/nixos/agent-intercom.nix
+        ../../modules/nixos/edge/default.nix
         {
           system.stateVersion = "26.05";
           fileSystems."/" = {
@@ -49,13 +56,17 @@ let
       ];
     }).config;
 
-  local = node "local" [ { AgentIntercomLocal = { }; } ];
+  local = node "local" [ { AgentIntercomLocal = { }; } ] false;
   graphical = node "graphical" [
     { AgentIntercomLocal = { }; }
     { AgentIntercomGraphical = { }; }
-  ];
-  headless = node "headless" [ ];
-  graphicalOnly = node "invalid-graphical" [ { AgentIntercomGraphical = { }; } ];
+  ] true;
+  graphicalNonEdge = node "graphical-non-edge" [
+    { AgentIntercomLocal = { }; }
+    { AgentIntercomGraphical = { }; }
+  ] false;
+  headless = node "headless" [ ] false;
+  graphicalOnly = node "invalid-graphical" [ { AgentIntercomGraphical = { }; } ] false;
 
   localConfiguration = configurationFor {
     node = local;
@@ -63,6 +74,10 @@ let
   };
   graphicalConfiguration = configurationFor {
     node = graphical;
+    users.intercom-user = localUser;
+  };
+  graphicalNonEdgeConfiguration = configurationFor {
+    node = graphicalNonEdge;
     users.intercom-user = localUser;
   };
   headlessConfiguration = configurationFor {
@@ -130,10 +145,23 @@ assert !localConfiguration.services.gnome.at-spi2-core.enable;
 assert !localConfiguration.hardware.uinput.enable;
 assert !localConfiguration.xdg.portal.enable;
 assert graphicalConfiguration.services.gnome.at-spi2-core.enable;
+# The edge fixture also enables AT-SPI at size.min; this non-edge witness
+# isolates Agent Intercom's Local-plus-Graphical accessibility prerequisite.
+assert graphicalNonEdgeConfiguration.services.gnome.at-spi2-core.enable;
 assert graphicalConfiguration.hardware.uinput.enable;
 assert graphicalConfiguration.xdg.portal.enable;
 assert graphicalConfiguration.xdg.portal.wlr.enable;
 assert builtins.length graphicalConfiguration.xdg.portal.extraPortals >= 1;
+assert graphicalConfiguration.xdg.portal.config.common.default == "gtk";
+assert
+  graphicalConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.ScreenCast" == "wlr";
+assert
+  graphicalConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.Screenshot" == "wlr";
+assert graphicalConfiguration.xdg.portal.config.niri.default == "gtk";
+assert
+  graphicalConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "wlr";
+assert
+  graphicalConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.Screenshot" == "wlr";
 assert graphicalToplevel.success;
 assert builtins.elem "uinput" graphicalConfiguration.users.users.intercom-user.extraGroups;
 assert builtins.hasAttr "uinput" graphicalConfiguration.users.groups;
