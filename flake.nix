@@ -27,13 +27,15 @@
     # CriomOS and CriomOS-home.
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
 
-    # Keep the live coordination daemon on the self-healing v0.7.1 revision;
-    # CriomOS-home follows this shared input rather than downgrading it.
-    orchestrate.url = "github:LiGoldragon/orchestrate/be202b51060d098f3c71489859d8e03319ca2f97";
-    orchestrate.inputs.nixpkgs.follows = "nixpkgs";
-
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/89a2251f533f586cfacba5c495ab9374dab40b47";
+    # Orchestrate is deliberately NOT a CriomOS input: the coordination daemon
+    # runs per-user, declared by CriomOS-home in
+    # modules/home/profiles/min/orchestrate.nix. A system-level daemon would
+    # force two users on one machine to share a single daemon and a single
+    # database, so CriomOS-home owns the pin and this flake does not override
+    # it. Do not reintroduce an `orchestrate` input or a
+    # `criomos-home.inputs.orchestrate.follows` line here.
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/85cf37899a99288d210791f1fb2a1b9af8676eda";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -42,7 +44,6 @@
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
     criomos-home.inputs.lojix.follows = "lojix";
-    criomos-home.inputs.orchestrate.follows = "orchestrate";
     # Unify the spirit input with CriomOS's own, completing the shared-input
     # follows set above. CriomOS-home's home modules receive CriomOS-home's
     # flake inputs (userHomes.nix keeps `inputs` out of extraSpecialArgs), so

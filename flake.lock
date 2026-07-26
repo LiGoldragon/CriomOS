@@ -425,11 +425,11 @@
     },
     "crane_10": {
       "locked": {
-        "lastModified": 1780532242,
-        "narHash": "sha256-D+BsdpxmtUwtqGoY0IXPhHgTlmqgcZKCEo1oMyn7ep0=",
+        "lastModified": 1776635034,
+        "narHash": "sha256-OEOJrT3ZfwbChzODfIH4GzlNTtOFuZFWPtW7jIeR8xU=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "59a82a1222dd3b2080b5cc52a1a2e8d5f1b77f37",
+        "rev": "dc7496d8ea6e526b1254b55d09b966e94673750f",
         "type": "github"
       },
       "original": {
@@ -635,11 +635,11 @@
     },
     "crane_9": {
       "locked": {
-        "lastModified": 1776635034,
-        "narHash": "sha256-OEOJrT3ZfwbChzODfIH4GzlNTtOFuZFWPtW7jIeR8xU=",
+        "lastModified": 1780532242,
+        "narHash": "sha256-D+BsdpxmtUwtqGoY0IXPhHgTlmqgcZKCEo1oMyn7ep0=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "dc7496d8ea6e526b1254b55d09b966e94673750f",
+        "rev": "59a82a1222dd3b2080b5cc52a1a2e8d5f1b77f37",
         "type": "github"
       },
       "original": {
@@ -722,9 +722,7 @@
           "nixpkgs"
         ],
         "noctalia": "noctalia",
-        "orchestrate": [
-          "orchestrate"
-        ],
+        "orchestrate": "orchestrate",
         "pi-continue-src": "pi-continue-src",
         "pi-intercom-esbuild-linux-x64-src": "pi-intercom-esbuild-linux-x64-src",
         "pi-intercom-esbuild-src": "pi-intercom-esbuild-src",
@@ -784,17 +782,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785041177,
-        "narHash": "sha256-1QbkZnbreUEbMJ/5MHj+8KwxTX9f99TCIs7h57j9aKM=",
+        "lastModified": 1785077032,
+        "narHash": "sha256-bn11u+UX0y+HxI1wDwH2DgQUnbBpqjhaDzh5R5DnD+w=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "89a2251f533f586cfacba5c495ab9374dab40b47",
+        "rev": "85cf37899a99288d210791f1fb2a1b9af8676eda",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "89a2251f533f586cfacba5c495ab9374dab40b47",
+        "rev": "85cf37899a99288d210791f1fb2a1b9af8676eda",
         "type": "github"
       }
     },
@@ -873,7 +871,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "spirit-judge",
+          "orchestrate",
           "rust-build",
           "nixpkgs"
         ],
@@ -897,7 +895,8 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "substack-cli",
+          "spirit-judge",
+          "rust-build",
           "nixpkgs"
         ],
         "rust-analyzer-src": "rust-analyzer-src_12"
@@ -919,7 +918,8 @@
     "fenix_13": {
       "inputs": {
         "nixpkgs": [
-          "lojix",
+          "criomos-home",
+          "substack-cli",
           "nixpkgs"
         ],
         "rust-analyzer-src": "rust-analyzer-src_13"
@@ -941,7 +941,7 @@
     "fenix_14": {
       "inputs": {
         "nixpkgs": [
-          "mirror",
+          "lojix",
           "nixpkgs"
         ],
         "rust-analyzer-src": "rust-analyzer-src_14"
@@ -963,8 +963,7 @@
     "fenix_15": {
       "inputs": {
         "nixpkgs": [
-          "orchestrate",
-          "rust-build",
+          "mirror",
           "nixpkgs"
         ],
         "rust-analyzer-src": "rust-analyzer-src_15"
@@ -1392,7 +1391,7 @@
     },
     "flake-utils_13": {
       "inputs": {
-        "systems": "systems_20"
+        "systems": "systems_19"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -1410,7 +1409,7 @@
     },
     "flake-utils_14": {
       "inputs": {
-        "systems": "systems_21"
+        "systems": "systems_20"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -1854,9 +1853,9 @@
     },
     "lojix": {
       "inputs": {
-        "crane": "crane_10",
-        "fenix": "fenix_13",
-        "flake-utils": "flake-utils_14",
+        "crane": "crane_11",
+        "fenix": "fenix_14",
+        "flake-utils": "flake-utils_16",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -2045,8 +2044,8 @@
     },
     "mirror": {
       "inputs": {
-        "crane": "crane_11",
-        "fenix": "fenix_14",
+        "crane": "crane_12",
+        "fenix": "fenix_15",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -2316,24 +2315,25 @@
     },
     "orchestrate": {
       "inputs": {
-        "flake-utils": "flake-utils_15",
+        "flake-utils": "flake-utils_11",
         "nixpkgs": [
+          "criomos-home",
           "nixpkgs"
         ],
-        "rust-build": "rust-build_5"
+        "rust-build": "rust-build_4"
       },
       "locked": {
-        "lastModified": 1784469026,
-        "narHash": "sha256-KEjainW0aFB+u8zVpUZ8JSvfNdXRxGH20X1+bNZ03jY=",
+        "lastModified": 1785075957,
+        "narHash": "sha256-fKyF6+q0wwlOeE73mDnCjUKpU3LWlYm92JaY72cncT8=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "be202b51060d098f3c71489859d8e03319ca2f97",
+        "rev": "83e09a1316340a17ca23ef5cd2a3dd2a47874281",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "be202b51060d098f3c71489859d8e03319ca2f97",
+        "rev": "83e09a1316340a17ca23ef5cd2a3dd2a47874281",
         "type": "github"
       }
     },
@@ -2924,7 +2924,6 @@
         "microvm": "microvm",
         "mirror": "mirror",
         "nixpkgs": "nixpkgs_2",
-        "orchestrate": "orchestrate",
         "pkgs": "pkgs",
         "repository-ledger": "repository-ledger",
         "router": "router",
@@ -3379,30 +3378,6 @@
         "flake-utils": "flake-utils_12",
         "nixpkgs": [
           "criomos-home",
-          "spirit-judge",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1782902717,
-        "narHash": "sha256-O54EieARm8wHtmnoYlb6klVmyQplNF4NzEdTdjVt1Mc=",
-        "owner": "LiGoldragon",
-        "repo": "rust-build",
-        "rev": "0f2d236872d64afef8729692a9afeb3e6d818ed6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "rust-build",
-        "type": "github"
-      }
-    },
-    "rust-build_5": {
-      "inputs": {
-        "crane": "crane_12",
-        "fenix": "fenix_15",
-        "flake-utils": "flake-utils_16",
-        "nixpkgs": [
           "orchestrate",
           "nixpkgs"
         ]
@@ -3413,6 +3388,31 @@
         "owner": "LiGoldragon",
         "repo": "rust-build",
         "rev": "56d18735f2034d192f63d13d2701202fd2e18cf3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "rust-build",
+        "type": "github"
+      }
+    },
+    "rust-build_5": {
+      "inputs": {
+        "crane": "crane_9",
+        "fenix": "fenix_12",
+        "flake-utils": "flake-utils_14",
+        "nixpkgs": [
+          "criomos-home",
+          "spirit-judge",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1782902717,
+        "narHash": "sha256-O54EieARm8wHtmnoYlb6klVmyQplNF4NzEdTdjVt1Mc=",
+        "owner": "LiGoldragon",
+        "repo": "rust-build",
+        "rev": "0f2d236872d64afef8729692a9afeb3e6d818ed6",
         "type": "github"
       },
       "original": {
@@ -3953,12 +3953,12 @@
     },
     "spirit-judge": {
       "inputs": {
-        "flake-utils": "flake-utils_11",
+        "flake-utils": "flake-utils_13",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
         ],
-        "rust-build": "rust-build_4"
+        "rust-build": "rust-build_5"
       },
       "locked": {
         "lastModified": 1783708259,
@@ -4004,7 +4004,7 @@
           "nixpkgs"
         ],
         "nur": "nur",
-        "systems": "systems_19",
+        "systems": "systems_21",
         "tinted-kitty": "tinted-kitty",
         "tinted-schemes": "tinted-schemes",
         "tinted-tmux": "tinted-tmux",
@@ -4026,9 +4026,9 @@
     },
     "substack-cli": {
       "inputs": {
-        "crane": "crane_9",
-        "fenix": "fenix_12",
-        "flake-utils": "flake-utils_13",
+        "crane": "crane_10",
+        "fenix": "fenix_13",
+        "flake-utils": "flake-utils_15",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
