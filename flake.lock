@@ -78,6 +78,18 @@
         "type": "github"
       }
     },
+    "agent-intercom-esbuild-linux-arm64-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-JN0XCEMkQ7aOve9wMBbI4tdHihKst6z7m1DSqBR45kc=",
+        "type": "file",
+        "url": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.0.tgz"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.0.tgz"
+      }
+    },
     "agent-intercom-esbuild-linux-x64-src": {
       "flake": false,
       "locked": {
@@ -889,6 +901,7 @@
         "agent-intercom-claude-src": "agent-intercom-claude-src",
         "agent-intercom-codex-src": "agent-intercom-codex-src",
         "agent-intercom-core-src": "agent-intercom-core-src",
+        "agent-intercom-esbuild-linux-arm64-src": "agent-intercom-esbuild-linux-arm64-src",
         "agent-intercom-esbuild-linux-x64-src": "agent-intercom-esbuild-linux-x64-src",
         "agent-intercom-esbuild-src": "agent-intercom-esbuild-src",
         "agent-intercom-get-tsconfig-src": "agent-intercom-get-tsconfig-src",
@@ -986,17 +999,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785078511,
-        "narHash": "sha256-IqzvQ6T68lQ0w0+W19KrA9NKpghq135mpHBHpjmvhD4=",
+        "lastModified": 1785085224,
+        "narHash": "sha256-9dfbngeKTHiVygi5CAzYwb/4N87iHohhJrzLJxMmfDg=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "613337f16f4af83380d72e96b34370b7effb0e56",
+        "rev": "27fcb31cb34609b8e8f1cab86680dbf786011b8d",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "613337f16f4af83380d72e96b34370b7effb0e56",
+        "rev": "27fcb31cb34609b8e8f1cab86680dbf786011b8d",
         "type": "github"
       }
     },
@@ -4093,11 +4106,11 @@
         "rust-build": "rust-build_4"
       },
       "locked": {
-        "lastModified": 1783708259,
-        "narHash": "sha256-+PhMH5OQ9KT7uir9taDEMxNhbeh5r0dKXjAmb3DRWlE=",
+        "lastModified": 1785078558,
+        "narHash": "sha256-4jO0zpOysEm8WIJVD6dulFeU/jQm8Xt4/j+9JkmBhNk=",
         "owner": "LiGoldragon",
         "repo": "spirit-judge",
-        "rev": "04e473d85e4ebcf14fd785f33410e1455fa08ead",
+        "rev": "901d1fe404f277778e32318871b97cdcaff85a43",
         "type": "github"
       },
       "original": {
