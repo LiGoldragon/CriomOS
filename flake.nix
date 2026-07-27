@@ -96,7 +96,7 @@
 
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
     # so parity checks use the same installed service/socket path as production.
-    lojix.url = "github:LiGoldragon/lojix/784cadef83e6ef8eb936728748eda2694e8d53ef";
+    lojix.url = "github:LiGoldragon/lojix/162bb93645b16a0409ff17610ec9f9ce485dd7e5";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
