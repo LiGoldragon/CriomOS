@@ -572,6 +572,18 @@
         "type": "github"
       }
     },
+    "codex-chatgpt-vsix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-60IauFWGntxdEcscG+QtsbTduR05ajFnKlKUWL0amZg=",
+        "type": "file",
+        "url": "https://open-vsx.org/api/openai/chatgpt/linux-x64/26.5721.30844/file/openai.chatgpt-26.5721.30844@linux-x64.vsix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://open-vsx.org/api/openai/chatgpt/linux-x64/26.5721.30844/file/openai.chatgpt-26.5721.30844@linux-x64.vsix"
+      }
+    },
     "codex-cli": {
       "inputs": {
         "flake-utils": "flake-utils_7",
@@ -917,6 +929,7 @@
         "chroma": "chroma",
         "claude-answers": "claude-answers",
         "claude-code-vsix": "claude-code-vsix",
+        "codex-chatgpt-vsix": "codex-chatgpt-vsix",
         "codex-cli": "codex-cli",
         "codex-desktop-linux": "codex-desktop-linux",
         "crane": "crane_5",
@@ -999,17 +1012,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785085224,
-        "narHash": "sha256-9dfbngeKTHiVygi5CAzYwb/4N87iHohhJrzLJxMmfDg=",
+        "lastModified": 1785151069,
+        "narHash": "sha256-Sc9UFsTQc5+r+JgCeWghXiGJnGK+oFihvxcpqnVqkYU=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "27fcb31cb34609b8e8f1cab86680dbf786011b8d",
+        "rev": "7be212f22384bf8fea2e8442172a9d76ea4134dc",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "27fcb31cb34609b8e8f1cab86680dbf786011b8d",
+        "rev": "7be212f22384bf8fea2e8442172a9d76ea4134dc",
         "type": "github"
       }
     },
