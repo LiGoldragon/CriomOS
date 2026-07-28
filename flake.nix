@@ -199,7 +199,8 @@
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
             inherit inputs;
           };
-          home-activation-equivalence = pkgs.callPackage ./checks/home-activation-equivalence {
+          home-activation-equivalence = import ./checks/home-activation-equivalence {
+            inherit pkgs;
             inherit homeConfigurations target;
           };
         };
