@@ -199,6 +199,9 @@
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
             inherit inputs;
           };
+          home-activation-equivalence = pkgs.callPackage ./checks/home-activation-equivalence {
+            inherit homeConfigurations target;
+          };
         };
       };
 
@@ -227,12 +230,21 @@
           inputs.self.nixosModules.criomos
         ];
       };
+
+      # A user-environment deployment must consume the exact Home Manager
+      # activation package embedded in the materialized NixOS target. Export
+      # the conventional `homeConfigurations.<user>.activationPackage` shape
+      # as a projection of that target rather than evaluating CriomOS-home a
+      # second, differently configured way.
+      homeConfigurations = inputs.nixpkgs.lib.mapAttrs (_: userConfiguration: {
+        activationPackage = userConfiguration.home.activationPackage;
+      }) target.config.home-manager.users;
     in
     blueprintOutputs
     // {
       checks = projectChecks;
 
-      homeConfigurations = inputs.criomos-home.homeConfigurations;
+      inherit homeConfigurations;
 
       nixosConfigurations.target = target;
 
