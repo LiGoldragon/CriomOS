@@ -1012,17 +1012,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785250530,
-        "narHash": "sha256-GBAsCwXY0MPNdJW50IIbJZhECiRldsYhJc/qzZPdahA=",
+        "lastModified": 1785250875,
+        "narHash": "sha256-J+Y/wI9jUZ4P069is6hw8Iv2ISX7JekTOk+MINgDiuE=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5fed790732c56b8e0a412544e48f709d65ab1906",
+        "rev": "2b44151d32fa6d2760b707435ef0ad9b53b3597e",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5fed790732c56b8e0a412544e48f709d65ab1906",
+        "rev": "2b44151d32fa6d2760b707435ef0ad9b53b3597e",
         "type": "github"
       }
     },
