@@ -5,11 +5,10 @@
 #
 # modules/nixos/lojix.nix authors the daemon's startup request as a Nix string
 # that must positionally match the PINNED lojix `lojix-write-configuration`
-# ConfigurationWriteRequest schema. `nix build` of a system closure never runs
-# that writer (the NOTA is only `pkgs.writeText` text consumed at the unit's
-# ExecStartPre), so today a schema drift between the module NOTA and a bumped
-# lojix pin would surface only at runtime (systemd ExecStartPre), crash-looping
-# the daemon on the live host.
+# ConfigurationWriteRequest schema. The service must also run the pinned
+# in-place store migration before that writer. `nix build` of a system closure
+# never runs either command, so a schema drift or ordering regression would
+# otherwise surface only at runtime.
 #
 # This check closes that gap: it evaluates the lojix-daemon module for a
 # PersonaDevelopment node, takes the exact NOTA the module emits, and feeds it
@@ -58,10 +57,13 @@ let
 
   lojixService = configuration.config.systemd.services.lojix-daemon;
 
-  # ExecStartPre = "${lojixPackage}/bin/lojix-write-configuration ${startupRequest}";
-  # the second whitespace-token is the module's emitted NOTA store path.
-  execStartPreParts = lib.splitString " " lojixService.serviceConfig.ExecStartPre;
-  moduleNotaPath = builtins.elemAt execStartPreParts 1;
+  execStartPre = lojixService.serviceConfig.ExecStartPre;
+  migrationCommand = builtins.elemAt execStartPre 0;
+  configurationWriterCommand = builtins.elemAt execStartPre 1;
+
+  # The second whitespace-token is the module's emitted NOTA store path.
+  configurationWriterParts = lib.splitString " " configurationWriterCommand;
+  moduleNotaPath = builtins.elemAt configurationWriterParts 1;
   moduleNotaText = lib.removeSuffix "\n" (builtins.readFile moduleNotaPath);
 
   # The record ends with "<output_path>))". Swap only that last field (a plain
@@ -74,6 +76,12 @@ let
 in
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   set -eu
+
+  # The migration is the first pre-start command, ahead of configuration
+  # encoding and daemon startup, and targets the daemon's actual store file.
+  test ${toString (builtins.length execStartPre)} = 2
+  test ${lib.escapeShellArg migrationCommand} = \
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store /var/lib/lojix/lojix.sema"}
 
   # The module's exact ConfigurationWriteRequest record (output path redirected).
   cat ${roundtripNotaFile}

@@ -20,6 +20,7 @@ let
 
   runtimeDirectory = "/run/lojix";
   stateDirectory = "/var/lib/lojix";
+  storePath = "${stateDirectory}/lojix.sema";
   ordinarySocket = "${runtimeDirectory}/ordinary.sock";
   ownerSocket = "${runtimeDirectory}/owner.sock";
   startupArchive = "${runtimeDirectory}/startup.rkyv";
@@ -72,7 +73,10 @@ in
         RuntimeDirectoryMode = "0750";
         StateDirectory = "lojix";
         StateDirectoryMode = "0750";
-        ExecStartPre = "${lojixPackage}/bin/lojix-write-configuration ${startupRequest}";
+        ExecStartPre = [
+          "${lojixPackage}/bin/lojix-migrate-store ${storePath}"
+          "${lojixPackage}/bin/lojix-write-configuration ${startupRequest}"
+        ];
         ExecStart = "${lojixPackage}/bin/lojix-daemon ${startupArchive}";
         Restart = "on-failure";
         RestartSec = "5s";

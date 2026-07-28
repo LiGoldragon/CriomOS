@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/7be212f22384bf8fea2e8442172a9d76ea4134dc";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/62cf21d84df1f3407fa14cfa3c47d35b3bac0926";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -96,7 +96,7 @@
 
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
     # so parity checks use the same installed service/socket path as production.
-    lojix.url = "github:LiGoldragon/lojix/162bb93645b16a0409ff17610ec9f9ce485dd7e5";
+    lojix.url = "github:LiGoldragon/lojix/9adc6c75b8be85edc64c4eb14c27376bb0388dd7";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
