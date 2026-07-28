@@ -1,15 +1,14 @@
 {
   pkgs,
-  lib,
   homeConfigurations,
   target,
 }:
 let
-  embeddedActivationPackages = lib.mapAttrs (
+  embeddedActivationPackages = pkgs.lib.mapAttrs (
     _: userConfiguration: userConfiguration.home.activationPackage
   ) target.config.home-manager.users;
 
-  canonicalActivationPackages = lib.mapAttrs (
+  canonicalActivationPackages = pkgs.lib.mapAttrs (
     _: homeConfiguration: homeConfiguration.activationPackage
   ) homeConfigurations;
 
@@ -17,7 +16,7 @@ let
   # sets into the check environment makes Nix build the compared packages;
   # equal output paths are the Nix identity witness (and therefore the same
   # NAR) for each projected user environment.
-  verifiedPackages = lib.mapAttrs (
+  verifiedPackages = pkgs.lib.mapAttrs (
     userName: embeddedActivationPackage:
     assert canonicalActivationPackages.${userName} == embeddedActivationPackage;
     embeddedActivationPackage
@@ -25,8 +24,8 @@ let
 in
 pkgs.runCommand "home-activation-equivalence"
   {
-    canonicalPackages = lib.concatStringsSep " " (lib.attrValues canonicalActivationPackages);
-    embeddedPackages = lib.concatStringsSep " " (lib.attrValues verifiedPackages);
+    canonicalPackages = pkgs.lib.concatStringsSep " " (pkgs.lib.attrValues canonicalActivationPackages);
+    embeddedPackages = pkgs.lib.concatStringsSep " " (pkgs.lib.attrValues verifiedPackages);
   }
   ''
     test "$canonicalPackages" = "$embeddedPackages"
