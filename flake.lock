@@ -615,11 +615,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784540732,
-        "narHash": "sha256-st09ormXaWteYvC6RDlRO796WWZmDnmxCAsJG3lITG8=",
+        "lastModified": 1785137740,
+        "narHash": "sha256-rJMvcTyK49dWFUCwuN4rk/aByPnXz4otMbe0wMn6rzY=",
         "owner": "ilysenko",
         "repo": "codex-desktop-linux",
-        "rev": "2b8f610faddc576088732395df3734b1d19cd62f",
+        "rev": "c6d76231f0623c3ef0b18c7e9158697c96bdcf9f",
         "type": "github"
       },
       "original": {
@@ -1012,17 +1012,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785250875,
-        "narHash": "sha256-J+Y/wI9jUZ4P069is6hw8Iv2ISX7JekTOk+MINgDiuE=",
+        "lastModified": 1785256034,
+        "narHash": "sha256-dzl5/sl4MokaOqQ2ox7QJDNKWRSik5eW4VR+SspehFM=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2b44151d32fa6d2760b707435ef0ad9b53b3597e",
+        "rev": "a76748ba7ebc3a4b47fd5a3b9918aae41218ed63",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2b44151d32fa6d2760b707435ef0ad9b53b3597e",
+        "rev": "a76748ba7ebc3a4b47fd5a3b9918aae41218ed63",
         "type": "github"
       }
     },
