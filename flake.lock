@@ -540,13 +540,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-Agg+oK2DZE1ymn7smd8T2ujHHSiP1STN1YC01RvhV7k=",
+        "narHash": "sha256-56pl3x88FRZPnNerXzlijKc65sooUlyAZBJtbSu6V5g=",
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.215/file/Anthropic.claude-code-2.1.215@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.219/file/Anthropic.claude-code-2.1.219@linux-x64.vsix"
       },
       "original": {
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.215/file/Anthropic.claude-code-2.1.215@linux-x64.vsix"
+        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.219/file/Anthropic.claude-code-2.1.219@linux-x64.vsix"
       }
     },
     "clavifaber": {
@@ -1012,17 +1012,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785243206,
-        "narHash": "sha256-K8kDZOeSrSZYq/TFsCack6FQp10c0fOGECU31vHF3S8=",
+        "lastModified": 1785250530,
+        "narHash": "sha256-GBAsCwXY0MPNdJW50IIbJZhECiRldsYhJc/qzZPdahA=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "f694b8ec38a7055f5dfd508f8756b5cd2752c4b3",
+        "rev": "5fed790732c56b8e0a412544e48f709d65ab1906",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "f694b8ec38a7055f5dfd508f8756b5cd2752c4b3",
+        "rev": "5fed790732c56b8e0a412544e48f709d65ab1906",
         "type": "github"
       }
     },
