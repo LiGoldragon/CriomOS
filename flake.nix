@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/a76748ba7ebc3a4b47fd5a3b9918aae41218ed63";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/03c33b6dcc9b6dc2cc3581248f1a5fa80732696a";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
