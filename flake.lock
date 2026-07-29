@@ -1028,17 +1028,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785338500,
-        "narHash": "sha256-Mu3pzR8QupJc/zn4LPdIoxEisRhP5faf0qy9SI05yko=",
+        "lastModified": 1785338542,
+        "narHash": "sha256-LLOEXUJkpnjWOzamdSZWag2FkOYW12Ey4FHhXEQLRpQ=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "73f80b6cdc9583182ee53f17feed1a207ae976d1",
+        "rev": "5f8ff102ca1f3a12947a45cae801e47c504dfe9d",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "73f80b6cdc9583182ee53f17feed1a207ae976d1",
+        "rev": "5f8ff102ca1f3a12947a45cae801e47c504dfe9d",
         "type": "github"
       }
     },
