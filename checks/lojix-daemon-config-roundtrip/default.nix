@@ -87,13 +87,13 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   # migration.
   test ${toString (builtins.length execStartPre)} = 2
   ${pkgs.gnugrep}/bin/grep -Fx \
-    ${lib.escapeShellArg "if [ ! -e '${migrationMarker}' ]; then"} \
+    ${lib.escapeShellArg "if [ ! -e ${migrationMarker} ]; then"} \
     ${migrationGateCommand}
   ${pkgs.gnugrep}/bin/grep -Fx \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store '${storePath}'"} \
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store ${storePath}"} \
     ${migrationGateCommand}
   ${pkgs.gnugrep}/bin/grep -Fx \
-    ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv -- '${migrationMarker}' '${migrationMarkerArchive}'"} \
+    ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv -- ${migrationMarker} ${migrationMarkerArchive}"} \
     ${migrationGateCommand}
   test "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store"} ${migrationGateCommand} | cut -d: -f1)" \
     -lt "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv --"} ${migrationGateCommand} | cut -d: -f1)"
