@@ -21,9 +21,34 @@ let
   runtimeDirectory = "/run/lojix";
   stateDirectory = "/var/lib/lojix";
   storePath = "${stateDirectory}/lojix.sema";
+  migrationMarker = "${storePath}.schema-v1.backup";
+  migrationMarkerArchive = "${migrationMarker}.archived";
   ordinarySocket = "${runtimeDirectory}/ordinary.sock";
   ownerSocket = "${runtimeDirectory}/owner.sock";
   startupArchive = "${runtimeDirectory}/startup.rkyv";
+  # redb recovery is performed by the daemon's writable open.  Its schema-one
+  # reader must therefore run only while the migration sidecar says a
+  # schema-one transition is pending; reopening an ordinary schema-two store
+  # read-only can otherwise reject recovery before the daemon gets that chance.
+  # A successful migration leaves its permanent sidecar in the same directory,
+  # then this Nix-owned gate archives it so subsequent starts take the normal
+  # writable-open path.
+  migrateStoreIfSchemaOne = pkgs.writeShellScript "lojix-migrate-store-if-schema-one" ''
+    set -eu
+
+    if [ ! -e ${lib.escapeShellArg migrationMarker} ]; then
+      exit 0
+    fi
+
+    ${lojixPackage}/bin/lojix-migrate-store ${lib.escapeShellArg storePath}
+
+    if [ -e ${lib.escapeShellArg migrationMarkerArchive} ]; then
+      echo "lojix schema-one migration marker archive already exists: ${migrationMarkerArchive}" >&2
+      exit 1
+    fi
+
+    ${pkgs.coreutils}/bin/mv -- ${lib.escapeShellArg migrationMarker} ${lib.escapeShellArg migrationMarkerArchive}
+  '';
   # A production node bakes no test-op fixture: field 7 is `NoTestDefaults`, so
   # the daemon's `test_defaults` lowers to `None` and a bare `(Check …)`/`(Run
   # …)` is rejected with `NoTestDefaults` rather than silently building a
@@ -74,7 +99,7 @@ in
         StateDirectory = "lojix";
         StateDirectoryMode = "0750";
         ExecStartPre = [
-          "${lojixPackage}/bin/lojix-migrate-store ${storePath}"
+          migrateStoreIfSchemaOne
           "${lojixPackage}/bin/lojix-write-configuration ${startupRequest}"
         ];
         ExecStart = "${lojixPackage}/bin/lojix-daemon ${startupArchive}";

@@ -5,10 +5,10 @@
 #
 # modules/nixos/lojix.nix authors the daemon's startup request as a Nix string
 # that must positionally match the PINNED lojix `lojix-write-configuration`
-# ConfigurationWriteRequest schema. The service must also run the pinned
-# in-place store migration before that writer. `nix build` of a system closure
-# never runs either command, so a schema drift or ordering regression would
-# otherwise surface only at runtime.
+# ConfigurationWriteRequest schema. The service must put its schema-one marker
+# gate before that writer. `nix build` of a system closure never runs either
+# command, so a gate or ordering regression would otherwise surface only at
+# runtime.
 #
 # This check closes that gap: it evaluates the lojix-daemon module for a
 # PersonaDevelopment node, takes the exact NOTA the module emits, and feeds it
@@ -58,8 +58,11 @@ let
   lojixService = configuration.config.systemd.services.lojix-daemon;
 
   execStartPre = lojixService.serviceConfig.ExecStartPre;
-  migrationCommand = builtins.elemAt execStartPre 0;
+  migrationGateCommand = builtins.elemAt execStartPre 0;
   configurationWriterCommand = builtins.elemAt execStartPre 1;
+  storePath = "/var/lib/lojix/lojix.sema";
+  migrationMarker = "/var/lib/lojix/lojix.sema.schema-v1.backup";
+  migrationMarkerArchive = "${migrationMarker}.archived";
 
   # The second whitespace-token is the module's emitted NOTA store path.
   configurationWriterParts = lib.splitString " " configurationWriterCommand;
@@ -77,11 +80,22 @@ in
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   set -eu
 
-  # The migration is the first pre-start command, ahead of configuration
-  # encoding and daemon startup, and targets the daemon's actual store file.
+  # The Nix-owned gate is the first pre-start command, ahead of configuration
+  # encoding and daemon startup. It must skip the read-only migrator without
+  # the schema-one sidecar and archive that sidecar only after a successful
+  # migration.
   test ${toString (builtins.length execStartPre)} = 2
-  test ${lib.escapeShellArg migrationCommand} = \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store /var/lib/lojix/lojix.sema"}
+  ${pkgs.gnugrep}/bin/grep -Fx \
+    ${lib.escapeShellArg "if [ ! -e '${migrationMarker}' ]; then"} \
+    ${migrationGateCommand}
+  ${pkgs.gnugrep}/bin/grep -Fx \
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store '${storePath}'"} \
+    ${migrationGateCommand}
+  ${pkgs.gnugrep}/bin/grep -Fx \
+    ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv -- '${migrationMarker}' '${migrationMarkerArchive}'"} \
+    ${migrationGateCommand}
+  test "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store"} ${migrationGateCommand} | cut -d: -f1)" \
+    -lt "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv --"} ${migrationGateCommand} | cut -d: -f1)"
 
   # The module's exact ConfigurationWriteRequest record (output path redirected).
   cat ${roundtripNotaFile}
