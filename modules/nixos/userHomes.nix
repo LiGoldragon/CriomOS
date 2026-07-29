@@ -43,6 +43,7 @@ in
       # Supplying this already-global package set directly avoids resolving it
       # through `_module.args` (which can recurse during Home module loading).
       inherit horizon constants pkgs;
+      homeSystem = pkgs.stdenv.hostPlatform.system;
     };
     sharedModules = [ inputs.criomos-home.homeModules.default ];
     useGlobalPkgs = true;
