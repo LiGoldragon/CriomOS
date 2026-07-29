@@ -540,13 +540,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-56pl3x88FRZPnNerXzlijKc65sooUlyAZBJtbSu6V5g=",
+        "narHash": "sha256-eop53u6k0wJTvGQ8fBZKZHVm5KR7xhKM4zl2NJUQJq4=",
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.219/file/Anthropic.claude-code-2.1.219@linux-x64.vsix"
+        "url": "https://anthropic.gallerycdn.vsassets.io/extensions/anthropic/claude-code/2.1.220/1784943423092/Microsoft.VisualStudio.Services.VSIXPackage"
       },
       "original": {
         "type": "file",
-        "url": "https://open-vsx.org/api/Anthropic/claude-code/linux-x64/2.1.219/file/Anthropic.claude-code-2.1.219@linux-x64.vsix"
+        "url": "https://anthropic.gallerycdn.vsassets.io/extensions/anthropic/claude-code/2.1.220/1784943423092/Microsoft.VisualStudio.Services.VSIXPackage"
       }
     },
     "clavifaber": {
@@ -577,11 +577,11 @@
       "locked": {
         "narHash": "sha256-60IauFWGntxdEcscG+QtsbTduR05ajFnKlKUWL0amZg=",
         "type": "file",
-        "url": "https://open-vsx.org/api/openai/chatgpt/linux-x64/26.5721.30844/file/openai.chatgpt-26.5721.30844@linux-x64.vsix"
+        "url": "https://openai.gallerycdn.vsassets.io/extensions/openai/chatgpt/26.5721.30844/1784862552174/Microsoft.VisualStudio.Services.VSIXPackage"
       },
       "original": {
         "type": "file",
-        "url": "https://open-vsx.org/api/openai/chatgpt/linux-x64/26.5721.30844/file/openai.chatgpt-26.5721.30844@linux-x64.vsix"
+        "url": "https://openai.gallerycdn.vsassets.io/extensions/openai/chatgpt/26.5721.30844/1784862552174/Microsoft.VisualStudio.Services.VSIXPackage"
       }
     },
     "codex-cli": {
@@ -1028,17 +1028,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785315594,
-        "narHash": "sha256-LndJPdJTHPlINAAi4ACWToIEaz0pRy8hE/wKMOOWDDQ=",
+        "lastModified": 1785321190,
+        "narHash": "sha256-V+LnKDyFxZeP/eHcXgTM3Xs7/R/8vihkuJ1OOy6PDBQ=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "217fd23cd276c3356b9a33e0eb0d2a7eecadc701",
+        "rev": "7343fc9319d3f417714e64da4551a8c6bb11942c",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "217fd23cd276c3356b9a33e0eb0d2a7eecadc701",
+        "rev": "7343fc9319d3f417714e64da4551a8c6bb11942c",
         "type": "github"
       }
     },
@@ -2161,11 +2161,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1784921203,
-        "narHash": "sha256-a7pt7G6/gXzp569dsGKtZRlpXjwtA4I4dsYjpAE9bcs=",
+        "lastModified": 1785317351,
+        "narHash": "sha256-Oa8neKbsLeyPD+OH8dUmOvzoF+YYrTcYYJ4/zCqgdGg=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "e12f1c0df7ef59f57089bf9e80a96f9b1e419b06",
+        "rev": "6a4307f18bee44e5d4d678df015af7bcb683d6c8",
         "type": "github"
       },
       "original": {
@@ -2184,17 +2184,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1785241705,
-        "narHash": "sha256-e3PvQf4YpPM+YxYhObtoi1VVvHLYDbxLZKPak4/g79M=",
+        "lastModified": 1785320893,
+        "narHash": "sha256-kv0d3w1YiCTwDlgS/rWFu57bnW8+BXdVeAOtxig+AlU=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "9adc6c75b8be85edc64c4eb14c27376bb0388dd7",
+        "rev": "63048a4e6c0df91aebfaf9f31758ba8e4e25381b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "9adc6c75b8be85edc64c4eb14c27376bb0388dd7",
+        "rev": "63048a4e6c0df91aebfaf9f31758ba8e4e25381b",
         "type": "github"
       }
     },
