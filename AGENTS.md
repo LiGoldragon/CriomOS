@@ -20,6 +20,7 @@ First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-fi
 ## Hard process rules
 
 - Push before building; build from origin with `--refresh`.
+- Before every CriomOS deployment, update and lock the CriomOS-home input to the current CriomOS-home main revision, then build and deploy only that pinned revision.
 - Store paths live in shell variables, never in prose, code blocks, or commit messages. A `/nix/store/<hash>-<name>` literal in the chat log freezes a build artefact into the conversation forever; the hash drifts with every input bump and the next run reads stale context as if it were authoritative. Capture in `X=$(nix build … --print-out-paths --no-link)` and reference `$X`.
 - For one-shot invocations of a nix-built tool, prefer `nix run <flake>#<attr> -- <args>`. Reach for `nix build` only when the store path itself is load-bearing (closure introspection, manual `nix copy`, etc.) — and even then capture it in a shell var.
 - Use flake attrs or `nix shell nixpkgs#jq`, not `<nixpkgs>` / `NIX_PATH`.
