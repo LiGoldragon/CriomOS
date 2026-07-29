@@ -7,7 +7,12 @@
   ...
 }:
 let
-  inherit (lib) mkDefault mkIf;
+  inherit (lib)
+    mkDefault
+    mkIf
+    mkOption
+    types
+    ;
 
   nodeServices = import ./node-services.nix { inherit lib; };
   services = horizon.node.services or [ ];
@@ -26,6 +31,7 @@ let
   ordinarySocket = "${runtimeDirectory}/ordinary.sock";
   ownerSocket = "${runtimeDirectory}/owner.sock";
   startupArchive = "${runtimeDirectory}/startup.rkyv";
+  effectTimeoutSeconds = config.services.lojix.effectTimeoutSeconds;
   # redb recovery is performed by the daemon's writable open.  Its schema-one
   # reader must therefore run only while the migration sidecar says a
   # schema-one transition is pending; reopening an ordinary schema-two store
@@ -49,7 +55,8 @@ let
 
     ${pkgs.coreutils}/bin/mv -- ${lib.escapeShellArg migrationMarker} ${lib.escapeShellArg migrationMarkerArchive}
   '';
-  # A production node bakes no test-op fixture: field 7 is `NoTestDefaults`, so
+  # A production node bakes no test-op fixture: the final schema-bearing field
+  # is `NoTestDefaults`, so
   # the daemon's `test_defaults` lowers to `None` and a bare `(Check …)`/`(Run
   # …)` is rejected with `NoTestDefaults` rather than silently building a
   # per-node baked test cluster. The test fixture (test_flake, its cluster,
@@ -58,10 +65,16 @@ let
   # test clusters and fixtures live only in test code). Requires a pinned lojix
   # carrying the optional-`test_defaults` shape (`WriterTestDefaultsChoice`).
   startupRequest = pkgs.writeText "lojix-daemon-configuration.nota" ''
-    (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${config.networking.hostName} NoTestDefaults ${startupArchive}))
+    (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${config.networking.hostName} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchive}))
   '';
 in
 {
+  options.services.lojix.effectTimeoutSeconds = mkOption {
+    type = types.ints.positive;
+    default = 2700;
+    description = "Maximum duration of one Lojix Nix, SSH, or activation effect before the daemon terminates its process group.";
+  };
+
   config = mkIf lojixEnabled {
     assertions = [
       {
@@ -85,6 +98,7 @@ in
         pkgs.gitMinimal
         pkgs.nix
         pkgs.openssh
+        pkgs.util-linux
       ];
       environment = {
         SSH_AUTH_SOCK = "/run/user/${toString operatorUid}/gnupg/S.gpg-agent.ssh";

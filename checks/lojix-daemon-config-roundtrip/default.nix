@@ -68,6 +68,7 @@ let
   configurationWriterParts = lib.splitString " " configurationWriterCommand;
   moduleNotaPath = builtins.elemAt configurationWriterParts 1;
   moduleNotaText = lib.removeSuffix "\n" (builtins.readFile moduleNotaPath);
+  effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
 
   # The record ends with "<output_path>))". Swap only that last field (a plain
   # deploy path, not a schema surface) for a relative name so the pinned writer
@@ -96,6 +97,9 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
     ${migrationGateCommand}
   test "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store"} ${migrationGateCommand} | cut -d: -f1)" \
     -lt "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv --"} ${migrationGateCommand} | cut -d: -f1)"
+
+  test ${toString effectTimeoutSeconds} = 2700
+  printf '%s' ${lib.escapeShellArg moduleNotaText} | ${pkgs.gnugrep}/bin/grep -F 'roundtrip-check 2700 NoTestDefaults'
 
   # The module's exact ConfigurationWriteRequest record (output path redirected).
   cat ${roundtripNotaFile}
