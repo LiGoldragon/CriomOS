@@ -2581,11 +2581,11 @@
     "nota-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1783443857,
-        "narHash": "sha256-ZvvGRnrQ639uSDkGUeS+UgbEbApec0MX9I2dZoA22Kk=",
+        "lastModified": 1785523644,
+        "narHash": "sha256-JhSAtetUNDe7PqJuXDeEm0sXSqS9sNNrVdTy1sdOw9s=",
         "owner": "LiGoldragon",
-        "repo": "nota",
-        "rev": "d25c08a87b897f2eac28621fb6c3d25801cdccfc",
+        "repo": "dotos",
+        "rev": "1facca44fbcb37633f71fcf6f73bd693fbe56a5e",
         "type": "github"
       },
       "original": {
@@ -2597,11 +2597,11 @@
     "nota-text-query-source": {
       "flake": false,
       "locked": {
-        "lastModified": 1783351457,
-        "narHash": "sha256-V7cw3bFmHGlT47aW/h9z79o9YaHS2fhLH2x+P1mFW7I=",
+        "lastModified": 1785524168,
+        "narHash": "sha256-lXeTsBrneiSaNAlKhbOopJTIXB+U7S9St3sowUMpa4E=",
         "owner": "LiGoldragon",
-        "repo": "nota-text-query",
-        "rev": "6140a3e9afe3f81c18a39cb0a11dec4eab68b561",
+        "repo": "dotos-text-query",
+        "rev": "acf6b4b935443602f0bf575adfb22e974c5dde53",
         "type": "github"
       },
       "original": {
@@ -4238,11 +4238,11 @@
         "version-projection-source": "version-projection-source"
       },
       "locked": {
-        "lastModified": 1784124444,
-        "narHash": "sha256-KjRg/AdpcbZp4QpUCM1LKnMuLSkGcOz5nz3tWtn/Om8=",
+        "lastModified": 1785327666,
+        "narHash": "sha256-aXKvdJ4a2UeyMa4974lVdFfdeUj4CiZCYNcbA7qpkXY=",
         "owner": "LiGoldragon",
         "repo": "spirit",
-        "rev": "7cd3ad86468a4a78e0d5fc586aa1ff22ea8604aa",
+        "rev": "74a8ee31b284c22a9df1f352962c650b597e2c72",
         "type": "github"
       },
       "original": {
