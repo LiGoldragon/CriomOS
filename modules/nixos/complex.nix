@@ -16,7 +16,7 @@ let
   clavifaber = inputs.clavifaber.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   # Per-host artifacts produced by clavifaber. See clavifaber/ARCHITECTURE.md.
-  publicationFile = "${dir}/publication.nota";
+  publicationFile = "${dir}/publication.dotos";
 
   # Clavifaber does NOT create the SSH host key. sshd does
   # (`services.openssh.enable = true` triggers

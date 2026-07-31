@@ -66,17 +66,17 @@ let
 
   # The second whitespace-token is the module's emitted NOTA store path.
   configurationWriterParts = lib.splitString " " configurationWriterCommand;
-  moduleNotaPath = builtins.elemAt configurationWriterParts 1;
-  moduleNotaText = lib.removeSuffix "\n" (builtins.readFile moduleNotaPath);
+  moduleDotosPath = builtins.elemAt configurationWriterParts 1;
+  moduleDotosText = lib.removeSuffix "\n" (builtins.readFile moduleDotosPath);
   effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
 
   # The record ends with "<output_path>))". Swap only that last field (a plain
   # deploy path, not a schema surface) for a relative name so the pinned writer
   # writes into the build cwd; keep every preceding schema-bearing field verbatim.
-  notaTokens = lib.splitString " " moduleNotaText;
-  schemaBearingTokens = lib.init notaTokens;
-  roundtripNotaText = (lib.concatStringsSep " " schemaBearingTokens) + " startup.rkyv))";
-  roundtripNotaFile = pkgs.writeText "lojix-daemon-config-roundtrip.nota" roundtripNotaText;
+  dotosTokens = lib.splitString " " moduleDotosText;
+  schemaBearingTokens = lib.init dotosTokens;
+  roundtripDotosText = (lib.concatStringsSep " " schemaBearingTokens) + " startup.rkyv))";
+  roundtripDotosFile = pkgs.writeText "lojix-daemon-config-roundtrip.dotos" roundtripDotosText;
 in
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   set -eu
@@ -99,14 +99,14 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
     -lt "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv --"} ${migrationGateCommand} | cut -d: -f1)"
 
   test ${toString effectTimeoutSeconds} = 2700
-  printf '%s' ${lib.escapeShellArg moduleNotaText} | ${pkgs.gnugrep}/bin/grep -F 'roundtrip-check 2700 NoTestDefaults'
+  printf '%s' ${lib.escapeShellArg moduleDotosText} | ${pkgs.gnugrep}/bin/grep -F 'roundtrip-check 2700 NoTestDefaults'
 
   # The module's exact ConfigurationWriteRequest record (output path redirected).
-  cat ${roundtripNotaFile}
+  cat ${roundtripDotosFile}
 
   # Round-trip: the PINNED writer must decode this NOTA and emit the rkyv. A
   # positional-schema drift between module and pin fails here, at build time.
-  ${lojixPackage}/bin/lojix-write-configuration ${roundtripNotaFile} | grep -F '(ConfigurationWritten'
+  ${lojixPackage}/bin/lojix-write-configuration ${roundtripDotosFile} | grep -F '(ConfigurationWritten'
   test -s startup.rkyv
 
   touch "$out"

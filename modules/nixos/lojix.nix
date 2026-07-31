@@ -64,7 +64,7 @@ let
   # per-node here. Deployment-independence discipline (micro-components skill:
   # test clusters and fixtures live only in test code). Requires a pinned lojix
   # carrying the optional-`test_defaults` shape (`WriterTestDefaultsChoice`).
-  startupRequest = pkgs.writeText "lojix-daemon-configuration.nota" ''
+  startupRequest = pkgs.writeText "lojix-daemon-configuration.dotos" ''
     (ConfigurationWriteRequest (${ordinarySocket} 432 ${ownerSocket} 384 ${stateDirectory} ${config.networking.hostName} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchive}))
   '';
 in

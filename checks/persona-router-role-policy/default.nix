@@ -97,8 +97,8 @@ let
   execStartPre = serviceConfig.ExecStartPre;
   bootstrapCommand = builtins.elemAt execStartPre 0;
   configurationCommand = builtins.elemAt execStartPre 1;
-  bootstrapNota = builtins.readFile (builtins.elemAt (lib.splitString " " bootstrapCommand) 1);
-  configurationNota = builtins.readFile (
+  bootstrapDotos = builtins.readFile (builtins.elemAt (lib.splitString " " bootstrapCommand) 1);
+  configurationDotos = builtins.readFile (
     builtins.elemAt (lib.splitString " " configurationCommand) 1
   );
 
@@ -127,9 +127,9 @@ pkgs.runCommand "persona-router-role-policy" { } ''
   printf '%s' ${lib.escapeShellArg serviceConfig.ExecStart} | grep -F '/bin/router-daemon'
   printf '%s' ${lib.escapeShellArg serviceConfig.ExecStart} | grep -F '/run/persona-router/router-daemon.rkyv'
 
-  printf '%s' ${lib.escapeShellArg configurationNota} | grep -F '(ConfigurationWriteRequest /run/persona-router/router.sock /run/persona-router/meta.sock /run/persona-router/supervision.sock /var/lib/persona-router/router.sema (Some /run/persona-router/bootstrap.rkyv) 1000 (Some 0.0.0.0:7440) router-a (Some /run/criome/criome.sock) /run/persona-router/router-daemon.rkyv)'
-  printf '%s' ${lib.escapeShellArg bootstrapNota} | grep -F '(BootstrapWriteRequest /run/persona-router/bootstrap.rkyv [ (router-b 192.168.1.20:7440) ] [ (mirror 0 (Some router-b) None) (criome-router-a 0 None (Some (ComponentSocket /run/criome/criome.sock))) ] [ (criome-router-b criome-router-a) ])'
-  ! printf '%s' ${lib.escapeShellArg configurationNota} | grep -F '"'
+  printf '%s' ${lib.escapeShellArg configurationDotos} | grep -F '(ConfigurationWriteRequest /run/persona-router/router.sock /run/persona-router/meta.sock /run/persona-router/supervision.sock /var/lib/persona-router/router.sema (Some /run/persona-router/bootstrap.rkyv) 1000 (Some 0.0.0.0:7440) router-a (Some /run/criome/criome.sock) /run/persona-router/router-daemon.rkyv)'
+  printf '%s' ${lib.escapeShellArg bootstrapDotos} | grep -F '(BootstrapWriteRequest /run/persona-router/bootstrap.rkyv [ (router-b 192.168.1.20:7440) ] [ (mirror 0 (Some router-b) None) (criome-router-a 0 None (Some (ComponentSocket /run/criome/criome.sock))) ] [ (criome-router-b criome-router-a) ])'
+  ! printf '%s' ${lib.escapeShellArg configurationDotos} | grep -F '"'
 
   printf '%s' ${lib.escapeShellArg systemPackageNames} | grep -F router
   printf '%s' ${lib.escapeShellArg tmpfiles} | grep -F 'd /var/lib/persona-router 0700 persona-router persona-router -'

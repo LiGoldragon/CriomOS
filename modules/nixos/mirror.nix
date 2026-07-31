@@ -40,7 +40,7 @@ let
   daemonGroup = "mirror";
   clientGroup = "nixdev";
   mirrorPackage = inputs.mirror.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  daemonConfigurationNota = pkgs.writeText "mirror-daemon-configuration.nota" ''
+  daemonConfigurationDotos = pkgs.writeText "mirror-daemon-configuration.dotos" ''
     (${daemonConfigurationPath} (${storePath} ${workingSocket} 432 ${metaSocket} 384 ${tcpListenAddress}))
   '';
 in
@@ -71,7 +71,7 @@ in
         Group = clientGroup;
         SupplementaryGroups = [ daemonGroup ];
         WorkingDirectory = "/var/lib/mirror";
-        ExecStartPre = "${mirrorPackage}/bin/mirror-write-configuration ${daemonConfigurationNota}";
+        ExecStartPre = "${mirrorPackage}/bin/mirror-write-configuration ${daemonConfigurationDotos}";
         ExecStart = "${mirrorPackage}/bin/mirror-daemon ${daemonConfigurationPath}";
         Restart = "on-failure";
         RestartSec = "5s";

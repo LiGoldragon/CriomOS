@@ -87,7 +87,7 @@ let
   # their deployment configuration; absence selects Criome's own safe defaults.
   # The encoder wraps it in a CriomeConfigurationArtifact carrying the rkyv
   # output path and seals it.
-  configurationArtifactNota =
+  configurationArtifactDotos =
     "(CriomeConfigurationArtifact "
     + "(${socketPath} ${storePath} (Some ${metaSocketPath}) None ${cfg.authorizationMode} ${nodeIdentityField} None None) "
     + "${configRkyv})";
@@ -98,10 +98,10 @@ let
   # than an embedded shell argument. The `.nota` suffix documents the content
   # type. Passing the file as the sole ExecStartPre token (no wrapper script) lets
   # `criome-daemon-config-roundtrip` read the exact `.nota` from the emitted unit.
-  configurationArtifactNotaFile = pkgs.writeText "criome-config.nota" configurationArtifactNota;
+  configurationArtifactDotosFile = pkgs.writeText "criome-config.dotos" configurationArtifactDotos;
 
   encodeConfigurationCommand =
-    "${cfg.package}/bin/criome-encode-configuration ${configurationArtifactNotaFile}";
+    "${cfg.package}/bin/criome-encode-configuration ${configurationArtifactDotosFile}";
 in
 {
   options.services.criome = {

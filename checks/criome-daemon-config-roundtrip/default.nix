@@ -58,18 +58,18 @@ let
   # ExecStartPre = "${criomePackage}/bin/criome-encode-configuration ${notaFile}";
   # the second whitespace-token is the module's emitted .nota store path.
   execStartPreParts = lib.splitString " " criomeService.serviceConfig.ExecStartPre;
-  moduleNotaPath = builtins.elemAt execStartPreParts 1;
-  moduleNotaText = lib.removeSuffix "\n" (builtins.readFile moduleNotaPath);
+  moduleDotosPath = builtins.elemAt execStartPreParts 1;
+  moduleDotosText = lib.removeSuffix "\n" (builtins.readFile moduleDotosPath);
 
   # The record is `(CriomeConfigurationArtifact (<8-field record>) <output_path>)`.
   # Swap only the trailing <output_path> token (a plain deploy path, not a schema
   # surface) for a relative name so the pinned encoder writes into the build cwd;
   # keep every preceding schema-bearing token verbatim. The final token carries a
   # single closing paren for the outer CriomeConfigurationArtifact.
-  notaTokens = lib.splitString " " moduleNotaText;
-  schemaBearingTokens = lib.init notaTokens;
-  roundtripNotaText = (lib.concatStringsSep " " schemaBearingTokens) + " startup.rkyv)";
-  roundtripNotaFile = pkgs.writeText "criome-daemon-config-roundtrip.nota" roundtripNotaText;
+  dotosTokens = lib.splitString " " moduleDotosText;
+  schemaBearingTokens = lib.init dotosTokens;
+  roundtripDotosText = (lib.concatStringsSep " " schemaBearingTokens) + " startup.rkyv)";
+  roundtripDotosFile = pkgs.writeText "criome-daemon-config-roundtrip.dotos" roundtripDotosText;
 
   # Retirement witness: no deploy-time seeding hook remains on the unit.
   hasExecStartPost = criomeService.serviceConfig ? ExecStartPost;
@@ -80,11 +80,11 @@ pkgs.runCommand "criome-daemon-config-roundtrip" { } ''
   set -eu
 
   # The module's exact CriomeConfigurationArtifact record (output path redirected).
-  cat ${roundtripNotaFile}
+  cat ${roundtripDotosFile}
 
   # Round-trip: the PINNED encoder must decode this NOTA and emit the rkyv. A
   # positional-schema drift between module and pin fails here, at build time.
-  ${criomePackage}/bin/criome-encode-configuration ${roundtripNotaFile} | grep -F '(ArtifactWritten'
+  ${criomePackage}/bin/criome-encode-configuration ${roundtripDotosFile} | grep -F '(ArtifactWritten'
   test -s startup.rkyv
 
   touch "$out"

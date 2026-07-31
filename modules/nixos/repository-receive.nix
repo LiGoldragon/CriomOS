@@ -32,7 +32,7 @@ let
   receiveGroup = "repository-ledger-receive";
   repositoryLedgerPackage =
     inputs.repository-ledger.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  daemonConfiguration = pkgs.writeText "repository-ledger-daemon-configuration.nota" ''
+  daemonConfiguration = pkgs.writeText "repository-ledger-daemon-configuration.dotos" ''
     (ConfigurationWriteRequest (${daemonSocket} 432 ${ownerSocket} 384 ${storePath} ${spoolDirectory} ${daemonConfigurationPath}))
   '';
 
@@ -47,7 +47,7 @@ let
     git_command=${lib.escapeShellArg "${lib.getExe pkgs.git}"}
     zero_object_id=0000000000000000000000000000000000000000
 
-    nota_string() {
+    dotos_string() {
       ${lib.getExe pkgs.perl} -0ne 's/\\/\\\\/g; s/\]/\\]/g; s/\n/\\n/g; s/\t/\\t/g; s/\r/\\r/g; print "[", $_, "]";'
     }
 
@@ -60,20 +60,20 @@ let
     )"
 
     ${lib.getExe' pkgs.coreutils "mkdir"} -p "$spool_directory"
-    direct_request_path="$spool_directory/.$timestamp-$safe_repository_name-$$.direct.nota"
+    direct_request_path="$spool_directory/.$timestamp-$safe_repository_name-$$.direct.dotos"
     temporary_path="$spool_directory/.$timestamp-$safe_repository_name-$$.spool.tmp"
     commit_observations_path="$spool_directory/.$timestamp-$safe_repository_name-$$.commit-observations.tmp"
     commit_list_path="$spool_directory/.$timestamp-$safe_repository_name-$$.commits.tmp"
     file_list_path="$spool_directory/.$timestamp-$safe_repository_name-$$.files.tmp"
-    final_path="$spool_directory/$timestamp-$safe_repository_name-$$.nota"
+    final_path="$spool_directory/$timestamp-$safe_repository_name-$$.dotos"
     : >"$commit_observations_path"
 
     {
       printf '(PushObservation '
       printf '(ReceiveHookNotification %s %s %s ' \
-        "$(printf '%s' "$repository_name" | nota_string)" \
-        "$(printf '%s' "$gitolite_user" | nota_string)" \
-        "$(printf '%s' "$timestamp" | nota_string)"
+        "$(printf '%s' "$repository_name" | dotos_string)" \
+        "$(printf '%s' "$gitolite_user" | dotos_string)" \
+        "$(printf '%s' "$timestamp" | dotos_string)"
       if [ -S "$daemon_socket" ]; then
         printf 'True '
       else
@@ -84,9 +84,9 @@ let
 
     {
       printf '%s\n' '(ReceiveHookNotification'
-      printf '  (Name %s)\n' "$(printf '%s' "$repository_name" | nota_string)"
-      printf '  (GitoliteUser %s)\n' "$(printf '%s' "$gitolite_user" | nota_string)"
-      printf '  (ReceivedAt %s)\n' "$(printf '%s' "$timestamp" | nota_string)"
+      printf '  (Name %s)\n' "$(printf '%s' "$repository_name" | dotos_string)"
+      printf '  (GitoliteUser %s)\n' "$(printf '%s' "$gitolite_user" | dotos_string)"
+      printf '  (ReceivedAt %s)\n' "$(printf '%s' "$timestamp" | dotos_string)"
       if [ -S "$daemon_socket" ]; then
         printf '%s\n' '  (DaemonSocketPresent True)'
       else
@@ -105,14 +105,14 @@ let
         printf ' ' >>"$direct_request_path"
       fi
       printf '(RefUpdate %s %s %s)' \
-        "$(printf '%s' "$old_object_id" | nota_string)" \
-        "$(printf '%s' "$new_object_id" | nota_string)" \
-        "$(printf '%s' "$ref_name" | nota_string)" \
+        "$(printf '%s' "$old_object_id" | dotos_string)" \
+        "$(printf '%s' "$new_object_id" | dotos_string)" \
+        "$(printf '%s' "$ref_name" | dotos_string)" \
         >>"$direct_request_path"
       printf '    (RefUpdate %s %s %s)\n' \
-        "$(printf '%s' "$old_object_id" | nota_string)" \
-        "$(printf '%s' "$new_object_id" | nota_string)" \
-        "$(printf '%s' "$ref_name" | nota_string)" \
+        "$(printf '%s' "$old_object_id" | dotos_string)" \
+        "$(printf '%s' "$new_object_id" | dotos_string)" \
+        "$(printf '%s' "$ref_name" | dotos_string)" \
         >>"$temporary_path"
 
       if [ "$new_object_id" = "$zero_object_id" ]; then
@@ -135,10 +135,10 @@ let
         commit_timestamp="$("$git_command" log -1 --format=%cI "$commit_object_id")"
         commit_message="$("$git_command" log -1 --format=%B "$commit_object_id")"
         printf '(CommitObservation %s %s %s %s [' \
-          "$(printf '%s' "$commit_object_id" | nota_string)" \
-          "$(printf '%s' "$ref_name" | nota_string)" \
-          "$(printf '%s' "$commit_timestamp" | nota_string)" \
-          "$(printf '%s' "$commit_message" | nota_string)" \
+          "$(printf '%s' "$commit_object_id" | dotos_string)" \
+          "$(printf '%s' "$ref_name" | dotos_string)" \
+          "$(printf '%s' "$commit_timestamp" | dotos_string)" \
+          "$(printf '%s' "$commit_message" | dotos_string)" \
           >>"$commit_observations_path"
 
         "$git_command" diff-tree --root --no-commit-id --name-status -r -M "$commit_object_id" >"$file_list_path"
@@ -152,14 +152,14 @@ let
           fi
           if [ -n "$second_path" ]; then
             printf '(FileChange %s %s (Some %s))' \
-              "$(printf '%s' "$status" | nota_string)" \
-              "$(printf '%s' "$second_path" | nota_string)" \
-              "$(printf '%s' "$first_path" | nota_string)" \
+              "$(printf '%s' "$status" | dotos_string)" \
+              "$(printf '%s' "$second_path" | dotos_string)" \
+              "$(printf '%s' "$first_path" | dotos_string)" \
               >>"$commit_observations_path"
           else
             printf '(FileChange %s %s None)' \
-              "$(printf '%s' "$status" | nota_string)" \
-              "$(printf '%s' "$first_path" | nota_string)" \
+              "$(printf '%s' "$status" | dotos_string)" \
+              "$(printf '%s' "$first_path" | dotos_string)" \
               >>"$commit_observations_path"
           fi
         done <"$file_list_path"

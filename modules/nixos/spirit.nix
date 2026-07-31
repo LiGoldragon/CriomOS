@@ -105,7 +105,7 @@ let
 
   # (Optional Identity)-shaped Optional rendering for the guardian agent's
   # own optional sub-fields, then the whole guardian record as an Optional.
-  guardianAgentNota =
+  guardianAgentDotos =
     agent:
     let
       providerField = if agent.providerName == null then "None" else "(Some ${agent.providerName})";
@@ -119,13 +119,13 @@ let
     "(${agent.agentSocketPath} ${providerField} ${modelField} ${toString agent.timeoutMilliseconds} ${maximumOutputTokensField})";
 
   guardianAgentField =
-    if cfg.guardianAgent == null then "None" else "(Some ${guardianAgentNota cfg.guardianAgent})";
+    if cfg.guardianAgent == null then "None" else "(Some ${guardianAgentDotos cfg.guardianAgent})";
 
   # The single ConfigurationWriteRequest NOTA record, in
   # spirit-write-configuration's field order: socket_path, meta_socket_path
   # (Optional), database_path, trace_socket_path (always None — see above),
   # authorization_mode, guardian_agent_configuration (Optional), output_path.
-  configurationWriteRequestNota =
+  configurationWriteRequestDotos =
     "(ConfigurationWriteRequest ("
     + "${socketPath} (Some ${metaSocketPath}) ${storePath} None "
     + "${cfg.authorizationMode} ${guardianAgentField} ${configRkyv}"
@@ -133,7 +133,7 @@ let
 
   encodeConfigurationScript = pkgs.writeShellScript "spirit-encode-configuration" ''
     set -eu
-    ${cfg.package}/bin/spirit-write-configuration ${lib.escapeShellArg configurationWriteRequestNota}
+    ${cfg.package}/bin/spirit-write-configuration ${lib.escapeShellArg configurationWriteRequestDotos}
   '';
 in
 {

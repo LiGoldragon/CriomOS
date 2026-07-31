@@ -88,30 +88,30 @@ let
   daemonGroup = "persona-router";
   routerPackage = inputs.router.packages.${pkgs.stdenv.hostPlatform.system}.text;
 
-  peerNota = concatMapStringsSep " " (peer: "(${peer.identity} ${peer.address})") peers;
-  actorHomeNota = concatMapStringsSep " " (
+  peerDotos = concatMapStringsSep " " (peer: "(${peer.identity} ${peer.address})") peers;
+  actorHomeDotos = concatMapStringsSep " " (
     actorHome:
     let
       home = actorHome.home or null;
-      homeNota = if home == null then "None" else "(Some ${home})";
+      homeDotos = if home == null then "None" else "(Some ${home})";
       endpoint = actorHome.endpoint or null;
-      endpointNota = if endpoint == null then "None" else "(Some (ComponentSocket ${endpoint}))";
+      endpointDotos = if endpoint == null then "None" else "(Some (ComponentSocket ${endpoint}))";
     in
-    "(${actorHome.actor} ${toString (actorHome.process or 0)} ${homeNota} ${endpointNota})"
+    "(${actorHome.actor} ${toString (actorHome.process or 0)} ${homeDotos} ${endpointDotos})"
   ) actorHomes;
-  grantNota = concatMapStringsSep " " (grant: "(${grant.source} ${grant.destination})") grants;
+  grantDotos = concatMapStringsSep " " (grant: "(${grant.source} ${grant.destination})") grants;
 
-  bootstrapRequestNota = pkgs.writeText "persona-router-bootstrap.nota" ''
-    (BootstrapWriteRequest ${bootstrapPath} [ ${peerNota} ] [ ${actorHomeNota} ] [ ${grantNota} ])
+  bootstrapRequestDotos = pkgs.writeText "persona-router-bootstrap.dotos" ''
+    (BootstrapWriteRequest ${bootstrapPath} [ ${peerDotos} ] [ ${actorHomeDotos} ] [ ${grantDotos} ])
   '';
 
   bootstrapField = if hasBootstrap then "(Some ${bootstrapPath})" else "None";
-  daemonConfigurationNota = pkgs.writeText "persona-router-daemon-configuration.nota" ''
+  daemonConfigurationDotos = pkgs.writeText "persona-router-daemon-configuration.dotos" ''
     (ConfigurationWriteRequest ${workingSocket} ${metaSocket} ${supervisionSocket} ${storePath} ${bootstrapField} ${toString ownerUserIdentifier} (Some ${tailnetListenAddress}) ${routerIdentity} (Some ${criomeSocketPath}) ${daemonConfigurationPath})
   '';
 
-  writeBootstrap = "${routerPackage}/bin/router-write-bootstrap ${bootstrapRequestNota}";
-  writeConfiguration = "${routerPackage}/bin/router-write-configuration ${daemonConfigurationNota}";
+  writeBootstrap = "${routerPackage}/bin/router-write-bootstrap ${bootstrapRequestDotos}";
+  writeConfiguration = "${routerPackage}/bin/router-write-configuration ${daemonConfigurationDotos}";
 in
 {
   config = mkIf personaRouterEnabled {
