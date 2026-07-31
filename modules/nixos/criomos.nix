@@ -36,6 +36,7 @@ in
     # Agent Intercom's node-level SSH and accessibility prerequisites;
     # user broker/adapters and session state remain in CriomOS-home.
     ./agent-intercom.nix
+    ./hardware-adjustments
     ./network
     # aggregator — pulls in dnsmasq, yggdrasil, tailscale,
     # headscale, nordvpn, wifi-eap, networkd, wireguard,

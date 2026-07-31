@@ -173,6 +173,9 @@
           laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
+          ms2130-uvc-aspect-quirk = pkgs.callPackage ./checks/ms2130-uvc-aspect-quirk {
+            inherit inputs;
+          };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
           repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
