@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/653ade70a8237a80b76b360bc12ae81a30dbfaeb";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/d2d02bb61eb3557594b2c302e2862e5e0f58fb86";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -43,13 +43,10 @@
     criomos-home.inputs.pkgs.follows = "pkgs";
     criomos-home.inputs.lojix.follows = "lojix";
     criomos-home.inputs.orchestrate.follows = "orchestrate";
-    # Unify the spirit input with CriomOS's own, completing the shared-input
-    # follows set above. CriomOS-home's home modules receive CriomOS-home's
-    # flake inputs (userHomes.nix keeps `inputs` out of extraSpecialArgs), so
-    # the system-embedded home builds its guardian-carrying spirit package from
-    # THIS input. Following it onto CriomOS's `spirit` pin makes the guardian
-    # prompt the System Switch bakes reboot-persistent identical to the spirit
-    # the system spirit daemon runs — one spirit revision for the whole closure.
+    # Unify Home with CriomOS's one maintained Spirit release. The Spirit flake
+    # owns the daemon, judge, judge configuration, provider, contracts, and user
+    # service artifact composition; Home consumes that interface without
+    # independently pinning any Spirit service component.
     criomos-home.inputs.spirit.follows = "spirit";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
@@ -89,9 +86,10 @@
     criome.url = "github:LiGoldragon/criome";
     criome.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Spirit journal daemon — the durable versioned intent record log.
-    # Consumed by modules/nixos/spirit.nix on nodes carrying a spirit service.
-    spirit.url = "github:LiGoldragon/spirit";
+    # Maintained Spirit release — the single pin authority for the daemon,
+    # judge, configuration, provider, contracts, and service artifacts.
+    # Consumed directly by the NixOS module and followed by CriomOS-home.
+    spirit.url = "github:LiGoldragon/spirit/eabe6c6d96112b46d15443e1c1a29d940605785f";
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
