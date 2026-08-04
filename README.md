@@ -9,7 +9,9 @@ invokes nix against this repo with deployment-shape inputs.
 
 ## How it's used
 
-CriomOS isn't built directly. Lojix is the deploy entry point:
+Normal deployments are Lojix-driven. The maintained daemon-free bootstrap
+re-export below is a distinct, explicitly authorized first-bootstrap or
+recovery surface:
 
 1. Reads a cluster proposal nota and a node name.
 2. Projects the proposal via `horizon-rs` into a per-(cluster, node)
