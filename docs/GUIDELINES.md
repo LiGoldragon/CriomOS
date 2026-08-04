@@ -271,8 +271,12 @@ surface: `nixosConfigurations.target`.
   `lojix-bootstrap`. Invoke it with exactly one inline `BootstrapRun` object;
   `BuildOnly` has no activation fields, while `BootOnce` explicitly carries
   `Direct`/`Horizon` input, builder, test plan, backend, journal parent, new
-  durable GC root, and new terminal-evidence path. Do not use old handwritten
-  `meta-lojix` request forms as a bootstrap interface.
+  durable GC root, and new terminal-evidence path. Its flake reference must be
+  a `github:owner/repo/<40-lowercase-hex-revision>` pin; Remote BootOnce needs
+  a matching `ssh-ng://user@host[:port]` and `user@host[:port]` pair. Its v5
+  private journal records write-ahead intent/receipt/outcome and reconciles a
+  request-hash-derived target transient unit after interruption. Do not use old
+  handwritten `meta-lojix` request forms as a bootstrap interface.
 - Use `BaseHost` only when the host closure intentionally omits embedded user
   environment materialization and broad all-firmware materialization. Use
   `UserEnvironment` for user-profile activation through the selected CriomOS
