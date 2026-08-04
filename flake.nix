@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/082004d605c8fcbb459c1f550634eb712ca35c5a";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/80811f221d9559e695c2727ab822b70ae9b6c8b9";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -94,7 +94,7 @@
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
     # socket, state, identity, and timeout configuration.
-    lojix.url = "github:LiGoldragon/lojix/1acbac20d172146605c16b47c601d63ad435de55";
+    lojix.url = "github:LiGoldragon/lojix/c3f0e448b7359f336da3903e4098b672e872ced8";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
@@ -137,6 +137,20 @@
     inputs:
     let
       blueprintOutputs = inputs.blueprint { inherit inputs; };
+
+      # Bootstrap is a maintained operator app, not a target-system output.
+      # Publish it for the supported Nix platforms without forcing the
+      # deliberately-throwing `system` deployment stub used by the OS surface.
+      bootstrapSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      bootstrapPackages = inputs.nixpkgs.lib.genAttrs bootstrapSystems (bootstrapSystem: {
+        lojix-bootstrap = inputs.lojix.packages.${bootstrapSystem}.lojix-bootstrap;
+      });
+      bootstrapApps = inputs.nixpkgs.lib.genAttrs bootstrapSystems (bootstrapSystem: {
+        lojix-bootstrap = inputs.lojix.apps.${bootstrapSystem}.lojix-bootstrap;
+      });
 
       horizon = inputs.horizon.horizon;
       pkgs = inputs.pkgs.pkgs;
@@ -245,6 +259,13 @@
     blueprintOutputs
     // {
       checks = projectChecks;
+
+      # Exact maintained bootstrap re-export.  This is a flake-owned app, not
+      # a service wrapper: every authority-bearing bootstrap value stays in
+      # the one inline Lojix request.
+      packages = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.packages or { }) bootstrapPackages;
+
+      apps = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.apps or { }) bootstrapApps;
 
       inherit homeConfigurations;
 

@@ -19,19 +19,21 @@ CriomOS isn't built directly. Lojix is the deploy entry point:
 4. Invokes nix against `github:LiGoldragon/CriomOS` with those override
    inputs.
 
-Privileged deploy admission is a single typed request passed to
-`meta-lojix`; observations use the ordinary `lojix` query interface:
+For a fresh, explicitly-authorized first bootstrap, use this flake's exact
+re-export of the maintained v0.17 `lojix-bootstrap` app. It accepts one inline
+`BootstrapRun` DOTOS object only—no installed daemon, daemon socket, request
+file, flag, local store, route, account, or path default. `BuildOnly` is the
+exact build-only variant; `BootOnce` names either an explicit remote transport
+pair or the distinct audited local backend. Both require a new GC-root and
+terminal-evidence path; the root is made durable before any activation.
 
-```
-meta-lojix "(Deploy (Host (<cluster> <node> CompleteHost <proposal-source> <criomos-flake-ref> (<exact-nix-store-uri> <exact-ssh-destination>) <Direct-or-Horizon> (<exact-flake-attribute>) NixosSystemdBootV1 <host-action> RequireImmutable <builder-or-None> [])))"
-meta-lojix "(Deploy (Host (<cluster> <node> BaseHost <proposal-source> <criomos-flake-ref> (<exact-nix-store-uri> <exact-ssh-destination>) <Direct-or-Horizon> (<exact-flake-attribute>) NixosSystemdBootV1 <host-action> RequireImmutable <builder-or-None> [])))"
-meta-lojix "(Deploy (UserEnvironment (<cluster> <node> <user> <proposal-source> <criomos-flake-ref> (<exact-nix-store-uri> <exact-ssh-destination>) <Direct-or-Horizon> (<exact-flake-attribute>) HomeManagerNixProfileV1 <user-environment-action> RequireImmutable <builder-or-None> [])))"
-lojix "(Query (ByNode (<cluster> <node> None)))"
+```text
+nix run github:LiGoldragon/CriomOS/<rev>#lojix-bootstrap -- 'BootstrapRun.{<request-id> BootOnce.{<explicit-input> <explicit-builder> <explicit-test-plan> <explicit-backend> <journal-parent> <new-gc-root> <new-evidence>}}'
 ```
 
-`DeployAccepted DeployHandle` is admission evidence only. Operators use typed
-Lojix observations to prove build, copy, activation, profile, and generation
-state.
+See Lojix's `README.md` for the full positional schema. This is the maintained
+operator surface; the old handwritten `meta-lojix` request forms are not a
+bootstrap interface.
 
 Each deployment supplies its exact flake output selector. `Horizon` input mode
 causes Lojix to materialise the request's projection; `Direct` does not. The
@@ -83,7 +85,8 @@ the requested deploy.
   horizon schema + projection logic (Rust). Single source of truth
   for the typed schema.
 - `LiGoldragon/lojix` —
-  the typed deploy daemon and its `lojix` / `meta-lojix` clients.
+  the typed deploy daemon and its `lojix` / `meta-lojix` clients, plus the
+  maintained daemon-free `lojix-bootstrap` flake app re-exported here.
 - `LiGoldragon/clavifaber` —
   GPG → X.509 WiFi PKI tool. Consumed in `modules/nixos/complex.nix`.
 - `LiGoldragon/brightness-ctl` —

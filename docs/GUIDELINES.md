@@ -267,12 +267,18 @@ surface: `nixosConfigurations.target`.
   local commits are invisible.
 - Public system surface:
   `github:LiGoldragon/CriomOS/<rev>#nixosConfigurations.target.config.system.build.toplevel`.
-- Normal build/deploy entry point:
-  `meta-lojix "(Deploy (Host (<cluster> <node> CompleteHost <proposal-source> <criomos-flake-ref> <host-action> RequireImmutable <builder> [] None)))"`.
+- Normal bootstrap entry point: this maintained CriomOS flake re-exports
+  `lojix-bootstrap`. Invoke it with exactly one inline `BootstrapRun` object;
+  `BuildOnly` has no activation fields, while `BootOnce` explicitly carries
+  `Direct`/`Horizon` input, builder, test plan, backend, journal parent, new
+  durable GC root, and new terminal-evidence path. Do not use old handwritten
+  `meta-lojix` request forms as a bootstrap interface.
 - Use `BaseHost` only when the host closure intentionally omits embedded user
   environment materialization and broad all-firmware materialization. Use
   `UserEnvironment` for user-profile activation through the selected CriomOS
   flake revision.
-- Prefer a boot-profile host action for first-touch deploys. Use a boot-once
-  host action for headless/riskier nodes, and use live host activation only
-  when live activation is intended.
+- For a first-touch/headless bootstrap, select explicit `BootOnce` and either
+  `RemoteNixosSystemdBootV1` with the exact store URI plus SSH destination, or
+  `LocalBootstrapV1` for an audited direct-local systemd-boot sequence. The
+  local variant never silently replaces a transport step; live activation is
+  never implied by `BuildOnly`.
