@@ -163,11 +163,11 @@ with a gopass-fed token: the node's API-key file and the client
 wrappers read from the same gopass entry, and a mint tool generates the
 token and writes it to that gopass path.
 
-Privileged and root-level operations on cluster hosts are performed by
-SSH-ing into the host root account authenticated with the operator SSH
-key — `ssh root@<host>` for any host. This is the standing
-privileged-access mechanism across the workspace; `sudo` is not the
-access path.
+Deployment transport is owned by each Lojix request. The request supplies and
+Lojix validates the exact SSH destination; `root@…` is permitted only when it
+is explicitly supplied, never selected as a platform default. Authentication
+material is separately configured for the service when needed and is not a
+cluster- or user-derived module constant.
 
 ### Battery care and bare-metal gating
 
@@ -188,15 +188,18 @@ deployment identity enter as projected data (Horizon and the per-deploy flake
 inputs), and modules render that data rather than baking an operator name, a
 cluster-proposal source, a trust mode, or a credential path as a literal.
 
-The deploy orchestrator (Lojix) runs as the operator's user-level service, not a
-system service pinned to a fixed user. Its unattended identity and remote-deploy
-credentials are a deployment concern owned outside the OS module — not the
-operator's login session borrowed in through a system unit.
+The Lojix service is explicitly configured when enabled: its service account,
+socket paths and modes, state directory, exact `lojix.sema` path, startup
+archive path, daemon identity, effect deadline, and optional SSH-agent socket
+are all supplied by `services.lojix`. The module has no default account,
+socket, store, credential socket, target, or transport route. It exports the
+two configured client socket paths through `LOJIX_ORDINARY_SOCKET` and
+`LOJIX_OWNER_SOCKET`; clients have no runtime fallback location.
 
-Constraints (test seeds): a CriomOS module must not contain an operator-username
-literal, a cluster / node / trust value used as a deploy-target constant, or a
-credential-socket path as a source constant; and the deploy orchestrator is
-declared as a user service, not a system service.
+Deploy requests, not the OS module, own the exact Nix-store URI, SSH
+destination, input mode, output selector, activation backend, and optional
+builder specification. The selected Lojix backend is the only place that may
+contain platform activation command details.
 
 A production node's lojix daemon likewise carries no baked test-op fixture. The
 `lojix-daemon` module emits `NoTestDefaults` for the daemon's startup
@@ -207,28 +210,23 @@ test fixture — the `test_flake` and its cluster, host, and mode — is supplie
 only by the test invocation that runs the op, never per-node in this module.
 This instances the deployment-independence discipline (the `micro-components`
 skill: test clusters and fixtures are the sole exception and live only in test
-code), and requires a pinned lojix carrying the optional-`test_defaults` shape
-(`WriterTestDefaultsChoice`, lojix ≥ 0.4.1).
+code), and uses the versioned Lojix startup configuration shape.
 
-### Stopped-daemon Lojix v2 to v3 store migration
+### Stopped-daemon Lojix v4 store reset
 
-On a PersonaDevelopment node, the systemd pre-start sequence runs the pinned
-`lojix-migrate-store` against the durable store before the DOTOS configuration
-writer and daemon. The migrator is idempotent for an absent or already-v3 store;
-for v2 it keeps one byte-identical `.schema-pre-v3.backup`, validates a staged
-v3 store, and then atomically replaces the canonical store. The migrator alone
-owns the transient `.schema-v3.pending` and `.schema-v3.pending.owner` sidecars.
-All residue stops startup without guessing or deleting evidence, except for the
-one provable post-replacement state: no pending store and an owner that is a
-regular hard-link, byte-and-metadata identical to the permanent schema-two
-backup. Only then does the migrator remove that owner. A conflicting backup,
-other residue, corrupt data, or schema-one input stops startup.
+Lojix v4 deliberately refuses older stores. There is no migration or
+legacy-resume path, and daemon startup never deletes data. The separately
+started `lojix-reset-store` systemd service conflicts with `lojix-daemon` and
+calls the reset binary only on `services.lojix.storePath`, which must equal
+`<stateDirectoryPath>/lojix.sema`.
 
-This is forward-only. The backup is recovery evidence, not an automatic
-downgrade mechanism; restoring it requires stopped-daemon, explicit recovery
-authority, and a v2-compatible procedure. The public v3 projection quarantines
-legacy events, treats legacy jobs as non-resumable, demotes old `Current` claims
-to history, and exposes a legacy closure only when it is canonical.
+The reset binary accepts exactly that absolute, traversal-free regular Lojix
+file, removes only it and its three narrowly named Lojix schema sidecars, then
+creates a fresh v4 store. It rejects all other basenames, directories,
+symlinked stores, and unknown schema versions. It never names, follows, or
+modifies a Spirit database. Repeating a reset of a v4 store is safe; it produces
+another empty v4 store. This operation is manual and is not part of normal
+service startup.
 
 ### Direction: the LojixOS split
 

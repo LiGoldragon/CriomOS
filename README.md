@@ -23,9 +23,9 @@ Privileged deploy admission is a single typed request passed to
 `meta-lojix`; observations use the ordinary `lojix` query interface:
 
 ```
-meta-lojix "(Deploy (Host (<cluster> <node> CompleteHost <proposal-source> <criomos-flake-ref> <host-action> RequireImmutable <builder> [] None)))"
-meta-lojix "(Deploy (Host (<cluster> <node> BaseHost <proposal-source> <criomos-flake-ref> <host-action> RequireImmutable <builder> [] None)))"
-meta-lojix "(Deploy (UserEnvironment (<cluster> <node> <user> <proposal-source> <criomos-flake-ref> <user-environment-action> RequireImmutable <builder> [])))"
+meta-lojix "(Deploy (Host (<cluster> <node> CompleteHost <proposal-source> <criomos-flake-ref> (<exact-nix-store-uri> <exact-ssh-destination>) <Direct-or-Horizon> (<exact-flake-attribute>) NixosSystemdBootV1 <host-action> RequireImmutable <builder-or-None> [])))"
+meta-lojix "(Deploy (Host (<cluster> <node> BaseHost <proposal-source> <criomos-flake-ref> (<exact-nix-store-uri> <exact-ssh-destination>) <Direct-or-Horizon> (<exact-flake-attribute>) NixosSystemdBootV1 <host-action> RequireImmutable <builder-or-None> [])))"
+meta-lojix "(Deploy (UserEnvironment (<cluster> <node> <user> <proposal-source> <criomos-flake-ref> (<exact-nix-store-uri> <exact-ssh-destination>) <Direct-or-Horizon> (<exact-flake-attribute>) HomeManagerNixProfileV1 <user-environment-action> RequireImmutable <builder-or-None> [])))"
 lojix "(Query (ByNode (<cluster> <node> None)))"
 ```
 
@@ -33,11 +33,11 @@ lojix "(Query (ByNode (<cluster> <node> None)))"
 Lojix observations to prove build, copy, activation, profile, and generation
 state.
 
-CriomOS exposes one configuration —
-`nixosConfigurations.target.config.system.build.toplevel`. The
-`horizon` input override picks which (cluster, node) it materialises;
-the `deployment` input picks the operation shape, such as `CompleteHost`
-or `BaseHost`.
+Each deployment supplies its exact flake output selector. `Horizon` input mode
+causes Lojix to materialise the request's projection; `Direct` does not. The
+daemon never derives a target attribute, Nix-store URI, SSH destination, or
+builder specification from CriomOS cluster/node names. An explicitly requested
+`root@…` destination is valid, but it is never a default.
 
 ## Network-neutral by construction
 
