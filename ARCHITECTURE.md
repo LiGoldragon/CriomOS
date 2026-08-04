@@ -210,6 +210,23 @@ skill: test clusters and fixtures are the sole exception and live only in test
 code), and requires a pinned lojix carrying the optional-`test_defaults` shape
 (`WriterTestDefaultsChoice`, lojix ≥ 0.4.1).
 
+### Stopped-daemon Lojix v2 to v3 store migration
+
+On a PersonaDevelopment node, the systemd pre-start sequence runs the pinned
+`lojix-migrate-store` against the durable store before the DOTOS configuration
+writer and daemon. The migrator is idempotent for an absent or already-v3 store;
+for v2 it keeps one byte-identical `.schema-pre-v3.backup`, validates a staged
+v3 store, and then atomically replaces the canonical store. The migrator alone
+owns the transient `.schema-v3.pending` and `.schema-v3.pending.owner` sidecars:
+residue, a conflicting backup, corrupt data, or schema-one input stops startup
+without guessing or deleting evidence.
+
+This is forward-only. The backup is recovery evidence, not an automatic
+downgrade mechanism; restoring it requires stopped-daemon, explicit recovery
+authority, and a v2-compatible procedure. The public v3 projection quarantines
+legacy events, treats legacy jobs as non-resumable, demotes old `Current` claims
+to history, and exposes a legacy closure only when it is canonical.
+
 ### Direction: the LojixOS split
 
 A planned rename-and-configuration split moves the generic OS substrate

@@ -1,17 +1,17 @@
 { inputs, pkgs, ... }:
 
 # Build-time round-trip guard for the lojix-daemon module's hand-authored
-# ConfigurationWriteRequest NOTA (primary-dq1r).
+# ConfigurationWriteRequest DOTOS (primary-dq1r).
 #
 # modules/nixos/lojix.nix authors the daemon's startup request as a Nix string
 # that must positionally match the PINNED lojix `lojix-write-configuration`
-# ConfigurationWriteRequest schema. The service must put its schema-one marker
-# gate before that writer. `nix build` of a system closure never runs either
+# ConfigurationWriteRequest schema. The service must put its stopped-daemon
+# v2 -> v3 migrator before that writer. `nix build` of a system closure never runs either
 # command, so a gate or ordering regression would otherwise surface only at
 # runtime.
 #
 # This check closes that gap: it evaluates the lojix-daemon module for a
-# PersonaDevelopment node, takes the exact NOTA the module emits, and feeds it
+# PersonaDevelopment node, takes the exact DOTOS the module emits, and feeds it
 # to the pinned `lojix-write-configuration` binary. If the record no longer
 # decodes against the pinned writer's positional schema, the writer exits
 # non-zero and this check — hence the build — fails. Only the final output-path
@@ -61,10 +61,7 @@ let
   migrationGateCommand = builtins.elemAt execStartPre 0;
   configurationWriterCommand = builtins.elemAt execStartPre 1;
   storePath = "/var/lib/lojix/lojix.sema";
-  migrationMarker = "/var/lib/lojix/lojix.sema.schema-v1.backup";
-  migrationMarkerArchive = "${migrationMarker}.archived";
-
-  # The second whitespace-token is the module's emitted NOTA store path.
+  # The second whitespace-token is the module's emitted DOTOS store path.
   configurationWriterParts = lib.splitString " " configurationWriterCommand;
   moduleDotosPath = builtins.elemAt configurationWriterParts 1;
   moduleDotosText = lib.removeSuffix "\n" (builtins.readFile moduleDotosPath);
@@ -81,22 +78,16 @@ in
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   set -eu
 
-  # The Nix-owned gate is the first pre-start command, ahead of configuration
-  # encoding and daemon startup. It must skip the read-only migrator without
-  # the schema-one sidecar and archive that sidecar only after a successful
-  # migration.
+  # The packaged migrator is the first pre-start command, ahead of configuration
+  # encoding and daemon startup. It owns the permanent pre-v3 backup and both
+  # transient staging sidecars; CriomOS must neither delete nor synthesize them.
   test ${toString (builtins.length execStartPre)} = 2
-  ${pkgs.gnugrep}/bin/grep -Fx \
-    ${lib.escapeShellArg "if [ ! -e ${migrationMarker} ]; then"} \
-    ${migrationGateCommand}
   ${pkgs.gnugrep}/bin/grep -Fx \
     ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store ${storePath}"} \
     ${migrationGateCommand}
-  ${pkgs.gnugrep}/bin/grep -Fx \
-    ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv -- ${migrationMarker} ${migrationMarkerArchive}"} \
-    ${migrationGateCommand}
-  test "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store"} ${migrationGateCommand} | cut -d: -f1)" \
-    -lt "$(${pkgs.gnugrep}/bin/grep -n -F ${lib.escapeShellArg "${pkgs.coreutils}/bin/mv --"} ${migrationGateCommand} | cut -d: -f1)"
+  ! ${pkgs.gnugrep}/bin/grep -F 'schema-v1' ${migrationGateCommand}
+  ! ${pkgs.gnugrep}/bin/grep -F '/bin/mv' ${migrationGateCommand}
+  ! ${pkgs.gnugrep}/bin/grep -F '/bin/rm' ${migrationGateCommand}
 
   test ${toString effectTimeoutSeconds} = 2700
   printf '%s' ${lib.escapeShellArg moduleDotosText} | ${pkgs.gnugrep}/bin/grep -F 'roundtrip-check 2700 NoTestDefaults'
@@ -104,7 +95,7 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   # The module's exact ConfigurationWriteRequest record (output path redirected).
   cat ${roundtripDotosFile}
 
-  # Round-trip: the PINNED writer must decode this NOTA and emit the rkyv. A
+  # Round-trip: the PINNED writer must decode this DOTOS and emit the rkyv. A
   # positional-schema drift between module and pin fails here, at build time.
   ${lojixPackage}/bin/lojix-write-configuration ${roundtripDotosFile} | grep -F '(ConfigurationWritten'
   test -s startup.rkyv
