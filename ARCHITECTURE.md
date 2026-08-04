@@ -217,9 +217,12 @@ On a PersonaDevelopment node, the systemd pre-start sequence runs the pinned
 writer and daemon. The migrator is idempotent for an absent or already-v3 store;
 for v2 it keeps one byte-identical `.schema-pre-v3.backup`, validates a staged
 v3 store, and then atomically replaces the canonical store. The migrator alone
-owns the transient `.schema-v3.pending` and `.schema-v3.pending.owner` sidecars:
-residue, a conflicting backup, corrupt data, or schema-one input stops startup
-without guessing or deleting evidence.
+owns the transient `.schema-v3.pending` and `.schema-v3.pending.owner` sidecars.
+All residue stops startup without guessing or deleting evidence, except for the
+one provable post-replacement state: no pending store and an owner that is a
+regular hard-link, byte-and-metadata identical to the permanent schema-two
+backup. Only then does the migrator remove that owner. A conflicting backup,
+other residue, corrupt data, or schema-one input stops startup.
 
 This is forward-only. The backup is recovery evidence, not an automatic
 downgrade mechanism; restoring it requires stopped-daemon, explicit recovery

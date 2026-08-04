@@ -31,9 +31,11 @@ let
   startupArchive = "${runtimeDirectory}/startup.rkyv";
   effectTimeoutSeconds = config.services.lojix.effectTimeoutSeconds;
   # The packaged v2 -> v3 migrator owns every migration sidecar. It is
-  # idempotent for a missing or schema-three store, but refuses unresolved
-  # staging residue, a conflicting permanent backup, schema-one input, or
-  # invalid legacy rows. ExecStartPre runs after systemd has stopped the prior
+  # idempotent for a missing or schema-three store, but refuses all staging
+  # residue except its provably owned post-replacement owner hard-link to the
+  # permanent schema-two backup (and removes only that owner). It also refuses
+  # a conflicting permanent backup, schema-one input, or invalid legacy rows.
+  # ExecStartPre runs after systemd has stopped the prior
   # daemon and before configuration encoding can start a new one.
   migrateStoreBeforeV3Start = pkgs.writeShellScript "lojix-migrate-store-before-v3-start" ''
     set -eu

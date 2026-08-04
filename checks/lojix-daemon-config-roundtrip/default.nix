@@ -80,7 +80,9 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
 
   # The packaged migrator is the first pre-start command, ahead of configuration
   # encoding and daemon startup. It owns the permanent pre-v3 backup and both
-  # transient staging sidecars; CriomOS must neither delete nor synthesize them.
+  # transient staging sidecars. On a v3 retry it may remove only its verified
+  # post-replacement owner hard-link; CriomOS must neither delete nor synthesize
+  # any of them.
   test ${toString (builtins.length execStartPre)} = 2
   ${pkgs.gnugrep}/bin/grep -Fx \
     ${lib.escapeShellArg "${lojixPackage}/bin/lojix-migrate-store ${storePath}"} \
