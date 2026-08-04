@@ -22,9 +22,10 @@ let
     (lib.dirOf cfg.ownerSocketPath)
     (lib.dirOf cfg.startupArchivePath)
   ];
-  startupRequest = pkgs.writeText "lojix-daemon-configuration.dotos" ''
-    (ConfigurationWriteRequest (${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}))
-  '';
+  # The writer receives one inline typed object. This must not become a
+  # caller-selected `.dotos` request file: the writer is a bounded bootstrap
+  # boundary, not a general file reader.
+  startupRequest = "(ConfigurationWriteRequest (${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}))";
 in
 {
   options.services.lojix = {
@@ -169,7 +170,9 @@ in
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.stateDirectoryPath;
-        ExecStartPre = [ "${cfg.package}/bin/lojix-write-configuration ${startupRequest}" ];
+        ExecStartPre = [
+          "${cfg.package}/bin/lojix-write-configuration ${lib.escapeShellArg startupRequest}"
+        ];
         ExecStart = "${cfg.package}/bin/lojix-daemon ${cfg.startupArchivePath}";
         Restart = "on-failure";
         RestartSec = "5s";
@@ -180,20 +183,24 @@ in
     };
 
     # This service has no wantedBy relationship and is never part of daemon
-    # startup. Starting it manually stops the daemon through Conflicts, passes
-    # only cfg.storePath in a typed inline reset object, then creates a fresh
-    # v4 store after the binary proves the existing file is a recognised Lojix
-    # catalog. It never names or touches a Spirit database.
+    # startup. Starting it manually stops the daemon through Conflicts and
+    # passes one pathless reset object. The binary reads only this service's
+    # generated startup archive to obtain the exact configured store path.
+    # It recreates recognised pre-v4 Lojix stores, reports current v4 stores
+    # without touching their data, and never names or touches a Spirit database.
     systemd.services.lojix-reset-store = {
-      description = "Reset the exact configured Lojix v4 store";
+      description = "Recreate the exact configured pre-v4 Lojix store";
       conflicts = [ "lojix-daemon.service" ];
       after = [ "lojix-daemon.service" ];
+      environment = {
+        LOJIX_CONFIGURATION = cfg.startupArchivePath;
+      };
       serviceConfig = {
         Type = "oneshot";
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.stateDirectoryPath;
-        ExecStart = "${cfg.package}/bin/lojix-reset-store StoreResetRequest.{${cfg.storePath}}";
+        ExecStart = "${cfg.package}/bin/lojix-reset-store ${lib.escapeShellArg "(ResetStore)"}";
         NoNewPrivileges = true;
         PrivateTmp = true;
       };

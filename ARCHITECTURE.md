@@ -5,15 +5,16 @@ pre-configured environment where criome, forge, and sundry
 nexus daemons run as the user-space layer.
 
 > **Scope: today, not eventually.** "criome" here is today's daemon
-> (sema-ecosystem records validator) — see
-> `~/primary/repos/criome/ARCHITECTURE.md`. CriomOS is **named after**
+> (sema-ecosystem records validator) — see the criome repository's
+> `ARCHITECTURE.md`. CriomOS is **named after**
 > the *eventual* Criome — the universal computing paradigm in Sema
 > — but CriomOS today is pre-duct-tape: a NixOS-targeted host that
 > uses transitional shims (ClaviFaber for key generation, Lojix for deploy,
 > etc.) where eventual Criome's substrate will later sit. Eventually the OS is
 > written in Sema; ClaviFaber-shaped shims
 > are obsoleted by Criome's quorum-signature multi-sig system at
-> that point. See `~/primary/ARCHITECTURE.md` §"Workspace vision and intent".
+> that point. See the workspace architecture's "Workspace vision and intent"
+> section.
 
 CriomOS is **the consumer of forge**, not a member of the criome
 runtime. Lojix materialises CriomOS configurations.
@@ -217,15 +218,16 @@ code), and uses the versioned Lojix startup configuration shape.
 Lojix v4 deliberately refuses older stores. There is no migration or
 legacy-resume path, and daemon startup never deletes data. The separately
 started `lojix-reset-store` systemd service conflicts with `lojix-daemon` and
-passes only `services.lojix.storePath` in its inline
-`StoreResetRequest.{<path>}` object. The daemon receives that same configured
-path in its binary startup archive; neither component derives a basename from
-the state directory.
+passes only inline `(ResetStore)`. The service supplies the generated startup
+archive as `LOJIX_CONFIGURATION`, and the binary obtains the configured store
+only from that archive; neither component derives a basename from the state
+directory or accepts a caller-provided store path.
 
-The reset binary accepts exactly one inline reset object, never a raw path or
-flag. Its configured absolute target must be a regular non-symlink file with a
-recognised Lojix family catalog and supported schema before it is removed;
-protocol sidecars are mechanically derived only after that proof. It never
+The reset binary accepts exactly one pathless inline reset object, never a raw
+path, file, or flag. Its archive and configured target must be regular,
+non-symlinked, and safe; only recognised pre-v4 Lojix schemas are removed and
+recreated. A v4 store returns `AlreadyCurrent` without deletion. Protocol
+sidecars are mechanically derived only after the pre-v4 proof. It never
 names, follows, or modifies a Spirit database. Repeating a reset of a v4 store
 is safe; it produces another empty v4 store. This operation is manual and is
 not part of normal service startup.

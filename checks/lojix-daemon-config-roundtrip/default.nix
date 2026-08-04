@@ -49,14 +49,11 @@ let
   storePath = configuration.config.services.lojix.storePath;
   ordinarySocketPath = configuration.config.services.lojix.ordinarySocketPath;
   ownerSocketPath = configuration.config.services.lojix.ownerSocketPath;
+  startupArchivePath = configuration.config.services.lojix.startupArchivePath;
+  daemonHost = configuration.config.services.lojix.daemonHost;
   effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
-  configurationWriterParts = lib.splitString " " configurationWriterCommand;
-  moduleDotosPath = builtins.elemAt configurationWriterParts 1;
-  moduleDotosText = lib.removeSuffix "\n" (builtins.readFile moduleDotosPath);
-  dotosTokens = lib.splitString " " moduleDotosText;
-  schemaBearingTokens = lib.init dotosTokens;
-  roundtripDotosText = (lib.concatStringsSep " " schemaBearingTokens) + " startup.rkyv))";
-  roundtripDotosFile = pkgs.writeText "lojix-daemon-config-roundtrip.dotos" roundtripDotosText;
+  startupRequest = "(ConfigurationWriteRequest (${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchivePath}))";
+  roundtripRequest = "(ConfigurationWriteRequest (${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults startup.rkyv))";
 in
 assert (resetService.wantedBy or [ ]) == [ ];
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
@@ -66,7 +63,11 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   test ${toString (builtins.length resetService.conflicts)} = 1
   test ${lib.escapeShellArg (builtins.elemAt resetService.conflicts 0)} = lojix-daemon.service
   test ${lib.escapeShellArg resetService.serviceConfig.ExecStart} = \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store StoreResetRequest.{${storePath}}"}
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store ${lib.escapeShellArg "(ResetStore)"}"}
+  test ${lib.escapeShellArg resetService.environment.LOJIX_CONFIGURATION} = \
+    ${lib.escapeShellArg startupArchivePath}
+  test ${lib.escapeShellArg configurationWriterCommand} = \
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg startupRequest}"}
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_ORDINARY_SOCKET} = \
     ${lib.escapeShellArg ordinarySocketPath}
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_OWNER_SOCKET} = \
@@ -74,11 +75,7 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
 
   test ${toString effectTimeoutSeconds} = 2700
   test ${toString (builtins.length configuration.config.systemd.tmpfiles.rules)} = 2
-  printf '%s' ${lib.escapeShellArg moduleDotosText} | ${pkgs.gnugrep}/bin/grep -F 'fixture-daemon 2700 NoTestDefaults'
-
-  # The exact module record with only the build-output field redirected.
-  cat ${roundtripDotosFile}
-  ${lojixPackage}/bin/lojix-write-configuration ${roundtripDotosFile} | grep -F '(ConfigurationWritten'
+  ${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg roundtripRequest} | grep -F '(ConfigurationWritten'
   test -s startup.rkyv
 
   touch "$out"

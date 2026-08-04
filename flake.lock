@@ -1011,17 +1011,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1785871480,
-        "narHash": "sha256-plen57gJIc+KxWhPbS4ccUdvBjvpUNnDn762x4KFbqs=",
+        "lastModified": 1785875511,
+        "narHash": "sha256-1wyDdRZrLZYJCeeO6S7BxOtamxAhADnAJKNzZZ1vsI8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "b5b9c1fe6b2a9fc05241d47a309159558ec0b2e4",
+        "rev": "082004d605c8fcbb459c1f550634eb712ca35c5a",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "b5b9c1fe6b2a9fc05241d47a309159558ec0b2e4",
+        "rev": "082004d605c8fcbb459c1f550634eb712ca35c5a",
         "type": "github"
       }
     },
@@ -2184,17 +2184,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1785873086,
-        "narHash": "sha256-WtUrrUMxv/A00XQHfzFByQTT/TR/6nltBYvuFO4ovmI=",
+        "lastModified": 1785875363,
+        "narHash": "sha256-03qVRgZ/AKGV/mZg311tQaOhxYxIx1duDMfzNpx5PYo=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "79f8a9c3ce9a6c95e59d21158b6fb2e00c8f6232",
+        "rev": "1acbac20d172146605c16b47c601d63ad435de55",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "79f8a9c3ce9a6c95e59d21158b6fb2e00c8f6232",
+        "rev": "1acbac20d172146605c16b47c601d63ad435de55",
         "type": "github"
       }
     },
