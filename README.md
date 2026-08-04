@@ -22,7 +22,7 @@ recovery surface:
    inputs.
 
 For a fresh, explicitly-authorized first bootstrap, use this flake's exact
-re-export of the maintained v0.17 `lojix-bootstrap` app. It accepts one inline
+re-export of the maintained v0.17.2 `lojix-bootstrap` app. It accepts one inline
 `BootstrapRun` DOTOS object only—no installed daemon, daemon socket, request
 file, flag, local store, route, account, or path default. `BuildOnly` is the
 exact build-only variant; `BootOnce` names either an explicit remote transport

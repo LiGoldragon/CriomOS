@@ -273,7 +273,8 @@ surface: `nixosConfigurations.target`.
   `Direct`/`Horizon` input, builder, test plan, backend, journal parent, new
   durable GC root, and new terminal-evidence path. Its flake reference must be
   a `github:owner/repo/<40-lowercase-hex-revision>` pin; Remote BootOnce needs
-  a matching `ssh-ng://user@host[:port]` and `user@host[:port]` pair. Its v5
+  a matching `ssh-ng://user@host[:port]` and `user@host[:port]` pair plus
+  `SshPolicy.{<private-identity> <private-known-hosts> RequireKnownHost}`. Its v5
   private journal records write-ahead intent/receipt/outcome and reconciles a
   request-hash-derived target transient unit after interruption. Do not use old
   handwritten `meta-lojix` request forms as a bootstrap interface.
