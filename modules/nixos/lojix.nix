@@ -1,6 +1,18 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 let
-  inherit (lib) mkEnableOption mkIf mkOption optionalAttrs types;
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    mkOption
+    optionalAttrs
+    types
+    ;
   cfg = config.services.lojix;
   defaultPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.default;
   isDotosAtom = value: builtins.match "^[A-Za-z0-9_./:@+?=&%,-]+$" value != null;
@@ -99,7 +111,8 @@ in
         message = "services.lojix.group must name an existing group";
       }
       {
-        assertion = lib.hasPrefix "/" cfg.ordinarySocketPath
+        assertion =
+          lib.hasPrefix "/" cfg.ordinarySocketPath
           && lib.hasPrefix "/" cfg.ownerSocketPath
           && lib.hasPrefix "/" cfg.stateDirectoryPath
           && lib.hasPrefix "/" cfg.storePath
@@ -119,14 +132,16 @@ in
         message = "services.lojix managed state, socket, and startup directories must not be the filesystem root";
       }
       {
-        assertion = lib.all isDotosAtom [
-          cfg.ordinarySocketPath
-          cfg.ownerSocketPath
-          cfg.stateDirectoryPath
-          cfg.storePath
-          cfg.startupArchivePath
-          cfg.daemonHost
-        ] && (cfg.sshAuthSocket == null || isDotosAtom cfg.sshAuthSocket);
+        assertion =
+          lib.all isDotosAtom [
+            cfg.ordinarySocketPath
+            cfg.ownerSocketPath
+            cfg.stateDirectoryPath
+            cfg.storePath
+            cfg.startupArchivePath
+            cfg.daemonHost
+          ]
+          && (cfg.sshAuthSocket == null || isDotosAtom cfg.sshAuthSocket);
         message = "services.lojix paths and daemonHost must be nonempty DOTOS atoms without whitespace or control syntax";
       }
     ];
@@ -146,7 +161,14 @@ in
       wantedBy = [ "multi-user.target" ];
       wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      path = [ pkgs.coreutils pkgs.hostname pkgs.gitMinimal pkgs.nix pkgs.openssh pkgs.util-linux ];
+      path = [
+        pkgs.coreutils
+        pkgs.hostname
+        pkgs.gitMinimal
+        pkgs.nix
+        pkgs.openssh
+        pkgs.util-linux
+      ];
       environment = optionalAttrs (cfg.sshAuthSocket != null) {
         SSH_AUTH_SOCK = cfg.sshAuthSocket;
       };

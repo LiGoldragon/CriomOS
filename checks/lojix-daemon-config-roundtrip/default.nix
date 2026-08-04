@@ -12,7 +12,9 @@ let
     inherit system;
     specialArgs = {
       inherit inputs;
-      horizon = { node = { }; };
+      horizon = {
+        node = { };
+      };
     };
     modules = [
       ../../modules/nixos/lojix.nix
@@ -45,6 +47,8 @@ let
   execStartPre = lojixService.serviceConfig.ExecStartPre;
   configurationWriterCommand = builtins.elemAt execStartPre 0;
   storePath = configuration.config.services.lojix.storePath;
+  ordinarySocketPath = configuration.config.services.lojix.ordinarySocketPath;
+  ownerSocketPath = configuration.config.services.lojix.ownerSocketPath;
   effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
   configurationWriterParts = lib.splitString " " configurationWriterCommand;
   moduleDotosPath = builtins.elemAt configurationWriterParts 1;
@@ -63,6 +67,10 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   test ${lib.escapeShellArg (builtins.elemAt resetService.conflicts 0)} = lojix-daemon.service
   test ${lib.escapeShellArg resetService.serviceConfig.ExecStart} = \
     ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store ${storePath}"}
+  test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_ORDINARY_SOCKET} = \
+    ${lib.escapeShellArg ordinarySocketPath}
+  test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_OWNER_SOCKET} = \
+    ${lib.escapeShellArg ownerSocketPath}
 
   test ${toString effectTimeoutSeconds} = 2700
   test ${toString (builtins.length configuration.config.systemd.tmpfiles.rules)} = 2
