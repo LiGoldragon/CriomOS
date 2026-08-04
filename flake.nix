@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/47f5494a4168a93ecfc5208032c778e909ca1313";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/3dc0bada3f636065e7fd093711305a153dd5925a";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -89,7 +89,7 @@
     # Maintained Spirit release — the single pin authority for the daemon,
     # judge, configuration, provider, contracts, and service artifacts.
     # Consumed directly by the NixOS module and followed by CriomOS-home.
-    spirit.url = "github:LiGoldragon/spirit/44ab8e97c7c7513ea6ef2a3bb81dab8ac4babff8";
+    spirit.url = "github:LiGoldragon/spirit/7405eee89e3b1b5b6764eb1a50cbdf467b93c9a7";
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
     # Daemon-based deploy orchestrator. Installed on operator/development hosts
