@@ -54,7 +54,7 @@ let
   roundtripDotosText = (lib.concatStringsSep " " schemaBearingTokens) + " startup.rkyv))";
   roundtripDotosFile = pkgs.writeText "lojix-daemon-config-roundtrip.dotos" roundtripDotosText;
 in
-assert !(resetService ? wantedBy);
+assert (resetService.wantedBy or [ ]) == [ ];
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   set -eu
 
