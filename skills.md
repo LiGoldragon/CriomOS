@@ -72,13 +72,11 @@ Module logic reads projected horizon fields directly. If the needed
 truth is missing, extend horizon-rs instead of encoding a local
 workaround.
 
-CriomOS cluster domains are generated from the cluster and node
-identity as `<node>.<cluster>.criome`. For example, node `zeus` in
-cluster `goldragon` is addressed as `zeus.goldragon.criome`. Lojix
-uses the projected horizon `criome_domain_name` for SSH and Nix copy
-targets. When doing a manual reachability or runtime check outside
-lojix, use the same fully qualified Criome domain, not a short node
-name.
+CriomOS may render a node's Criome domain from projected cluster and node
+identity, for hostnames and test-side name resolution. That identity never
+selects a Lojix route: each Lojix deploy request carries the exact SSH
+destination and Nix-store URI. A manual reachability check needs its own
+explicitly supplied destination; do not infer one from a node or Criome domain.
 
 Node names are identifiers, not predicates. Use `node.name` only where
 the literal identity is the output: hostnames, certificate identities,
@@ -91,12 +89,9 @@ Build and activate through lojix-projected inputs for real checks. A
 plain direct build of `nixosConfigurations.target` without projected
 `horizon` and `system` inputs is not the real deploy path.
 
-When manual local activation is needed from an agent harness, use the
-host's root SSH path instead of sudo or run0. Address the machine by its
-full Criome domain (`<node>.<cluster>.criome`) and run the already-built
-generation's `switch-to-configuration` over `ssh root@...`. The agent
-harness may not have interactive sudo, but system-specialist has root SSH
-for host activation.
+When manual local activation is separately authorised, use only the
+caller-supplied access route and target identity. Do not infer a root login,
+Criome domain, or activation target from projected node data.
 
 Push before build/switch work. Capture store paths in shell variables,
 not prose. Keep niri unsignalled.

@@ -55,10 +55,10 @@
 #     login shell and sshd again rejects root as an invalid user;
 #   - sshd keys-only + the deploy key — normalize.nix already sets
 #     PasswordAuthentication = false; the substrate APPENDS the harness deploy
-#     key to root's authorizedKeys so the test driver can reach root@guest;
-#   - the horizon-derived address — the guest advertises its own criome domain
-#     as hostName/domain so lojix targets root@<node>.<cluster>.criome with zero
-#     VM special-casing; the host side (test-vm-host.nix) resolves that name;
+#     key to root's authorizedKeys so the test driver can reach the guest;
+#   - the horizon-derived address — the guest advertises its own Criome domain
+#     as hostName/domain so test infrastructure can resolve it. Lojix itself
+#     receives its SSH destination from each deployment request;
 #   - console=ttyS0 serial — observability of the boot;
 #   - (uefi only) ESP/root label alignment (root ext4 `nixos`, ESP vfat `ESP`)
 #     so switch-to-configuration / systemd-boot find what they expect (report 49).
@@ -85,7 +85,7 @@
 {
   substrate ? "microvm",
   # The harness/deploy public key appended to root's authorizedKeys so the
-  # test driver (and lojix) can reach root@<guest>. `null` leaves the
+  # test driver can reach the guest. `null` leaves the
   # projection's adminSshPubKeys as the only root keys.
   deployKey ? null,
 }:
@@ -105,8 +105,8 @@ let
     let
       inherit (lib) mkForce mkAfter optionals;
 
-      # The guest's own horizon-derived criome address — the exact name lojix
-      # targets (root@<node>.<cluster>.criome).
+      # The guest's own horizon-derived Criome address for test-side name
+      # resolution. It does not decide a Lojix deployment transport.
       node = horizon.node;
       clusterName = horizon.cluster.name or node.name;
       criomeDomainName = node.criomeDomainName or "${node.name}.${clusterName}.criome";
@@ -148,12 +148,13 @@ let
         settings.PasswordAuthentication = mkForce false;
         settings.PermitRootLogin = mkForce "prohibit-password";
       };
-      users.users.root.openssh.authorizedKeys.keys =
-        mkAfter (optionals (deployKey != null) [ deployKey ]);
+      users.users.root.openssh.authorizedKeys.keys = mkAfter (
+        optionals (deployKey != null) [ deployKey ]
+      );
 
-      # the horizon-derived address — the guest advertises its own criome
-      # domain so lojix targets root@<node>.<cluster>.criome; the host side
-      # resolves that name to the guest's IP.
+      # the horizon-derived address — the guest advertises its own Criome
+      # domain and the host side resolves that name to the guest's IP. Lojix
+      # receives the exact SSH target from its request instead.
       networking.hostName = mkForce node.name;
       networking.domain = mkForce "${clusterName}.criome";
       networking.hosts = {
@@ -207,9 +208,7 @@ let
   vmTypeModule =
     { lib, ... }:
     {
-      virtualisation.qemu.options = lib.mkAfter (
-        if isMicrovm then [ "-M microvm" ] else [ ]
-      );
+      virtualisation.qemu.options = lib.mkAfter (if isMicrovm then [ "-M microvm" ] else [ ]);
     };
 in
 {

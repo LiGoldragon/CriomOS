@@ -33,7 +33,7 @@ let
           ordinarySocketPath = "/run/lojix-fixture/ordinary.sock";
           ownerSocketPath = "/run/lojix-fixture/owner.sock";
           stateDirectoryPath = "/var/lib/lojix-fixture";
-          storePath = "/var/lib/lojix-fixture/lojix.sema";
+          storePath = "/var/lib/lojix-fixture/configured-lojix-store.db";
           startupArchivePath = "/run/lojix-fixture/startup.rkyv";
           daemonHost = "fixture-daemon";
           effectTimeoutSeconds = 2700;
@@ -66,7 +66,7 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   test ${toString (builtins.length resetService.conflicts)} = 1
   test ${lib.escapeShellArg (builtins.elemAt resetService.conflicts 0)} = lojix-daemon.service
   test ${lib.escapeShellArg resetService.serviceConfig.ExecStart} = \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store ${storePath}"}
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store StoreResetRequest.{${storePath}}"}
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_ORDINARY_SOCKET} = \
     ${lib.escapeShellArg ordinarySocketPath}
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_OWNER_SOCKET} = \

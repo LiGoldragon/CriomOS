@@ -27,13 +27,18 @@ First thing: run `bd list --status open`. Read `docs/ROADMAP.md` for the bead-fi
 - **Whole-OS eval/build needs the lojix-materialized inputs.** A bare `nix eval` / `nix flake show` / `nix flake check` on this repo throws `CriomOS: no system input was provided` — by design: the `system`, `horizon`, `deployment`, and `secrets` inputs are throwing stubs until lojix materializes them. The OS is not unbuildable; feed the generated inputs with `--override-input`:
   ```
   nix build .#nixosConfigurations.target.config.system.build.toplevel \
-    --override-input system     /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/system \
-    --override-input horizon    /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/horizon \
-    --override-input deployment /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/deployment \
-    --override-input secrets    /var/lib/lojix/generated-inputs/goldragon/ouranos/full-os/secrets
+    --override-input system     <lojix-materialized-system-input> \
+    --override-input horizon    <lojix-materialized-horizon-input> \
+    --override-input deployment <lojix-materialized-deployment-input> \
+    --override-input secrets    <lojix-materialized-secrets-input>
   ```
-  Swap the `goldragon/ouranos/full-os` segment for the target `<cluster>/<node>/<full-os|os-only|home>`. Witnessed on ouranos: ~47s eval, 26 trivial drvs (warm cache).
-- **Driving the current hacky SSH deploy fallback** — how to operate lojix today, including deploying a different user on a different node (for example `bird` on `zeus`) over the operator's root access — is documented in `lojix/NON_IDEAL_AGENTS.md`, the operational mirror of that repo's `AGENTS.md`. Deploy authority currently rides on the operator's logged-in SSH/GPG session and root reach to every node; that path is sanctioned and temporary (pending the criome-custodied replacement), so do not stall or ask for permission when operating within it.
+  Obtain these four paths from the active Lojix deployment request or its
+  materialised configuration; do not derive them from cluster or node names.
+- **Driving deployment** — Lojix requests carry their exact SSH destination,
+  Nix-store URI, input mode, output selector, backend, and optional builder.
+  Do not derive a Criome domain, login, or root route from a cluster, node, or
+  user name. Any manual deployment or activation needs separately supplied
+  access and caller authority.
 - **VM inventory is `systemctl` + `/var/lib/microvms`, not `microvm -l`.** `microvm -l` assumes an `/etc/nixos` flake CriomOS hosts don't have and reports empty even when guests are declared (witnessed: blank `microvm -l` beside a live `/var/lib/microvms/vm-testing`). Enumerate guests with `systemctl list-units 'microvm@*'` and `ls /var/lib/microvms`; a guest's runtime is the `microvm@<name>.service` unit.
 - `switch-to-configuration switch` stays out of chroots.
 - niri stays unsignalled (no SIGHUP).

@@ -23,7 +23,7 @@ let
     (lib.dirOf cfg.startupArchivePath)
   ];
   startupRequest = pkgs.writeText "lojix-daemon-configuration.dotos" ''
-    (ConfigurationWriteRequest (${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}))
+    (ConfigurationWriteRequest (${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}))
   '';
 in
 {
@@ -75,7 +75,7 @@ in
 
     storePath = mkOption {
       type = types.str;
-      description = "Exact absolute Lojix store file. The reset unit accepts only a path named lojix.sema.";
+      description = "Exact absolute Lojix store file shared by the daemon and manually started reset unit.";
     };
 
     startupArchivePath = mkOption {
@@ -118,14 +118,6 @@ in
           && lib.hasPrefix "/" cfg.storePath
           && lib.hasPrefix "/" cfg.startupArchivePath;
         message = "services.lojix socket, state, store, and startup paths must be absolute";
-      }
-      {
-        assertion = builtins.baseNameOf cfg.storePath == "lojix.sema";
-        message = "services.lojix.storePath must be the exact Lojix file name lojix.sema";
-      }
-      {
-        assertion = cfg.storePath == "${cfg.stateDirectoryPath}/lojix.sema";
-        message = "services.lojix.storePath must be the exact store the daemon opens under services.lojix.stateDirectoryPath";
       }
       {
         assertion = lib.all (directory: directory != "/") managedDirectories;
@@ -188,9 +180,10 @@ in
     };
 
     # This service has no wantedBy relationship and is never part of daemon
-    # startup. Starting it manually stops the daemon through Conflicts, resets
-    # only cfg.storePath using the Lojix-owned path validator, then creates a
-    # fresh v4 store. It never names or touches a Spirit database.
+    # startup. Starting it manually stops the daemon through Conflicts, passes
+    # only cfg.storePath in a typed inline reset object, then creates a fresh
+    # v4 store after the binary proves the existing file is a recognised Lojix
+    # catalog. It never names or touches a Spirit database.
     systemd.services.lojix-reset-store = {
       description = "Reset the exact configured Lojix v4 store";
       conflicts = [ "lojix-daemon.service" ];
@@ -200,7 +193,7 @@ in
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.stateDirectoryPath;
-        ExecStart = "${cfg.package}/bin/lojix-reset-store ${cfg.storePath}";
+        ExecStart = "${cfg.package}/bin/lojix-reset-store StoreResetRequest.{${cfg.storePath}}";
         NoNewPrivileges = true;
         PrivateTmp = true;
       };

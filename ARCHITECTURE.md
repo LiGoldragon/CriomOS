@@ -189,8 +189,8 @@ inputs), and modules render that data rather than baking an operator name, a
 cluster-proposal source, a trust mode, or a credential path as a literal.
 
 The Lojix service is explicitly configured when enabled: its service account,
-socket paths and modes, state directory, exact `lojix.sema` path, startup
-archive path, daemon identity, effect deadline, and optional SSH-agent socket
+socket paths and modes, state directory, exact store path, startup archive
+path, daemon identity, effect deadline, and optional SSH-agent socket
 are all supplied by `services.lojix`. The module has no default account,
 socket, store, credential socket, target, or transport route. It exports the
 two configured client socket paths through `LOJIX_ORDINARY_SOCKET` and
@@ -217,16 +217,18 @@ code), and uses the versioned Lojix startup configuration shape.
 Lojix v4 deliberately refuses older stores. There is no migration or
 legacy-resume path, and daemon startup never deletes data. The separately
 started `lojix-reset-store` systemd service conflicts with `lojix-daemon` and
-calls the reset binary only on `services.lojix.storePath`, which must equal
-`<stateDirectoryPath>/lojix.sema`.
+passes only `services.lojix.storePath` in its inline
+`StoreResetRequest.{<path>}` object. The daemon receives that same configured
+path in its binary startup archive; neither component derives a basename from
+the state directory.
 
-The reset binary accepts exactly that absolute, traversal-free regular Lojix
-file, removes only it and its three narrowly named Lojix schema sidecars, then
-creates a fresh v4 store. It rejects all other basenames, directories,
-symlinked stores, and unknown schema versions. It never names, follows, or
-modifies a Spirit database. Repeating a reset of a v4 store is safe; it produces
-another empty v4 store. This operation is manual and is not part of normal
-service startup.
+The reset binary accepts exactly one inline reset object, never a raw path or
+flag. Its configured absolute target must be a regular non-symlink file with a
+recognised Lojix family catalog and supported schema before it is removed;
+protocol sidecars are mechanically derived only after that proof. It never
+names, follows, or modifies a Spirit database. Repeating a reset of a v4 store
+is safe; it produces another empty v4 store. This operation is manual and is
+not part of normal service startup.
 
 ### Direction: the LojixOS split
 
