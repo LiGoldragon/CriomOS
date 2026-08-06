@@ -101,6 +101,21 @@ in
   };
 
   environment = {
+    # Home Manager owns the legacy user profile for this declarative desktop.
+    # NixOS otherwise exports both it and the XDG compatibility profile into
+    # PATH, NIX_PROFILES, and XDG resource search paths. Those independent
+    # profiles can contain different revisions of the same command or desktop
+    # service, so an old ad-hoc profile can shadow or duplicate the declared
+    # user environment on every new login. Keep the system profiles plus the
+    # one Home Manager-owned user profile; do not mutate or delete an old XDG
+    # profile here.
+    profiles = lib.mkForce [
+      "/run/current-system/sw"
+      "/nix/var/nix/profiles/default"
+      "/etc/profiles/per-user/$USER"
+      "$HOME/.nix-profile"
+    ];
+
     binsh = criomosShell;
     shells = [ "/run/current-system/sw${mksh.shellPath}" ];
 
