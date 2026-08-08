@@ -51,30 +51,51 @@ equivalence checks under the same Prometheus-only controls. The independently
 realized system closure must equal the closure recorded by the bootstrap GC
 root. Verify the closure and its provenance before transfer.
 
-The remaining root-mediated sequence is deliberately split into
-non-activating gates:
+The remaining root-mediated sequence is deliberately split into explicit
+gates. Keep `SYSTEM_CLOSURE` bound to the one independently verified closure
+throughout; never substitute a freshly evaluated or similarly named path part
+way through the sequence:
 
 1. Check Zeus free space and its trusted cache/signing-key configuration.
 2. Copy the exact rooted closure to the explicit root Zeus store URI with
    `nix copy --substitute-on-destination --to "$ZEUS_NIX_STORE_URI" "$SYSTEM_CLOSURE"`.
-3. Over the explicit root SSH destination, verify that exact closure is valid,
-   compare it with `/run/current-system` using `nix store diff-closures`, and
-   run `"$SYSTEM_CLOSURE/bin/switch-to-configuration" dry-activate`.
-4. Review every removal/restart warning for effects on Bird's graphical and
-   VS Codium session. Any failure, ambiguity, or active-session risk is a stop
-   condition.
-5. Only with separate operator approval and no active Bird session, stage the
-   exact closure for the next ordinary boot by setting
-   `/nix/var/nix/profiles/system` to it and running
-   `"$SYSTEM_CLOSURE/bin/switch-to-configuration" boot`. Do not reboot as part
-   of this workaround unless that separate action is explicitly authorized.
+3. Over the explicit root SSH destination, verify that exact closure is valid
+   and compare it with `/run/current-system` using `nix store diff-closures`.
+4. Run the exact closure's `switch-to-configuration check` once, then its
+   `dry-activate` once. Review every removal and restart for effects on Bird's
+   graphical and VS Codium session. Any unexplained effect is a stop condition.
+5. Before any live switch, set `/nix/var/nix/profiles/system` to the exact
+   closure. With separate operator approval, run that closure's
+   `switch-to-configuration switch` exactly once. Record the complete output.
+   A nonzero result can still be a partial activation: inspect
+   `/run/current-system`, the profile, affected unit results, and the preserved
+   user session before deciding what happened. Never blindly retry `switch` or
+   manually repeat only the failing Home activation step.
+6. Preserve an active Bird session deliberately: record its sessions plus the
+   niri and Codium process trees before switching, and verify them afterward.
+   Never kill, signal, restart, or launch Codium or niri as part of recovery.
+7. Run the same exact closure's `switch-to-configuration boot` once so the
+   durable boot generation matches the live/profile closure. Verify both the
+   entry selected by `/boot/loader/loader.conf` and systemd-boot's persistent
+   EFI default. A stale EFI `LoaderEntryDefault` overrides `loader.conf`; with
+   separate operator approval, point it at the newly installed exact generation
+   and reverify that there is no conflicting one-shot entry. Do not reboot as
+   part of this workaround unless that separate action is explicitly
+   authorized.
 
-Never run `switch` or `test` beneath an active Bird session. Never hand-edit
-VS Codium's extension registry or other lifecycle-managed JSON to force a
-version: the declarative Home lifecycle owns those files and must perform any
-surgical merge required to keep them user-writable.
+Never hand-edit VS Codium's extension registry or other lifecycle-managed JSON
+to force a version, and never repeat the lifecycle command ad hoc beneath the
+running editor. Home owns the immutable extension declarations while the
+managed Codium launcher owns the user-writable reconciliation: on Bird's next
+natural Codium launch, it takes the lifecycle lock, reconciles the mutable
+links, roots, and manifest in bounded passes, and atomically rewrites the
+managed Claude and OpenAI registry records before launching. It fails closed
+if that state cannot be made ready. A pre-activation Codium process may
+therefore continue using stale mutable registry metadata until Bird closes it
+normally and launches it again through the managed command.
 
-The proper fix is declarative, protocol-aligned ownership of the Lojix daemon
-and client at one revision, enabled explicitly by CriomOS, followed by typed
-deployments whose terminal result truthfully records evaluation, realization,
-copy, and activation. Remove this workaround when that path is proven.
+The proper fix remains declarative, protocol-aligned ownership of the Lojix
+daemon and client at one revision, enabled explicitly by CriomOS, followed by
+normal typed Lojix deployments whose terminal result truthfully records
+evaluation, realization, copy, and activation. Remove this workaround when
+that path is proven.
