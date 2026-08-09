@@ -1,14 +1,12 @@
 {
   lib,
-  pkgs,
   horizon,
   constants,
   ...
 }:
 let
-  inherit (builtins) fromJSON readFile pathExists;
+  inherit (builtins) fromJSON readFile;
   inherit (lib) mkIf concatStringsSep map;
-  inherit (horizon) node;
   inherit (constants.fileSystem.nordvpn) privateKeyFile;
 
   hasNordvpnPubKey = horizon.node.hasNordvpnPubKey or (horizon.node.nordvpn or false);
@@ -23,16 +21,6 @@ let
   nordvpnDns = "${lock.dns.primary};${lock.dns.secondary}";
   clientAddress = lock.client.address;
 
-  routingTable = "51820";
-
-  /*
-    Server endpoint IPs extracted at build time.
-    These must be routed via the main table to prevent a routing
-    loop — encrypted WireGuard packets to the server must not
-    re-enter the tunnel.
-  */
-  serverEndpointIps = map (s: builtins.head (lib.splitString ":" s.endpoint)) lock.servers;
-
   mkConnectionFile = server: ''
     cat > "/etc/NetworkManager/system-connections/nordvpn-${server.name}.nmconnection" <<CONN
     [connection]
@@ -43,17 +31,27 @@ let
 
     [wireguard]
     private-key=$NORDVPN_KEY
+    # NetworkManager's native improved rule-based routing is the equivalent
+    # of wg-quick Table=auto. It installs the fwmark, dedicated table, and
+    # rules as one connection transaction, including endpoint escape.
+    fwmark=51820
+    ip4-auto-default-route=true
+    ip6-auto-default-route=false
+    peer-routes=true
 
     [wireguard-peer.${server.publicKey}]
     endpoint=${server.endpoint}
-    allowed-ips=0.0.0.0/0;::/0;
+    allowed-ips=0.0.0.0/0;
+    persistent-keepalive=25;
 
     [ipv4]
     method=manual
     address1=${clientAddress}
     dns=${nordvpnDns}
-    never-default=true
-    route-table=${routingTable}
+    dns-search=~.;
+    dns-priority=-50
+    ignore-auto-dns=true
+    never-default=false
 
     [ipv6]
     method=disabled
@@ -68,65 +66,15 @@ let
         echo "nordvpn: private key not found at ${privateKeyFile}" >&2
         exit 0
       fi
+      umask 077
     ''
   ] ++ (map mkConnectionFile lock.servers) ++ [
     ''
-      nmcli connection reload 2>/dev/null || true
+      if systemctl is-active --quiet NetworkManager.service; then
+        nmcli connection reload
+      fi
     ''
   ]);
-
-  /*
-    NetworkManager dispatcher script for split-tunnel policy routing.
-    On connection up: installs default route in table 51820 and adds
-    ip rules that steer user traffic through the tunnel while exempting
-    overlay networks (Yggdrasil, Tailscale, WireGuard mesh).
-    On connection down: cleans up the rules.
-  */
-  /*
-    Exempt server endpoints, Tailscale, then catch-all into tunnel.
-    Priority numbering: 100 = server endpoints, 150 = Tailscale, 200 = tunnel.
-    Yggdrasil (200::/7) is IPv6 — naturally exempt from the IPv4-only tunnel.
-  */
-  serverExemptRules = lib.concatMapStringsSep "\n" (ip:
-    "    ip rule add to ${ip}/32 priority 100 lookup main 2>/dev/null"
-  ) serverEndpointIps;
-
-  serverCleanupRules = lib.concatMapStringsSep "\n" (ip:
-    "    ip rule del to ${ip}/32 priority 100 lookup main 2>/dev/null"
-  ) serverEndpointIps;
-
-  dispatcherScript = pkgs.writeShellScript "nordvpn-split-tunnel" ''
-    INTERFACE="$1"
-    ACTION="$2"
-
-    case "$INTERFACE" in
-      nv-*) ;;
-      *) exit 0 ;;
-    esac
-
-    TABLE=${routingTable}
-
-    case "$ACTION" in
-      up)
-        ip route add default dev "$INTERFACE" table "$TABLE" 2>/dev/null
-
-        # Exempt NordVPN server endpoints — prevents routing loop
-${serverExemptRules}
-
-        # Tailscale uses 100.64.0.0/10
-        ip rule add to 100.64.0.0/10 priority 150 lookup main 2>/dev/null
-
-        # Steer all remaining IPv4 traffic into the tunnel
-        ip rule add priority 200 table "$TABLE" 2>/dev/null
-        ;;
-      down)
-        ip route del default dev "$INTERFACE" table "$TABLE" 2>/dev/null
-${serverCleanupRules}
-        ip rule del priority 150 2>/dev/null
-        ip rule del priority 200 2>/dev/null
-        ;;
-    esac
-  '';
 
   privateKeyDir = builtins.dirOf privateKeyFile;
 
@@ -142,14 +90,9 @@ in
           Type = "oneshot";
           RemainAfterExit = true;
         };
+        restartTriggers = [ lockPath ];
         script = generatorScript;
       };
-
-      networking.networkmanager.dispatcherScripts = [
-        {
-          source = dispatcherScript;
-        }
-      ];
     })
 
     (mkIf (!hasNordvpnPubKey) {

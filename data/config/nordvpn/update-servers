@@ -15,29 +15,32 @@ API="https://api.nordvpn.com/v1/servers/recommendations"
 FILTER="filters[servers_technologies][identifier]=wireguard_udp"
 LOCKFILE="$(dirname "$0")/servers-lock.json"
 
-# country_id : limit : two-letter-code
+# country_id : limit : stable profile prefix : stable city slug
 COUNTRIES=(
-  "202:1:es"   # Spain (closest to Malaga)
-  "81:1:de"    # Germany
-  "153:1:nl"   # Netherlands
-  "227:1:gb"   # United Kingdom
-  "209:1:ch"   # Switzerland
-  "228:1:us"   # United States
+  "202:1:es:madrid"     # Spain (closest to Malaga)
+  "81:1:de:frankfurt"   # Germany
+  "153:1:nl:amsterdam"  # Netherlands
+  "227:1:uk:london"     # United Kingdom
+  "209:1:ch:zurich"     # Switzerland
+  "228:1:us:newyork"    # United States
 )
 
 fetch_servers() {
   local entries="[]"
 
   for spec in "${COUNTRIES[@]}"; do
-    IFS=: read -r cid limit code <<< "$spec"
+    IFS=: read -r cid limit code city_slug <<< "$spec"
 
-    result=$(curl -sf "${API}?${FILTER}&filters[country_id]=${cid}&limit=${limit}" \
-      | jq --arg code "$code" '[.[] | {
-          name: ($code + "-" + (.locations[0].country.city.name | ascii_downcase | gsub(" "; "-"))),
+    # curl treats square brackets as URL-glob syntax unless explicitly
+    # disabled.  The Nord API uses bracketed query keys, so without this
+    # flag a successful-looking refresh can silently produce no entries.
+    result=$(curl --globoff -sf "${API}?${FILTER}&filters[country_id]=${cid}&limit=${limit}" \
+      | jq --arg code "$code" --arg city_slug "$city_slug" '[.[] | {
+          name: ($code + "-" + $city_slug),
           hostname: .hostname,
           endpoint: (.station + ":51820"),
           publicKey: (.technologies[] | select(.identifier == "wireguard_udp") | .metadata[0].value),
-          country: ($code | ascii_upcase),
+          country: .locations[0].country.code,
           city: .locations[0].country.city.name
         }]')
 
@@ -52,6 +55,19 @@ servers=$(fetch_servers)
 count=$(echo "$servers" | jq length)
 echo "Got ${count} servers"
 
+# Never replace a known-good lock with an empty or partial response.  The
+# updater is a declarative source generator; a failed refresh must leave the
+# previous source intact for the next build.
+if (( count != ${#COUNTRIES[@]} )); then
+  echo "Expected ${#COUNTRIES[@]} WireGuard servers, got ${count}; refusing to write ${LOCKFILE}" >&2
+  exit 1
+fi
+
+echo "$servers" | jq -e 'all(.[]; (.name and .hostname and (.endpoint | test("^[0-9.]+:51820$")) and (.publicKey | length > 0) and .country and .city))' >/dev/null
+
+tmpfile=$(mktemp "${LOCKFILE}.tmp.XXXXXX")
+trap 'rm -f "$tmpfile"' EXIT
+
 jq -n \
   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --argjson servers "$servers" \
@@ -61,7 +77,10 @@ jq -n \
     dns: { primary: "103.86.96.100", secondary: "103.86.99.100" },
     client: { address: "10.5.0.2/32", port: 51820 },
     servers: $servers
-  }' > "$LOCKFILE"
+  }' > "$tmpfile"
+
+mv "$tmpfile" "$LOCKFILE"
+trap - EXIT
 
 echo "Wrote ${LOCKFILE}"
 echo "Review with: jj diff"

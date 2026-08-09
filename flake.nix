@@ -205,6 +205,7 @@
             inherit inputs;
           };
           resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
+          nordvpn-policy = pkgs.callPackage ./checks/nordvpn-policy { inherit inputs; };
           vm-testing-prometheus-policy = pkgs.callPackage ./checks/vm-testing-prometheus-policy {
             inherit inputs;
           };
