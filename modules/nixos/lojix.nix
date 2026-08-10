@@ -53,7 +53,6 @@ in
 
     ordinarySocketMode = mkOption {
       type = types.ints.between 0 511;
-      default = 432;
       description = "Unix mode encoded for the ordinary socket.";
     };
 
@@ -64,7 +63,6 @@ in
 
     ownerSocketMode = mkOption {
       type = types.ints.between 0 504;
-      default = 384;
       description = "Unix mode encoded for the owner/meta socket; other access is forbidden by Lojix.";
     };
 

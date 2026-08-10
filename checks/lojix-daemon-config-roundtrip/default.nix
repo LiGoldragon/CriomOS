@@ -32,7 +32,9 @@ let
           user = "lojix-fixture";
           group = "lojix-fixture";
           ordinarySocketPath = "/run/lojix-fixture/ordinary.sock";
+          ordinarySocketMode = 432;
           ownerSocketPath = "/run/lojix-fixture/owner.sock";
+          ownerSocketMode = 384;
           stateDirectoryPath = "/var/lib/lojix-fixture";
           storePath = "/var/lib/lojix-fixture/configured-lojix-store.db";
           startupArchivePath = "/run/lojix-fixture/startup.rkyv";
@@ -49,12 +51,14 @@ let
   configurationWriterCommand = builtins.elemAt execStartPre 0;
   storePath = configuration.config.services.lojix.storePath;
   ordinarySocketPath = configuration.config.services.lojix.ordinarySocketPath;
+  ordinarySocketMode = configuration.config.services.lojix.ordinarySocketMode;
   ownerSocketPath = configuration.config.services.lojix.ownerSocketPath;
+  ownerSocketMode = configuration.config.services.lojix.ownerSocketMode;
   startupArchivePath = configuration.config.services.lojix.startupArchivePath;
   daemonHost = configuration.config.services.lojix.daemonHost;
   effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
-  startupRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchivePath}}";
-  roundtripRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults startup.rkyv}";
+  startupRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} ${toString ordinarySocketMode} ${ownerSocketPath} ${toString ownerSocketMode} ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchivePath}}";
+  roundtripRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} ${toString ordinarySocketMode} ${ownerSocketPath} ${toString ownerSocketMode} ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults startup.rkyv}";
 in
 assert (resetService.wantedBy or [ ]) == [ ];
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
