@@ -9,35 +9,82 @@ let
   bootstrap = inputs.lojix.packages.${system}.lojix-bootstrap;
   homeClient = inputs.criomos-home.packages.${system}.lojix-client;
   homeBootstrap = inputs.criomos-home.packages.${system}.lojix-bootstrap;
+  horizon = {
+    node = {
+      adminSshPubKeys = [ ];
+      behavesAs.edge = false;
+      services = [ "PersonaDevelopment" ];
+    };
+    users = {
+      li = {
+        hasPubKey = true;
+        name = "li";
+        trust = {
+          min = true;
+          medium = false;
+        };
+        sshPubKeys = [ ];
+        extraGroups = [ ];
+        enableLinger = false;
+      };
+      remote = {
+        hasPubKey = false;
+        name = "remote";
+        trust = {
+          min = true;
+          medium = false;
+        };
+        sshPubKeys = [ ];
+        extraGroups = [ ];
+        enableLinger = false;
+      };
+    };
+  };
   fixture = lib.nixosSystem {
     inherit system;
     specialArgs = {
-      inherit inputs;
-      horizon = {
-        node.services = [ "PersonaDevelopment" ];
-      };
+      inherit horizon inputs;
+      constants = inputs.criomos-lib.lib.constants;
     };
     modules = [
       inputs.home-manager.nixosModules.home-manager
       ../../modules/nixos/lojix.nix
       ../../modules/nixos/lojix-persona-development.nix
+      ../../modules/nixos/users.nix
+      ../../modules/nixos/userHomes.nix
       {
         system.stateVersion = "26.05";
         networking.hostName = "lojix-ownership-fixture";
-        users.users.li = {
-          isNormalUser = true;
-          group = "users";
-        };
-        home-manager.users.li = {
-          home.stateVersion = "26.05";
-          home.homeDirectory = "/home/li";
-          home.username = "li";
-        };
       }
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
   homeActivation = fixture.config.systemd.services.home-manager-li;
+  invalidIdentityFixture =
+    users:
+    lib.nixosSystem {
+      inherit system;
+      specialArgs = {
+        inherit inputs;
+        horizon = {
+          node.services = [ "PersonaDevelopment" ];
+          inherit users;
+        };
+      };
+      modules = [
+        ../../modules/nixos/lojix.nix
+        ../../modules/nixos/lojix-persona-development.nix
+        {
+          system.stateVersion = "26.05";
+        }
+      ];
+    };
+  noLocalUserAssertions = (invalidIdentityFixture { }).config.assertions;
+  multipleLocalUserAssertions =
+    (invalidIdentityFixture {
+      alpha.hasPubKey = true;
+      beta.hasPubKey = true;
+    }).config.assertions;
 in
 assert rootLock.nodes.lojix.locked.rev == expectedRevision;
 assert homeLock.nodes.lojix.locked.rev == expectedRevision;
@@ -46,7 +93,24 @@ assert fixture.config.services.lojix.package == lojix;
 assert homeClient == lojix;
 assert homeBootstrap == bootstrap;
 assert fixture.config.services.lojix.user == "li";
-assert fixture.config.services.lojix.group == "users";
+assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
+assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
+assert fixture.config.users.users.li.group == "users";
+assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
+assert builtins.any (
+  assertion:
+  !assertion.assertion
+  &&
+    assertion.message
+    == "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPubKey); found none"
+) noLocalUserAssertions;
+assert builtins.any (
+  assertion:
+  !assertion.assertion
+  &&
+    assertion.message
+    == "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPubKey); found multiple: alpha, beta"
+) multipleLocalUserAssertions;
 assert fixture.config.services.lojix.ordinarySocketPath == "/run/lojix/ordinary.sock";
 assert fixture.config.services.lojix.ordinarySocketMode == 432;
 assert fixture.config.services.lojix.ownerSocketPath == "/run/lojix/owner.sock";
