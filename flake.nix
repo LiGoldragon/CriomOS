@@ -29,11 +29,11 @@
 
     # The state-only Orchestrate daemon keeps coordination in its Sema store
     # and configured Unix sockets. CriomOS-home follows this shared pin.
-    orchestrate.url = "github:LiGoldragon/orchestrate/dd70f6688e58d8cda379a187630aa364834eab74";
+    orchestrate.url = "github:LiGoldragon/orchestrate/45283e2120e930e62dabdaf650e704a425be804c";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/ce1a773875967e9459da7553a6deaa1d8af4f9ff";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/a03e268b4a8129d51d8e956d12fb658716291f95";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
