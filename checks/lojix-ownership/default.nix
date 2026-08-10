@@ -3,7 +3,8 @@ let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "54710fabbab7c47ce19764a98e7153e5c93a49f4";
-  expectedHomeRevision = "c92afb3f0e487a20b29f440d674efbbeb5f4c2df";
+  expectedHomeRevision = "0fa55757a9e2dbb99f2970c8a7aaf9d5d646e473";
+  expectedOrchestrateRevision = "dd70f6688e58d8cda379a187630aa364834eab74";
   expectedSchemaRustRevision = "37b7d1035a472a15081f3e2e8a93b95bf733c3ee";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
@@ -119,6 +120,8 @@ assert rootLock.nodes.lojix.locked.rev == expectedRevision;
 assert homeLock.nodes.lojix.locked.rev == expectedRevision;
 assert rootLock.nodes."criomos-home".inputs.lojix == [ "lojix" ];
 assert rootLock.nodes."criomos-home".locked.rev == expectedHomeRevision;
+assert rootLock.nodes.orchestrate.locked.rev == expectedOrchestrateRevision;
+assert homeLock.nodes.orchestrate.locked.rev == expectedOrchestrateRevision;
 assert rootLock.nodes."schema-rust-source".locked.rev == expectedSchemaRustRevision;
 assert homeLock.nodes."schema-rust-source".locked.rev == expectedSchemaRustRevision;
 assert fixture.config.services.lojix.package == lojix;
