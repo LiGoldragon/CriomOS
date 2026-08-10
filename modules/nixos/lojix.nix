@@ -3,18 +3,22 @@
   lib,
   pkgs,
   inputs,
+  horizon,
   ...
 }:
 let
   inherit (lib)
-    mkEnableOption
     mkIf
     mkOption
     optionalAttrs
     types
     ;
   cfg = config.services.lojix;
+  nodeServices = import ./node-services.nix { inherit lib; };
+  personaDevelopmentHost = nodeServices.has (horizon.node.services or [ ]) "PersonaDevelopment";
   defaultPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  homeManagerUsers = config."home-manager".users or { };
+  hasSystemManagedHome = builtins.hasAttr cfg.user homeManagerUsers;
   isDotosAtom = value: builtins.match "^[A-Za-z0-9_./:@+?=&%,-]+$" value != null;
   managedDirectories = lib.unique [
     cfg.stateDirectoryPath
@@ -25,11 +29,15 @@ let
   # The writer receives one inline typed object. This must not become a
   # caller-selected `.dotos` request file: the writer is a bounded bootstrap
   # boundary, not a general file reader.
-  startupRequest = "(ConfigurationWriteRequest (${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}))";
+  startupRequest = "ConfigurationWriteRequest.{${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults {}}";
 in
 {
   options.services.lojix = {
-    enable = mkEnableOption "the Lojix deployment daemon";
+    enable = mkOption {
+      type = types.bool;
+      default = personaDevelopmentHost;
+      description = "Enable the Lojix deployment daemon on PersonaDevelopment hosts.";
+    };
 
     package = mkOption {
       type = types.package;
@@ -39,16 +47,19 @@ in
 
     user = mkOption {
       type = types.str;
+      default = "li";
       description = "Existing unprivileged account that owns the Lojix daemon and store.";
     };
 
     group = mkOption {
       type = types.str;
+      default = "users";
       description = "Existing group used by the Lojix daemon and owner socket.";
     };
 
     ordinarySocketPath = mkOption {
       type = types.str;
+      default = "/run/lojix/ordinary.sock";
       description = "Absolute Unix-socket path exported to ordinary Lojix clients.";
     };
 
@@ -60,6 +71,7 @@ in
 
     ownerSocketPath = mkOption {
       type = types.str;
+      default = "/run/lojix/owner.sock";
       description = "Absolute Unix-socket path exported to owner/meta Lojix clients.";
     };
 
@@ -71,26 +83,31 @@ in
 
     stateDirectoryPath = mkOption {
       type = types.str;
+      default = "/var/lib/lojix";
       description = "Absolute directory holding the configured Lojix store and generated private inputs.";
     };
 
     storePath = mkOption {
       type = types.str;
+      default = "/var/lib/lojix/lojix.sema";
       description = "Exact absolute Lojix store file shared by the daemon and manually started reset unit.";
     };
 
     startupArchivePath = mkOption {
       type = types.str;
+      default = "/run/lojix/startup.rkyv";
       description = "Absolute generated rkyv daemon startup archive path.";
     };
 
     daemonHost = mkOption {
       type = types.str;
+      default = config.networking.hostName;
       description = "Explicit daemon host identity used only for self-switch safety.";
     };
 
     effectTimeoutSeconds = mkOption {
       type = types.ints.positive;
+      default = 2700;
       description = "Maximum duration of one external Lojix Nix, SSH, or activation effect.";
     };
 
@@ -179,6 +196,16 @@ in
         UMask = "0077";
         NoNewPrivileges = true;
         PrivateTmp = true;
+      };
+    };
+
+    # A system-managed Home activation is not permitted to run against a
+    # missing Lojix daemon.  `Requires` makes a failed daemon startup fail the
+    # activation closed; `After` fixes the activation order when both start.
+    systemd.services = optionalAttrs hasSystemManagedHome {
+      "home-manager-${cfg.user}" = {
+        requires = [ "lojix-daemon.service" ];
+        after = [ "lojix-daemon.service" ];
       };
     };
 

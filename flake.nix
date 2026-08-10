@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/d13dc4b5c7ae817890765092800ef7a4f9a0a59b";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/954cb084a7beeb232385f01b69d83392d3f83999";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -94,7 +94,7 @@
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
     # socket, state, identity, and timeout configuration.
-    lojix.url = "github:LiGoldragon/lojix/913c076f51410cb8b97f03fd010d6761ae108c33";
+    lojix.url = "github:LiGoldragon/lojix/54710fabbab7c47ce19764a98e7153e5c93a49f4";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
@@ -197,6 +197,7 @@
           lojix-daemon-config-roundtrip = pkgs.callPackage ./checks/lojix-daemon-config-roundtrip {
             inherit inputs;
           };
+          lojix-ownership = pkgs.callPackage ./checks/lojix-ownership { inherit inputs; };
           criome-daemon-config-roundtrip = pkgs.callPackage ./checks/criome-daemon-config-roundtrip {
             inherit inputs;
           };
