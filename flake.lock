@@ -14,11 +14,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783215128,
-        "narHash": "sha256-HtG6eCZozbM3Pc+WLCnksUOe2m/Fh38u04TTvVK6Pm8=",
+        "lastModified": 1786045227,
+        "narHash": "sha256-+Mk6xYzTGZAM0hpbDb2bAzzXMFPo2FT+0TIwjuxr0+c=",
         "owner": "LiGoldragon",
         "repo": "agent",
-        "rev": "1ff5e499c1f5433069ec781744b40db6a699d46c",
+        "rev": "3a3534931be790e63d3db01bbd238ad044b2d35f",
         "type": "github"
       },
       "original": {
@@ -995,17 +995,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1786378985,
-        "narHash": "sha256-/7OY+pMrUER8acJfZV2FCBe+p1Pkw0psLKJhNpujPS0=",
+        "lastModified": 1786383490,
+        "narHash": "sha256-CH44AAafzTnGgyTqKqq3y9UVTMPr4u1XXH5OKkywjyI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "3be9155fb0e1f34a92abca8feb018c2af5c1be28",
+        "rev": "ce1a773875967e9459da7553a6deaa1d8af4f9ff",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "3be9155fb0e1f34a92abca8feb018c2af5c1be28",
+        "rev": "ce1a773875967e9459da7553a6deaa1d8af4f9ff",
         "type": "github"
       }
     },
@@ -2132,11 +2132,11 @@
         "rust-build": "rust-build_3"
       },
       "locked": {
-        "lastModified": 1783217542,
-        "narHash": "sha256-e9Ua88kNU9AtCT7orfQ9ezye3vs8eAPtbh4Hp+GKtVE=",
+        "lastModified": 1786383233,
+        "narHash": "sha256-JJuGvqkwmpMTsDrmcY2gb/KGVtIeEU5Y81Gr6cyx4cc=",
         "owner": "LiGoldragon",
         "repo": "mentci-egui",
-        "rev": "f24e97784391d87e49ed05f5c3acd031d22639af",
+        "rev": "f8b86ffeab51d61953000a58f20fb0cac9933845",
         "type": "github"
       },
       "original": {
@@ -2148,11 +2148,11 @@
     "mentci-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1783217191,
-        "narHash": "sha256-aY7V04XhHef2MF+b2WwEApexBNWrzR+PWGg5j80hrSc=",
+        "lastModified": 1786382792,
+        "narHash": "sha256-+SUvrtTlOeRAnAy7omeT67hgBAvZ01fS2nSWynMnDEo=",
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "8d4aa9a7783c0f92a9334f3b365569d9ab69765c",
+        "rev": "aa2ce64448aeba01b20009a7a5a87070d6d9679b",
         "type": "github"
       },
       "original": {
