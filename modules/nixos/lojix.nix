@@ -28,7 +28,7 @@ let
   # The writer receives one inline typed object. This must not become a
   # caller-selected `.dotos` request file: the writer is a bounded bootstrap
   # boundary, not a general file reader.
-  startupRequest = "(ConfigurationWriteRequest (${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}))";
+  startupRequest = "ConfigurationWriteRequest.{${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}}";
 in
 {
   options.services.lojix = {
