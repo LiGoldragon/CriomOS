@@ -3,7 +3,7 @@ let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "54710fabbab7c47ce19764a98e7153e5c93a49f4";
-  expectedHomeRevision = "50d9ac8bdf90fc6b42365d4210638484f53be4c6";
+  expectedHomeRevision = "c92afb3f0e487a20b29f440d674efbbeb5f4c2df";
   expectedSchemaRustRevision = "37b7d1035a472a15081f3e2e8a93b95bf733c3ee";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
