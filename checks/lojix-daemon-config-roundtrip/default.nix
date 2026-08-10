@@ -28,6 +28,7 @@ let
         };
         services.lojix = {
           enable = true;
+          package = lojixPackage;
           user = "lojix-fixture";
           group = "lojix-fixture";
           ordinarySocketPath = "/run/lojix-fixture/ordinary.sock";
@@ -52,8 +53,8 @@ let
   startupArchivePath = configuration.config.services.lojix.startupArchivePath;
   daemonHost = configuration.config.services.lojix.daemonHost;
   effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
-  startupRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults {}}";
-  roundtripRequest = startupRequest;
+  startupRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchivePath}}";
+  roundtripRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} 432 ${ownerSocketPath} 384 ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults startup.rkyv}";
 in
 assert (resetService.wantedBy or [ ]) == [ ];
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
@@ -75,7 +76,8 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
 
   test ${toString effectTimeoutSeconds} = 2700
   test ${toString (builtins.length configuration.config.systemd.tmpfiles.rules)} = 2
-  ${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg roundtripRequest} | grep -F 'ConfigurationWritten.'
+  ${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg roundtripRequest} | grep -F '(ConfigurationWritten ['
+  test -s startup.rkyv
 
   touch "$out"
 ''

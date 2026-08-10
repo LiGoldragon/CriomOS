@@ -28,6 +28,7 @@ in
     ./criome.nix
     ./spirit.nix
     ./lojix.nix
+    ./lojix-persona-development.nix
     ./nix
     ./complex.nix
     ./nspawn.nix
