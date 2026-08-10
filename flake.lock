@@ -2184,17 +2184,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1786195993,
-        "narHash": "sha256-T8JzTEMUiiXYhYctrbZnzGD/5H1Cq7wnBB+KBoQOIBo=",
+        "lastModified": 1786357083,
+        "narHash": "sha256-zGlRridoJakl9nPNPHx0sTFx2KTMeK0Xb6tf0mBD+d8=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "913c076f51410cb8b97f03fd010d6761ae108c33",
+        "rev": "4734a2abaa605111507ce0b27b1dcdcbc07b7593",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "913c076f51410cb8b97f03fd010d6761ae108c33",
+        "rev": "4734a2abaa605111507ce0b27b1dcdcbc07b7593",
         "type": "github"
       }
     },
