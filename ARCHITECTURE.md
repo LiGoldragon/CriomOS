@@ -178,6 +178,14 @@ window over routine full charging. Synthetic bare-metal firmware-gating
 work stays generic, avoids unrelated unfree firmware, and is verified
 with constrained Nix checks.
 
+### Deployment convergence witnesses
+
+The source revision, evaluation result, realized build closure, selected
+profile, running system, and persistent boot entry are separate convergence
+realities. A terminal witness for one does not establish any of the others;
+deployment completion requires independent terminal evidence for every
+applicable surface and explicit reporting of mismatches.
+
 ### Deployment-agnostic OS layer
 
 CriomOS is deployment-agnostic. Deployment specifics — which host, which user,
