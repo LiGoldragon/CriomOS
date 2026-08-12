@@ -69,3 +69,10 @@ If a tool-specific memory dir exists from prior sessions, migrate its content (d
 - Per-system files (`packages/*`, `devshell.nix`, `checks/*`) receive `{ pkgs, inputs, flake, system, perSystem, pname, ... }`.
 - `modules/nixos/<name>.nix` surfaces as `nixosModules.<name>` and `modules.nixos.<name>`.
 - CriomOS exposes `nixosConfigurations.target` only — no `lib/default.nix`, `hosts/`, or `crioZones.*`. Lojix projects cluster proposals outside this repo and overrides the `horizon` / `system` / `deployment` inputs.
+
+## Protos estate status
+
+Protos estate scope: out of scope
+Stack: not applicable
+Role: operating-system source
+This is scope metadata, not a stack.
