@@ -218,7 +218,7 @@ let
       "nvme"
       "thunderbolt"
       "sd_mod"
-      "xe"
+      "i915"
     ];
     ThinkPadX250 = [
       "usb_storage"
@@ -348,10 +348,6 @@ mkIf behavesAs.bareMetal {
     extraModprobeConfig =
       (optionalString size.large ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
-      '')
-      + (optionalString (model == "ThinkPadT14Gen5Intel") ''
-        blacklist i915
-        options xe force_probe=7d45
       '')
       + (
         # T14 Gen2 Intel (Tiger Lake) suspend fixes:
