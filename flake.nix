@@ -217,7 +217,7 @@
           };
           home-activation-equivalence = import ./home-activation-equivalence.nix {
             inherit pkgs;
-            inherit homeConfigurations target;
+            inherit inputs target;
           };
         };
       };
@@ -256,6 +256,12 @@
       homeConfigurations = inputs.nixpkgs.lib.mapAttrs (_: userConfiguration: {
         activationPackage = userConfiguration.home.activationPackage;
       }) target.config.home-manager.users;
+
+      # The pinned CriomOS-home flake's own output surface, exposed separately
+      # so deployment evidence can compare it with the embedded NixOS Home
+      # Manager activation package without turning a projection into its own
+      # witness. Its follows inherit materialized horizon/system inputs.
+      independentHomeConfigurations = inputs.criomos-home.homeConfigurations;
     in
     blueprintOutputs
     // {
@@ -269,6 +275,7 @@
       apps = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.apps or { }) bootstrapApps;
 
       inherit homeConfigurations;
+      inherit independentHomeConfigurations;
 
       nixosConfigurations.target = target;
 
