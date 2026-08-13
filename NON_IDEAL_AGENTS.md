@@ -9,13 +9,14 @@ When CriomOS-home is consumed as a module, CriomOS's follows overrides
 deduplicate shared inputs. This discipline applies to standalone CriomOS-home
 evaluations (home-manager switch without a system rebuild).
 
-## Temporary Zeus full-system recovery path
+## Retired Lojix recovery path
 
-This is a narrow recovery workaround, not standing deployment policy. The
-Lojix daemon and client on Ouranos have been observed at different protocol
-versions, and CriomOS does not yet enable and own the production Lojix daemon
-declaratively. Until both facts are corrected, a normal daemon submission is
-unsafe: do not contact the daemon for a Zeus deployment.
+The historical Zeus/Ouranos `lojix-bootstrap` recovery procedure below belongs
+only to source revisions before the OS-owned Lojix 0.17.5 service. Do not use
+`BootOnce`, a hand-started daemon, or a Home Manager activation dependency to
+repair the current Lojix service. CriomOS alone owns its daemon, package,
+sockets, startup archive, and `/var/lib/lojix` state; normal maintenance uses
+the exact declarative system closure and its supported no-reboot activation.
 
 Use an exact pushed CriomOS revision and the canonical regular-file
 `goldragon/datom.dotos`. Materialize `goldragon` / `zeus` as `CompleteHost`

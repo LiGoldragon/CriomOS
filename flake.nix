@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/ab85ac1bd939a5858b9914a976c520afd314b3ba";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/e5f2264693c83f31f9991f1f12e2c60e2cdcb4a9";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -41,7 +41,6 @@
     criomos-home.inputs.horizon.follows = "horizon";
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
-    criomos-home.inputs.lojix.follows = "lojix";
     criomos-home.inputs.orchestrate.follows = "orchestrate";
     # Unify Home with CriomOS's one maintained Spirit release. The Spirit flake
     # owns the daemon, judge, judge configuration, provider, contracts, and user
@@ -94,7 +93,7 @@
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
     # socket, state, identity, and timeout configuration.
-    lojix.url = "github:LiGoldragon/lojix/54710fabbab7c47ce19764a98e7153e5c93a49f4";
+    lojix.url = "github:LiGoldragon/lojix/7693ad3e8814cbea68ea6491d6a10f04d5cb2979";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
@@ -198,6 +197,7 @@
             inherit inputs;
           };
           lojix-ownership = pkgs.callPackage ./checks/lojix-ownership { inherit inputs; };
+          lojix-fresh-daemon-startup = inputs.lojix.checks.${system}.fresh-daemon-startup;
           criome-daemon-config-roundtrip = pkgs.callPackage ./checks/criome-daemon-config-roundtrip {
             inherit inputs;
           };

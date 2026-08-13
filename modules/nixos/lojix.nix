@@ -13,8 +13,6 @@ let
     types
     ;
   cfg = config.services.lojix;
-  homeManagerUsers = config."home-manager".users or { };
-  hasSystemManagedHome = builtins.hasAttr cfg.user homeManagerUsers;
   isDotosAtom = value: builtins.match "^[A-Za-z0-9_./:@+?=&%,-]+$" value != null;
   managedDirectories = lib.unique [
     cfg.stateDirectoryPath
@@ -177,14 +175,6 @@ in
         NoNewPrivileges = true;
         PrivateTmp = true;
       };
-    };
-
-    # A system-managed Home activation is not permitted to run against a
-    # missing Lojix daemon.  `Requires` makes a failed daemon startup fail the
-    # activation closed; `After` fixes the activation order when both start.
-    systemd.services."home-manager-${cfg.user}" = mkIf hasSystemManagedHome {
-      requires = [ "lojix-daemon.service" ];
-      after = [ "lojix-daemon.service" ];
     };
 
     # This service has no wantedBy relationship and is never part of daemon

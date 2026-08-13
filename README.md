@@ -22,7 +22,7 @@ recovery surface:
    inputs.
 
 For a fresh, explicitly-authorized first bootstrap, use this flake's exact
-re-export of the maintained v0.17.2 `lojix-bootstrap` app. It accepts one inline
+re-export of the maintained v0.17.5 `lojix-bootstrap` app. It accepts one inline
 `BootstrapRun` DOTOS object only—no installed daemon, daemon socket, request
 file, flag, local store, route, account, or path default. `BuildOnly` is the
 exact build-only variant; `BootOnce` names either an explicit remote transport
@@ -34,8 +34,10 @@ nix run github:LiGoldragon/CriomOS/<rev>#lojix-bootstrap -- 'BootstrapRun.{<requ
 ```
 
 See Lojix's `README.md` for the full positional schema. This is the maintained
-operator surface; the old handwritten `meta-lojix` request forms are not a
-bootstrap interface.
+bootstrap boundary, not the normal repair path for the OS-owned Lojix daemon.
+Repair that service through an exact CriomOS closure and its supported no-reboot
+activation path, never through Home Manager ordering; old handwritten
+`meta-lojix` request forms are not a bootstrap interface.
 
 Each deployment supplies its exact flake output selector. `Horizon` input mode
 causes Lojix to materialise the request's projection; `Direct` does not. The
