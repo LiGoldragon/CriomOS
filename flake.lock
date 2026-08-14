@@ -994,17 +994,17 @@
         "visualjj-vsix": "visualjj-vsix"
       },
       "locked": {
-        "lastModified": 1786686239,
-        "narHash": "sha256-yv+fhXyO4QxvVXYFEx1nY+5mIedT9OiuMCRm0LaZUV4=",
+        "lastModified": 1786688624,
+        "narHash": "sha256-wad+6vVCk8/V4a3tG8DQ+cKj7nRJY5fUScUXq55pwwk=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0064e38436e26e9d9cf0cd4792d4ed736d5bda71",
+        "rev": "a122a83265e83b5a769754753d1f40bf9f52f9ef",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0064e38436e26e9d9cf0cd4792d4ed736d5bda71",
+        "rev": "a122a83265e83b5a769754753d1f40bf9f52f9ef",
         "type": "github"
       }
     },
@@ -2133,34 +2133,34 @@
         "rust-build": "rust-build_3"
       },
       "locked": {
-        "lastModified": 1786383233,
-        "narHash": "sha256-JJuGvqkwmpMTsDrmcY2gb/KGVtIeEU5Y81Gr6cyx4cc=",
+        "lastModified": 1786575529,
+        "narHash": "sha256-vxFu7+MWQFtdw8sIIX/gU1HOIvdCHVDhzE96r4okaQE=",
         "owner": "LiGoldragon",
         "repo": "mentci-egui",
-        "rev": "f8b86ffeab51d61953000a58f20fb0cac9933845",
+        "rev": "2af0aa5a86fdbdfde13e7eb9fd338da40451d901",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "mentci-egui",
-        "rev": "f8b86ffeab51d61953000a58f20fb0cac9933845",
+        "rev": "2af0aa5a86fdbdfde13e7eb9fd338da40451d901",
         "type": "github"
       }
     },
     "mentci-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786382792,
-        "narHash": "sha256-+SUvrtTlOeRAnAy7omeT67hgBAvZ01fS2nSWynMnDEo=",
+        "lastModified": 1786575526,
+        "narHash": "sha256-cq+0oZxqL0p0yAcx9/gljfZW89+U83g4b1dDZ7ilqvE=",
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "aa2ce64448aeba01b20009a7a5a87070d6d9679b",
+        "rev": "235b1b44ecd93857df60c36a2ca4fa16fab5984f",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "aa2ce64448aeba01b20009a7a5a87070d6d9679b",
+        "rev": "235b1b44ecd93857df60c36a2ca4fa16fab5984f",
         "type": "github"
       }
     },
