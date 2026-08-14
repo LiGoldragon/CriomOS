@@ -29,11 +29,11 @@
 
     # The state-only Orchestrate daemon keeps coordination in its Sema store
     # and configured Unix sockets. CriomOS-home follows this shared pin.
-    orchestrate.url = "github:LiGoldragon/orchestrate/45283e2120e930e62dabdaf650e704a425be804c";
+    orchestrate.url = "github:LiGoldragon/orchestrate/b14355577286e56902d085ad4e1bf2654a55931e";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/e5f2264693c83f31f9991f1f12e2c60e2cdcb4a9";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/251e77fa4297c1967c2f302579b7d835e68b9951";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -88,7 +88,7 @@
     # Maintained Spirit release — the single pin authority for the daemon,
     # judge, configuration, provider, contracts, and service artifacts.
     # Consumed directly by the NixOS module and followed by CriomOS-home.
-    spirit.url = "github:LiGoldragon/spirit/7405eee89e3b1b5b6764eb1a50cbdf467b93c9a7";
+    spirit.url = "github:LiGoldragon/spirit/008d8ca0e4a309bdd922fae61681cdc97a484bac";
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
