@@ -1,0 +1,183 @@
+diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
+--- a/drivers/media/usb/uvc/uvc_driver.c
++++ b/drivers/media/usb/uvc/uvc_driver.c
+@@ -331,6 +331,16 @@
+ 	return buffer[0];
+ }
+
++static bool uvc_frame_is_allowed(const struct uvc_device *dev,
++				 const struct uvc_frame *frame)
++{
++	if (!(dev->quirks & UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9))
++		return true;
++
++	return frame->wWidth != 0 && frame->wHeight != 0 &&
++	       (u32)frame->wWidth * 9 == (u32)frame->wHeight * 16;
++}
++
+ static int uvc_parse_format(struct uvc_device *dev,
+ 	struct uvc_streaming *streaming, struct uvc_format *format,
+ 	struct uvc_frame *frames, u32 **intervals, const unsigned char *buffer,
+@@ -493,7 +503,13 @@
+ 					      buffer, buflen);
+ 			if (ret < 0)
+ 				return ret;
+-			format->nframes++;
++			if (uvc_frame_is_allowed(dev, frame)) {
++				format->nframes++;
++			} else {
++				uvc_dbg(dev, DESCR,
++					"- ignoring non-16:9 frame %ux%u\n",
++					frame->wWidth, frame->wHeight);
++			}
+ 			buflen -= ret;
+ 			buffer += ret;
+ 		}
+@@ -746,9 +762,17 @@
+ 			if (!ret)
+ 				break;
+
+-			streaming->nformats++;
+-			frame += format->nframes;
+-			format++;
++			if ((dev->quirks &
++			     UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9) &&
++			    format->nframes == 0) {
++				uvc_dbg(dev, DESCR,
++					"Ignoring format with no 16:9 frames\n");
++				memset(format, 0, sizeof(*format));
++			} else {
++				streaming->nformats++;
++				frame += format->nframes;
++				format++;
++			}
+
+ 			buflen -= ret;
+ 			buffer += ret;
+@@ -762,6 +786,13 @@
+ 		buffer += buffer[0];
+ 	}
+
++	if ((dev->quirks & UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9) &&
++	    streaming->nformats == 0) {
++		dev_err(&intf->dev, "No 16:9 video formats found\n");
++		ret = -EINVAL;
++		goto error;
++	}
++
+ 	if (buflen)
+ 		uvc_dbg(dev, DESCR,
+ 			"device %d videostreaming interface %d has %u bytes of trailing descriptor garbage\n",
+@@ -3167,6 +3198,20 @@
+ 	  .bInterfaceSubClass	= 1,
+ 	  .bInterfaceProtocol	= 0,
+ 	  .driver_info		= UVC_INFO_QUIRK(UVC_QUIRK_DISABLE_AUTOSUSPEND) },
++	/* MacroSilicon MS2130 HDMI capture (Guermok, firmware 31.00) */
++	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
++				| USB_DEVICE_ID_MATCH_DEV_LO
++				| USB_DEVICE_ID_MATCH_DEV_HI
++				| USB_DEVICE_ID_MATCH_INT_INFO,
++	  .idVendor		= 0x345f,
++	  .idProduct		= 0x2130,
++	  .bcdDevice_lo		= 0x3100,
++	  .bcdDevice_hi		= 0x3100,
++	  .bInterfaceClass	= USB_CLASS_VIDEO,
++	  .bInterfaceSubClass	= 1,
++	  .bInterfaceProtocol	= 0,
++	  .driver_info		=
++		UVC_INFO_QUIRK(UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9) },
+ 	/* Intel Realsense D410/ASR depth camera */
+ 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+ 				| USB_DEVICE_ID_MATCH_INT_INFO,
+diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
+--- a/drivers/media/usb/uvc/uvc_video.c
++++ b/drivers/media/usb/uvc/uvc_video.c
+@@ -423,6 +423,44 @@
+ 	return ret;
+ }
+
++static bool
++uvc_video_ctrl_is_allowed(const struct uvc_streaming *stream,
++			  const struct uvc_streaming_control *ctrl)
++{
++	unsigned int i;
++
++	for (i = 0; i < stream->nformats; ++i) {
++		const struct uvc_format *format = &stream->formats[i];
++		unsigned int j;
++
++		if (format->index != ctrl->bFormatIndex)
++			continue;
++
++		for (j = 0; j < format->nframes; ++j)
++			if (format->frames[j].bFrameIndex == ctrl->bFrameIndex)
++				return true;
++	}
++
++	return false;
++}
++
++static int
++uvc_video_ctrl_validate(const struct uvc_streaming *stream,
++			const struct uvc_streaming_control *ctrl,
++			const char *operation)
++{
++	if (!(stream->dev->quirks &
++	      UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9) ||
++	    uvc_video_ctrl_is_allowed(stream, ctrl))
++		return 0;
++
++	dev_err(&stream->intf->dev,
++		"Device returned filtered UVC format %u frame %u for %s\n",
++		ctrl->bFormatIndex, ctrl->bFrameIndex, operation);
++
++	return -EPROTO;
++}
++
+ int uvc_probe_video(struct uvc_streaming *stream,
+ 	struct uvc_streaming_control *probe)
+ {
+@@ -461,6 +499,9 @@
+ 		ret = uvc_get_video_ctrl(stream, probe, 1, UVC_GET_CUR);
+ 		if (ret < 0)
+ 			goto done;
++		ret = uvc_video_ctrl_validate(stream, probe, "probe");
++		if (ret < 0)
++			goto done;
+
+ 		if (stream->intf->num_altsetting == 1)
+ 			break;
+@@ -487,6 +528,12 @@
+ static int uvc_commit_video(struct uvc_streaming *stream,
+ 			    struct uvc_streaming_control *probe)
+ {
++	int ret;
++
++	ret = uvc_video_ctrl_validate(stream, probe, "commit");
++	if (ret < 0)
++		return ret;
++
+ 	return uvc_set_video_ctrl(stream, probe, 0);
+ }
+
+@@ -2230,6 +2277,9 @@
+
+ 	if (ret < 0)
+ 		return ret;
++	ret = uvc_video_ctrl_validate(stream, probe, "initial probe");
++	if (ret < 0)
++		return ret;
+
+ 	/*
+ 	 * Check if the default format descriptor exists. Use the first
+diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
+--- a/drivers/media/usb/uvc/uvcvideo.h
++++ b/drivers/media/usb/uvc/uvcvideo.h
+@@ -81,6 +81,7 @@
+ #define UVC_QUIRK_INVALID_DEVICE_SOF	0x00010000
+ #define UVC_QUIRK_MJPEG_NO_EOF		0x00020000
+ #define UVC_QUIRK_MSXU_META		0x00040000
++#define UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9 0x00080000
+
+ /* Format flags */
+ #define UVC_FMT_FLAG_COMPRESSED		0x00000001
