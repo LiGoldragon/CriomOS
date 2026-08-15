@@ -6,3 +6,6 @@
 
 # Local sibling-repo symlinks (developer convenience; not part of the flake)
 /repos/
+
+# Nix build artifacts
+result
