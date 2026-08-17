@@ -149,7 +149,6 @@ in
             tcpdump
             librist
             ifmetric
-            pulseaudioFull
             networkmanager_strongswan
           ]
       )

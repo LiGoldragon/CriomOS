@@ -57,6 +57,13 @@ assert lib.assertMsg (lib.any (
 assert lib.assertMsg (lib.all (
   action: !(action."node.disabled" or false)
 ) loopbackActions) "desktop audio policy must leave ALSA loopback nodes selectable";
+assert lib.assertMsg (
+  !(builtins.elem pkgs.pulseaudioFull desktopSystem.config.environment.systemPackages)
+) "desktop audio must not expose PulseAudio's XDG autostart beside PipeWire";
+assert lib.assertMsg desktopSystem.config.services.pipewire.enable
+  "desktop audio must remain owned by PipeWire";
+assert lib.assertMsg desktopSystem.config.services.pipewire.pulse.enable
+  "desktop audio must retain PipeWire's PulseAudio compatibility server";
 
 pkgs.runCommand "desktop-audio-policy-check" { } ''
   touch "$out"
