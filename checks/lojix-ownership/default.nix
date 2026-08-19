@@ -90,8 +90,44 @@ let
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
   daemonEnvironment = daemon.environment;
-  localUserUid = fixture.config.users.users.li.uid;
-  expectedSshAuthSocket = "/run/user/${toString localUserUid}/gnupg/S.gpg-agent.ssh";
+  localUserName = fixture.config.services.lojix.user;
+  localUserUid = fixture.config.users.users.${localUserName}.uid;
+  expectedRuntimeSshAuthSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
+  expectedDaemonCommand = "${lojix}/bin/lojix-daemon /run/lojix/startup.rkyv";
+  explicitSshAuthSocket = "/run/user/explicit/gnupg/S.gpg-agent.ssh";
+  explicitSocketFixture = lib.nixosSystem {
+    inherit system;
+    modules = [
+      ../../modules/nixos/lojix.nix
+      {
+        system.stateVersion = "26.05";
+        users.groups.lojix-explicit = { };
+        users.users.lojix-explicit = {
+          isNormalUser = true;
+          group = "lojix-explicit";
+        };
+        services.lojix = {
+          enable = true;
+          package = lojix;
+          user = "lojix-explicit";
+          group = "lojix-explicit";
+          ordinarySocketPath = "/run/lojix-explicit/ordinary.sock";
+          ordinarySocketMode = 432;
+          ownerSocketPath = "/run/lojix-explicit/owner.sock";
+          ownerSocketMode = 384;
+          stateDirectoryPath = "/var/lib/lojix-explicit";
+          storePath = "/var/lib/lojix-explicit/lojix.sema";
+          startupArchivePath = "/run/lojix-explicit/startup.rkyv";
+          daemonHost = "lojix-explicit";
+          effectTimeoutSeconds = 2700;
+          sshAuthSocket = {
+            mode = "path";
+            path = explicitSshAuthSocket;
+          };
+        };
+      }
+    ];
+  };
   invalidIdentityFixture =
     users:
     lib.nixosSystem {
@@ -137,8 +173,21 @@ assert fixture.config.services.lojix.user == "li";
 assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
 assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
 assert fixture.config.users.users.li.group == "users";
-assert fixture.config.services.lojix.sshAuthSocket == expectedSshAuthSocket;
-assert daemonEnvironment == { SSH_AUTH_SOCK = expectedSshAuthSocket; };
+assert localUserUid == null;
+assert
+  fixture.config.services.lojix.sshAuthSocket == {
+    mode = "service-user-gpg-agent";
+    path = null;
+  };
+assert daemonEnvironment == { };
+assert daemon.serviceConfig.User == localUserName;
+assert
+  explicitSocketFixture.config.systemd.services.lojix-daemon.environment == {
+    SSH_AUTH_SOCK = explicitSshAuthSocket;
+  };
+assert
+  explicitSocketFixture.config.systemd.services.lojix-daemon.serviceConfig.ExecStart
+  == expectedDaemonCommand;
 assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
 assert builtins.any (
   assertion:
@@ -162,21 +211,29 @@ assert fixture.config.services.lojix.stateDirectoryPath == "/var/lib/lojix";
 assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix.sema";
 assert fixture.config.services.lojix.startupArchivePath == "/run/lojix/startup.rkyv";
 assert fixture.config.services.lojix.effectTimeoutSeconds == 2700;
-assert !(builtins.elem "lojix-daemon.service" (fixture.config.systemd.services.home-manager-li.requires or [ ]));
-assert !(builtins.elem "lojix-daemon.service" (fixture.config.systemd.services.home-manager-li.after or [ ]));
+assert
+  !(builtins.elem "lojix-daemon.service" (
+    fixture.config.systemd.services.home-manager-li.requires or [ ]
+  ));
+assert
+  !(builtins.elem "lojix-daemon.service" (
+    fixture.config.systemd.services.home-manager-li.after or [ ]
+  ));
 pkgs.runCommand "lojix-ownership"
   {
     inherit
       lojix
       homeProjectionBoundary
       ;
-    daemonCommand = daemon.serviceConfig.ExecStart;
+    daemonWrapper = daemon.serviceConfig.ExecStart;
     writerCommand = builtins.elemAt daemon.serviceConfig.ExecStartPre 0;
   }
   ''
     test -x "$lojix/bin/lojix"
     test -e "$homeProjectionBoundary"
-    test "$(printf '%s' "$daemonCommand")" = "${lojix}/bin/lojix-daemon /run/lojix/startup.rkyv"
+    test -x "$daemonWrapper"
+    grep -F ${lib.escapeShellArg "export SSH_AUTH_SOCK=${expectedRuntimeSshAuthSocket}"} "$daemonWrapper"
+    grep -F ${lib.escapeShellArg "exec ${expectedDaemonCommand}"} "$daemonWrapper"
     test "$(printf '%s' "$writerCommand")" = \
       "${lojix}/bin/lojix-write-configuration 'ConfigurationWriteRequest.{/run/lojix/ordinary.sock 432 /run/lojix/owner.sock 384 /var/lib/lojix /var/lib/lojix/lojix.sema lojix-ownership-fixture 2700 NoTestDefaults /run/lojix/startup.rkyv}'"
     touch "$out"

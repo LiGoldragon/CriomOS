@@ -24,6 +24,17 @@ let
   # caller-selected `.dotos` request file: the writer is a bounded bootstrap
   # boundary, not a general file reader.
   startupRequest = "ConfigurationWriteRequest.{${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}}";
+  daemonCommand = "${cfg.package}/bin/lojix-daemon ${cfg.startupArchivePath}";
+  serviceUserGpgAgentSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
+  serviceUserGpgAgentWrapper = pkgs.writeShellScript "lojix-daemon-service-user-gpg-agent" ''
+    export SSH_AUTH_SOCK=${serviceUserGpgAgentSocket}
+    exec ${daemonCommand}
+  '';
+  daemonExecStart =
+    if cfg.sshAuthSocket != null && cfg.sshAuthSocket.mode == "service-user-gpg-agent" then
+      "${serviceUserGpgAgentWrapper}"
+    else
+      daemonCommand;
 in
 {
   options.services.lojix = {
@@ -90,9 +101,26 @@ in
     };
 
     sshAuthSocket = mkOption {
-      type = types.nullOr types.str;
+      type = types.nullOr (
+        types.submodule {
+          options = {
+            mode = mkOption {
+              type = types.enum [
+                "path"
+                "service-user-gpg-agent"
+              ];
+              description = "Whether to use an explicit absolute SSH-agent socket path or the configured service user's GPG-agent socket.";
+            };
+            path = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = "Explicit absolute SSH-agent socket path when mode is path.";
+            };
+          };
+        }
+      );
       default = null;
-      description = "Optional explicitly configured SSH agent socket supplied to the daemon.";
+      description = "Optional SSH-agent endpoint supplied to the daemon.";
     };
   };
 
@@ -116,6 +144,17 @@ in
         message = "services.lojix socket, state, store, and startup paths must be absolute";
       }
       {
+        assertion =
+          cfg.sshAuthSocket == null
+          || (cfg.sshAuthSocket.mode == "service-user-gpg-agent" && cfg.sshAuthSocket.path == null)
+          || (
+            cfg.sshAuthSocket.mode == "path"
+            && cfg.sshAuthSocket.path != null
+            && lib.hasPrefix "/" cfg.sshAuthSocket.path
+          );
+        message = "services.lojix.sshAuthSocket must be service-user-gpg-agent or an explicit absolute path";
+      }
+      {
         assertion = lib.all (directory: directory != "/") managedDirectories;
         message = "services.lojix managed state, socket, and startup directories must not be the filesystem root";
       }
@@ -129,7 +168,11 @@ in
             cfg.startupArchivePath
             cfg.daemonHost
           ]
-          && (cfg.sshAuthSocket == null || isDotosAtom cfg.sshAuthSocket);
+          && (
+            cfg.sshAuthSocket == null
+            || cfg.sshAuthSocket.mode == "service-user-gpg-agent"
+            || isDotosAtom cfg.sshAuthSocket.path
+          );
         message = "services.lojix paths and daemonHost must be nonempty DOTOS atoms without whitespace or control syntax";
       }
     ];
@@ -157,8 +200,8 @@ in
         pkgs.openssh
         pkgs.util-linux
       ];
-      environment = optionalAttrs (cfg.sshAuthSocket != null) {
-        SSH_AUTH_SOCK = cfg.sshAuthSocket;
+      environment = optionalAttrs (cfg.sshAuthSocket != null && cfg.sshAuthSocket.mode == "path") {
+        SSH_AUTH_SOCK = cfg.sshAuthSocket.path;
       };
       serviceConfig = {
         Type = "simple";
@@ -168,7 +211,7 @@ in
         ExecStartPre = [
           "${cfg.package}/bin/lojix-write-configuration ${lib.escapeShellArg startupRequest}"
         ];
-        ExecStart = "${cfg.package}/bin/lojix-daemon ${cfg.startupArchivePath}";
+        ExecStart = daemonExecStart;
         Restart = "on-failure";
         RestartSec = "5s";
         UMask = "0077";

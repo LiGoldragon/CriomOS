@@ -52,11 +52,7 @@ lib.mkIf personaDevelopmentHost (
         startupArchivePath = "/run/lojix/startup.rkyv";
         daemonHost = config.networking.hostName;
         effectTimeoutSeconds = 2700;
-        # CriomOS-home configures the selected local user's GPG agent with SSH
-        # support at $XDG_RUNTIME_DIR/gnupg/S.gpg-agent.ssh. The OS-owned
-        # daemon receives that endpoint, not key material, so its SSH effects
-        # use the same local-user agent without a setup-specific identity.
-        sshAuthSocket = "/run/user/${toString config.users.users.${localUser}.uid}/gnupg/S.gpg-agent.ssh";
+        sshAuthSocket.mode = "service-user-gpg-agent";
       };
     })
   ]
