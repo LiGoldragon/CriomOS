@@ -23,7 +23,8 @@ lib.mkMerge [
   }
   (lib.mkIf localEnabled {
     # The local family has one host-local package and no cross-host transport
-    # declaration. Its broker remains owned by the matching user profile.
+    # declaration. Its producer exports only distinct Intercom command names;
+    # direct `codex` and `claude` remain owned by the matching user profile.
     environment.systemPackages = [ agentIntercomPackage ];
   })
   (lib.mkIf (localEnabled && graphicalEnabled) {

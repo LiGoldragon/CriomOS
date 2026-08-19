@@ -3,11 +3,7 @@ let
   inherit (inputs.nixpkgs) lib;
   inherit (pkgs.stdenv.hostPlatform) system;
 
-  homeInput = {
-    packages = {
-      ${system}.agent-intercom = pkgs.hello;
-    };
-  };
+  agentIntercom = inputs.criomos-home.packages.${system}.agent-intercom;
 
   node = name: services: edge: {
     inherit name services;
@@ -38,7 +34,7 @@ let
       specialArgs = {
         inherit horizon;
         inputs = inputs // {
-          criomos-home = homeInput;
+          criomos-home = inputs.criomos-home;
         };
       };
       modules = [
@@ -138,9 +134,9 @@ let
     configuration.services.openssh.extraConfig == headlessConfiguration.services.openssh.extraConfig
     && configuration.services.openssh.settings == headlessConfiguration.services.openssh.settings;
 in
-assert builtins.elem pkgs.hello localConfiguration.environment.systemPackages;
-assert builtins.elem pkgs.hello graphicalConfiguration.environment.systemPackages;
-assert !(builtins.elem pkgs.hello headlessConfiguration.environment.systemPackages);
+assert builtins.elem agentIntercom localConfiguration.environment.systemPackages;
+assert builtins.elem agentIntercom graphicalConfiguration.environment.systemPackages;
+assert !(builtins.elem agentIntercom headlessConfiguration.environment.systemPackages);
 assert !localConfiguration.services.gnome.at-spi2-core.enable;
 assert !localConfiguration.hardware.uinput.enable;
 assert !localConfiguration.xdg.portal.enable;
