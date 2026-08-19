@@ -501,16 +501,16 @@
         "rust-build": "rust-build"
       },
       "locked": {
-        "lastModified": 1786574692,
-        "narHash": "sha256-Z5P/n7WmMhXWMZAGccfsudSj6GrskIeBdYOqZgPngKw=",
+        "lastModified": 1787171953,
+        "narHash": "sha256-3rT4dhrvQqh827taFJU8TZfWJvV1oeP40xce2JplSCo=",
         "owner": "LiGoldragon",
         "repo": "chroma",
-        "rev": "227c35e46e3461d740999b2a73eb414b1ce535c1",
+        "rev": "eea85f4aae5a21813314a128faa5dce1e22eff48",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "main",
+        "ref": "eea85f4aae5a",
         "repo": "chroma",
         "type": "github"
       }
@@ -979,17 +979,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787165200,
-        "narHash": "sha256-wIS1YVRmkxdI++Yl61n/UQ2P4i06OThI0Mb2ELa7Oik=",
+        "lastModified": 1787174347,
+        "narHash": "sha256-BmtRTgG0U/FSp/ja6Nq9uZs5gr1qy76t81GqnSrZahQ=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c04f34eee24dd0dee6979dda2197a9d9aa19d140",
+        "rev": "bca093f3557c8a49af51ac16289386f22101d8ab",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c04f34eee24dd0dee6979dda2197a9d9aa19d140",
+        "rev": "bca093f3557c8a49af51ac16289386f22101d8ab",
         "type": "github"
       }
     },
@@ -2369,16 +2369,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1786662831,
-        "narHash": "sha256-j2a1tMMumc9XN6K7HQPwR5i2tJsUGAZ+xIMQKocsO90=",
-        "owner": "noctalia-dev",
-        "repo": "noctalia-shell",
-        "rev": "f6ae73a0cef3da0288ee512462afc71b36d47bf9",
+        "lastModified": 1787173051,
+        "narHash": "sha256-PIZh/PLUvnVu+qeerC2SAlx0I+m2ggXALgIOrM1/+J4=",
+        "owner": "LiGoldragon",
+        "repo": "noctalia",
+        "rev": "9778437e8bd326d6d82340fff6b0400eee2caf6f",
         "type": "github"
       },
       "original": {
-        "owner": "noctalia-dev",
-        "repo": "noctalia-shell",
+        "owner": "LiGoldragon",
+        "repo": "noctalia",
+        "rev": "9778437e8bd326d6d82340fff6b0400eee2caf6f",
         "type": "github"
       }
     },
