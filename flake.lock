@@ -991,20 +991,21 @@
           "system"
         ],
         "uv2nix": "uv2nix",
-        "visualjj-vsix": "visualjj-vsix"
+        "visualjj-vsix": "visualjj-vsix",
+        "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787130933,
-        "narHash": "sha256-ughI5LQ2y4+6yC8UXG2la8J++xAZ2Iuk0rqhAmSaOvE=",
+        "lastModified": 1787138889,
+        "narHash": "sha256-8ajACuabfEL/T5ISqovXWdYtEtbMJxSBePJ4Nt303Lc=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "23aaa932481c595b7e50f0b8cb0972177a98eaf5",
+        "rev": "0225e261ce074583a7ef1dfa161afc95ea2e73bc",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "23aaa932481c595b7e50f0b8cb0972177a98eaf5",
+        "rev": "0225e261ce074583a7ef1dfa161afc95ea2e73bc",
         "type": "github"
       }
     },
@@ -4740,6 +4741,22 @@
       "original": {
         "owner": "Supreeeme",
         "repo": "xwayland-satellite",
+        "type": "github"
+      }
+    },
+    "yt-dlp": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787121734,
+        "narHash": "sha256-ZCRvcs+XnA8GyEZCrd3ZLB5UTmVNPlGaMtsjuwHKsqk=",
+        "owner": "yt-dlp",
+        "repo": "yt-dlp",
+        "rev": "0d1e029d14058ddfb986fdafb07c00869c89105a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yt-dlp",
+        "repo": "yt-dlp",
         "type": "github"
       }
     }
