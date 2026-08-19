@@ -3,7 +3,7 @@ let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "7693ad3e8814cbea68ea6491d6a10f04d5cb2979";
-  expectedHomeRevision = "5986eddac22c92bc635938e16ee36db0fa32487c";
+  expectedHomeRevision = "6bc9860df7d988ea0b63ed7c2dc6b5f0e6098c0c";
   expectedOrchestrateRevision = "45283e2120e930e62dabdaf650e704a425be804c";
   expectedSchemaRustRevision = "37b7d1035a472a15081f3e2e8a93b95bf733c3ee";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
