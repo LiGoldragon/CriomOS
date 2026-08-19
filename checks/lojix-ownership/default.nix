@@ -89,6 +89,9 @@ let
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
+  daemonEnvironment = daemon.environment;
+  localUserUid = fixture.config.users.users.li.uid;
+  expectedSshAuthSocket = "/run/user/${toString localUserUid}/gnupg/S.gpg-agent.ssh";
   invalidIdentityFixture =
     users:
     lib.nixosSystem {
@@ -134,6 +137,8 @@ assert fixture.config.services.lojix.user == "li";
 assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
 assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
 assert fixture.config.users.users.li.group == "users";
+assert fixture.config.services.lojix.sshAuthSocket == expectedSshAuthSocket;
+assert daemonEnvironment == { SSH_AUTH_SOCK = expectedSshAuthSocket; };
 assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
 assert builtins.any (
   assertion:
