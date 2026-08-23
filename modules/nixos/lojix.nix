@@ -23,7 +23,7 @@ let
   # The writer receives one inline typed object. This must not become a
   # caller-selected `.dotos` request file: the writer is a bounded bootstrap
   # boundary, not a general file reader.
-  startupRequest = "ConfigurationWriteRequest.{${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} ${toString cfg.effectTimeoutSeconds} NoTestDefaults ${cfg.startupArchivePath}}";
+  startupRequest = "ConfigurationWriteRequest.{${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.daemonHost} NoTestDefaults ${cfg.startupArchivePath}}";
   daemonCommand = "${cfg.package}/bin/lojix-daemon ${cfg.startupArchivePath}";
   serviceUserGpgAgentSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
   serviceUserGpgAgentWrapper = pkgs.writeShellScript "lojix-daemon-service-user-gpg-agent" ''
@@ -93,11 +93,6 @@ in
     daemonHost = mkOption {
       type = types.str;
       description = "Explicit daemon host identity used only for self-switch safety.";
-    };
-
-    effectTimeoutSeconds = mkOption {
-      type = types.ints.positive;
-      description = "Maximum duration of one external Lojix Nix, SSH, or activation effect.";
     };
 
     sshAuthSocket = mkOption {

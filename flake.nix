@@ -92,8 +92,8 @@
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
-    # socket, state, identity, and timeout configuration.
-    lojix.url = "github:LiGoldragon/lojix/0d968da44bc0be8ed875b8546bebf52c3de53a81";
+    # socket, state, and identity configuration.
+    lojix.url = "github:LiGoldragon/lojix/edbb53aab003a071ffbb0f6643e8d29c0bf9b691";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.

@@ -51,7 +51,6 @@ lib.mkIf personaDevelopmentHost (
         storePath = "/var/lib/lojix/lojix.sema";
         startupArchivePath = "/run/lojix/startup.rkyv";
         daemonHost = config.networking.hostName;
-        effectTimeoutSeconds = 2700;
         sshAuthSocket.mode = "service-user-gpg-agent";
       };
     })

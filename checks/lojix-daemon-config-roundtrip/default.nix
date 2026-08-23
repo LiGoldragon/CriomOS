@@ -39,7 +39,6 @@ let
           storePath = "/var/lib/lojix-fixture/configured-lojix-store.db";
           startupArchivePath = "/run/lojix-fixture/startup.rkyv";
           daemonHost = "fixture-daemon";
-          effectTimeoutSeconds = 2700;
         };
       }
     ];
@@ -56,11 +55,11 @@ let
   ownerSocketMode = configuration.config.services.lojix.ownerSocketMode;
   startupArchivePath = configuration.config.services.lojix.startupArchivePath;
   daemonHost = configuration.config.services.lojix.daemonHost;
-  effectTimeoutSeconds = configuration.config.services.lojix.effectTimeoutSeconds;
-  startupRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} ${toString ordinarySocketMode} ${ownerSocketPath} ${toString ownerSocketMode} ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults ${startupArchivePath}}";
-  roundtripRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} ${toString ordinarySocketMode} ${ownerSocketPath} ${toString ownerSocketMode} ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} ${toString effectTimeoutSeconds} NoTestDefaults startup.rkyv}";
+  startupRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} ${toString ordinarySocketMode} ${ownerSocketPath} ${toString ownerSocketMode} ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} NoTestDefaults ${startupArchivePath}}";
+  roundtripRequest = "ConfigurationWriteRequest.{${ordinarySocketPath} ${toString ordinarySocketMode} ${ownerSocketPath} ${toString ownerSocketMode} ${configuration.config.services.lojix.stateDirectoryPath} ${storePath} ${daemonHost} NoTestDefaults startup.rkyv}";
 in
 assert (resetService.wantedBy or [ ]) == [ ];
+assert !(builtins.hasAttr "effectTimeoutSeconds" configuration.config.services.lojix);
 pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   set -eu
 
@@ -78,7 +77,6 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_OWNER_SOCKET} = \
     ${lib.escapeShellArg ownerSocketPath}
 
-  test ${toString effectTimeoutSeconds} = 2700
   test ${toString (builtins.length configuration.config.systemd.tmpfiles.rules)} = 2
   ${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg roundtripRequest} | grep -F '(ConfigurationWritten ['
   test -s startup.rkyv

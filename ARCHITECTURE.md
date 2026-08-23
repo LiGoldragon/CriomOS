@@ -199,7 +199,7 @@ cluster-proposal source, a trust mode, or a credential path as a literal.
 
 The Lojix service is explicitly configured when enabled: its service account,
 socket paths and modes, state directory, exact store path, startup archive
-path, daemon identity, effect deadline, and optional SSH-agent socket
+path, daemon identity, and optional SSH-agent socket
 are all supplied by `services.lojix`. The module has no default account,
 socket, store, credential socket, target, or transport route. It exports the
 two configured client socket paths through `LOJIX_ORDINARY_SOCKET` and

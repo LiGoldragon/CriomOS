@@ -2,7 +2,8 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "0d968da44bc0be8ed875b8546bebf52c3de53a81";
+  expectedRevision = "edbb53aab003a071ffbb0f6643e8d29c0bf9b691";
+  expectedVersion = "0.18.0";
   expectedHomeRevision = "a61b02d0cf69de757bdf8b5fa0f336f78f5054ee";
   expectedOrchestrateRevision = "b14355577286e56902d085ad4e1bf2654a55931e";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
@@ -119,7 +120,6 @@ let
           storePath = "/var/lib/lojix-explicit/lojix.sema";
           startupArchivePath = "/run/lojix-explicit/startup.rkyv";
           daemonHost = "lojix-explicit";
-          effectTimeoutSeconds = 2700;
           sshAuthSocket = {
             mode = "path";
             path = explicitSshAuthSocket;
@@ -155,6 +155,7 @@ let
     }).config.assertions;
 in
 assert rootLock.nodes.lojix.locked.rev == expectedRevision;
+assert lojix.version == expectedVersion;
 assert rootLock.nodes."criomos-home".locked.rev == expectedHomeRevision;
 assert !(builtins.hasAttr "lojix" (rootLock.nodes."criomos-home".inputs or { }));
 assert !(builtins.hasAttr "lojix" homeLock.nodes);
@@ -210,7 +211,7 @@ assert fixture.config.services.lojix.ownerSocketMode == 384;
 assert fixture.config.services.lojix.stateDirectoryPath == "/var/lib/lojix";
 assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix.sema";
 assert fixture.config.services.lojix.startupArchivePath == "/run/lojix/startup.rkyv";
-assert fixture.config.services.lojix.effectTimeoutSeconds == 2700;
+assert !(builtins.hasAttr "effectTimeoutSeconds" fixture.config.services.lojix);
 assert
   !(builtins.elem "lojix-daemon.service" (
     fixture.config.systemd.services.home-manager-li.requires or [ ]
@@ -235,6 +236,6 @@ pkgs.runCommand "lojix-ownership"
     grep -F ${lib.escapeShellArg "export SSH_AUTH_SOCK=${expectedRuntimeSshAuthSocket}"} "$daemonWrapper"
     grep -F ${lib.escapeShellArg "exec ${expectedDaemonCommand}"} "$daemonWrapper"
     test "$(printf '%s' "$writerCommand")" = \
-      "${lojix}/bin/lojix-write-configuration 'ConfigurationWriteRequest.{/run/lojix/ordinary.sock 432 /run/lojix/owner.sock 384 /var/lib/lojix /var/lib/lojix/lojix.sema lojix-ownership-fixture 2700 NoTestDefaults /run/lojix/startup.rkyv}'"
+      "${lojix}/bin/lojix-write-configuration 'ConfigurationWriteRequest.{/run/lojix/ordinary.sock 432 /run/lojix/owner.sock 384 /var/lib/lojix /var/lib/lojix/lojix.sema lojix-ownership-fixture NoTestDefaults /run/lojix/startup.rkyv}'"
     touch "$out"
   ''
