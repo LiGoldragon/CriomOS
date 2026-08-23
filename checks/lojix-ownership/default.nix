@@ -2,10 +2,10 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "7693ad3e8814cbea68ea6491d6a10f04d5cb2979";
-  expectedHomeRevision = "51063e6a55ac94f64613f623c5c6601f8a965c99";
-  expectedOrchestrateRevision = "45283e2120e930e62dabdaf650e704a425be804c";
-  expectedSchemaRustRevision = "37b7d1035a472a15081f3e2e8a93b95bf733c3ee";
+  expectedRevision = "0d968da44bc0be8ed875b8546bebf52c3de53a81";
+  expectedHomeRevision = "a61b02d0cf69de757bdf8b5fa0f336f78f5054ee";
+  expectedOrchestrateRevision = "b14355577286e56902d085ad4e1bf2654a55931e";
+  expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
   lojix = inputs.lojix.packages.${system}.default;
