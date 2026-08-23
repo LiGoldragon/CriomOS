@@ -1,21 +1,23 @@
 { inputs, pkgs, ... }:
 
+# The Dotos request is authored by the NixOS module but parsed only when the
+# oneshot unit runs.  Run that exact generated script with the pinned
+# ClaviFaber binary, rather than recognizing a hand-copied command string.
 let
   inherit (inputs.nixpkgs) lib;
-  inherit (pkgs.stdenv.hostPlatform) system;
 
   hostName = "fixture-host";
-  complexDir = "/var/lib/fixture-complex";
-  sshdHostPublicKey = "/etc/ssh/ssh_host_ed25519_key.pub";
-  publicationFile = "${complexDir}/publication.dotos";
+  fixtureDirectory = "/build/clavifaber-publication-request";
+  generatedSshdHostPublicKey = "/etc/ssh/ssh_host_ed25519_key.pub";
+  fixtureSshdHostPublicKey = "${fixtureDirectory}/ssh_host_ed25519_key.pub";
+  publicationFile = "${fixtureDirectory}/publication.dotos";
 
-  clavifaber = pkgs.writeShellScriptBin "clavifaber" "";
   configuration = lib.nixosSystem {
     inherit pkgs;
     specialArgs = {
-      constants.fileSystem.complex.dir = complexDir;
+      inherit inputs;
+      constants.fileSystem.complex.dir = fixtureDirectory;
       deployment.includeComplex = true;
-      inputs.clavifaber.packages.${system}.default = clavifaber;
     };
     modules = [
       ../../modules/nixos/complex.nix
@@ -26,12 +28,27 @@ let
     ];
   };
 
-  publicationCommand = builtins.unsafeDiscardStringContext configuration.config.systemd.services.complex-init.script;
-  expectedRequest = "PublicKeyPublicationWriting.{${hostName} {${sshdHostPublicKey}} None None ${publicationFile}}";
-  expectedCommand = builtins.unsafeDiscardStringContext "${clavifaber}/bin/clavifaber '${expectedRequest}'";
+  complexInit = pkgs.writeShellScript "complex-init-fixture" (
+    # `/etc` is unavailable in a sandbox. Redirect only the existing-key path;
+    # every DOTOS variant and product shape remains the module's generated one.
+    lib.replaceStrings
+      [ generatedSshdHostPublicKey ]
+      [ fixtureSshdHostPublicKey ]
+      configuration.config.systemd.services.complex-init.script
+  );
 in
-assert lib.assertMsg (lib.hasInfix expectedCommand publicationCommand)
-  "complex-init must invoke ClaviFaber with the typed PublicKeyPublicationWriting request";
-pkgs.runCommand "clavifaber-publication-request" { } ''
+pkgs.runCommand "clavifaber-publication-request" {
+  nativeBuildInputs = [ pkgs.openssh ];
+} ''
+  set -eu
+
+  mkdir -p ${lib.escapeShellArg fixtureDirectory}
+  ssh-keygen -q -t ed25519 -N "" -f ${lib.escapeShellArg (lib.removeSuffix ".pub" fixtureSshdHostPublicKey)}
+
+  ${complexInit}
+  test -s ${lib.escapeShellArg publicationFile}
+  test "$(stat -c %a ${lib.escapeShellArg publicationFile})" = 644
+  grep -F ${lib.escapeShellArg hostName} ${lib.escapeShellArg publicationFile}
+
   touch "$out"
 ''

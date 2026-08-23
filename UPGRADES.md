@@ -115,8 +115,13 @@ activation; obtain the required authority first.
   inspect exact target closure validity and transport evidence, and never
   assume incomplete transfer residue is reusable.
 - A self-host `TestActivation` can kill the supervisor's foreground cgroup
-  without a recoverable terminal record. The self crossing is `ActivateNow`
-  in a PID-1-owned transient unit.
+  without a recoverable terminal record. It may also have applied part of the
+  candidate's live effect while leaving the persistent profile and boot
+  selection unchanged. Stop; preserve its journal; then inspect the Lojix
+  record, `/run/current-system`, the persistent profile, affected units, and
+  systemd-boot's `loader.conf`/EFI default/one-shot state separately. Do not
+  retry `test`, manually activate a subset, reset state, or apply a runtime
+  hot fix. The self crossing is `ActivateNow` in a PID-1-owned transient unit.
 - A ClaviFaber producer/consumer request-shape mismatch failed after a live
   switch. Verify the immutable producer pins and decoder shape in the complete
   closure before activation; after any activation failure, inspect live,
