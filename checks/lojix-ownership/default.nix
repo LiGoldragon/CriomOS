@@ -2,8 +2,8 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "52149016f8ea014fa3ebd7d6ef89a0fad09c0815";
-  expectedVersion = "0.19.1";
+  expectedRevision = "782805bf07a4bcbb0c23e222b8916a3ceaf2e8af";
+  expectedVersion = "0.19.2";
   expectedHomeRevision = "a61b02d0cf69de757bdf8b5fa0f336f78f5054ee";
   expectedOrchestrateRevision = "b14355577286e56902d085ad4e1bf2654a55931e";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
