@@ -501,17 +501,39 @@
         "rust-build": "rust-build"
       },
       "locked": {
-        "lastModified": 1787171953,
-        "narHash": "sha256-3rT4dhrvQqh827taFJU8TZfWJvV1oeP40xce2JplSCo=",
+        "lastModified": 1787441948,
+        "narHash": "sha256-qzt5GvWoUoNbQxkJ+H0xv1pyiVxBYTL6odOghMhkoG0=",
         "owner": "LiGoldragon",
         "repo": "chroma",
-        "rev": "eea85f4aae5a21813314a128faa5dce1e22eff48",
+        "rev": "6a8e4c6a9bb0be0a76baa43b975df91edf6752f9",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "eea85f4aae5a",
         "repo": "chroma",
+        "rev": "6a8e4c6a9bb0be0a76baa43b975df91edf6752f9",
+        "type": "github"
+      }
+    },
+    "chroma-emacs": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787444681,
+        "narHash": "sha256-/MWmrLxAVdwnXiEyalgRSC2XvmDgV3F0s088c5Qrdis=",
+        "owner": "LiGoldragon",
+        "repo": "chroma-emacs",
+        "rev": "119a231358cf69c16161812caf69fff4b726be5c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "chroma-emacs",
+        "rev": "119a231358cf69c16161812caf69fff4b726be5c",
         "type": "github"
       }
     },
@@ -899,6 +921,7 @@
         "annas-mcp": "annas-mcp",
         "blueprint": "blueprint_3",
         "chroma": "chroma",
+        "chroma-emacs": "chroma-emacs",
         "claude-answers": "claude-answers",
         "claude-code-vsix": "claude-code-vsix",
         "codex-chatgpt-vsix": "codex-chatgpt-vsix",
@@ -979,17 +1002,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787401984,
-        "narHash": "sha256-RDdAjNlnAw7kBsh+aoatYYU2mP/RoiGr+J3NXNpCdfw=",
+        "lastModified": 1787445188,
+        "narHash": "sha256-j3X3o1pOkQd76AalBHdqWBnqoEgsq468ATmBHRFa1fk=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "1a6e22da155bb75a6362d10623301b13d0c24b34",
+        "rev": "a61b02d0cf69de757bdf8b5fa0f336f78f5054ee",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "1a6e22da155bb75a6362d10623301b13d0c24b34",
+        "rev": "a61b02d0cf69de757bdf8b5fa0f336f78f5054ee",
         "type": "github"
       }
     },
