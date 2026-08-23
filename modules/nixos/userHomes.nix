@@ -38,10 +38,9 @@ in
     # see CriomOS-home/flake.nix). Passing CriomOS's `inputs` here
     # would shadow that via specialArgs precedence.
     extraSpecialArgs = {
-      # `useGlobalPkgs` avoids a second package-set evaluation, but shared Home
-      # modules still receive `pkgs` while their imports are being resolved.
-      # Supplying this already-global package set directly avoids resolving it
-      # through `_module.args` (which can recurse during Home module loading).
+      # `pkgs` is the exact package set that CriomOS-home used to construct its
+      # standalone output.  Passing it directly preserves the embedded Home
+      # activation package identity.
       inherit horizon constants pkgs;
       homeSystem = pkgs.stdenv.hostPlatform.system;
     };

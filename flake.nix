@@ -152,7 +152,12 @@
       });
 
       horizon = inputs.horizon.horizon;
-      pkgs = inputs.pkgs.pkgs;
+      # CriomOS-home constructs its standalone Home configurations from an
+      # extension of the shared package set.  Use that exact package-set value
+      # for the NixOS target as well, so the embedded Home projection and the
+      # independently exposed Home configuration retain one activation
+      # identity.
+      pkgs = (builtins.head (builtins.attrValues inputs.criomos-home.homeConfigurations)).pkgs;
       system = inputs.system.system;
       deployment =
         inputs.deployment.deployment or {
@@ -218,8 +223,8 @@
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
             inherit inputs;
           };
-          agent-intercom-command-ownership = pkgs.callPackage ./checks/agent-intercom-command-ownership {
-            inherit inputs target;
+          agent-intercom-command-ownership = import ./gates/agent-intercom-command-ownership.nix {
+            inherit inputs pkgs target;
           };
           home-activation-equivalence = import ./home-activation-equivalence.nix {
             inherit pkgs;
