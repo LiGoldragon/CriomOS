@@ -31,9 +31,7 @@ let
   # YggdrasilKeypairSetup / cert-issuance verbs land here when the
   # network/yggdrasil.nix consolidation (primary-8b3) and the
   # WiFi-PKI plumbing land.
-  publicationWriting = ''
-    (PublicKeyPublicationWriting (${config.networking.hostName} (${sshdHostPublicKey}) None None ${publicationFile}))
-  '';
+  publicationWriting = "PublicKeyPublicationWriting.{${config.networking.hostName} {${sshdHostPublicKey}} None None ${publicationFile}}";
 in
 lib.mkIf includeComplex {
   environment.systemPackages = [ clavifaber ];

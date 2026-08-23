@@ -180,6 +180,9 @@
             inherit inputs;
           };
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
+          clavifaber-publication-request = pkgs.callPackage ./checks/clavifaber-publication-request {
+            inherit inputs;
+          };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
           laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
