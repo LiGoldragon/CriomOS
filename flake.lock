@@ -415,7 +415,7 @@
           "hexis",
           "nixpkgs"
         ],
-        "systems": "systems_13"
+        "systems": "systems_12"
       },
       "locked": {
         "lastModified": 1776249299,
@@ -607,31 +607,9 @@
         "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5818.61809/vspackage"
       }
     },
-    "codex-cli": {
-      "inputs": {
-        "flake-utils": "flake-utils_7",
-        "nixpkgs": [
-          "criomos-home",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1787535200,
-        "narHash": "sha256-qDi3utpYi4LnJvxtJN92EIVXLUfrjjX2kQJ3OKULiwg=",
-        "owner": "sadjow",
-        "repo": "codex-cli-nix",
-        "rev": "05b1b39da135e34526f898600e09e67b55d5436c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "sadjow",
-        "repo": "codex-cli-nix",
-        "type": "github"
-      }
-    },
     "codex-desktop-linux": {
       "inputs": {
-        "flake-utils": "flake-utils_8",
+        "flake-utils": "flake-utils_7",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -925,7 +903,6 @@
         "claude-answers": "claude-answers",
         "claude-code-vsix": "claude-code-vsix",
         "codex-chatgpt-vsix": "codex-chatgpt-vsix",
-        "codex-cli": "codex-cli",
         "codex-desktop-linux": "codex-desktop-linux",
         "crane": "crane_5",
         "criomos-lib": [
@@ -1004,17 +981,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787561857,
-        "narHash": "sha256-ArF0W4xjJtd5ml7V/RnLa4QMH9CsvPmPrSy/6qIUkys=",
+        "lastModified": 1787660868,
+        "narHash": "sha256-NJ6/ACnPd9ERpAsmdD91vysNT9318PP6/S+Ew5hvD8w=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0836e4b7e367efe6a81a4fa657e2a2f741f0d801",
+        "rev": "f05a3639de72e4976c5ba87a932a39dc2f9ccf1c",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0836e4b7e367efe6a81a4fa657e2a2f741f0d801",
+        "rev": "f05a3639de72e4976c5ba87a932a39dc2f9ccf1c",
         "type": "github"
       }
     },
@@ -1706,24 +1683,6 @@
         "type": "github"
       }
     },
-    "flake-utils_20": {
-      "inputs": {
-        "systems": "systems_26"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "flake-utils_3": {
       "inputs": {
         "systems": "systems_6"
@@ -1834,7 +1793,7 @@
     },
     "flake-utils_9": {
       "inputs": {
-        "systems": "systems_12"
+        "systems": "systems_15"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -1887,7 +1846,7 @@
     },
     "google-workspace-cli": {
       "inputs": {
-        "flake-utils": "flake-utils_9",
+        "flake-utils": "flake-utils_8",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -1984,7 +1943,7 @@
     },
     "judge-provider": {
       "inputs": {
-        "flake-utils": "flake-utils_17",
+        "flake-utils": "flake-utils_16",
         "nixpkgs": [
           "spirit",
           "nixpkgs"
@@ -2052,7 +2011,7 @@
         "bun2nix": "bun2nix",
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs_2",
-        "systems": "systems_14",
+        "systems": "systems_13",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
@@ -2073,7 +2032,7 @@
       "inputs": {
         "crane": "crane_8",
         "fenix": "fenix_11",
-        "flake-utils": "flake-utils_11",
+        "flake-utils": "flake-utils_10",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -2540,7 +2499,7 @@
     },
     "orchestrate": {
       "inputs": {
-        "flake-utils": "flake-utils_12",
+        "flake-utils": "flake-utils_11",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -3024,7 +2983,7 @@
       "inputs": {
         "crane": "crane_11",
         "fenix": "fenix_14",
-        "flake-utils": "flake-utils_14",
+        "flake-utils": "flake-utils_13",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -3451,7 +3410,7 @@
       "inputs": {
         "crane": "crane_10",
         "fenix": "fenix_13",
-        "flake-utils": "flake-utils_13",
+        "flake-utils": "flake-utils_12",
         "nixpkgs": [
           "orchestrate",
           "nixpkgs"
@@ -3475,7 +3434,7 @@
       "inputs": {
         "crane": "crane_13",
         "fenix": "fenix_16",
-        "flake-utils": "flake-utils_15",
+        "flake-utils": "flake-utils_14",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -3498,7 +3457,7 @@
       "inputs": {
         "crane": "crane_14",
         "fenix": "fenix_17",
-        "flake-utils": "flake-utils_18",
+        "flake-utils": "flake-utils_17",
         "nixpkgs": [
           "spirit",
           "nixpkgs"
@@ -3936,7 +3895,7 @@
       "inputs": {
         "agent-source": "agent-source",
         "criome-source": "criome-source",
-        "flake-utils": "flake-utils_16",
+        "flake-utils": "flake-utils_15",
         "judge-provider": "judge-provider",
         "kameo-source": "kameo-source",
         "meta-signal-agent-source": "meta-signal-agent-source",
@@ -3994,7 +3953,7 @@
     },
     "spirit-judge": {
       "inputs": {
-        "flake-utils": "flake-utils_19",
+        "flake-utils": "flake-utils_18",
         "nixpkgs": [
           "spirit",
           "nixpkgs"
@@ -4021,7 +3980,7 @@
     },
     "spirit-judge-config": {
       "inputs": {
-        "flake-utils": "flake-utils_20",
+        "flake-utils": "flake-utils_19",
         "nixpkgs": [
           "spirit",
           "nixpkgs"
@@ -4056,7 +4015,7 @@
           "nixpkgs"
         ],
         "nur": "nur",
-        "systems": "systems_15",
+        "systems": "systems_14",
         "tinted-kitty": "tinted-kitty",
         "tinted-schemes": "tinted-schemes",
         "tinted-tmux": "tinted-tmux",
@@ -4080,7 +4039,7 @@
       "inputs": {
         "crane": "crane_7",
         "fenix": "fenix_10",
-        "flake-utils": "flake-utils_10",
+        "flake-utils": "flake-utils_9",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
@@ -4188,21 +4147,6 @@
     },
     "systems_14": {
       "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_15": {
-      "locked": {
         "lastModified": 1774449309,
         "narHash": "sha256-brhZ8DmuGtzkCYHJg4HEd602amKm89Y9ytsFZ5uWD1w=",
         "owner": "nix-systems",
@@ -4213,6 +4157,21 @@
       "original": {
         "owner": "nix-systems",
         "ref": "future-26.11",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_15": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
         "repo": "default",
         "type": "github"
       }
@@ -4368,21 +4327,6 @@
       }
     },
     "systems_25": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_26": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
