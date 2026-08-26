@@ -5,7 +5,7 @@ let
   expectedRevision = "782805bf07a4bcbb0c23e222b8916a3ceaf2e8af";
   expectedVersion = "0.19.2";
   expectedHomeRevision = "ba0de9f84130c47a927a04723db2cb6f33b6b103";
-  expectedOrchestrateRevision = "b14355577286e56902d085ad4e1bf2654a55931e";
+  expectedOrchestrateRevision = "e0f3bc5e8b963089e560383b2a4eb7d30cda1f82";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
@@ -90,12 +90,16 @@ let
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
+  servicePathEnvironment = service:
+    lib.makeBinPath service.path + ":" + lib.makeSearchPath "sbin" service.path;
   daemonEnvironment = daemon.environment;
   localUserName = fixture.config.services.lojix.user;
   localUserUid = fixture.config.users.users.${localUserName}.uid;
   expectedRuntimeSshAuthSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
   expectedDaemonCommand = "${lojix}/bin/lojix-daemon /run/lojix/startup.rkyv";
   explicitSshAuthSocket = "/run/user/explicit/gnupg/S.gpg-agent.ssh";
+  explicitSocketExpectedDaemonCommand =
+    "${lojix}/bin/lojix-daemon /run/lojix-explicit/startup.rkyv";
   explicitSocketFixture = lib.nixosSystem {
     inherit system;
     modules = [
@@ -128,6 +132,7 @@ let
       }
     ];
   };
+  explicitSocketDaemon = explicitSocketFixture.config.systemd.services.lojix-daemon;
   invalidIdentityFixture =
     users:
     lib.nixosSystem {
@@ -180,15 +185,16 @@ assert
     mode = "service-user-gpg-agent";
     path = null;
   };
-assert daemonEnvironment == { };
+assert daemonEnvironment == {
+  PATH = servicePathEnvironment daemon;
+};
 assert daemon.serviceConfig.User == localUserName;
+assert explicitSocketDaemon.environment == {
+  PATH = servicePathEnvironment explicitSocketDaemon;
+  SSH_AUTH_SOCK = explicitSshAuthSocket;
+};
 assert
-  explicitSocketFixture.config.systemd.services.lojix-daemon.environment == {
-    SSH_AUTH_SOCK = explicitSshAuthSocket;
-  };
-assert
-  explicitSocketFixture.config.systemd.services.lojix-daemon.serviceConfig.ExecStart
-  == expectedDaemonCommand;
+  explicitSocketDaemon.serviceConfig.ExecStart == explicitSocketExpectedDaemonCommand;
 assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
 assert builtins.any (
   assertion:
