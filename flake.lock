@@ -957,17 +957,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787747032,
-        "narHash": "sha256-n407i4RHn+TQj2OEW1Ze9eqK82aoVhoCf1VE609p874=",
+        "lastModified": 1787756334,
+        "narHash": "sha256-krdTBognIqMJ7IGH6hbLUCRKjcBOHCZ7DnGnH+d80jM=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "905dfdd9f751f435aa7193a24d4d4cb957c09b55",
+        "rev": "656afcdd1f56ea135ab0b0aaec084a215ba5a4b6",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "905dfdd9f751f435aa7193a24d4d4cb957c09b55",
+        "rev": "656afcdd1f56ea135ab0b0aaec084a215ba5a4b6",
         "type": "github"
       }
     },
@@ -1973,17 +1973,17 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1787677707,
-        "narHash": "sha256-/P7USpWwf+Jl81GUDE8Ab+j9S3NIfLefat2QTAuFYY8=",
+        "lastModified": 1787719661,
+        "narHash": "sha256-FLBOjXOSh2WvMG6id+ks018WQ7HiA4yPPlIagpTc0DM=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "ed38c11e34e72199025ab70dc0042d78ef4c64cd",
+        "rev": "76b78a399417964e9133aed0c0a9493616c3508e",
         "type": "github"
       },
       "original": {
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "ed38c11e34e72199025ab70dc0042d78ef4c64cd",
+        "rev": "76b78a399417964e9133aed0c0a9493616c3508e",
         "type": "github"
       }
     },
