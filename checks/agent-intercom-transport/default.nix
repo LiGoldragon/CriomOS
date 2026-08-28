@@ -103,6 +103,11 @@ assert builtins.elem agentIntercom legacyServicesConfiguration.environment.syste
 # even when it carries the removed service names.
 assert edgeConfiguration.services.gnome.at-spi2-core.enable;
 assert edgeConfiguration.xdg.portal.enable;
+assert edgeConfiguration.xdg.portal.wlr.enable;
+assert edgeConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.ScreenCast" == "wlr";
+assert edgeConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.Screenshot" == "wlr";
+assert edgeConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "wlr";
+assert edgeConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.Screenshot" == "wlr";
 assert builtins.elem "uinput" edgeConfiguration.users.users.intercom-user.extraGroups;
 assert builtins.hasAttr "uinput" edgeConfiguration.users.groups;
 assert !headlessConfiguration.services.gnome.at-spi2-core.enable;
