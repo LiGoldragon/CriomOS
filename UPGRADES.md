@@ -33,6 +33,13 @@ other Horizon user. Before a later authorized activation, materialize the
 target's user projection and stop if another local enabled owner lacks its own
 explicit trusted root.
 
+## Materialized Home deployment output
+
+Home user-environment deployments must use CriomOS's materialized
+`homeConfigurations.<user>.activationPackage` output.  It carries the
+Consumer's concrete user policy, including li's approved Claude Remote Control
+working root; do not substitute a standalone CriomOS-home configuration.
+
 ## Immutable source chain
 
 - [Lojix 0.19.0](https://github.com/LiGoldragon/lojix/tree/0105f8d8f18dd91291e0a0fbe828e84ceda65714)

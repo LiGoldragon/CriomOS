@@ -1,44 +1,36 @@
 {
   pkgs,
-  inputs,
   target,
+  homeConfigurations,
 }:
 let
-  # This evaluates the exact pinned CriomOS-home input in its own output
-  # surface.  Its `horizon` and `system` inputs are follows inherited from the
-  # materialized outer CriomOS evaluation, but it is not the target's
-  # `home-manager.users` projection.
-  allCanonicalActivationPackages = pkgs.lib.mapAttrs (
+  # The public deployment output must be the activation package embedded in
+  # this Consumer's materialized NixOS target.  Standalone CriomOS-home
+  # configurations cannot carry Consumer-owned per-user policy, such as an
+  # approved remote-control working root.
+  projectedActivationPackages = pkgs.lib.mapAttrs (
     _: homeConfiguration: homeConfiguration.activationPackage
-  ) inputs.criomos-home.homeConfigurations;
+  ) homeConfigurations;
 
   embeddedActivationPackages = pkgs.lib.mapAttrs (
     _: userConfiguration: userConfiguration.home.activationPackage
   ) target.config.home-manager.users;
 
-  # CriomOS-home exposes every Horizon user, while the NixOS target correctly
-  # embeds only users present on this node (`hasPubKey`). Compare exactly that
-  # target-owned local set; unrelated users must not inflate this host closure.
-  canonicalActivationPackages = pkgs.lib.filterAttrs (
-    userName: _: builtins.hasAttr userName embeddedActivationPackages
-  ) allCanonicalActivationPackages;
-
-  # Compare independently-evaluated pinned Home packages to the target's
-  # embedded Home Manager packages user-by-user. Coercing both sets into the
-  # check environment builds both witnesses; equal output paths are the Nix
-  # identity witness (and therefore the same NAR) for each user environment.
+  # Compare the public output against the separately materialized target
+  # user-by-user.  Coercing both sets into the check environment forces the
+  # externally deployed output as well as its target-owned source.
   verifiedPackages = pkgs.lib.mapAttrs (
     userName: embeddedActivationPackage:
-    assert canonicalActivationPackages.${userName} == embeddedActivationPackage;
+    assert projectedActivationPackages.${userName} == embeddedActivationPackage;
     embeddedActivationPackage
   ) embeddedActivationPackages;
 in
 pkgs.runCommand "home-activation-equivalence"
   {
-    canonicalPackages = pkgs.lib.concatStringsSep " " (pkgs.lib.attrValues canonicalActivationPackages);
+    projectedPackages = pkgs.lib.concatStringsSep " " (pkgs.lib.attrValues projectedActivationPackages);
     embeddedPackages = pkgs.lib.concatStringsSep " " (pkgs.lib.attrValues verifiedPackages);
   }
   ''
-    test "$canonicalPackages" = "$embeddedPackages"
+    test "$projectedPackages" = "$embeddedPackages"
     touch "$out"
   ''

@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/ed6832cf59b492601b3cdff4710751b8d1b02832";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/a1b9383561f54fc77fd201734f49d4beed9c2826";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -152,13 +152,11 @@
       });
 
       horizon = inputs.horizon.horizon;
-      # CriomOS-home constructs its standalone Home configurations from an
-      # extension of the shared package set.  Use that exact package-set value
-      # for the NixOS target as well, so the embedded Home projection and the
-      # independently exposed Home configuration retain one activation
-      # identity.
-      pkgs = (builtins.head (builtins.attrValues inputs.criomos-home.homeConfigurations)).pkgs;
       system = inputs.system.system;
+      # Consume CriomOS-home's explicit package-set boundary.  Forcing a
+      # standalone Home configuration here bypasses this Consumer's concrete
+      # user policy and can fail before the materialized target is evaluated.
+      pkgs = inputs.criomos-home.legacyPackages.${system};
       deployment =
         inputs.deployment.deployment or {
           includeHome = true;
@@ -227,8 +225,7 @@
             inherit inputs pkgs target;
           };
           home-activation-equivalence = import ./home-activation-equivalence.nix {
-            inherit pkgs;
-            inherit inputs target;
+            inherit pkgs inputs target homeConfigurations;
           };
         };
       };
