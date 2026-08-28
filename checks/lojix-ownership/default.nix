@@ -4,7 +4,7 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "33b8b6b7e5f893278a27c77130e8542072addda0";
   expectedVersion = "0.19.2";
-  expectedHomeRevision = "1274c581a51172d4fc53455e0c0cbd761215006b";
+  expectedHomeRevision = "ed6832cf59b492601b3cdff4710751b8d1b02832";
   expectedOrchestrateRevision = "e0f3bc5e8b963089e560383b2a4eb7d30cda1f82";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
@@ -62,7 +62,10 @@ let
         largeAi = false;
       };
       typeIs.largeAiRouter = false;
-      machine.model = "fixture";
+      machine = {
+        model = "fixture";
+        arch = "x86-64";
+      };
       services = [ "PersonaDevelopment" ];
     };
     exNodes = { };
@@ -84,12 +87,15 @@ let
       ../../modules/nixos/users.nix
       ../../modules/nixos/userHomes.nix
       {
+        nixpkgs.config.allowUnfree = true;
         system.stateVersion = "26.05";
         networking.hostName = "lojix-ownership-fixture";
       }
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
+  claudeRemoteControl = fixture.config.home-manager.users.li.systemd.user.services.claude-remote-control;
+  liHomeActivation = fixture.config.home-manager.users.li.home.activationPackage;
   servicePathEnvironment =
     service: lib.makeBinPath service.path + ":" + lib.makeSearchPath "sbin" service.path;
   daemonEnvironment = daemon.environment;
@@ -178,6 +184,9 @@ assert fixture.config.services.lojix.user == "li";
 assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
 assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
 assert fixture.config.users.users.li.group == "users";
+assert claudeRemoteControl.Service.WorkingDirectory == "/home/li/primary";
+assert claudeRemoteControl.Service.Restart == "always";
+assert claudeRemoteControl.Service.UMask == "0077";
 assert localUserUid == null;
 assert
   fixture.config.services.lojix.sshAuthSocket == {
@@ -231,6 +240,7 @@ pkgs.runCommand "lojix-ownership"
     inherit
       lojix
       homeProjectionBoundary
+      liHomeActivation
       ;
     daemonWrapper = daemon.serviceConfig.ExecStart;
     writerCommand = builtins.elemAt daemon.serviceConfig.ExecStartPre 0;
@@ -238,6 +248,7 @@ pkgs.runCommand "lojix-ownership"
   ''
     test -x "$lojix/bin/lojix"
     test -e "$homeProjectionBoundary"
+    test -e "$liHomeActivation"
     test -x "$daemonWrapper"
     grep -F ${lib.escapeShellArg "export SSH_AUTH_SOCK=${expectedRuntimeSshAuthSocket}"} "$daemonWrapper"
     grep -F ${lib.escapeShellArg "exec ${expectedDaemonCommand}"} "$daemonWrapper"

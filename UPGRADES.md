@@ -13,7 +13,7 @@ Deploy only after the consumer chain uses Horizon
 `5bc563bf9507b65a8b6ab5cf537ee6413a96a4ca`, and Lojix
 `33b8b6b7e5f893278a27c77130e8542072addda0`; the latter pins the new
 Horizon schema. This revision pins CriomOS-home
-`1274c581a51172d4fc53455e0c0cbd761215006b`. Neither consumer provides a
+`ed6832cf59b492601b3cdff4710751b8d1b02832`. Neither consumer provides a
 compatibility path for the removed proposal values: Agent Intercom wrappers
 are independent of node services, while Edge and metal retain ownership of
 graphical facilities.
@@ -22,6 +22,16 @@ Evaluate the immutable source through Lojix's materialized inputs before a
 realization. Stop on a producer/consumer revision mismatch; do not restore the
 removed values or introduce a renamed composite. Activation remains a separate,
 authorized Lojix action.
+
+## Claude Remote Control working root
+
+This revision consumes the CriomOS-home contract that requires every enabled
+Claude Remote Control owner to declare an explicit, absolute working root
+outside its home directory. CriomOS supplies the approved `/home/li/primary`
+root only for li's concrete Home projection; it does not infer a root for any
+other Horizon user. Before a later authorized activation, materialize the
+target's user projection and stop if another local enabled owner lacks its own
+explicit trusted root.
 
 ## Immutable source chain
 
