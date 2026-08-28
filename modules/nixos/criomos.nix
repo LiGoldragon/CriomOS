@@ -34,8 +34,8 @@ in
     ./nspawn.nix
     ./llm.nix
     ./users.nix
-    # Agent Intercom's node-level SSH and accessibility prerequisites;
-    # user broker/adapters and session state remain in CriomOS-home.
+    # Agent Intercom wrapper package; user broker/adapters and session state
+    # remain in CriomOS-home. Edge and metal own graphical facilities.
     ./agent-intercom.nix
     ./hardware-adjustments
     ./network

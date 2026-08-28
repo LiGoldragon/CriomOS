@@ -6,6 +6,20 @@ contract; this file records only the crossing order, gates, and recovery
 boundary. Correct this procedure from evidence before any retry after a
 failure or partial activation.
 
+## primary-99n — remove Agent Intercom node-service gates
+
+Deploy only after the consumer chain uses Horizon
+`c70915eb550f729996e0921069b34d7844c9b2e9` (0.4.0) and Goldragon
+`5bc563bf9507b65a8b6ab5cf537ee6413a96a4ca`, which remove both obsolete
+proposal values. This CriomOS revision has no compatibility path for either
+value: Agent Intercom wrappers are independent of node services, while Edge
+and metal retain ownership of graphical facilities.
+
+Evaluate the immutable source through Lojix's materialized inputs before a
+realization. Stop on a producer/consumer revision mismatch; do not restore the
+removed values or introduce a renamed composite. Activation remains a separate,
+authorized Lojix action.
+
 ## Immutable source chain
 
 - [Lojix 0.19.0](https://github.com/LiGoldragon/lojix/tree/0105f8d8f18dd91291e0a0fbe828e84ceda65714)
