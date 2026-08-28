@@ -2,9 +2,9 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "782805bf07a4bcbb0c23e222b8916a3ceaf2e8af";
+  expectedRevision = "33b8b6b7e5f893278a27c77130e8542072addda0";
   expectedVersion = "0.19.2";
-  expectedHomeRevision = "582607e59bd6e3799f2d086faed7abce105e9d96";
+  expectedHomeRevision = "1274c581a51172d4fc53455e0c0cbd761215006b";
   expectedOrchestrateRevision = "e0f3bc5e8b963089e560383b2a4eb7d30cda1f82";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
@@ -90,16 +90,15 @@ let
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
-  servicePathEnvironment = service:
-    lib.makeBinPath service.path + ":" + lib.makeSearchPath "sbin" service.path;
+  servicePathEnvironment =
+    service: lib.makeBinPath service.path + ":" + lib.makeSearchPath "sbin" service.path;
   daemonEnvironment = daemon.environment;
   localUserName = fixture.config.services.lojix.user;
   localUserUid = fixture.config.users.users.${localUserName}.uid;
   expectedRuntimeSshAuthSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
   expectedDaemonCommand = "${lojix}/bin/lojix-daemon /run/lojix/startup.rkyv";
   explicitSshAuthSocket = "/run/user/explicit/gnupg/S.gpg-agent.ssh";
-  explicitSocketExpectedDaemonCommand =
-    "${lojix}/bin/lojix-daemon /run/lojix-explicit/startup.rkyv";
+  explicitSocketExpectedDaemonCommand = "${lojix}/bin/lojix-daemon /run/lojix-explicit/startup.rkyv";
   explicitSocketFixture = lib.nixosSystem {
     inherit system;
     modules = [
@@ -185,16 +184,17 @@ assert
     mode = "service-user-gpg-agent";
     path = null;
   };
-assert daemonEnvironment == {
-  PATH = servicePathEnvironment daemon;
-};
-assert daemon.serviceConfig.User == localUserName;
-assert explicitSocketDaemon.environment == {
-  PATH = servicePathEnvironment explicitSocketDaemon;
-  SSH_AUTH_SOCK = explicitSshAuthSocket;
-};
 assert
-  explicitSocketDaemon.serviceConfig.ExecStart == explicitSocketExpectedDaemonCommand;
+  daemonEnvironment == {
+    PATH = servicePathEnvironment daemon;
+  };
+assert daemon.serviceConfig.User == localUserName;
+assert
+  explicitSocketDaemon.environment == {
+    PATH = servicePathEnvironment explicitSocketDaemon;
+    SSH_AUTH_SOCK = explicitSshAuthSocket;
+  };
+assert explicitSocketDaemon.serviceConfig.ExecStart == explicitSocketExpectedDaemonCommand;
 assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
 assert builtins.any (
   assertion:

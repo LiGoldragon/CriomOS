@@ -5,11 +5,6 @@
   ...
 }:
 let
-  nodeServices = import ./node-services.nix { inherit lib; };
-  agentIntercomLocal = nodeServices.has (horizon.node.services or [ ]) "AgentIntercomLocal";
-  agentIntercomGraphical =
-    agentIntercomLocal && nodeServices.has (horizon.node.services or [ ]) "AgentIntercomGraphical";
-
   inherit (builtins)
     mapAttrs
     ;
@@ -21,7 +16,7 @@ let
 
   inherit (horizon) node users;
   inherit (node) adminSshPubKeys behavesAs;
-  needsUinputGroup = behavesAs.edge || agentIntercomGraphical;
+  needsUinputGroup = behavesAs.edge;
 
   mkUser =
     _attrName: user:
@@ -61,8 +56,7 @@ let
 in
 {
   users = {
-    # Retain the existing edge policy, and add the group for the valid
-    # local-plus-graphical capability only. Headless capability sets add none.
+    # Edge owns graphical input capability. Headless nodes add no uinput group.
     groups = optionalAttrs needsUinputGroup { uinput = { }; };
     users = mkUserUsers // rootUserAkses;
   };

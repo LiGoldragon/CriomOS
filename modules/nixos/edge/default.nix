@@ -134,12 +134,15 @@ mkIf behavesAs.edge {
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
+    wlr.enable = true;
     extraPortals = with pkgs; [
       xdg-desktop-portal-gtk
     ];
     config = {
       niri = {
         default = [ "gtk" ];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
         "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
         # darkman dropped — the chroma daemon owns the appearance
         # axis now and writes dconf directly via its apply
@@ -152,6 +155,8 @@ mkIf behavesAs.edge {
       };
       common = {
         default = [ "gtk" ];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
       };
     };
   };

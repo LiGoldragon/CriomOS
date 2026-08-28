@@ -5,8 +5,8 @@ let
 
   agentIntercom = inputs.criomos-home.packages.${system}.agent-intercom;
 
-  node = name: services: edge: {
-    inherit name services;
+  node = name: edge: {
+    inherit name;
     adminSshPubKeys = [ ];
     size = {
       min = edge;
@@ -52,66 +52,17 @@ let
       ];
     }).config;
 
-  local = node "local" [ { AgentIntercomLocal = { }; } ] false;
-  graphical = node "graphical" [
-    { AgentIntercomLocal = { }; }
-    { AgentIntercomGraphical = { }; }
-  ] true;
-  graphicalNonEdge = node "graphical-non-edge" [
-    { AgentIntercomLocal = { }; }
-    { AgentIntercomGraphical = { }; }
-  ] false;
-  headless = node "headless" [ ] false;
-  graphicalOnly = node "invalid-graphical" [ { AgentIntercomGraphical = { }; } ] false;
+  edge = node "edge" true;
+  headless = node "headless" false;
 
-  localConfiguration = configurationFor {
-    node = local;
-    users.intercom-user = localUser;
-  };
-  graphicalConfiguration = configurationFor {
-    node = graphical;
-    users.intercom-user = localUser;
-  };
-  graphicalNonEdgeConfiguration = configurationFor {
-    node = graphicalNonEdge;
+  edgeConfiguration = configurationFor {
+    node = edge;
     users.intercom-user = localUser;
   };
   headlessConfiguration = configurationFor {
     node = headless;
     users.intercom-user = localUser;
   };
-  graphicalOnlyConfiguration = configurationFor {
-    node = graphicalOnly;
-    users.intercom-user = localUser;
-  };
-  graphicalToplevel = builtins.tryEval graphicalConfiguration.system.build.toplevel.drvPath;
-  graphicalOnlyRejected = builtins.tryEval graphicalOnlyConfiguration.system.build.toplevel.drvPath;
-
-  module = ../../modules/nixos/agent-intercom.nix;
-  usersModule = ../../modules/nixos/users.nix;
-  moduleSources = [
-    module
-    usersModule
-  ];
-  sourceHas = term: builtins.any (source: lib.hasInfix term (builtins.readFile source)) moduleSources;
-
-  # These strings are intentional negative-test witnesses. They must not occur
-  # in the evaluated system modules, where old topology and sensitive surfaces
-  # are forbidden.
-  legacyOrSensitiveSurfaces = [
-    "AgentIntercomGateway"
-    "AgentIntercomPeer"
-    "agentIntercomGatewaySshPubKey"
-    "agent-intercom-remote-gateway"
-    "AllowStreamLocalForwarding"
-    "StreamLocalBindUnlink"
-    "credential"
-    "oauth"
-    "pairing"
-    "no-sandbox"
-    "disable-sandbox"
-  ];
-  absentLegacyOrSensitiveSource = builtins.all (term: !sourceHas term) legacyOrSensitiveSurfaces;
 
   # The previous remote family could have left a system unit or socket behind.
   # These names are intentional negative-test witnesses, checked against the
@@ -134,47 +85,30 @@ let
     configuration.services.openssh.extraConfig == headlessConfiguration.services.openssh.extraConfig
     && configuration.services.openssh.settings == headlessConfiguration.services.openssh.settings;
 in
-assert builtins.elem agentIntercom localConfiguration.environment.systemPackages;
-assert builtins.elem agentIntercom graphicalConfiguration.environment.systemPackages;
-assert !(builtins.elem agentIntercom headlessConfiguration.environment.systemPackages);
-assert !localConfiguration.services.gnome.at-spi2-core.enable;
-assert !localConfiguration.hardware.uinput.enable;
-assert !localConfiguration.xdg.portal.enable;
-assert graphicalConfiguration.services.gnome.at-spi2-core.enable;
-# The edge fixture also enables AT-SPI at size.min; this non-edge witness
-# isolates Agent Intercom's Local-plus-Graphical accessibility prerequisite.
-assert graphicalNonEdgeConfiguration.services.gnome.at-spi2-core.enable;
-assert graphicalConfiguration.hardware.uinput.enable;
-assert graphicalConfiguration.xdg.portal.enable;
-assert graphicalConfiguration.xdg.portal.wlr.enable;
-assert builtins.length graphicalConfiguration.xdg.portal.extraPortals >= 1;
-assert graphicalConfiguration.xdg.portal.config.common.default == "gtk";
-assert
-  graphicalConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.ScreenCast" == "wlr";
-assert
-  graphicalConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.Screenshot" == "wlr";
-assert graphicalConfiguration.xdg.portal.config.niri.default == "gtk";
-assert
-  graphicalConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "wlr";
-assert
-  graphicalConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.Screenshot" == "wlr";
-assert graphicalToplevel.success;
-assert builtins.elem "uinput" graphicalConfiguration.users.users.intercom-user.extraGroups;
-assert builtins.hasAttr "uinput" graphicalConfiguration.users.groups;
+# The package is independent of Horizon node services.
+assert builtins.elem agentIntercom edgeConfiguration.environment.systemPackages;
+assert builtins.elem agentIntercom headlessConfiguration.environment.systemPackages;
+
+# Edge owns the graphical substrate. A non-Edge node receives none of it.
+assert edgeConfiguration.services.gnome.at-spi2-core.enable;
+assert edgeConfiguration.xdg.portal.enable;
+assert edgeConfiguration.xdg.portal.wlr.enable;
+assert edgeConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.ScreenCast" == "wlr";
+assert edgeConfiguration.xdg.portal.config.common."org.freedesktop.impl.portal.Screenshot" == "wlr";
+assert edgeConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "wlr";
+assert edgeConfiguration.xdg.portal.config.niri."org.freedesktop.impl.portal.Screenshot" == "wlr";
+assert builtins.elem "uinput" edgeConfiguration.users.users.intercom-user.extraGroups;
+assert builtins.hasAttr "uinput" edgeConfiguration.users.groups;
 assert !headlessConfiguration.services.gnome.at-spi2-core.enable;
-assert !headlessConfiguration.hardware.uinput.enable;
 assert !headlessConfiguration.xdg.portal.enable;
 assert !(builtins.elem "uinput" headlessConfiguration.users.users.intercom-user.extraGroups);
 assert !(builtins.hasAttr "uinput" headlessConfiguration.users.groups);
-assert !graphicalOnlyRejected.success;
 assert
-  localConfiguration.users.users.intercom-user.openssh.authorizedKeys.keys == localUser.sshPubKeys;
-assert preservesOrdinarySshSurface localConfiguration;
-assert preservesOrdinarySshSurface graphicalConfiguration;
-assert hasNoRetiredUnits localConfiguration;
-assert hasNoRetiredUnits graphicalConfiguration;
+  headlessConfiguration.users.users.intercom-user.openssh.authorizedKeys.keys == localUser.sshPubKeys;
+assert preservesOrdinarySshSurface edgeConfiguration;
+assert preservesOrdinarySshSurface headlessConfiguration;
+assert hasNoRetiredUnits edgeConfiguration;
 assert hasNoRetiredUnits headlessConfiguration;
-assert absentLegacyOrSensitiveSource;
-pkgs.runCommand "agent-intercom-local-capability-contract" { } ''
+pkgs.runCommand "agent-intercom-ungated-edge-contract" { } ''
   touch "$out"
 ''

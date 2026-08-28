@@ -526,13 +526,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-o8uXDYYW3HbSzz8+BNhZu0OTCeYQpU60AFGV/Ld557I=",
+        "narHash": "sha256-a3FrHLJjuufrX74Pc+TtkcjWxnTHZ2e98sPxd+SbBdg=",
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.246/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.250/vspackage"
       },
       "original": {
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.246/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.250/vspackage"
       }
     },
     "clavifaber": {
@@ -561,13 +561,13 @@
     "codex-chatgpt-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-hESdRToDjMdHQZJyPn+NoUjHosEh351UzgCkNNC0Mvw=",
+        "narHash": "sha256-iFkj4ZUx+TtNm8u9w1la7YSezLoXQnAvj02KsHBgjQc=",
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5818.61809/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5825.32147/vspackage"
       },
       "original": {
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5818.61809/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5825.32147/vspackage"
       }
     },
     "crane": {
@@ -919,17 +919,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787881605,
-        "narHash": "sha256-WOfeyXyi9ieSdhlmKSr+PAVVCJ62ZG07JCcH6szFiWw=",
+        "lastModified": 1787930967,
+        "narHash": "sha256-5E9NzQHIo9h6pf5jdlQlvqLbHSM05UZWNBxS3sKBnDA=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "db4afa912e82c37f4798af628cea64f907806d36",
+        "rev": "1274c581a51172d4fc53455e0c0cbd761215006b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "db4afa912e82c37f4798af628cea64f907806d36",
+        "rev": "1274c581a51172d4fc53455e0c0cbd761215006b",
         "type": "github"
       }
     },
@@ -1914,17 +1914,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1787515296,
-        "narHash": "sha256-djwPH90+fn7t3VYLbbYL7EvyHiA+2iyACyYQU98pb8I=",
+        "lastModified": 1787930334,
+        "narHash": "sha256-C6wWlnSHrcC6SaMtRXdyK292iNcZE5ryUlvO67z1hB8=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "782805bf07a4bcbb0c23e222b8916a3ceaf2e8af",
+        "rev": "33b8b6b7e5f893278a27c77130e8542072addda0",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "782805bf07a4bcbb0c23e222b8916a3ceaf2e8af",
+        "rev": "33b8b6b7e5f893278a27c77130e8542072addda0",
         "type": "github"
       }
     },
