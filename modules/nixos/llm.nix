@@ -155,7 +155,7 @@ mkIf behavesAs.largeAi {
   networking.firewall.allowedTCPPorts = [ serverPort ];
 
   # API token delivered via sops-nix: minted into gopass, encrypted to
-  # this host's age key in goldragon/secrets, decrypted to /run/secrets
+  # this host's age key in the cluster secrets repository, decrypted to /run/secrets
   # only on activation. The llama runtime user reads it; the start
   # script passes it via --api-key-file when present.
   sops.secrets.localLlmApiToken = {
