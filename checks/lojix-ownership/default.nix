@@ -4,8 +4,8 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "33b8b6b7e5f893278a27c77130e8542072addda0";
   expectedVersion = "0.19.2";
-  expectedHomeRevision = "a1b9383561f54fc77fd201734f49d4beed9c2826";
-  expectedOrchestrateRevision = "e0f3bc5e8b963089e560383b2a4eb7d30cda1f82";
+  expectedHomeRevision = "0530bcd80cce53bcd876f9ecf5947ed43698a2b4";
+  expectedOrchestrateRevision = "dadd537bbd2ed2ffc5260fffc5735f9f020cc774";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");

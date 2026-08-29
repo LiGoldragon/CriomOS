@@ -1,5 +1,22 @@
 # Breaking upgrades
 
+## Orchestrate 0.26.0 Home consumer
+
+This consumer advances CriomOS-home to `0530bcd80cce53bcd876f9ecf5947ed43698a2b4`
+and follows its immutable Orchestrate
+`dadd537bbd2ed2ffc5260fffc5735f9f020cc774` pin. The Home unit remains the
+sole declarative owner of the zero-argument `orchestrate-nexus` process and
+its standard XDG state and socket paths; do not edit or restart the unit by
+hand as a substitute for a Home generation activation.
+
+The 0.26 WireContract replacement is breaking for both sockets. Follow the
+Home upgrade record: stop the old Nexus only under approved activation
+authority, run the candidate preflight against the same state root, proceed
+only with zero legacy rows, and activate the matching clients and Nexus
+together. Its Sema schema/families are unchanged, so rollback is the preceding
+immutable Home generation with its matching 0.25 wrappers—not a store copy or
+a mixed-client restart.
+
 This is the canonical CriomOS procedure for breaking Lojix deployment
 contracts. Producer and consumer source remains authoritative for the
 contract; this file records only the crossing order, gates, and recovery
