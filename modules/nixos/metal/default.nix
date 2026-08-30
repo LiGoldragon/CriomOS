@@ -41,7 +41,13 @@ let
     SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{phys}=="?*", TAG+="uaccess"
   '';
 
-  wisprKeyboardUaccessRuleTrigger = pkgs.writeText "wispr-physical-keyboard-uaccess.rules" wisprKeyboardUaccessRule;
+  # This rule must precede systemd's 71-seat and 73-seat-late rules: the
+  # former derives the `seat` tag and the latter invokes the uaccess builtin.
+  wisprKeyboardUaccessRules = pkgs.writeTextFile {
+    name = "wispr-physical-keyboard-uaccess-rules";
+    destination = "/etc/udev/rules.d/70-wispr-physical-keyboard-uaccess.rules";
+    text = wisprKeyboardUaccessRule;
+  };
 
   batteryCtl = pkgs.writeShellScriptBin "battery-ctl" ''
     usage() { echo "usage: battery-ctl care | full | status"; exit 1; }
@@ -468,7 +474,7 @@ mkIf behavesAs.bareMetal {
     wantedBy = [ "multi-user.target" ];
     wants = [ "systemd-udevd.service" ];
     after = [ "systemd-udevd.service" ];
-    restartTriggers = [ wisprKeyboardUaccessRuleTrigger ];
+    restartTriggers = [ wisprKeyboardUaccessRules ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -547,18 +553,20 @@ mkIf behavesAs.bareMetal {
 
     throttled.enable = needsIntelThrottlingFix;
 
-    udev.extraRules = ''
+    udev = {
+      packages = [ wisprKeyboardUaccessRules ];
+      extraRules = ''
       # Battery charge threshold — grant group write so unprivileged users can toggle
       SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
       # whisrs virtual-keyboard injection
       KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
       KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
-      ${wisprKeyboardUaccessRule}
       # USBasp - USB programmer for Atmel AVR controllers
       SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
       # Pro-micro kp-boot-bootloader - Ergodone keyboard
       SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="bb05", GROUP="plugdev"
-    '';
+      '';
+    };
 
     libinput = {
       enable = hasTouchpad;
