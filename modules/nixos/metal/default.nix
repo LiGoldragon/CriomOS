@@ -35,6 +35,14 @@ let
   includeHome = deployment.includeHome or true;
   includeAllFirmware = deployment.includeAllFirmware or includeHome;
 
+  wisprKeyboardUaccessRule = ''
+    # Physical keyboard capture belongs to the active local seat only.  uaccess
+    # lets logind grant that session an ACL without exposing all input devices.
+    SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{phys}=="?*", TAG+="uaccess"
+  '';
+
+  wisprKeyboardUaccessRuleTrigger = pkgs.writeText "wispr-physical-keyboard-uaccess.rules" wisprKeyboardUaccessRule;
+
   batteryCtl = pkgs.writeShellScriptBin "battery-ctl" ''
     usage() { echo "usage: battery-ctl care | full | status"; exit 1; }
     bat=/sys/class/power_supply/BAT0
@@ -455,6 +463,26 @@ mkIf behavesAs.bareMetal {
     };
   };
 
+  systemd.services.wispr-keyboard-uaccess-refresh = {
+    description = "Refresh physical keyboard uaccess state";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "systemd-udevd.service" ];
+    after = [ "systemd-udevd.service" ];
+    restartTriggers = [ wisprKeyboardUaccessRuleTrigger ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.systemd}/bin/udevadm trigger \\
+        --action=add \\
+        --subsystem-match=input \\
+        --sysname-match=event* \\
+        --property-match=ID_INPUT_KEYBOARD=1
+      ${pkgs.systemd}/bin/udevadm settle
+    '';
+  };
+
   # Headless nodes: set EPP to "power" for aggressive idle downclocking.
   # The sysfs file only exists on CPUs with EPP support (AMD amd-pstate,
   # Intel intel_pstate HWP), so the rule is a no-op on unsupported hardware.
@@ -529,9 +557,7 @@ mkIf behavesAs.bareMetal {
       # whisrs virtual-keyboard injection
       KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
       KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
-      # Physical keyboard capture belongs to the active local seat only.  uaccess
-      # lets logind grant that session an ACL without exposing all input devices.
-      SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{phys}=="?*", TAG+="uaccess"
+      ${wisprKeyboardUaccessRule}
       # USBasp - USB programmer for Atmel AVR controllers
       SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
       # Pro-micro kp-boot-bootloader - Ergodone keyboard
