@@ -113,7 +113,7 @@ testPkgs.testers.runNixOSTest {
   name = "wispr-keyboard-uaccess";
 
   nodes.machine =
-    { ... }:
+    { lib, ... }:
     {
       _module.args = {
         inherit inputs horizon;
@@ -125,6 +125,13 @@ testPkgs.testers.runNixOSTest {
       imports = [ ../../modules/nixos/metal/default.nix ];
 
       boot.kernelModules = [ "uinput" ];
+      # uinput exposes the same event-device shape as the hardware under
+      # test, but does not receive input-id's hardware classification.  Give
+      # these two controlled keyboard fixtures that existing udev property;
+      # the test still distinguishes them solely through their `phys` value.
+      services.udev.extraRules = lib.mkBefore ''
+        SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="wispr-test-*", ENV{ID_INPUT_KEYBOARD}="1"
+      '';
       system.stateVersion = "26.05";
     };
 
