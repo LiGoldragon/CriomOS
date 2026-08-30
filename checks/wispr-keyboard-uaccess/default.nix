@@ -77,7 +77,10 @@ let
         perror("open /dev/uinput");
         return 1;
       }
-      if (ioctl(fd, UI_SET_EVBIT, EV_KEY) < 0 || ioctl(fd, UI_SET_KEYBIT, KEY_A) < 0) {
+      if (ioctl(fd, UI_SET_EVBIT, EV_KEY) < 0 ||
+          ioctl(fd, UI_SET_KEYBIT, KEY_ESC) < 0 ||
+          ioctl(fd, UI_SET_KEYBIT, KEY_1) < 0 ||
+          ioctl(fd, UI_SET_KEYBIT, KEY_A) < 0) {
         perror("configure uinput keyboard");
         return 1;
       }
@@ -144,7 +147,9 @@ testPkgs.testers.runNixOSTest {
     physical = event_named("wispr-test-physical")
     virtual = event_named("wispr-test-virtual")
 
-    machine.wait_until_succeeds("udevadm info --query=property --name=/dev/input/%s | grep -E '^TAGS=.*:uaccess:'" % physical)
+    machine.succeed("udevadm settle --timeout=10")
+    machine.succeed("test $(cat /sys/class/input/%s/device/phys) = usb-wispr/input0" % physical)
+    machine.succeed("properties=$(udevadm info --query=property --name=/dev/input/%s); printf '%%s\\n' \"$properties\" | grep -qx 'ID_INPUT_KEYBOARD=1'; printf '%%s\\n' \"$properties\" | grep -E '^TAGS=.*:uaccess:'" % physical)
     machine.fail("udevadm info --query=property --name=/dev/input/%s | grep -E '^TAGS=.*:uaccess:'" % virtual)
 
     physical_db="/run/udev/data/c$(cat /sys/class/input/%s/dev)" % physical
