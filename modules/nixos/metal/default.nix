@@ -474,11 +474,7 @@ mkIf behavesAs.bareMetal {
       RemainAfterExit = true;
     };
     script = ''
-      ${pkgs.systemd}/bin/udevadm trigger \\
-        --action=add \\
-        --subsystem-match=input \\
-        --sysname-match=event* \\
-        --property-match=ID_INPUT_KEYBOARD=1
+      ${pkgs.systemd}/bin/udevadm trigger --action=add --subsystem-match=input --sysname-match=event* --property-match=ID_INPUT_KEYBOARD=1
       ${pkgs.systemd}/bin/udevadm settle
     '';
   };
