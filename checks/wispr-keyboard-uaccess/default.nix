@@ -130,13 +130,13 @@ testPkgs.testers.runNixOSTest {
     machine.wait_for_unit("wispr-keyboard-uaccess-refresh.service")
 
     machine.succeed("${uinputKeyboard}/bin/wispr-test-uinput wispr-test-physical usb-wispr/input0 >/run/wispr-test-physical.log 2>&1 &")
-    machine.succeed("${uinputKeyboard}/bin/wispr-test-uinput wispr-test-virtual \\\"\\\" >/run/wispr-test-virtual.log 2>&1 &")
+    machine.succeed('${uinputKeyboard}/bin/wispr-test-uinput wispr-test-virtual "" >/run/wispr-test-virtual.log 2>&1 &')
 
     def event_named(name):
         return machine.succeed(
             'for event in /sys/class/input/event*; do '
-            '[ "$(cat "$event/device/name")" = "%s" ] && basename "$event"; '
-            'done' % name
+            'if [ "$(cat "$event/device/name")" = "%s" ]; then basename "$event"; exit 0; fi; '
+            'done; exit 1' % name
         ).strip()
 
     machine.wait_until_succeeds('test -n "$(for event in /sys/class/input/event*; do [ "$(cat "$event/device/name")" = wispr-test-physical ] && basename "$event"; done)"')
