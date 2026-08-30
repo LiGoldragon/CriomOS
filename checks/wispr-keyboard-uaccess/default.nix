@@ -156,7 +156,8 @@ testPkgs.testers.runNixOSTest {
 
     machine.succeed("udevadm settle --timeout=10")
     machine.succeed("test $(cat /sys/class/input/%s/device/phys) = usb-wispr/input0" % physical)
-    machine.succeed("properties=$(udevadm info --query=property --name=/dev/input/%s); printf '%%s\\n' \"$properties\" | grep -qx 'ID_INPUT_KEYBOARD=1'; printf '%%s\\n' \"$properties\" | grep -E '^TAGS=.*:uaccess:'" % physical)
+    machine.succeed("properties=$(udevadm info --query=property --name=/dev/input/%s); printf '%%s\\n' \"$properties\" | grep -qx 'ID_INPUT_KEYBOARD=1'; printf '%%s\\n' \"$properties\" | grep -E '^TAGS=.*:seat:'; printf '%%s\\n' \"$properties\" | grep -E '^TAGS=.*:uaccess:'" % physical)
+    machine.fail("udevadm info --query=property --name=/dev/input/%s | grep -E '^TAGS=.*:seat:'" % virtual)
     machine.fail("udevadm info --query=property --name=/dev/input/%s | grep -E '^TAGS=.*:uaccess:'" % virtual)
 
     physical_db="/run/udev/data/c$(cat /sys/class/input/%s/dev)" % physical
