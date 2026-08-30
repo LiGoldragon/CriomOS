@@ -916,20 +916,22 @@
         ],
         "uv2nix": "uv2nix",
         "visualjj-vsix": "visualjj-vsix",
+        "wispr-flow-installer": "wispr-flow-installer",
+        "wispr-flow-linux": "wispr-flow-linux",
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1787994400,
-        "narHash": "sha256-kqNfWPsC0zp4MDZ6IOmbR4DMCmQq7lx1m/CxV1nRFOI=",
+        "lastModified": 1788087997,
+        "narHash": "sha256-XtaAsO/Rh3MZa/7OzwnYbd/9I+r16jrSwFWM9CLNMqE=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0ae8e4953f03bfcd007bf723d7f8547742de9300",
+        "rev": "ac54e3af28d7ca3d01c58395594148040f2718a5",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "0ae8e4953f03bfcd007bf723d7f8547742de9300",
+        "rev": "ac54e3af28d7ca3d01c58395594148040f2718a5",
         "type": "github"
       }
     },
@@ -4408,6 +4410,41 @@
       "original": {
         "type": "file",
         "url": "https://open-vsx.org/api/visualjj/visualjj/linux-x64/0.28.1/file/visualjj.visualjj-0.28.1@linux-x64.vsix"
+      }
+    },
+    "wispr-flow-installer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788087873,
+        "narHash": "sha256-qFS+PSOjLtKhf2R8KE5loEYs3oVmiw0eUvGdsREkTP0=",
+        "path": "/home/li/.local/share/wispr-flow-installer/wispr-flow-setup-1.6.7.exe",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/li/.local/share/wispr-flow-installer/wispr-flow-setup-1.6.7.exe",
+        "type": "path"
+      }
+    },
+    "wispr-flow-linux": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788086095,
+        "narHash": "sha256-3WU2bNguvfKhlNS6m66L8Q9+S2M4RKnlq2LnLLneS4U=",
+        "owner": "LiGoldragon",
+        "repo": "wispr-flow-linux",
+        "rev": "5a73a4be482d4cb6686352bb963801845c001db9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "wispr-flow-linux",
+        "rev": "5a73a4be482d4cb6686352bb963801845c001db9",
+        "type": "github"
       }
     },
     "xwayland-satellite-stable": {
