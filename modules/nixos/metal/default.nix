@@ -531,7 +531,7 @@ mkIf behavesAs.bareMetal {
       KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
       # Physical keyboard capture belongs to the active local seat only.  uaccess
       # lets logind grant that session an ACL without exposing all input devices.
-      SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", TAG+="uaccess"
+      SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{phys}=="?*", TAG+="uaccess"
       # USBasp - USB programmer for Atmel AVR controllers
       SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
       # Pro-micro kp-boot-bootloader - Ergodone keyboard

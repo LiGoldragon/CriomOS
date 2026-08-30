@@ -96,6 +96,7 @@ let
   laptopKeydConfiguration = edgeConfiguration.services.keyd.keyboards.laptop.extraConfig;
   generatedLaptopKeydConfiguration = edgeConfiguration.environment.etc."keyd/laptop.conf".text;
   sessionVariables = normalizeConfiguration.environment.sessionVariables;
+  udevRules = metalConfiguration.services.udev.extraRules;
 in
 assert lib.assertMsg (edgeConfiguration.services.keyd.enable
 ) "edge hosts must enable keyd for laptop-local physical key mapping";
@@ -131,6 +132,16 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   metalConfiguration.services.xserver.xkb.variant == ""
 ) "X11 XKB must not apply a global Colemak variant";
+assert lib.assertMsg (
+  lib.hasInfix
+    ''
+      SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{phys}=="?*", TAG+="uaccess"
+    ''
+    udevRules
+) "Wispr keyboard capture must require a physical keyboard origin";
+assert lib.assertMsg (
+  !(lib.hasInfix "GROUP=\"input\"" udevRules)
+) "Wispr keyboard capture must not grant the broad input group";
 
 pkgs.runCommand "laptop-keyboard-keyd-check" { } ''
   touch "$out"
