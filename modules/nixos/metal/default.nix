@@ -39,6 +39,11 @@ let
     # Physical keyboard capture belongs to the active local seat only.  uaccess
     # lets logind grant that session an ACL without exposing all input devices.
     SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{phys}=="?*", TAG+="uaccess"
+
+    # keyd exclusively owns the selected physical keyboard and emits the
+    # logical stream which the Wispr helper must read.  Its exact identity is
+    # intentionally admitted without opening unrelated virtual keyboards.
+    SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ATTRS{name}=="keyd virtual keyboard", ATTRS{id/vendor}=="0fac", ATTRS{id/product}=="0ade", TAG+="uaccess"
   '';
 
   # This rule must precede systemd's 71-seat and 73-seat-late rules: the
