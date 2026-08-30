@@ -218,6 +218,7 @@
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
+          wispr-keyboard-uaccess = pkgs.callPackage ./checks/wispr-keyboard-uaccess { inherit inputs; };
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
             inherit inputs;
           };
@@ -225,7 +226,12 @@
             inherit inputs pkgs target;
           };
           home-activation-equivalence = import ./home-activation-equivalence.nix {
-            inherit pkgs inputs target homeConfigurations;
+            inherit
+              pkgs
+              inputs
+              target
+              homeConfigurations
+              ;
           };
         };
       };
