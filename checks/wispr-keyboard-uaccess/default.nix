@@ -134,13 +134,13 @@ testPkgs.testers.runNixOSTest {
 
     def event_named(name):
         return machine.succeed(
-            "for event in /sys/class/input/event*; do "
-            "test \\\"$(cat $event/device/name)\\\" = \\\"%s\\\" && basename $event; "
-            "done" % name
+            'for event in /sys/class/input/event*; do '
+            '[ "$(cat "$event/device/name")" = "%s" ] && basename "$event"; '
+            'done' % name
         ).strip()
 
-    machine.wait_until_succeeds("test -n \\\"$(for event in /sys/class/input/event*; do test \\\"$(cat $event/device/name)\\\" = wispr-test-physical && basename $event; done)\\\"")
-    machine.wait_until_succeeds("test -n \\\"$(for event in /sys/class/input/event*; do test \\\"$(cat $event/device/name)\\\" = wispr-test-virtual && basename $event; done)\\\"")
+    machine.wait_until_succeeds('test -n "$(for event in /sys/class/input/event*; do [ "$(cat "$event/device/name")" = wispr-test-physical ] && basename "$event"; done)"')
+    machine.wait_until_succeeds('test -n "$(for event in /sys/class/input/event*; do [ "$(cat "$event/device/name")" = wispr-test-virtual ] && basename "$event"; done)"')
     physical = event_named("wispr-test-physical")
     virtual = event_named("wispr-test-virtual")
 
