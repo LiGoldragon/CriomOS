@@ -526,13 +526,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-a3FrHLJjuufrX74Pc+TtkcjWxnTHZ2e98sPxd+SbBdg=",
+        "narHash": "sha256-iO3xKG990t2Pz6SPGPpef0NiKqxlOzLlwoQ55CalJes=",
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.250/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.251/vspackage"
       },
       "original": {
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.250/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.251/vspackage"
       }
     },
     "clavifaber": {
@@ -921,17 +921,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788137970,
-        "narHash": "sha256-JNVLotBCS345nV3ZjD+FlNKgd5+obnITYj8UgGMuFBs=",
+        "lastModified": 1788188260,
+        "narHash": "sha256-Oi64uwN9cZEladA2DTs8VJTYMPxuhY451kHT6fTBt20=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5f8b26502d26ac32d6f35fb9806c2ec3f51c87ec",
+        "rev": "0548644f797ca873cada2309a64c46aad4e318a0",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5f8b26502d26ac32d6f35fb9806c2ec3f51c87ec",
+        "rev": "0548644f797ca873cada2309a64c46aad4e318a0",
         "type": "github"
       }
     },
@@ -1916,17 +1916,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1788096261,
-        "narHash": "sha256-SsLSQWaQfk++Ny3ikduzeQr9DmncGNfgBuV3AG3efyE=",
+        "lastModified": 1788189004,
+        "narHash": "sha256-0SH7nrdD7J4/biXQuWxVmm+cUJ0u6S1SifhsHR9noNk=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "76400200d42438af9275de66a0a7c94e7a43d850",
+        "rev": "8bb4b0a1c7816f72b97dc53f3a5a1da2765c95b0",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "76400200d42438af9275de66a0a7c94e7a43d850",
+        "rev": "8bb4b0a1c7816f72b97dc53f3a5a1da2765c95b0",
         "type": "github"
       }
     },
