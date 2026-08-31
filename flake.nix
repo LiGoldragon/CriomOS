@@ -93,7 +93,7 @@
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
     # socket, state, and identity configuration.
-    lojix.url = "github:LiGoldragon/lojix/8bb4b0a1c7816f72b97dc53f3a5a1da2765c95b0";
+    lojix.url = "github:LiGoldragon/lojix/34a8e9c2e6af3d6dbc2b8ad83c43758f5fdb16ca";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
