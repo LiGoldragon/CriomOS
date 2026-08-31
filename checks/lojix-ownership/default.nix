@@ -2,9 +2,9 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "33b8b6b7e5f893278a27c77130e8542072addda0";
-  expectedVersion = "0.19.2";
-  expectedHomeRevision = "6201c493e80a8618d8cefd26227e21f80b80c2a6";
+  expectedRevision = "34a8e9c2e6af3d6dbc2b8ad83c43758f5fdb16ca";
+  expectedVersion = "0.20.2";
+  expectedHomeRevision = "7e75f38ee9f006b3ef0381e447f709187b8c66df";
   expectedOrchestrateRevision = "dadd537bbd2ed2ffc5260fffc5735f9f020cc774";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
@@ -74,6 +74,29 @@ let
       remote = mkProjectedUser "remote" false;
     };
   };
+  multiUserHorizon = horizon // {
+    users = horizon.users // {
+      remote = mkProjectedUser "remote" true;
+    };
+  };
+  multiUserHomeFixture = lib.nixosSystem {
+    inherit system;
+    specialArgs = {
+      inherit inputs;
+      horizon = multiUserHorizon;
+      constants = inputs.criomos-lib.lib.constants;
+    };
+    modules = [
+      inputs.home-manager.nixosModules.home-manager
+      ../../modules/nixos/users.nix
+      ../../modules/nixos/userHomes.nix
+      {
+        nixpkgs.config.allowUnfree = true;
+        system.stateVersion = "26.05";
+        networking.hostName = "lojix-ownership-multi-user-fixture";
+      }
+    ];
+  };
   fixture = lib.nixosSystem {
     inherit system;
     specialArgs = {
@@ -94,7 +117,8 @@ let
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
-  claudeRemoteControl = fixture.config.home-manager.users.li.systemd.user.services.claude-remote-control;
+  claudeRemoteControl =
+    fixture.config.home-manager.users.li.systemd.user.services.claude-remote-control;
   liHomeActivation = fixture.config.home-manager.users.li.home.activationPackage;
   servicePathEnvironment =
     service: lib.makeBinPath service.path + ":" + lib.makeSearchPath "sbin" service.path;
@@ -185,6 +209,12 @@ assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
 assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
 assert fixture.config.users.users.li.group == "users";
 assert claudeRemoteControl.Service.WorkingDirectory == "/home/li/primary";
+assert
+  multiUserHomeFixture.config.home-manager.users.li.systemd.user.services.claude-remote-control.Service.WorkingDirectory
+  == "/home/li/primary";
+assert
+  multiUserHomeFixture.config.home-manager.users.remote.systemd.user.services.claude-remote-control.Service.WorkingDirectory
+  == "/home/remote/primary";
 assert claudeRemoteControl.Service.Restart == "always";
 assert claudeRemoteControl.Service.UMask == "0077";
 assert localUserUid == null;

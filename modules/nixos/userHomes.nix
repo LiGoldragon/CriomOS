@@ -9,18 +9,12 @@
 let
   inherit (builtins) mapAttrs;
 
-  mkUserConfig = name: user:
-    {
-      _module.args = {
-        inherit user;
-      };
-      home.stateVersion = "26.05";
-    }
-    // lib.optionalAttrs (name == "li") {
-      # This is the concrete owner root approved for li, not a portable
-      # default for every Home profile or Horizon user.
-      criomos.claudeRemoteControl.workingDirectory = "/home/li/primary";
+  mkUserConfig = name: user: {
+    _module.args = {
+      inherit user;
     };
+    home.stateVersion = "26.05";
+  };
 
   # Deploy a user's home ONLY on nodes where that user has a presence — i.e. a
   # per-node pub-key entry for THIS viewpoint node (`hasPubKey`). `horizon.users`
