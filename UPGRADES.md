@@ -3,10 +3,13 @@
 ## ChatGPT Desktop vendor-boundary Home consumer
 
 This consumer advances CriomOS-home to
-`d56f11539bf3430859e09c5e09e410d5504b49a4`. It restores ChatGPT Desktop's
+`c025a681df31d55b9035364c01e2f6c8d7b59c1c`. It restores ChatGPT Desktop's
 vendor-private resource tree and bundled Core, removing the Desktop-specific
 crossing into the persistent `codex-remote-control` owner. The owner remains
 an independent Home service for normal Codex terminal and phone control.
+
+This successor removes the generated ChatGPT patcher bytecode left in the
+prior rollback candidate; deploy no earlier rollback candidate.
 
 First realize CriomOS's materialized
 `homeConfigurations.<user>.activationPackage` through an immutable typed Lojix
