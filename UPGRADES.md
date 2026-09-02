@@ -1,5 +1,22 @@
 # Breaking upgrades
 
+## Claude Fable 5.1 Home consumer
+
+This consumer advances CriomOS-home to
+`aaf6070c34e167e2011ad0f5957bd6418c93e81e`. It updates the declarative
+Claude Code package, Claude Desktop package, and managed Claude Code VSIX as
+one producer revision. Use the materialized consumer output
+`homeConfigurations.<user>.activationPackage`, first realize it through the
+typed Lojix user-environment surface, and only then use the separately
+authorized least-disruptive activation action.
+
+Activation does not replace a running Claude Desktop process or migrate live
+Claude/Codex remote-control clients. Do not restart GUI applications as part
+of the deployment. Confirm the activated profile and remote-control owners
+afterward; a fresh Claude Desktop launch is required to load the upgraded
+Desktop package. The new Claude Code model remains selectable per new session
+as `claude-fable-5-1`; do not force a global model setting.
+
 ## Flow identity helper Home consumer
 
 CriomOS consumes CriomOS-home

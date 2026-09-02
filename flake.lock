@@ -526,13 +526,13 @@
     "claude-code-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-iO3xKG990t2Pz6SPGPpef0NiKqxlOzLlwoQ55CalJes=",
+        "narHash": "sha256-a79RBiFw+8XON/vQKlFY8lZKtf3SQNPATH2nieZd9yg=",
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.251/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.258/vspackage"
       },
       "original": {
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.251/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/anthropic/vsextensions/claude-code/2.1.258/vspackage"
       }
     },
     "clavifaber": {
@@ -937,17 +937,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788355693,
-        "narHash": "sha256-I0IcuVbXYBY/3KybeT6aD/aSdZMWKAB8Bcwjtrr7VRw=",
+        "lastModified": 1788358685,
+        "narHash": "sha256-bD85Ud1sC9TrH1yGWfSXqCoM/2MmbdP9NmhMGhvXJCg=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e5033f327ffca69958163eb09d1114bbab0d9e03",
+        "rev": "aaf6070c34e167e2011ad0f5957bd6418c93e81e",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e5033f327ffca69958163eb09d1114bbab0d9e03",
+        "rev": "aaf6070c34e167e2011ad0f5957bd6418c93e81e",
         "type": "github"
       }
     },
