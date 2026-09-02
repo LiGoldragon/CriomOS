@@ -4,7 +4,7 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "34a8e9c2e6af3d6dbc2b8ad83c43758f5fdb16ca";
   expectedVersion = "0.20.2";
-  expectedHomeRevision = "122bc1d10be7abb4d75542720a1e7c6594fb88bf";
+  expectedHomeRevision = "c8bbc9dacd87b594851a70800b5f190674f7da3e";
   expectedOrchestrateRevision = "dadd537bbd2ed2ffc5260fffc5735f9f020cc774";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);

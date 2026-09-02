@@ -78,7 +78,8 @@ the requested deploy.
 ## Sibling repos
 
 - `LiGoldragon/CriomOS-home` — home profile. Own inputs
-  (niri, noctalia, stylix, …). CriomOS consumes `homeModules.default`.
+  (niri, noctalia, stylix, …). CriomOS consumes `homeModules.default`, including
+  its pinned parent-only Codex/Claude `flow-id` helper.
 - `LiGoldragon/CriomOS-lib` —
   shared helpers (`importJSON`, `mkJsonMerge`) + cross-repo data
   (`data/largeAI/llm.json`). Consumed by both CriomOS and CriomOS-home.
