@@ -1,5 +1,16 @@
 # Breaking upgrades
 
+## Flow identity helper Home consumer
+
+CriomOS consumes CriomOS-home
+`8cd1f5ea53b3c13471000a4a77e5af1cebbcc42e`, whose locked Harness input is
+`2d87945e5c03817995ddca7f04771e6833b8f8ad`. The user-environment deployment
+output remains this consumer's materialized
+`homeConfigurations.<user>.activationPackage`; do not substitute a standalone
+Home configuration. Deploy only the pushed immutable CriomOS revision through
+an explicit Lojix `UserEnvironment` request, then separately witness the
+profile and executable path.
+
 ## Orchestrate 0.26.0 Home consumer
 
 This consumer advances CriomOS-home to `0530bcd80cce53bcd876f9ecf5947ed43698a2b4`
