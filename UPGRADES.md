@@ -1,11 +1,11 @@
 # Breaking upgrades
 
-## Claude Fable 5.1 Home consumer
+## Claude Fable 5.1 and Codex 0.152.1 Home consumer
 
 This consumer advances CriomOS-home to
-`aaf6070c34e167e2011ad0f5957bd6418c93e81e`. It updates the declarative
-Claude Code package, Claude Desktop package, and managed Claude Code VSIX as
-one producer revision. Use the materialized consumer output
+`90a12633cc60148b62bc47fd44957e6165727094`. It updates the declarative
+Claude Code package, Claude Desktop package, managed Claude Code VSIX, Codex,
+and ChatGPT Desktop surfaces as one producer revision. Use the materialized consumer output
 `homeConfigurations.<user>.activationPackage`, first realize it through the
 typed Lojix user-environment surface, and only then use the separately
 authorized least-disruptive activation action.

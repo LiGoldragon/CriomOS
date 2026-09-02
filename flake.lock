@@ -561,13 +561,13 @@
     "codex-chatgpt-vsix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-iFkj4ZUx+TtNm8u9w1la7YSezLoXQnAvj02KsHBgjQc=",
+        "narHash": "sha256-9vSOHoZw9lpS3gQYWm6QSyN9pVamHxmZGgLDFAUo+Xk=",
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5825.32147/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5825.51511/vspackage?targetPlatform=linux-x64"
       },
       "original": {
         "type": "file",
-        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5825.32147/vspackage"
+        "url": "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/openai/vsextensions/chatgpt/26.5825.51511/vspackage?targetPlatform=linux-x64"
       }
     },
     "crane": {
@@ -937,17 +937,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788358685,
-        "narHash": "sha256-bD85Ud1sC9TrH1yGWfSXqCoM/2MmbdP9NmhMGhvXJCg=",
+        "lastModified": 1788362387,
+        "narHash": "sha256-8UlQLj7js7j7VNfPRGBTxRNE6jrO7lG/A72J7IyFwN8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "aaf6070c34e167e2011ad0f5957bd6418c93e81e",
+        "rev": "90a12633cc60148b62bc47fd44957e6165727094",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "aaf6070c34e167e2011ad0f5957bd6418c93e81e",
+        "rev": "90a12633cc60148b62bc47fd44957e6165727094",
         "type": "github"
       }
     },
