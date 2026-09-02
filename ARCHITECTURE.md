@@ -49,8 +49,9 @@ NixOS modules in this repo.
 
 CriomOS consumes the Home-owned `flow-id` parent helper only through the pinned
 CriomOS-home input. Claude identity derivation remains Home/Harness behavior:
-it requires a canonical UUIDv4 parent session and starts with its first six
-literal hexadecimal characters.
+it requires a canonical lowercase RFC 4122 UUIDv4 or UUIDv5 parent session
+with an RFC 4122 variant and starts with its first six literal hexadecimal
+characters; private markers retain the UUID version.
 
 CriomOS is network-neutral. Cluster node names are data flowing through
 Horizon, never control-flow predicates inside the Nix engine. Modules may

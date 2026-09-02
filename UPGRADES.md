@@ -28,11 +28,12 @@ Desktop launch after activation loads the vendor-private package.
 ## Flow identity helper Home consumer
 
 CriomOS consumes CriomOS-home
-`c8bbc9dacd87b594851a70800b5f190674f7da3e`, whose locked Harness input is
-`363a5bec61d05a628750e00e7b03d8de7f8693a8`. Claude parent flows now require
+`3e4e7a9bf96f1ab4d1cc59539aaab51ed61c2b96`, whose locked Harness input is
+`d022427938c0925e55e23dfb2d7ba470bbfea3c1`. Claude parent flows now require
 the explicit `flow-id claude --flows-root /absolute/flows-root --parent-session
-UUID` form, accept only canonical lowercase RFC 4122 UUIDv4 parents, and begin
-with the parent's first six literal hexadecimal characters. The user-environment deployment
+UUID` form, accept only canonical lowercase RFC 4122 UUIDv4 or UUIDv5 parents
+with RFC 4122 variant, and begin with the parent's first six literal hexadecimal
+characters. Private Claude markers retain uuid-v4 or uuid-v5. The user-environment deployment
 output remains this consumer's materialized
 `homeConfigurations.<user>.activationPackage`; do not substitute a standalone
 Home configuration. Deploy only the pushed immutable CriomOS revision through
