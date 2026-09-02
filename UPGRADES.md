@@ -3,8 +3,8 @@
 ## Flow identity helper Home consumer
 
 CriomOS consumes CriomOS-home
-`8cd1f5ea53b3c13471000a4a77e5af1cebbcc42e`, whose locked Harness input is
-`2d87945e5c03817995ddca7f04771e6833b8f8ad`. The user-environment deployment
+`097a9bdef8507e86c7b504037ab2cdd1b70b168e`, whose locked Harness input is
+`d6f2b6f4aec158a6eb12e07ff33886ae49d2071c`. The user-environment deployment
 output remains this consumer's materialized
 `homeConfigurations.<user>.activationPackage`; do not substitute a standalone
 Home configuration. Deploy only the pushed immutable CriomOS revision through
