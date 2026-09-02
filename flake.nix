@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/c8bbc9dacd87b594851a70800b5f190674f7da3e";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/d56f11539bf3430859e09c5e09e410d5504b49a4";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -222,7 +222,6 @@
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
             inherit inputs;
           };
-          flow-id-home = pkgs.callPackage ./checks/flow-id-home { inherit inputs; };
           agent-intercom-command-ownership = import ./gates/agent-intercom-command-ownership.nix {
             inherit inputs pkgs target;
           };

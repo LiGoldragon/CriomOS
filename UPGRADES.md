@@ -1,21 +1,26 @@
 # Breaking upgrades
 
-## Claude Fable 5.1 and Codex 0.152.1 Home consumer
+## ChatGPT Desktop vendor-boundary Home consumer
 
 This consumer advances CriomOS-home to
-`90a12633cc60148b62bc47fd44957e6165727094`. It updates the declarative
-Claude Code package, Claude Desktop package, managed Claude Code VSIX, Codex,
-and ChatGPT Desktop surfaces as one producer revision. Use the materialized consumer output
-`homeConfigurations.<user>.activationPackage`, first realize it through the
-typed Lojix user-environment surface, and only then use the separately
-authorized least-disruptive activation action.
+`d56f11539bf3430859e09c5e09e410d5504b49a4`. It restores ChatGPT Desktop's
+vendor-private resource tree and bundled Core, removing the Desktop-specific
+crossing into the persistent `codex-remote-control` owner. The owner remains
+an independent Home service for normal Codex terminal and phone control.
 
-Activation does not replace a running Claude Desktop process or migrate live
-Claude/Codex remote-control clients. Do not restart GUI applications as part
-of the deployment. Confirm the activated profile and remote-control owners
-afterward; a fresh Claude Desktop launch is required to load the upgraded
-Desktop package. The new Claude Code model remains selectable per new session
-as `claude-fable-5-1`; do not force a global model setting.
+First realize CriomOS's materialized
+`homeConfigurations.<user>.activationPackage` through an immutable typed Lojix
+user-environment request. Realization alone does not change the profile or
+running services. Activation is separately authorized and must not start,
+restart, or otherwise mutate a GUI application or user service by hand.
+
+Before any activation, compare the candidate and current generated
+`codex-remote-control.service` bytes and their embedded Codex store paths. If
+they differ, activation may replace the persistent owner and must be deferred
+until a continuity-independent operator can safely perform it with no
+in-flight managed turn. If they are byte-identical, the owner has no declared
+unit change from this crossing; activation remains a separate action. A fresh
+Desktop launch after activation loads the vendor-private package.
 
 ## Flow identity helper Home consumer
 

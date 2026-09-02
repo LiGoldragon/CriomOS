@@ -278,10 +278,16 @@ Claude entry is `cci --dangerously-skip-permissions`. `codex-raw` and
 `claude-raw` remain explicit recovery names, not normal aliases, and no legacy
 family coexists with the local family.
 
-Desktop is a Home-level hard blocker even on a graphical-capable host. The pinned
-Desktop module owns `CODEX_CLI_PATH` and its own `codex app-server`, while `coi`
-owns a distinct raw-Codex app-server and remote TUI. CriomOS therefore provides
-the wrapper package and does not claim that Desktop, Computer Use, or Mobile
+ChatGPT Desktop is a vendor-private Home package on eligible graphical
+profiles. Its packaged vendor resource tree, including its bundled Core, is
+not wired to `CODEX_CLI_PATH`, the canonical Codex package, or
+`codex-remote-control`. Desktop therefore does not own, configure, or attach to
+the persistent Codex owner.
+
+`codex-remote-control` is independently the Home-managed persistent owner for
+the normal Codex terminal and phone-control path. Its lifecycle and control
+socket are not a Desktop integration contract. CriomOS supplies declarative
+packages but does not claim that ChatGPT Desktop, Computer Use, or Mobile
 Control is activated or wakeable.
 
 NixOS-level capabilities live here. Home Manager profile selection, user
