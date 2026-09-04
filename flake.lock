@@ -936,17 +936,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788546993,
-        "narHash": "sha256-Xt0uIzqk16WGrsLsBA2O3QITTADhkaNMfTxSPMIPP/Y=",
+        "lastModified": 1788555299,
+        "narHash": "sha256-VbjIN/R/S+Teuu1lVcSYkw+jKMQV32diMsI11Ja+uIE=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "59e9a1ad256d986ebc2ddb2ca2d552063fcde891",
+        "rev": "8021ae5d4428343624920330098641f772c9eece",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "59e9a1ad256d986ebc2ddb2ca2d552063fcde891",
+        "rev": "8021ae5d4428343624920330098641f772c9eece",
         "type": "github"
       }
     },
@@ -2430,17 +2430,17 @@
         "rust-build": "rust-build_3"
       },
       "locked": {
-        "lastModified": 1788527283,
-        "narHash": "sha256-X+m+uKXe/NoLqVYh3QSD/rn0oEKYCBK1YV4IL6o9jX8=",
+        "lastModified": 1788512748,
+        "narHash": "sha256-mDpKFUQsiosF+PUwLws0Jp4e3Ef68I3SKfHjSIkEfY0=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "885f6e3e67ac8c157825dbb11f3d05c7a148b56e",
+        "rev": "9585484738ce0748d0cf23f0431285f9693ca2ec",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "885f6e3e67ac8c157825dbb11f3d05c7a148b56e",
+        "rev": "9585484738ce0748d0cf23f0431285f9693ca2ec",
         "type": "github"
       }
     },
@@ -4499,17 +4499,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1788542810,
-        "narHash": "sha256-czRE2rqSV80EU9orUEZIdDApJ3yryZ6sBHcaCbEFSP8=",
+        "lastModified": 1788553831,
+        "narHash": "sha256-kTkfjHEv2VknsGXMa7B4Ns0rdyYO1U2dd+1eXd7Du/s=",
         "owner": "LiGoldragon",
         "repo": "wispr-flow-linux",
-        "rev": "1cd2d7f7b7e5a8fd95414145343c440d8db888e6",
+        "rev": "5e6156aa235fa17d6a3e34d1c97ad1d3f6999b9a",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "wispr-flow-linux",
-        "rev": "1cd2d7f7b7e5a8fd95414145343c440d8db888e6",
+        "rev": "5e6156aa235fa17d6a3e34d1c97ad1d3f6999b9a",
         "type": "github"
       }
     },

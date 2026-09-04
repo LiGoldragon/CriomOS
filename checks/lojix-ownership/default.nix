@@ -2,10 +2,13 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "34a8e9c2e6af3d6dbc2b8ad83c43758f5fdb16ca";
-  expectedVersion = "0.20.2";
-  expectedHomeRevision = "fd3316a110a8be6acba2621f11a1aecf53b32e89";
-  expectedOrchestrateRevision = "dadd537bbd2ed2ffc5260fffc5735f9f020cc774";
+  # Pre-existing expectation drift: Lojix was still 0.20.2 at 34a8e9c,
+  # and Orchestrate was dadd537.  Current OS had d3c0ac9/0.20.3; the Home
+  # repin revealed its shared 9585484 Orchestrate lock, now consumed here too.
+  expectedRevision = "d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf";
+  expectedVersion = "0.20.3";
+  expectedHomeRevision = "8021ae5d4428343624920330098641f772c9eece";
+  expectedOrchestrateRevision = "9585484738ce0748d0cf23f0431285f9693ca2ec";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
