@@ -932,22 +932,21 @@
         ],
         "uv2nix": "uv2nix",
         "visualjj-vsix": "visualjj-vsix",
-        "wispr-flow-installer": "wispr-flow-installer",
         "wispr-flow-linux": "wispr-flow-linux",
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788527613,
-        "narHash": "sha256-yvEFZJY8d8ZiS6NQDgwjbkrRNY6YAnpw+yuwnaTPwOc=",
+        "lastModified": 1788536000,
+        "narHash": "sha256-LFcv57DWJDpWxNFwprmcFNpyYNTyq1gGkjc3LCnqBqc=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9c8ded53d56f8a24f1e90a5339678aa585bbaa03",
+        "rev": "26999bd90cc65add5f7331d9a89a9c1d3028bace",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9c8ded53d56f8a24f1e90a5339678aa585bbaa03",
+        "rev": "26999bd90cc65add5f7331d9a89a9c1d3028bace",
         "type": "github"
       }
     },
@@ -4492,19 +4491,6 @@
         "url": "https://open-vsx.org/api/visualjj/visualjj/linux-x64/0.28.1/file/visualjj.visualjj-0.28.1@linux-x64.vsix"
       }
     },
-    "wispr-flow-installer": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788087873,
-        "narHash": "sha256-qFS+PSOjLtKhf2R8KE5loEYs3oVmiw0eUvGdsREkTP0=",
-        "path": "/home/li/.local/share/wispr-flow-installer/wispr-flow-setup-1.6.7.exe",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/li/.local/share/wispr-flow-installer/wispr-flow-setup-1.6.7.exe",
-        "type": "path"
-      }
-    },
     "wispr-flow-linux": {
       "inputs": {
         "nixpkgs": [
@@ -4513,17 +4499,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1788286716,
-        "narHash": "sha256-JWqm+dNIIZVdRBWCIqfjR7ty/XN4ikJIP3uUp5OKjE0=",
+        "lastModified": 1788535150,
+        "narHash": "sha256-w//7SZJkyebDJ5IogF+wmNqIiR5tyGpYw7uidHQHeI4=",
         "owner": "LiGoldragon",
         "repo": "wispr-flow-linux",
-        "rev": "003ccc2890c1709c7e966e96db5d4cde5ee82813",
+        "rev": "6765c388e5159243072c4259e3ea082dd06f3150",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "wispr-flow-linux",
-        "rev": "003ccc2890c1709c7e966e96db5d4cde5ee82813",
+        "rev": "6765c388e5159243072c4259e3ea082dd06f3150",
         "type": "github"
       }
     },
