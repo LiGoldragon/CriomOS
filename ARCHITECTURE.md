@@ -274,10 +274,14 @@ matching Home profile.
 
 CriomOS-home owns the user broker, Pi/Codex/Claude/OpenCode adapters, core and
 orchestrator packaging, MCP/plugin registration, normal wakeable launchers, and
-all command-family behavior. The normal Codex entry is `coi --yolo`; the normal
-Claude entry is `cci --dangerously-skip-permissions`. `codex-raw` and
-`claude-raw` remain explicit recovery names, not normal aliases, and no legacy
-family coexists with the local family.
+all command-family behavior. `codex` is the pinned upstream CLI, with the
+native Home approval and full-access sandbox defaults; callers may set explicit
+Codex flags when they need a different policy. `codex-remote` explicitly
+attaches to the persistent local app-server and preserves upstream remote
+working-directory behavior unless the caller passes `--cd`. `coi` and
+`cci --dangerously-skip-permissions` remain Agent Intercom commands. `codex-raw`
+and `direct-codex` are not published; Claude's separate recovery commands are
+unchanged.
 
 ChatGPT Desktop is a vendor-private Home package on eligible graphical
 profiles. Its packaged vendor resource tree, including its bundled Core, is
