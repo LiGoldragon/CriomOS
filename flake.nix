@@ -29,11 +29,11 @@
 
     # Orchestrate Nexus owns its per-user default Sema store and ordinary/meta
     # XDG sockets. CriomOS-home follows this shared immutable release.
-    orchestrate.url = "github:LiGoldragon/orchestrate/9585484738ce0748d0cf23f0431285f9693ca2ec";
+    orchestrate.url = "github:LiGoldragon/orchestrate/ac8a92666f4abd8356522c4d52ab23ddcdff4c15";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/75b6eba0d207470f6712c8713b7efd86efb32846";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/4bac7ce559926ec1a91a6fe82eca5bc522231efa";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -93,7 +93,7 @@
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
     # socket, state, and identity configuration.
-    lojix.url = "github:LiGoldragon/lojix/d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf";
+    lojix.url = "github:LiGoldragon/lojix/a5e03d470a0a053f443577222e235754159b93a4";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.

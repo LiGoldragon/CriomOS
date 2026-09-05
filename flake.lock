@@ -909,17 +909,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788640160,
-        "narHash": "sha256-PT6J5KJUU4e430WwxvjNhS0mg4XRxu2R4tG51kCwqbc=",
+        "lastModified": 1788646962,
+        "narHash": "sha256-35ukk/j6Lf/NgqfskGU/tzjNBAciY3w0zWkWFH8EkII=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "75b6eba0d207470f6712c8713b7efd86efb32846",
+        "rev": "4bac7ce559926ec1a91a6fe82eca5bc522231efa",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "75b6eba0d207470f6712c8713b7efd86efb32846",
+        "rev": "4bac7ce559926ec1a91a6fe82eca5bc522231efa",
         "type": "github"
       }
     },
@@ -1951,17 +1951,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1788538212,
-        "narHash": "sha256-WX36PLHpKpnmzZHWLsBI5d8AttzJprbzt+DFUcn7NqY=",
+        "lastModified": 1788646656,
+        "narHash": "sha256-QikAXteidiaVD7UwYhRXSgmlrQCGrAGqdew9q4KvhR0=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf",
+        "rev": "a5e03d470a0a053f443577222e235754159b93a4",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf",
+        "rev": "a5e03d470a0a053f443577222e235754159b93a4",
         "type": "github"
       }
     },
@@ -2403,17 +2403,17 @@
         "rust-build": "rust-build_3"
       },
       "locked": {
-        "lastModified": 1788512748,
-        "narHash": "sha256-mDpKFUQsiosF+PUwLws0Jp4e3Ef68I3SKfHjSIkEfY0=",
+        "lastModified": 1788646557,
+        "narHash": "sha256-P0hCUSZrePbivOAJ+a0MpACpCik0vw90G0RVlz/revQ=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "9585484738ce0748d0cf23f0431285f9693ca2ec",
+        "rev": "ac8a92666f4abd8356522c4d52ab23ddcdff4c15",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "9585484738ce0748d0cf23f0431285f9693ca2ec",
+        "rev": "ac8a92666f4abd8356522c4d52ab23ddcdff4c15",
         "type": "github"
       }
     },
