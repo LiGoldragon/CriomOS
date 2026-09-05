@@ -11,13 +11,13 @@ let
   inherit (lib) mkIf;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  repositoryReceiveEnabled = nodeServices.personaDevelopmentHas (horizon.node.services or [ ]
+  repositoryReceiveEnabled = nodeServices.personaDevelopmentHas (horizon.node.capabilities or [ ]
   ) "GitoliteServer";
 
-  adminSshPubKeys = horizon.node.adminSshPubKeys or [ ];
+  adminSshPubKeys = horizon.node.adminSshPublicKeys or [ ];
   gitoliteAdminPubkey =
     if length adminSshPubKeys == 0 then
-      throw "repository-receive: horizon.node.adminSshPubKeys must contain at least one key"
+      throw "repository-receive: horizon.node.adminSshPublicKeys must contain at least one key"
     else
       head adminSshPubKeys;
 

@@ -73,18 +73,16 @@ let
 
   thisNode = horizon.node.name;
   exNodes = horizon.exNodes or { };
-  clusterName = horizon.cluster.name or thisNode;
+  clusterName = horizon.cluster;
 
   # ---- The host's cluster-authored VmHost capability ---------------------
   #
-  # `horizon.node.services` is a list of single-key attrsets, one per
-  # NodeService variant (e.g. `{ TailnetClient = {}; }`,
-  # `{ VmHost = { guestSubnet = ...; kvm = ...; maximumGuests = ...; }; }`).
-  # Find the VmHost entry and read its payload — this is the host fact the
-  # generator used to fabricate.
-  services = horizon.node.services or [ ];
-  vmHostService = findFirst (s: s ? VmHost) null services;
-  vmHost = if vmHostService == null then null else vmHostService.VmHost;
+  # Horizon emits tagged capabilities.  The VmHost payload carries the tap
+  # subnet, typed KVM availability, and optional guest ceiling.
+  nodeServices = import ./node-services.nix { inherit lib; };
+  capabilities = horizon.node.capabilities;
+  hasVmHost = nodeServices.has capabilities "VmHost";
+  vmHost = if hasVmHost then nodeServices.payload capabilities "VmHost" else null;
 
   # KVM availability is a closed-set domain value the projection renders as
   # the atom `Available` / `Absent`. Accelerated emission requires Available.
@@ -148,9 +146,7 @@ let
     "02:00:00:00:00:${twoDigit}";
 
   hostSetOf =
-    node:
-    (optional ((node.machine.superNode or null) != null) node.machine.superNode)
-    ++ (node.machine.superNodes or [ ]);
+    node: (optional (node.machine.host != null) node.machine.host) ++ node.machine.additionalHosts;
 
   allNodes = [ horizon.node ] ++ attrValues exNodes;
   publicKeyOf =
@@ -158,15 +154,15 @@ let
     let
       node = findFirst (candidate: candidate.name == name) null allNodes;
     in
-    if node == null then null else (node.nixPubKeyLine or null);
+    if node == null then null else node.nixPublicKeyLine;
 
   # The TestVm guests this node hosts: projected ex_nodes whose machine names
   # this node as super_node and that derive behavesAs.testVm. Only primary
   # hosts emit microvm.vms — the additional co-host relation is for image
   # exchange, not for booting the VM on every peer.
-  hostedTestVms = filter (
-    node: (node.machine.superNode or null) == thisNode && (node.behavesAs.testVm or false)
-  ) (attrValues exNodes);
+  hostedTestVms = filter (node: node.machine.host == thisNode && node.behavesAs.testVm) (
+    attrValues exNodes
+  );
 
   # The TestVm guests this node co-hosts: primary OR additional host-set
   # membership. Unit 3's trust boundary is broader than microvm emission: a
@@ -203,23 +199,23 @@ let
   }) hostedCount;
 
   guestName = entry: entry.guest.name;
-  guestIp = entry: stripCidr (entry.guest.nodeIp or null);
+  guestIp = entry: stripCidr entry.guest.network.nodeIp;
   # A guest's node IP can be either family. An IPv6 host route needs a /128
   # single-host prefix; an IPv4 host route needs /32. A colon in the bare
   # address marks IPv6 (the host tap endpoint stays /32 — it is always an
   # IPv4 link-local address sliced from the IPv4-only guest_subnet).
   guestRoutePrefix = ip: if lib.hasInfix ":" ip then "128" else "32";
   guestIsIpv6 = entry: (guestIp entry != null) && lib.hasInfix ":" (guestIp entry);
-  guestCores = entry: entry.guest.machine.cores or 2;
-  guestRamGb = entry: entry.guest.machine.ramGb or 2;
-  guestDiskGb = entry: entry.guest.machine.diskGb or 20;
+  guestCores = entry: entry.guest.machine.hardware.cores;
+  guestRamGb = entry: entry.guest.machine.hardware.ramGib or 2;
+  guestDiskGb = entry: entry.guest.machine.diskGib or 20;
   guestDomain = entry: entry.guest.criomeDomainName or "${guestName entry}.${clusterName}.criome";
   # A TestVm guest defaults NON-autostart (launched to test, stopped after). A
   # STANDING guest — one the projection marks `behavesAs.standing` (e.g. the
   # persistent Spirit-mirror pair) — auto-starts so it survives a host reboot
   # unattended. The standing fact lives in the cluster projection; this predicate
   # only reads it, defaulting false so ephemeral test guests are unaffected.
-  guestAutostart = entry: entry.guest.behavesAs.standing or false;
+  guestAutostart = _entry: false;
 
   # (a) + (d): the microvm.vms.<guest> declarations.
   vmDeclarations = listToAttrs (
@@ -301,7 +297,7 @@ let
             enable = true;
             settings.PasswordAuthentication = false;
           };
-          users.users.root.openssh.authorizedKeys.keys = horizon.node.adminSshPubKeys or [ ];
+          users.users.root.openssh.authorizedKeys.keys = horizon.node.adminSshPublicKeys;
 
           system.stateVersion = lib.trivial.release;
         };
@@ -335,7 +331,10 @@ let
         # hop. fe80::1 is per-link, so the same value on every guest tap is
         # correct (each tap is a distinct point-to-point link). This lets the
         # host answer the guest's NDP and act as its IPv6 gateway/forwarder.
-        address = [ "${hostTapAddress entry.index}/32" "fe80::1/64" ];
+        address = [
+          "${hostTapAddress entry.index}/32"
+          "fe80::1/64"
+        ];
         routes = lib.optionals (guestIp entry != null) [
           { Destination = "${guestIp entry}/${guestRoutePrefix (guestIp entry)}"; }
         ];

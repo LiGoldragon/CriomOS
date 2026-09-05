@@ -21,13 +21,12 @@ let
   inherit (horizon) exNodes;
   inherit (horizon.node)
     size
-    useColemak
     behavesAs
-    hasVideoOutput
     enableNetworkManager
     ;
 
-  hasAudioOutput = hasVideoOutput;
+  useColemak = horizon.node.keyboard == "Colemak";
+  hasAudioOutput = behavesAs.edge;
 
   jsonHorizonFail = pkgs.writeText "horizon.json" (builtins.toJSON horizon);
 
@@ -37,7 +36,7 @@ let
     n: node:
     concatSep " " [
       node.criomeDomainName
-      node.sshPubKeyLine
+      node.sshPublicKeyLine
     ];
 
   sshKnownHosts = concatSep "\n" (mapAttrsToList mkNodeKnownHost exNodes);

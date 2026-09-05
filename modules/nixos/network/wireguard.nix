@@ -13,10 +13,9 @@ let
     ;
   inherit (horizon) node exNodes;
 
-  hasWireguardPubKey =
-    horizon.node.hasWireguardPubKey or ((horizon.node.wireguardPubKey or null) != null);
+  hasWireguardPubKey = node.network.wireguardPublicKey != null;
 
-  wireguardUntrustedProxies = horizon.node.wireguardUntrustedProxies or [ ];
+  wireguardUntrustedProxies = node.network.wireguardProxies;
 
   mkUntrustedProxy = untrustedProxy: {
     inherit (untrustedProxy) publicKey endpoint;
@@ -30,16 +29,14 @@ let
   untrustedProxiesIps = map mkUntrustedProxyIp wireguardUntrustedProxies;
 
   mkNodePeer = nodeName: peerNode: {
-    allowedIPs = [ peerNode.nodeIp ];
-    publicKey = peerNode.wireguardPubKey;
+    allowedIPs = [ peerNode.network.nodeIp ];
+    publicKey = peerNode.network.wireguardPublicKey;
     endpoint = "wg.${peerNode.criomeDomainName}:51820";
   };
 
-  validPreNodes =
-    filterAttrs (
-      nodeName: peerNode:
-      peerNode.hasWireguardPubKey or ((peerNode.wireguardPubKey or null) != null)
-    ) exNodes;
+  validPreNodes = filterAttrs (
+    nodeName: peerNode: peerNode.network.wireguardPublicKey != null
+  ) exNodes;
 
   nodePeers = mapAttrsToList mkNodePeer validPreNodes;
 
@@ -58,7 +55,7 @@ mkIf hasWireguardPubKey {
         };
 
         wgNode = {
-          ips = [ node.nodeIp ];
+          ips = [ node.network.nodeIp ];
           inherit privateKeyFile;
           peers = nodePeers;
           listenPort = 51820;

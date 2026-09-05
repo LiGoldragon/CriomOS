@@ -11,7 +11,7 @@ let
   inherit (horizon) node;
   inherit (constants.fileSystem.nordvpn) privateKeyFile;
 
-  hasNordvpnPubKey = horizon.node.hasNordvpnPubKey or (horizon.node.nordvpn or false);
+  hasNordvpnPubKey = builtins.any (capability: capability.kind == "Nordvpn") node.capabilities;
 
   /*
     Server data is read from the lock file at build time.
@@ -61,19 +61,23 @@ let
     chmod 600 "/etc/NetworkManager/system-connections/nordvpn-${server.name}.nmconnection"
   '';
 
-  generatorScript = concatStringsSep "\n" ([
-    ''
-      NORDVPN_KEY=$(cat "${privateKeyFile}" 2>/dev/null | tr -d '[:space:]')
-      if [ -z "$NORDVPN_KEY" ]; then
-        echo "nordvpn: private key not found at ${privateKeyFile}" >&2
-        exit 0
-      fi
-    ''
-  ] ++ (map mkConnectionFile lock.servers) ++ [
-    ''
-      nmcli connection reload 2>/dev/null || true
-    ''
-  ]);
+  generatorScript = concatStringsSep "\n" (
+    [
+      ''
+        NORDVPN_KEY=$(cat "${privateKeyFile}" 2>/dev/null | tr -d '[:space:]')
+        if [ -z "$NORDVPN_KEY" ]; then
+          echo "nordvpn: private key not found at ${privateKeyFile}" >&2
+          exit 0
+        fi
+      ''
+    ]
+    ++ (map mkConnectionFile lock.servers)
+    ++ [
+      ''
+        nmcli connection reload 2>/dev/null || true
+      ''
+    ]
+  );
 
   /*
     NetworkManager dispatcher script for split-tunnel policy routing.
@@ -87,45 +91,45 @@ let
     Priority numbering: 100 = server endpoints, 150 = Tailscale, 200 = tunnel.
     Yggdrasil (200::/7) is IPv6 — naturally exempt from the IPv4-only tunnel.
   */
-  serverExemptRules = lib.concatMapStringsSep "\n" (ip:
-    "    ip rule add to ${ip}/32 priority 100 lookup main 2>/dev/null"
+  serverExemptRules = lib.concatMapStringsSep "\n" (
+    ip: "    ip rule add to ${ip}/32 priority 100 lookup main 2>/dev/null"
   ) serverEndpointIps;
 
-  serverCleanupRules = lib.concatMapStringsSep "\n" (ip:
-    "    ip rule del to ${ip}/32 priority 100 lookup main 2>/dev/null"
+  serverCleanupRules = lib.concatMapStringsSep "\n" (
+    ip: "    ip rule del to ${ip}/32 priority 100 lookup main 2>/dev/null"
   ) serverEndpointIps;
 
   dispatcherScript = pkgs.writeShellScript "nordvpn-split-tunnel" ''
-    INTERFACE="$1"
-    ACTION="$2"
+        INTERFACE="$1"
+        ACTION="$2"
 
-    case "$INTERFACE" in
-      nv-*) ;;
-      *) exit 0 ;;
-    esac
+        case "$INTERFACE" in
+          nv-*) ;;
+          *) exit 0 ;;
+        esac
 
-    TABLE=${routingTable}
+        TABLE=${routingTable}
 
-    case "$ACTION" in
-      up)
-        ip route add default dev "$INTERFACE" table "$TABLE" 2>/dev/null
+        case "$ACTION" in
+          up)
+            ip route add default dev "$INTERFACE" table "$TABLE" 2>/dev/null
 
-        # Exempt NordVPN server endpoints — prevents routing loop
-${serverExemptRules}
+            # Exempt NordVPN server endpoints — prevents routing loop
+    ${serverExemptRules}
 
-        # Tailscale uses 100.64.0.0/10
-        ip rule add to 100.64.0.0/10 priority 150 lookup main 2>/dev/null
+            # Tailscale uses 100.64.0.0/10
+            ip rule add to 100.64.0.0/10 priority 150 lookup main 2>/dev/null
 
-        # Steer all remaining IPv4 traffic into the tunnel
-        ip rule add priority 200 table "$TABLE" 2>/dev/null
-        ;;
-      down)
-        ip route del default dev "$INTERFACE" table "$TABLE" 2>/dev/null
-${serverCleanupRules}
-        ip rule del priority 150 2>/dev/null
-        ip rule del priority 200 2>/dev/null
-        ;;
-    esac
+            # Steer all remaining IPv4 traffic into the tunnel
+            ip rule add priority 200 table "$TABLE" 2>/dev/null
+            ;;
+          down)
+            ip route del default dev "$INTERFACE" table "$TABLE" 2>/dev/null
+    ${serverCleanupRules}
+            ip rule del priority 150 2>/dev/null
+            ip rule del priority 200 2>/dev/null
+            ;;
+        esac
   '';
 
   privateKeyDir = builtins.dirOf privateKeyFile;

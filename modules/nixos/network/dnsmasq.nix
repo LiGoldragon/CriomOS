@@ -32,7 +32,7 @@ let
     lanGateway
   ];
 
-  publicClusterDomains = horizon.cluster.domainConfiguration.publicClusterDomains or [ ];
+  publicClusterDomains = horizon.domainConfiguration.publicClusterDomains or [ ];
 
   upstreamServers = [
     "1.1.1.1"
@@ -67,8 +67,10 @@ let
   mkPrimaryAddress =
     entry:
     let
-      yggAddress = sanitizeIp entry.yggAddress;
-      nodeIp = sanitizeIp entry.nodeIp;
+      yggAddress = sanitizeIp (
+        if entry.keys.yggdrasil == null then null else entry.keys.yggdrasil.address
+      );
+      nodeIp = sanitizeIp entry.network.nodeIp;
     in
     if yggAddress != null then yggAddress else nodeIp;
 

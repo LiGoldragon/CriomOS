@@ -10,7 +10,9 @@ let
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
   inherit (constants.fileSystem.complex) keyFile;
 
-  hasWifiCertPubKey = horizon.node.hasWifiCertPubKey or (horizon.node.wifiCert or false);
+  hasWifiCertPubKey = builtins.any (
+    capability: capability.kind == "WifiCertificate"
+  ) node.capabilities;
 
   nodeCertFile = "${certsDir}/${node.name}.pem";
 

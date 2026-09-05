@@ -7,7 +7,7 @@
   ...
 }:
 let
-  inherit (builtins) mapAttrs;
+  inherit (builtins) listToAttrs;
 
   mkUserConfig = name: user: {
     _module.args = {
@@ -26,7 +26,12 @@ let
   # has no key there), dragging in unrelated home closures — and any orphaned
   # dep in one of those homes (e.g. a force-pushed git rev) fails the whole
   # node's eval even where that home does not belong.
-  homeUsers = lib.filterAttrs (_name: user: user.hasPubKey) horizon.users;
+  homeUsers = listToAttrs (
+    map (user: {
+      name = user.name;
+      value = user;
+    }) (lib.filter (user: user.hasPublicKey) horizon.users)
+  );
 
 in
 {

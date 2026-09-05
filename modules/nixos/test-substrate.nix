@@ -108,7 +108,7 @@ let
       # The guest's own horizon-derived Criome address for test-side name
       # resolution. It does not decide a Lojix deployment transport.
       node = horizon.node;
-      clusterName = horizon.cluster.name or node.name;
+      clusterName = horizon.cluster;
       criomeDomainName = node.criomeDomainName or "${node.name}.${clusterName}.criome";
     in
     {

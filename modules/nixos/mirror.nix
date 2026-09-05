@@ -10,7 +10,7 @@ let
   inherit (lib) mkIf;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  services = horizon.node.services or [ ];
+  services = horizon.node.capabilities or [ ];
 
   # The node shapes that WOULD run the legacy standalone mirror daemon: cluster
   # tailnet members that also carry PersonaDevelopment. Kept as the re-enable

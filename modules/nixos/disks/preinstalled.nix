@@ -1,9 +1,7 @@
 { lib, horizon, ... }:
 let
-  inherit (horizon.node.io) disks bootloader;
-
-  projectedSwapDevices = horizon.node.io.swapDevices or [ ];
-  compressedSwap = horizon.node.io.compressedSwap or null;
+  installation = horizon.node.installation;
+  compressedSwap = horizon.node.compressedSwapMemoryPercent;
 
   fsTypeFor =
     ft:
@@ -34,31 +32,32 @@ let
 
 in
 {
-  boot = {
-    supportedFilesystems = [ "xfs" ];
-
-    loader = {
-      grub.enable = bootloader == "Mbr";
-      systemd-boot.enable = bootloader == "Uefi";
-      efi.canTouchEfiVariables = bootloader == "Uefi";
-      generic-extlinux-compatible.enable = bootloader == "Uboot";
-    };
+  boot.supportedFilesystems = [ "xfs" ];
+}
+// lib.optionalAttrs (installation != null) {
+  boot.loader = {
+    grub.enable = installation.bootloader == "Mbr";
+    systemd-boot.enable = installation.bootloader == "Uefi";
+    efi.canTouchEfiVariables = installation.bootloader == "Uefi";
+    generic-extlinux-compatible.enable = installation.bootloader == "Uboot";
   };
 
-  fileSystems = lib.mapAttrs (
-    _: disk:
-    {
-      device = disk.device;
-      fsType = fsTypeFor disk.fsType;
-    }
-    // (if disk.options == [ ] then { } else { inherit (disk) options; })
-  ) disks;
+  fileSystems = builtins.listToAttrs (
+    map (disk: {
+      name = disk.mount;
+      value = {
+        device = disk.device;
+        fsType = fsTypeFor disk.fsType;
+      }
+      // (if disk.options == [ ] then { } else { inherit (disk) options; });
+    }) installation.disks
+  );
 
-  swapDevices = map swapDeviceConfiguration projectedSwapDevices;
+  swapDevices = map swapDeviceConfiguration installation.swapDevices;
 }
 // lib.optionalAttrs (compressedSwap != null) {
   zramSwap = {
     enable = true;
-    memoryPercent = compressedSwap.memoryPercent;
+    memoryPercent = compressedSwap;
   };
 }

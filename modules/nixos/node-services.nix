@@ -1,29 +1,27 @@
 { lib }:
 let
   inherit (builtins)
-    attrNames
-    hasAttr
     head
     isAttrs
     isList
     isString
-    length
     ;
 
   serviceName =
     service:
-    if isString service then
+    if isAttrs service then
+      service.kind or null
+    else if isString service then
       service
-    else if isAttrs service then
-      let
-        names = attrNames service;
-      in
-      if length names == 1 then head names else null
     else
       null;
 
   servicePayload =
-    service: name: if isAttrs service && hasAttr name service then service.${name} else { };
+    service: name:
+    if isAttrs service && (service.kind or null) == name then
+      builtins.removeAttrs service [ "kind" ]
+    else
+      { };
 
   servicesList =
     services:
@@ -32,7 +30,7 @@ let
     else if isList services then
       services
     else
-      throw "horizon.node.services must be a vector of service variants";
+      throw "horizon.node.capabilities must be a vector of tagged capabilities";
 in
 rec {
   has = services: name: builtins.any (service: serviceName service == name) (servicesList services);

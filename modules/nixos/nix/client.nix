@@ -8,8 +8,7 @@
 let
   inherit (lib) filterAttrs mapAttrsToList;
 
-  inherit (horizon.cluster) trustedBuildPubKeys;
-  inherit (horizon) node;
+  inherit (horizon) node trustedBuildPublicKeys;
   inherit (horizon.node) cacheUrls;
 
   dedicatedNixBuilder = (node.isRemoteNixBuilder or false) && (node.behavesAs.center or false);
@@ -74,7 +73,7 @@ in
       connect-timeout = 5;
       fallback = true;
 
-      trusted-public-keys = trustedBuildPubKeys;
+      trusted-public-keys = trustedBuildPublicKeys;
       substituters = cacheUrls;
       trusted-binary-caches = cacheUrls;
     };

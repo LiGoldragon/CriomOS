@@ -15,34 +15,32 @@ let
     optional
     optionalAttrs
     ;
-  inherit (horizon) cluster;
   inherit (horizon.node) behavesAs;
   # WiFi PKI paths — uncomment when EAP-TLS is deployed
   # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
 
   routerInterfaces =
-    horizon.node.routerInterfaces
-      or (throw "router: horizon.node.routerInterfaces is required for router nodes");
+    horizon.node.network.routerInterfaces
+      or (throw "router: horizon.node.network.routerInterfaces is required for router nodes");
   routerWifiPasswordSecret =
-    routerInterfaces.wpa3SaePassword
-      or (throw "router: horizon.node.routerInterfaces.wpa3SaePassword is required for WPA3-SAE");
-  routerWifiPasswordSecretName = routerWifiPasswordSecret.name;
+    routerInterfaces.wpa3SaePasswordReference
+      or (throw "router: horizon.node.network.routerInterfaces.wpa3SaePasswordReference is required for WPA3-SAE");
+  routerWifiPasswordSecretName = routerWifiPasswordSecret;
   routerWifiSopsFiles = inputs.secrets.sopsFiles or { };
   routerWifiSopsFileExists = builtins.hasAttr routerWifiPasswordSecretName routerWifiSopsFiles;
   routerWifiSopsFile =
     if routerWifiSopsFileExists then
       routerWifiSopsFiles.${routerWifiPasswordSecretName}
     else
-      throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.routerInterfaces.wpa3SaePassword";
+      throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.network.routerInterfaces.wpa3SaePasswordReference";
   wirelessCountryCode = routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
   wirelessNetworkName =
-    routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${cluster.name}.criome";
+    routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${horizon.cluster}.criome";
 
   backupWireless = routerInterfaces.backupWireless or null;
   hasBackupWireless = backupWireless != null;
-  backupWirelessPasswordSecret = if hasBackupWireless then backupWireless.password else null;
-  backupWirelessPasswordSecretName =
-    if hasBackupWireless then backupWirelessPasswordSecret.name else null;
+  backupWirelessPasswordSecret = if hasBackupWireless then backupWireless.passwordReference else null;
+  backupWirelessPasswordSecretName = if hasBackupWireless then backupWirelessPasswordSecret else null;
   backupWirelessSopsFileExists =
     hasBackupWireless && builtins.hasAttr backupWirelessPasswordSecretName routerWifiSopsFiles;
   backupWirelessSopsFile =
@@ -51,7 +49,7 @@ let
     else if backupWirelessSopsFileExists then
       routerWifiSopsFiles.${backupWirelessPasswordSecretName}
     else
-      throw "router: inputs.secrets.sopsFiles.${backupWirelessPasswordSecretName} is required by horizon.node.routerInterfaces.backupWireless.password";
+      throw "router: inputs.secrets.sopsFiles.${backupWirelessPasswordSecretName} is required by horizon.node.network.routerInterfaces.backupWireless.passwordReference";
   backupWirelessRuntimeDirectory = "hostapd-backup-wireless";
   backupWirelessConfig = "/run/${backupWirelessRuntimeDirectory}/${backupWireless.interface}.hostapd.conf";
   backupWirelessDeviceUnit = "sys-subsystem-net-devices-${utils.escapeSystemdPath backupWireless.interface}.device";

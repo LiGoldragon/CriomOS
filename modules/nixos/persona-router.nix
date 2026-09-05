@@ -23,7 +23,7 @@ let
     ;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  services = horizon.node.services or [ ];
+  services = horizon.node.capabilities or [ ];
   personaRouterEnabled = nodeServices.has services "PersonaRouter";
   settings = nodeServices.payload services "PersonaRouter";
 
@@ -146,7 +146,8 @@ in
         # workingSocketGroupAccess). Membership grants only socket access.
         SupplementaryGroups = [
           criomeSocketGroup
-        ] ++ optionals (spiritSocketGroup != null) [ spiritSocketGroup ];
+        ]
+        ++ optionals (spiritSocketGroup != null) [ spiritSocketGroup ];
         WorkingDirectory = stateDirectory;
         ExecStartPre = optionals hasBootstrap [ writeBootstrap ] ++ [ writeConfiguration ];
         ExecStart = "${routerPackage}/bin/router-daemon ${daemonConfigurationPath}";

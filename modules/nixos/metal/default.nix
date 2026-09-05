@@ -18,18 +18,35 @@ let
     optionalString
     optionalAttrs
     ;
-  inherit (horizon.node.machine) model;
+  inherit (horizon.node.machine) architecture hardware;
+  model = hardware.model;
   inherit (horizon.node)
     behavesAs
     size
-    chipIsIntel
-    modelIsThinkpad
-    useColemak
-    computerIs
-    handleLidSwitch
-    handleLidSwitchExternalPower
-    handleLidSwitchDocked
     ;
+
+  # These are derived locally from the typed machine/profile facts, using the
+  # former Horizon rules. They are not a second node schema.
+  chipIsIntel = architecture == "x86_64";
+  modelIsThinkpad = builtins.elem model [
+    "ThinkPadX230"
+    "ThinkPadX240"
+    "ThinkPadT14Gen2Intel"
+    "ThinkPadT14Gen5Intel"
+  ];
+  computerIs = {
+    rpi3b = model == "rpi3B";
+  };
+  handleLidSwitch = if behavesAs.center then "ignore" else "suspend";
+  handleLidSwitchExternalPower =
+    if behavesAs.center then
+      "ignore"
+    else if behavesAs.lowPower then
+      "suspend"
+    else
+      "lock";
+  handleLidSwitchDocked = if behavesAs.edge then "lock" else "ignore";
+  hasCapability = name: builtins.any (capability: capability.kind == name) horizon.node.capabilities;
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
   includeHome = deployment.includeHome or true;
@@ -253,10 +270,10 @@ let
     python3Packages.pyclip
   ];
 
-  # Operator opt-in via horizon.node.wantsPrinting (default false). The
+  # Operator opt-in via Horizon's typed Printing capability. The
   # bundle is ~300-500 MB (hplip, samsung, epson) — only worth installing
   # on nodes that actually have a printer reachable.
-  printingDriversPkgs = lib.optionals horizon.node.wantsPrinting (
+  printingDriversPkgs = lib.optionals (hasCapability "Printing") (
     with pkgs;
     [
       gutenprint # Drivers for many different printers from many different vendors.
@@ -307,9 +324,9 @@ let
   # - intel-compute-runtime (~100MB OpenCL) is essentially niche on
   #   Intel iGPUs (Darktable disables by default; Blender doesn't
   #   support); dropped from default closure pending a real consumer.
-  chipGen = horizon.node.machine.chipGen;
+  chipGen = hardware.chipGeneration;
   igpuIsModern = chipGen != null && chipGen >= 12;
-  wantsHwVideoAccel = horizon.node.wantsHwVideoAccel;
+  wantsHwVideoAccel = hasCapability "HardwareVideo";
 
   intelGpuDrivers =
     if gpuUsesVaapi then
@@ -561,15 +578,15 @@ mkIf behavesAs.bareMetal {
     udev = {
       packages = [ wisprKeyboardUaccessRules ];
       extraRules = ''
-      # Battery charge threshold — grant group write so unprivileged users can toggle
-      SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
-      # whisrs virtual-keyboard injection
-      KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
-      KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
-      # USBasp - USB programmer for Atmel AVR controllers
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
-      # Pro-micro kp-boot-bootloader - Ergodone keyboard
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="bb05", GROUP="plugdev"
+        # Battery charge threshold — grant group write so unprivileged users can toggle
+        SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
+        # whisrs virtual-keyboard injection
+        KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
+        KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
+        # USBasp - USB programmer for Atmel AVR controllers
+        SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
+        # Pro-micro kp-boot-bootloader - Ergodone keyboard
+        SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="bb05", GROUP="plugdev"
       '';
     };
 
