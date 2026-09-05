@@ -11,7 +11,7 @@ let
   inherit (horizon) node;
   inherit (constants.fileSystem.nordvpn) privateKeyFile;
 
-  hasNordvpnPubKey = builtins.any (capability: capability.kind == "Nordvpn") node.capabilities;
+  hasNordvpnPubKey = builtins.any (capability: capability.kind == "nordvpn") node.capabilities;
 
   /*
     Server data is read from the lock file at build time.

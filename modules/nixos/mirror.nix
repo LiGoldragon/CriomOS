@@ -16,7 +16,7 @@ let
   # tailnet members that also carry PersonaDevelopment. Kept as the re-enable
   # target for `mirrorEnabled` below.
   mirrorEligible =
-    (nodeServices.has services "TailnetClient") && (nodeServices.has services "PersonaDevelopment");
+    (nodeServices.has services "tailnetClient") && (nodeServices.has services "personaDevelopment");
 
   # mirror.service is DISABLED on ALL hosts (primary-h945.1): the leading
   # `false` force-disables it regardless of node eligibility. The legacy

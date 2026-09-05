@@ -81,8 +81,8 @@ let
   # subnet, typed KVM availability, and optional guest ceiling.
   nodeServices = import ./node-services.nix { inherit lib; };
   capabilities = horizon.node.capabilities;
-  hasVmHost = nodeServices.has capabilities "VmHost";
-  vmHost = if hasVmHost then nodeServices.payload capabilities "VmHost" else null;
+  hasVmHost = nodeServices.has capabilities "vmHost";
+  vmHost = if hasVmHost then nodeServices.payload capabilities "vmHost" else null;
 
   # KVM availability is a closed-set domain value the projection renders as
   # the atom `Available` / `Absent`. Accelerated emission requires Available.

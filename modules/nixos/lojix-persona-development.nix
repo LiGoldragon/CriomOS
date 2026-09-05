@@ -13,7 +13,7 @@ let
     length
     ;
   nodeServices = import ./node-services.nix { inherit lib; };
-  personaDevelopmentHost = nodeServices.has (horizon.node.capabilities or [ ]) "PersonaDevelopment";
+  personaDevelopmentHost = nodeServices.has (horizon.node.capabilities or [ ]) "personaDevelopment";
   localUserNames = map (user: user.name) (filter (user: user.hasPublicKey) horizon.users);
   hasExactlyOneLocalUser = length localUserNames == 1;
   localUser = if hasExactlyOneLocalUser then head localUserNames else null;

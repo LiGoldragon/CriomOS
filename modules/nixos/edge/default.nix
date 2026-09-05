@@ -6,9 +6,26 @@
 }:
 let
   inherit (lib) mkIf optionals;
-  inherit (horizon.node) size behavesAs;
+  inherit (horizon.node) behavesAs;
+  hasMagnitude = values: builtins.elem horizon.node.size values;
+  isMin = hasMagnitude [
+    "Min"
+    "Medium"
+    "Large"
+    "Max"
+  ];
+  isMedium = hasMagnitude [
+    "Medium"
+    "Large"
+    "Max"
+  ];
+  isLarge = hasMagnitude [
+    "Large"
+    "Max"
+  ];
+  isMax = hasMagnitude [ "Max" ];
 
-  minPackages = optionals size.min (
+  minPackages = optionals isMin (
     with pkgs;
     [
       adwaita-icon-theme
@@ -98,13 +115,13 @@ mkIf behavesAs.edge {
       # Keep each adapter powered across BlueZ startup and hotplug events.
       powerOnBoot = true;
     };
-    graphics.enable32Bit = size.large;
+    graphics.enable32Bit = isLarge;
   };
 
   environment = {
     systemPackages =
       with pkgs;
-      minPackages ++ (optionals size.medium medPackages ++ (optionals size.large maxPackages));
+      minPackages ++ (optionals isMedium medPackages ++ (optionals isLarge maxPackages));
 
     gnome.excludePackages = with pkgs; [
       gnome-software
@@ -112,14 +129,14 @@ mkIf behavesAs.edge {
   };
 
   programs = {
-    browserpass.enable = size.large;
+    browserpass.enable = isLarge;
 
-    droidcam.enable = size.large;
+    droidcam.enable = isLarge;
     # evolution.enable: Max-tier per Li (heavy ~250MB email client).
-    evolution.enable = size.max;
+    evolution.enable = isMax;
 
     regreet = {
-      enable = size.min;
+      enable = isMin;
       settings = {
         GTK = {
           application_prefer_dark_theme = true;
@@ -213,30 +230,30 @@ mkIf behavesAs.edge {
 
   services = {
     displayManager.sessionPackages = [ pkgs.niri ];
-    avahi.enable = size.min;
+    avahi.enable = isMin;
 
     power-profiles-daemon.enable = false;
-    upower.enable = size.min;
+    upower.enable = isMin;
 
-    dbus.packages = mkIf size.min [ pkgs.gcr ];
+    dbus.packages = mkIf isMin [ pkgs.gcr ];
 
-    gvfs.enable = size.min;
+    gvfs.enable = isMin;
 
     gnome = {
-      at-spi2-core.enable = size.min;
-      core-apps.enable = size.min;
-      evolution-data-server.enable = size.min;
-      gnome-keyring.enable = size.min;
-      gnome-online-accounts.enable = size.min;
-      gnome-settings-daemon.enable = size.min;
+      at-spi2-core.enable = isMin;
+      core-apps.enable = isMin;
+      evolution-data-server.enable = isMin;
+      gnome-keyring.enable = isMin;
+      gnome-online-accounts.enable = isMin;
+      gnome-settings-daemon.enable = isMin;
     };
 
-    tumbler.enable = size.medium;
+    tumbler.enable = isMedium;
 
     pulseaudio.enable = false;
 
     keyd = {
-      enable = size.min;
+      enable = isMin;
       keyboards.laptop = {
         ids = [ "0001:0001" ];
         extraConfig = ''

@@ -11,7 +11,7 @@ let
   inherit (constants.fileSystem.complex) keyFile;
 
   hasWifiCertPubKey = builtins.any (
-    capability: capability.kind == "WifiCertificate"
+    capability: capability.kind == "wifiCertificate"
   ) node.capabilities;
 
   nodeCertFile = "${certsDir}/${node.name}.pem";

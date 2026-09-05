@@ -187,9 +187,9 @@ in
             band = routerInterfaces.wlanBand;
             channel = routerInterfaces.wlanChannel;
             countryCode = wirelessCountryCode;
-            wifi4.enable = routerInterfaces.wlanStandard == "wifi4";
-            wifi6.enable = routerInterfaces.wlanStandard == "wifi6" || routerInterfaces.wlanStandard == "wifi7";
-            wifi7.enable = routerInterfaces.wlanStandard == "wifi7";
+            wifi4.enable = routerInterfaces.wlanStandard == "Wifi4";
+            wifi6.enable = routerInterfaces.wlanStandard == "Wifi6" || routerInterfaces.wlanStandard == "Wifi7";
+            wifi7.enable = routerInterfaces.wlanStandard == "Wifi7";
             networks = {
               # WPA3-SAE — primary SSID (EAP-TLS will replace this once PKI is deployed)
               "${routerInterfaces.wlan}" = {

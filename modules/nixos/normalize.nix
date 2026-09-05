@@ -20,10 +20,16 @@ let
   inherit (pkgs) mksh;
   inherit (horizon) exNodes;
   inherit (horizon.node)
-    size
     behavesAs
     enableNetworkManager
     ;
+  hasMagnitude = values: builtins.elem horizon.node.size values;
+  isMin = hasMagnitude [
+    "Min"
+    "Medium"
+    "Large"
+    "Max"
+  ];
 
   useColemak = horizon.node.keyboard == "Colemak";
   hasAudioOutput = behavesAs.edge;
@@ -90,7 +96,7 @@ in
         "btrfs"
         "ntfs"
       ]
-      ++ (optional size.min "exfat")
+      ++ (optional isMin "exfat")
     );
   };
 
@@ -151,7 +157,7 @@ in
             networkmanager_strongswan
           ]
       )
-      ++ (optionals (size.min && !behavesAs.iso) [
+      ++ (optionals (isMin && !behavesAs.iso) [
         git
         curl
         jq

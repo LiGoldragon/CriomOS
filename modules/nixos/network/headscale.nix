@@ -12,7 +12,7 @@ let
 
   headscaleFqdn = node.criomeDomainName;
   nodeServices = import ../node-services.nix { inherit lib; };
-  tailnetControllerEnabled = nodeServices.has (node.capabilities or [ ]) "TailnetController";
+  tailnetControllerEnabled = nodeServices.has (node.capabilities or [ ]) "tailnetController";
   headscalePort = constants.network.headscale.port;
 
   tlsDir = "/var/lib/headscale/tls";

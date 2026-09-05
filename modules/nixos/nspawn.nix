@@ -7,9 +7,13 @@
 }:
 let
   inherit (lib) mkAfter mkIf;
-  inherit (horizon.node) behavesAs size;
+  inherit (horizon.node) behavesAs;
+  isLarge = builtins.elem horizon.node.size [
+    "Large"
+    "Max"
+  ];
 
-  enable = size.large && behavesAs.center && !config.boot.isContainer && !behavesAs.iso;
+  enable = isLarge && behavesAs.center && !config.boot.isContainer && !behavesAs.iso;
   trustedGroup = "nixdev";
   stableCommandPath = "/run/current-system/sw/bin/criomos-nspawn";
   nixosContainer = pkgs.nixos-container;

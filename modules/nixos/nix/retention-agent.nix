@@ -5,7 +5,16 @@
 }:
 let
   inherit (lib) boolToString;
-  inherit (horizon.node) size;
+  hasMagnitude = values: builtins.elem horizon.node.size values;
+  isMedium = hasMagnitude [
+    "Medium"
+    "Large"
+    "Max"
+  ];
+  isLarge = hasMagnitude [
+    "Large"
+    "Max"
+  ];
 in
 {
   nix = {
@@ -16,8 +25,8 @@ in
     daemonIOSchedPriority = 7;
 
     extraOptions = ''
-      keep-derivations = ${boolToString size.medium}
-      keep-outputs = ${boolToString size.large}
+      keep-derivations = ${boolToString isMedium}
+      keep-outputs = ${boolToString isLarge}
     '';
   };
 }

@@ -42,8 +42,8 @@ let
   inherit (horizon) node;
   nodeServices = import ../node-services.nix { inherit lib; };
 
-  enabled = nodeServices.has node.capabilities "VmTesting";
-  payload = nodeServices.payload node.capabilities "VmTesting";
+  enabled = nodeServices.has node.capabilities "vmTesting";
+  payload = nodeServices.payload node.capabilities "vmTesting";
 
   # Payload defaults. Per the design these are chosen-and-adjustable:
   #   display = Spice (best interactive latency + clipboard),

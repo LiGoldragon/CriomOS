@@ -22,8 +22,28 @@ let
   model = hardware.model;
   inherit (horizon.node)
     behavesAs
-    size
     ;
+
+  # Horizon serializes its ordinal Magnitude directly.  These local predicates
+  # retain the former monotonic threshold behavior without recreating the old
+  # projected size record.
+  hasMagnitude = values: builtins.elem horizon.node.size values;
+  isMin = hasMagnitude [
+    "Min"
+    "Medium"
+    "Large"
+    "Max"
+  ];
+  isMedium = hasMagnitude [
+    "Medium"
+    "Large"
+    "Max"
+  ];
+  isLarge = hasMagnitude [
+    "Large"
+    "Max"
+  ];
+  isMax = hasMagnitude [ "Max" ];
 
   # These are derived locally from the typed machine/profile facts, using the
   # former Horizon rules. They are not a second node schema.
@@ -273,7 +293,7 @@ let
   # Operator opt-in via Horizon's typed Printing capability. The
   # bundle is ~300-500 MB (hplip, samsung, epson) — only worth installing
   # on nodes that actually have a printer reachable.
-  printingDriversPkgs = lib.optionals (hasCapability "Printing") (
+  printingDriversPkgs = lib.optionals (hasCapability "printing") (
     with pkgs;
     [
       gutenprint # Drivers for many different printers from many different vendors.
@@ -326,7 +346,7 @@ let
   #   support); dropped from default closure pending a real consumer.
   chipGen = hardware.chipGeneration;
   igpuIsModern = chipGen != null && chipGen >= 12;
-  wantsHwVideoAccel = hasCapability "HardwareVideo";
+  wantsHwVideoAccel = hasCapability "hardwareVideo";
 
   intelGpuDrivers =
     if gpuUsesVaapi then
@@ -359,13 +379,13 @@ mkIf behavesAs.bareMetal {
     graphics.extraPackages = optionals treatAsIntel intelGpuDrivers;
   };
 
-  location.provider = if size.min then "geoclue2" else "manual";
+  location.provider = if isMin then "geoclue2" else "manual";
 
   boot = {
     extraModulePackages =
       [ ]
       ++ (optional modelIsThinkpad config.boot.kernelPackages.acpi_call)
-      ++ (optional size.large config.boot.kernelPackages.v4l2loopback);
+      ++ (optional isLarge config.boot.kernelPackages.v4l2loopback);
 
     initrd = {
       availableKernelModules = [
@@ -379,10 +399,10 @@ mkIf behavesAs.bareMetal {
     ]
     ++ modelSpecificKernelModules
     ++ (optional gpuUsesAmdGpu "amdgpu")
-    ++ (optional (size.min && behavesAs.edge) "uinput");
+    ++ (optional (isMin && behavesAs.edge) "uinput");
 
     extraModprobeConfig =
-      (optionalString size.large ''
+      (optionalString isLarge ''
         options v4l2loopback devices=2 card_label="camera","obs" exclusive_caps=1
       '')
       + (
@@ -536,8 +556,8 @@ mkIf behavesAs.bareMetal {
       with pkgs;
       [ lm_sensors ]
       ++ optionals chipIsIntel intelUtils
-      ++ optionals size.large [ v4l-utils ]
-      ++ optionals (size.max && behavesAs.edge) waydroidPackages
+      ++ optionals isLarge [ v4l-utils ]
+      ++ optionals (isMax && behavesAs.edge) waydroidPackages
       ++ optional modelIsThinkpad batteryCtl;
 
   };
@@ -550,7 +570,7 @@ mkIf behavesAs.bareMetal {
     fwupd.enable = true;
 
     geoclue2 = {
-      enable = size.min;
+      enable = isMin;
       enableDemoAgent = lib.mkOverride 0 true;
       geoProviderUrl = "https://beacondb.net/v1/geolocate";
       appConfig.redshift = {
@@ -564,12 +584,12 @@ mkIf behavesAs.bareMetal {
     };
 
     localtimed = {
-      enable = size.min;
+      enable = isMin;
     };
 
     printing = {
       enable = true;
-      cups-pdf.enable = size.min;
+      cups-pdf.enable = isMin;
       drivers = printingDriversPkgs;
     };
 
@@ -680,10 +700,10 @@ mkIf behavesAs.bareMetal {
 
   virtualisation = {
     # libvirtd + waydroid: Max-tier per Li (heavy: ~100MB libvirt,
-    # ~2GB waydroid). isLargeEdge now means size.large so these go
+    # ~2GB waydroid). isLargeEdge now means at least Large so these go
     # inline gated on Max + edge instead.
-    libvirtd.enable = size.max && behavesAs.edge;
-    waydroid.enable = size.max && behavesAs.edge;
-    spiceUSBRedirection.enable = size.large;
+    libvirtd.enable = isMax && behavesAs.edge;
+    waydroid.enable = isMax && behavesAs.edge;
+    spiceUSBRedirection.enable = isLarge;
   };
 }

@@ -45,7 +45,7 @@ rec {
   personaDevelopmentHas =
     services: capabilityName:
     let
-      personaDevelopment = payload services "PersonaDevelopment";
+      personaDevelopment = payload services "personaDevelopment";
       capabilities = servicesList (personaDevelopment.capabilities or [ ]);
     in
     has capabilities capabilityName;
