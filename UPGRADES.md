@@ -97,6 +97,42 @@ Home user-environment deployments must use CriomOS's materialized
 Consumer's concrete user policy, including li's approved Claude Remote Control
 working root; do not substitute a standalone CriomOS-home configuration.
 
+## UserEnvironment deployment 190 partial-activation gate
+
+Deployment 190's `ActivateNow` failed. A failed user-environment activation
+can leave the Home profile, generated user units, or the live service changed
+while the Lojix ledger does not describe completed convergence. Treat this as
+an unresolved partial-activation boundary, not as evidence that any one of
+those surfaces did or did not change.
+
+Before any repair, rollback, retry, or later activation, separately preserve
+and compare all of the following for deployment 190:
+
+1. The current Lojix ledger record, including deployment identity, terminal
+   state, and the `Current` generation if one is recorded.
+2. The resolved Home profile and generation.
+3. The candidate and current generated Codex user-unit bytes, together with
+   the Codex store path embedded by each unit.
+4. The live unit's `ExecStart` and PID.
+
+Any disagreement between these independent surfaces is partial activation.
+On such a disagreement, do not manually repair the profile, roll back, or
+submit a superseding activation. Retain actionable failure evidence before a
+new decision: the deployment and substep identity, command identity, exit
+status, and either redacted stderr or a retained journal reference and digest.
+
+Rerun the candidate/current Codex unit continuity gate after collecting that
+evidence. If the unit bytes differ, the activation must be performed by a
+continuity-independent operator who has no in-flight managed turn. Byte-equal
+units only clear this continuity gate; they do not establish profile, ledger,
+or live-process convergence.
+
+Current limitation: this upgrade record does not contain deployment 190's
+ledger values, resolved profile/generation, generated-unit bytes and embedded
+paths, live `ExecStart`/PID observation, or retained failure payload. It
+therefore makes no claim about which surface changed and does not authorize a
+repair, rollback, or activation.
+
 ## Immutable source chain
 
 - [Lojix 0.19.0](https://github.com/LiGoldragon/lojix/tree/0105f8d8f18dd91291e0a0fbe828e84ceda65714)
