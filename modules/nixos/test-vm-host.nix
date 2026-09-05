@@ -88,9 +88,9 @@ let
   # the atom `Available` / `Absent`. Accelerated emission requires Available.
   kvmAvailable = vmHost != null && (vmHost.kvm or "Absent") == "Available";
 
-  # The declared capacity ceiling, if any (maximumGuests is omitted from the
+  # The declared capacity ceiling, if any (maximum_guests is omitted from the
   # projection when the cluster authored no ceiling).
-  maximumGuests = if vmHost == null then null else (vmHost.maximumGuests or null);
+  maximumGuests = if vmHost == null then null else (vmHost.maximum_guests or null);
 
   stripCidr = ip: if ip == null then null else head (split "/" ip);
 
@@ -103,7 +103,7 @@ let
   # node IP (preserving 5hir5bnz host-untouched): it is a fresh link-local
   # address carved from the cluster-authored subnet, reachable only over the
   # tap. The guest is reached back via the explicit /32 route to its node IP.
-  subnetBase = if vmHost == null then null else stripCidr (vmHost.guestSubnet or null);
+  subnetBase = if vmHost == null then null else stripCidr (vmHost.guest_subnet or null);
 
   # Split a dotted-decimal IPv4 into its four integer octets.
   octetsOf = ip: map toInt (filter (s: s != "" && !(builtins.isList s)) (split "\\." ip));

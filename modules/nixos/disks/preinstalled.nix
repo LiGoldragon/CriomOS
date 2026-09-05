@@ -47,7 +47,7 @@ in
       name = disk.mount;
       value = {
         device = disk.device;
-        fsType = fsTypeFor disk.fsType;
+        fsType = fsTypeFor disk.fs_type;
       }
       // (if disk.options == [ ] then { } else { inherit (disk) options; });
     }) installation.disks
