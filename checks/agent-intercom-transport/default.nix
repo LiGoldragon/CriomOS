@@ -7,22 +7,15 @@ let
 
   node = name: edge: {
     inherit name;
-    adminSshPubKeys = [ ];
-    size = {
-      min = edge;
-      medium = false;
-      large = false;
-      max = false;
-    };
+    adminSshPublicKeys = [ ];
+    size = "Min";
     behavesAs.edge = edge;
   };
   localUser = {
     name = "intercom-user";
-    trust = {
-      min = true;
-      medium = false;
-    };
-    sshPubKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA" ];
+    hasPublicKey = true;
+    trust = "Max";
+    sshPublicKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA" ];
     extraGroups = [ ];
     enableLinger = false;
   };
@@ -57,11 +50,11 @@ let
 
   edgeConfiguration = configurationFor {
     node = edge;
-    users.intercom-user = localUser;
+    users = [ localUser ];
   };
   headlessConfiguration = configurationFor {
     node = headless;
-    users.intercom-user = localUser;
+    users = [ localUser ];
   };
 
   # The previous remote family could have left a system unit or socket behind.
@@ -104,7 +97,8 @@ assert !headlessConfiguration.xdg.portal.enable;
 assert !(builtins.elem "uinput" headlessConfiguration.users.users.intercom-user.extraGroups);
 assert !(builtins.hasAttr "uinput" headlessConfiguration.users.groups);
 assert
-  headlessConfiguration.users.users.intercom-user.openssh.authorizedKeys.keys == localUser.sshPubKeys;
+  headlessConfiguration.users.users.intercom-user.openssh.authorizedKeys.keys
+  == localUser.sshPublicKeys;
 assert preservesOrdinarySshSurface edgeConfiguration;
 assert preservesOrdinarySshSurface headlessConfiguration;
 assert hasNoRetiredUnits edgeConfiguration;

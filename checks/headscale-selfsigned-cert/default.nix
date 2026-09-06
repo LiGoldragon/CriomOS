@@ -10,27 +10,29 @@ let
     name = "tailnet-controller-test";
     criomeDomainName = "tailnet-controller-test.goldragon.criome";
     enableNetworkManager = true;
-    hasNordvpnPubKey = false;
-    hasWifiCertPubKey = false;
-    hasWireguardPubKey = false;
-    hasYggPubKey = false;
     isNixCache = false;
-    linkLocalIps = [ ];
     nixCacheDomain = null;
-    nodeIp = "10.18.0.50";
-    services = [
-      { TailnetClient = { }; }
-      { TailnetController = { }; }
+    capabilities = [
+      { kind = "tailnetClient"; }
+      { kind = "tailnetController"; }
     ];
-    wireguardPubKey = "";
-    wireguardUntrustedProxies = [ ];
-    yggAddress = "200:db8::50";
+    keys = {
+      yggdrasil = null;
+    };
+    network = {
+      linkLocalIps = [ ];
+      nodeIp = "10.18.0.50";
+      routerInterfaces = null;
+      wireguardPublicKey = null;
+      wireguardProxies = [ ];
+    };
     behavesAs = {
       bareMetal = false;
       center = false;
       edge = true;
       iso = false;
       largeAi = false;
+      lowPower = false;
       router = false;
     };
   };
@@ -40,10 +42,8 @@ let
     specialArgs = {
       inherit constants inputs;
       horizon = {
-        cluster = {
-          name = "goldragon";
-          tailnetBaseDomain = "tailnet.goldragon.criome";
-        };
+        cluster = "goldragon";
+        tailnetBaseDomain = "tailnet.goldragon.criome";
         node = tailnetControllerNode;
         exNodes = { };
       };

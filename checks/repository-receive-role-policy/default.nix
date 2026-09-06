@@ -8,7 +8,7 @@ let
   optionEvaluationPlaceholder = "repository-receive-option-evaluation-placeholder-not-key-material";
 
   baseNode = {
-    services = [ ];
+    capabilities = [ ];
   };
 
   receiveNode = {
@@ -16,14 +16,11 @@ let
     # Gitolite option is an unvalidated string at Nix evaluation time,
     # so use an obvious non-key placeholder instead of key-shaped test
     # data. Real public keys come from projected Horizon user data.
-    adminSshPubKeys = [ optionEvaluationPlaceholder ];
-    services = [
+    adminSshPublicKeys = [ optionEvaluationPlaceholder ];
+    capabilities = [
       {
-        PersonaDevelopment = {
-          capabilities = [
-            { GitoliteServer = { }; }
-          ];
-        };
+        kind = "personaDevelopment";
+        capabilities = [ "GitoliteServer" ];
       }
     ];
   };

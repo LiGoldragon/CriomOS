@@ -11,33 +11,34 @@ let
 
   horizon = {
     node = {
+      size = "Medium";
+      keyboard = "Qwerty";
       behavesAs = {
         bareMetal = true;
         center = false;
         edge = false;
         iso = false;
         largeAi = false;
+        lowPower = false;
         router = false;
       };
-      chipIsIntel = false;
-      computerIs.rpi3b = false;
-      handleLidSwitch = "ignore";
-      handleLidSwitchDocked = "ignore";
-      handleLidSwitchExternalPower = "ignore";
+      capabilities = [ ];
       machine = {
-        chipGen = null;
-        model = "all-x86-64";
+        kind = "Metal";
+        architecture = "x86_64";
+        host = null;
+        additionalHosts = [ ];
+        user = null;
+        diskGib = null;
+        hardware = {
+          cores = 2;
+          model = "all-x86-64";
+          motherboard = null;
+          chipGeneration = null;
+          ramGib = 4;
+          location = null;
+        };
       };
-      modelIsThinkpad = false;
-      size = {
-        min = false;
-        medium = true;
-        large = false;
-        max = false;
-      };
-      useColemak = false;
-      wantsHwVideoAccel = false;
-      wantsPrinting = false;
     };
   };
 

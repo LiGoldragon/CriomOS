@@ -27,33 +27,32 @@
 pkgs.testers.runNixOSTest {
   name = "criome_auth_integrated_node_builds";
 
-  # persona-router.nix reads `inputs.router` and `horizon.node.services`; supply
+  # persona-router.nix reads `inputs.router` and `horizon.node.capabilities`; supply
   # both to every node. The criome module is standalone (a `package` option).
   node.specialArgs = {
     inherit inputs;
     horizon = {
       node = {
-        services = [
+        capabilities = [
           {
-            PersonaRouter = {
-              identity = nodeIdentity;
-              listenPort = 7440;
-              criomeSocketPath = "/run/criome/criome.sock";
-              criomeSocketGroup = "criome";
-              peers = [
-                {
-                  identity = peerIdentity;
-                  address = "192.168.1.20:7440";
-                }
-              ];
-              actorHomes = [
-                {
-                  actor = "mirror";
-                  process = 0;
-                  home = peerIdentity;
-                }
-              ];
-            };
+            kind = "personaRouter";
+            identity = nodeIdentity;
+            listenPort = 7440;
+            criomeSocketPath = "/run/criome/criome.sock";
+            criomeSocketGroup = "criome";
+            peers = [
+              {
+                identity = peerIdentity;
+                address = "192.168.1.20:7440";
+              }
+            ];
+            actorHomes = [
+              {
+                actor = "mirror";
+                process = 0;
+                home = peerIdentity;
+              }
+            ];
           }
         ];
       };

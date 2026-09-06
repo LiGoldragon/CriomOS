@@ -7,12 +7,7 @@
 let
   inherit (inputs.nixpkgs) lib;
 
-  size = {
-    min = true;
-    medium = true;
-    large = false;
-    max = false;
-  };
+  size = "Medium";
 
   edgeConfiguration =
     (lib.nixosSystem {
@@ -40,9 +35,11 @@ let
           exNodes = { };
           node = {
             inherit size;
-            useColemak = true;
-            behavesAs.iso = false;
-            hasVideoOutput = true;
+            keyboard = "Colemak";
+            behavesAs = {
+              edge = true;
+              iso = false;
+            };
             enableNetworkManager = false;
           };
         };
@@ -62,27 +59,33 @@ let
         horizon = {
           node = {
             inherit size;
-            useColemak = true;
+            keyboard = "Colemak";
             behavesAs = {
               bareMetal = true;
               center = false;
               edge = true;
               iso = false;
               largeAi = false;
+              lowPower = false;
               router = false;
             };
-            chipIsIntel = false;
-            computerIs.rpi3b = false;
-            handleLidSwitch = "ignore";
-            handleLidSwitchDocked = "ignore";
-            handleLidSwitchExternalPower = "ignore";
+            capabilities = [ ];
             machine = {
-              chipGen = null;
-              model = "all-x86-64";
+              kind = "Metal";
+              architecture = "x86_64";
+              host = null;
+              additionalHosts = [ ];
+              user = null;
+              diskGib = null;
+              hardware = {
+                cores = 2;
+                model = "all-x86-64";
+                motherboard = null;
+                chipGeneration = null;
+                ramGib = 4;
+                location = null;
+              };
             };
-            modelIsThinkpad = false;
-            wantsHwVideoAccel = false;
-            wantsPrinting = false;
           };
         };
       };

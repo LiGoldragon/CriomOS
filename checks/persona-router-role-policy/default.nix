@@ -15,55 +15,52 @@ let
   bool = value: if value then "true" else "false";
 
   baseNode = {
-    services = [ ];
+    capabilities = [ ];
   };
 
   # A node carrying only an unrelated service must NOT start the persona router.
   mirrorOnlyNode = {
-    services = [
-      { TailnetClient = { }; }
-    ];
+    capabilities = [ { kind = "tailnetClient"; } ];
   };
 
   personaRouterNode = {
-    services = [
+    capabilities = [
       {
-        PersonaRouter = {
-          identity = "router-a";
-          listenPort = 7440;
-          criomeSocketPath = "/run/criome/criome.sock";
-          peers = [
-            {
-              identity = "router-b";
-              address = "192.168.1.20:7440";
-            }
-          ];
-          actorHomes = [
-            {
-              actor = "mirror";
-              process = 0;
-              home = "router-b";
-            }
-            # Local criome recipient: a co-resident criome actor with a
-            # ComponentSocket endpoint (no home ⇒ local delivery). This is the
-            # RegisterActor{ComponentSocket(criome_socket)} the mirror
-            # solicit-vote path delivers a verified inbound forward's routed
-            # objects to (primary-nbmq.9 criome-recipient wiring).
-            {
-              actor = "criome-router-a";
-              process = 0;
-              endpoint = "/run/criome/criome.sock";
-            }
-          ];
-          # The direct-message channel grant that authorizes the peer criome's
-          # verified inbound forward to be DELIVERED to the local criome actor.
-          grants = [
-            {
-              source = "criome-router-b";
-              destination = "criome-router-a";
-            }
-          ];
-        };
+        kind = "personaRouter";
+        identity = "router-a";
+        listenPort = 7440;
+        criomeSocketPath = "/run/criome/criome.sock";
+        peers = [
+          {
+            identity = "router-b";
+            address = "192.168.1.20:7440";
+          }
+        ];
+        actorHomes = [
+          {
+            actor = "mirror";
+            process = 0;
+            home = "router-b";
+          }
+          # Local criome recipient: a co-resident criome actor with a
+          # ComponentSocket endpoint (no home ⇒ local delivery). This is the
+          # RegisterActor{ComponentSocket(criome_socket)} the mirror
+          # solicit-vote path delivers a verified inbound forward's routed
+          # objects to (primary-nbmq.9 criome-recipient wiring).
+          {
+            actor = "criome-router-a";
+            process = 0;
+            endpoint = "/run/criome/criome.sock";
+          }
+        ];
+        # The direct-message channel grant that authorizes the peer criome's
+        # verified inbound forward to be DELIVERED to the local criome actor.
+        grants = [
+          {
+            source = "criome-router-b";
+            destination = "criome-router-a";
+          }
+        ];
       }
     ];
   };
@@ -103,12 +100,12 @@ let
   );
 
   systemPackageNames = lib.concatStringsSep " " (
-    map (package: package.pname or package.name or "unnamed")
-      personaRouterConfiguration.config.environment.systemPackages
+    map (
+      package: package.pname or package.name or "unnamed"
+    ) personaRouterConfiguration.config.environment.systemPackages
   );
   tmpfiles = lib.concatStringsSep "\n" personaRouterConfiguration.config.systemd.tmpfiles.rules;
-  allowedTcpPorts =
-    personaRouterConfiguration.config.networking.firewall.allowedTCPPorts or [ ];
+  allowedTcpPorts = personaRouterConfiguration.config.networking.firewall.allowedTCPPorts or [ ];
 in
 pkgs.runCommand "persona-router-role-policy" { } ''
   set -eu

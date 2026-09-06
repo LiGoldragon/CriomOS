@@ -26,67 +26,78 @@ let
   ];
 
   baseMachine = {
-    arch = "X86_64Linux";
-    cores = 2;
-    ramGb = 4;
-    diskGb = 20;
-    location = null;
-    superNode = null;
-    superNodes = [ ];
+    kind = "Metal";
+    architecture = "x86_64";
+    host = null;
+    additionalHosts = [ ];
+    user = null;
+    diskGib = 20;
+    hardware = {
+      cores = 2;
+      model = "all-x86-64";
+      motherboard = null;
+      chipGeneration = null;
+      ramGib = 4;
+      location = null;
+    };
   };
 
   baseNode = name: {
     inherit name;
     cacheUrls = [ ];
-    services = [ ];
-    behavesAs = { };
+    capabilities = [ ];
+    behavesAs = {
+      testVm = false;
+    };
     machine = baseMachine;
   };
 
-  virtualMachineHostService = {
-    VmHost = {
-      guestSubnet = "169.254.100.0/22";
-      kvm = "Available";
-      maximumGuests = 4;
-    };
+  virtualMachineHostCapability = {
+    kind = "vmHost";
+    guest_subnet = "169.254.100.0/22";
+    kvm = "Available";
+    maximum_guests = 4;
   };
 
   atlas = (baseNode "atlas") // {
-    nixPubKeyLine = atlasKey;
-    services = [ virtualMachineHostService ];
+    nixPublicKeyLine = atlasKey;
+    capabilities = [ virtualMachineHostCapability ];
   };
 
   prometheus = (baseNode "prometheus") // {
-    nixPubKeyLine = prometheusKey;
-    services = [ virtualMachineHostService ];
+    nixPublicKeyLine = prometheusKey;
+    capabilities = [ virtualMachineHostCapability ];
   };
 
   apollo = (baseNode "apollo") // {
-    nixPubKeyLine = apolloKey;
+    nixPublicKeyLine = apolloKey;
   };
 
   mercury = (baseNode "mercury") // {
     nodeIp = "10.77.0.7/24";
     criomeDomainName = "mercury.fieldlab.criome";
-    behavesAs.testVm = true;
+    behavesAs = {
+      testVm = true;
+    };
+    network = {
+      nodeIp = "10.77.0.7/24";
+    };
     machine = baseMachine // {
-      superNode = "atlas";
-      superNodes = [ "prometheus" ];
+      kind = "VirtualMachine";
+      host = "atlas";
+      additionalHosts = [ "prometheus" ];
     };
   };
 
   singleHostMercury = mercury // {
-    machine = baseMachine // {
-      superNode = "atlas";
-      superNodes = [ ];
+    machine = mercury.machine // {
+      additionalHosts = [ ];
     };
   };
 
   horizonFor = node: exNodes: {
-    cluster = {
-      name = "fieldlab";
-      trustedBuildPubKeys = clusterKeys;
-    };
+    cluster = "fieldlab";
+    trustedBuildPublicKeys = clusterKeys;
     inherit node exNodes;
   };
 

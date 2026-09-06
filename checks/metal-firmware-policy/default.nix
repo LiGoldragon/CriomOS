@@ -12,32 +12,31 @@ let
     edge = false;
     iso = false;
     largeAi = false;
+    lowPower = false;
     router = false;
-  };
-
-  baseSize = {
-    min = false;
-    medium = true;
-    large = false;
-    max = false;
   };
 
   baseNode = {
     behavesAs = baseBehavesAs;
-    chipIsIntel = false;
-    computerIs.rpi3b = false;
-    handleLidSwitch = "ignore";
-    handleLidSwitchDocked = "ignore";
-    handleLidSwitchExternalPower = "ignore";
+    capabilities = [ ];
+    keyboard = "Qwerty";
+    size = "Medium";
     machine = {
-      chipGen = null;
-      model = "all-x86-64";
+      kind = "Metal";
+      architecture = "x86_64";
+      host = null;
+      additionalHosts = [ ];
+      user = null;
+      diskGib = null;
+      hardware = {
+        cores = 2;
+        model = "all-x86-64";
+        motherboard = null;
+        chipGeneration = null;
+        ramGib = 4;
+        location = null;
+      };
     };
-    modelIsThinkpad = false;
-    size = baseSize;
-    useColemak = false;
-    wantsHwVideoAccel = false;
-    wantsPrinting = false;
   };
 
   configurationFor =
@@ -82,11 +81,11 @@ let
       (
         baseNode
         // {
-          chipIsIntel = true;
-          modelIsThinkpad = true;
-          machine = {
-            chipGen = 12;
-            model = "ThinkPadT14Gen5Intel";
+          machine = baseNode.machine // {
+            hardware = baseNode.machine.hardware // {
+              chipGeneration = 12;
+              model = "ThinkPadT14Gen5Intel";
+            };
           };
         }
       );

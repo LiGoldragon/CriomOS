@@ -7,7 +7,7 @@
   ...
 }:
 let
-  inherit (builtins) listToAttrs;
+  inherit (builtins) listToAttrs mapAttrs;
 
   mkUserConfig = name: user: {
     _module.args = {
@@ -26,10 +26,11 @@ let
   # has no key there), dragging in unrelated home closures — and any orphaned
   # dep in one of those homes (e.g. a force-pushed git rev) fails the whole
   # node's eval even where that home does not belong.
+  homeUser = inputs.criomos-home.lib.horizonUser;
   homeUsers = listToAttrs (
-    map (user: {
-      name = user.name;
-      value = user;
+    map (rawUser: {
+      name = rawUser.name;
+      value = homeUser rawUser;
     }) (lib.filter (user: user.hasPublicKey) horizon.users)
   );
 
