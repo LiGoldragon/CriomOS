@@ -98,7 +98,7 @@
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
     # Consumed in modules/nixos/complex.nix.
-    clavifaber.url = "github:LiGoldragon/clavifaber";
+    clavifaber.url = "github:LiGoldragon/clavifaber/2203f677d3448d99269d66386d35683cd10a05ef";
     clavifaber.inputs.nixpkgs.follows = "nixpkgs";
     # clavifaber is the only direct LiGoldragon crate input that declares
     # a `rust-build` input — force it onto the top-level nightly rust-build.
