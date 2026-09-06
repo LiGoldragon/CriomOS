@@ -7,7 +7,7 @@ let
   # repin revealed its shared 9585484 Orchestrate lock, now consumed here too.
   expectedRevision = "d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf";
   expectedVersion = "0.20.3";
-  expectedHomeRevision = "c40ff0cde736a4b092b7c713571afce40361a395";
+  expectedHomeRevision = "1ae5da86099e323cda8f79ab239ca4efaa12ce47";
   expectedOrchestrateRevision = "9585484738ce0748d0cf23f0431285f9693ca2ec";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
@@ -120,8 +120,6 @@ let
     ];
   };
   daemon = fixture.config.systemd.services.lojix-daemon;
-  claudeRemoteControl =
-    fixture.config.home-manager.users.li.systemd.user.services.claude-remote-control;
   codexRemoteControl =
     fixture.config.home-manager.users.li.systemd.user.services.codex-remote-control;
   liHomeActivation = fixture.config.home-manager.users.li.home.activationPackage;
@@ -213,13 +211,15 @@ assert fixture.config.services.lojix.user == "li";
 assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
 assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
 assert fixture.config.users.users.li.group == "users";
-assert claudeRemoteControl.Service.WorkingDirectory == "/home/li/primary";
+# Claude Remote Control is removed from Home: no user gets a persistent
+# Claude session owner, and no per-user working root is projected for one.
+assert !(fixture.config.home-manager.users.li.systemd.user.services ? claude-remote-control);
 assert
-  multiUserHomeFixture.config.home-manager.users.li.systemd.user.services.claude-remote-control.Service.WorkingDirectory
-  == "/home/li/primary";
+  !(multiUserHomeFixture.config.home-manager.users.li.systemd.user.services ? claude-remote-control);
 assert
-  multiUserHomeFixture.config.home-manager.users.remote.systemd.user.services.claude-remote-control.Service.WorkingDirectory
-  == "/home/remote/primary";
+  !(
+    multiUserHomeFixture.config.home-manager.users.remote.systemd.user.services ? claude-remote-control
+  );
 assert codexRemoteControl.Service.WorkingDirectory == "/home/li/primary";
 assert
   multiUserHomeFixture.config.home-manager.users.li.systemd.user.services.codex-remote-control.Service.WorkingDirectory
@@ -227,8 +227,6 @@ assert
 assert
   multiUserHomeFixture.config.home-manager.users.remote.systemd.user.services.codex-remote-control.Service.WorkingDirectory
   == "/home/remote/primary";
-assert claudeRemoteControl.Service.Restart == "always";
-assert claudeRemoteControl.Service.UMask == "0077";
 assert localUserUid == null;
 assert
   fixture.config.services.lojix.sshAuthSocket == {
