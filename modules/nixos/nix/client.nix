@@ -51,6 +51,11 @@ in
 {
   users.groups.nixdev = { };
 
+  # Nix evaluates the locked Clavifaber input, whose Cargo graph includes a
+  # Git source.  The daemon runs with its own generated PATH, so putting Git
+  # only in a caller service does not make cold evaluation work.
+  systemd.services.nix-daemon.path = [ pkgs.gitMinimal ];
+
   nix = {
     package = pkgs.nixVersions.latest;
 
