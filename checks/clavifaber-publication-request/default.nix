@@ -11,6 +11,7 @@ let
   generatedSshdHostPublicKey = "/etc/ssh/ssh_host_ed25519_key.pub";
   fixtureSshdHostPublicKey = "${fixtureDirectory}/ssh_host_ed25519_key.pub";
   publicationFile = "${fixtureDirectory}/publication.datom";
+  legacyPublicationFile = "${fixtureDirectory}/publication.dotos";
 
   configuration = lib.nixosSystem {
     inherit pkgs;
@@ -40,15 +41,22 @@ pkgs.runCommand "clavifaber-publication-request"
     nativeBuildInputs = [ pkgs.openssh ];
   }
   ''
-    set -eu
+      set -eu
 
-    mkdir -p ${lib.escapeShellArg fixtureDirectory}
-    ssh-keygen -q -t ed25519 -N "" -f ${lib.escapeShellArg (lib.removeSuffix ".pub" fixtureSshdHostPublicKey)}
+      mkdir -p ${lib.escapeShellArg fixtureDirectory}
+      ssh-keygen -q -t ed25519 -N "" -f ${lib.escapeShellArg (lib.removeSuffix ".pub" fixtureSshdHostPublicKey)}
 
-    ${complexInit}
+    reply="$(${complexInit})"
+    test "$reply" = ${lib.escapeShellArg "PublicKeyPublicationWritten.{ ${publicationFile} }"}
     test -s ${lib.escapeShellArg publicationFile}
     test "$(stat -c %a ${lib.escapeShellArg publicationFile})" = 644
     grep -F ${lib.escapeShellArg hostName} ${lib.escapeShellArg publicationFile}
+    test ! -e ${lib.escapeShellArg legacyPublicationFile}
 
-    touch "$out"
+    first_hash="$(sha256sum ${lib.escapeShellArg publicationFile} | cut -d ' ' -f1)"
+    second_reply="$(${complexInit})"
+    test "$second_reply" = "$reply"
+    test "$(sha256sum ${lib.escapeShellArg publicationFile} | cut -d ' ' -f1)" = "$first_hash"
+
+      touch "$out"
   ''
