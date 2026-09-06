@@ -7,7 +7,7 @@ let
   # release instead of carrying a second daemon/client dependency.
   expectedRevision = "7e29c37f51092e5a20abf88c670aabd2acee6e52";
   expectedVersion = "0.21.0";
-  expectedHomeRevision = "be20529823792d525659053399c31c040ce94bfb";
+  expectedHomeRevision = "e71729ec6ebccce9d853227aea549712344a743c";
   expectedOrchestrateRevision = "ac8a92666f4abd8356522c4d52ab23ddcdff4c15";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
