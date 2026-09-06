@@ -7,7 +7,7 @@ let
   # repin revealed its shared 9585484 Orchestrate lock, now consumed here too.
   expectedRevision = "d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf";
   expectedVersion = "0.20.3";
-  expectedHomeRevision = "1ae5da86099e323cda8f79ab239ca4efaa12ce47";
+  expectedHomeRevision = "ceeaaf4272ea6df971eefbefc5bd60907fa6d998";
   expectedOrchestrateRevision = "9585484738ce0748d0cf23f0431285f9693ca2ec";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
