@@ -17,35 +17,45 @@ let
   homeApps = inputs.criomos-home.apps.${system} or { };
   homeChecks = inputs.criomos-home.checks.${system} or { };
   homeProjectionBoundary = homeChecks.system-projection-boundary;
-  mkProjectedUser = name: hasPublicKey: {
-    inherit hasPublicKey name;
-    role = "Unlimited";
-    size = "Large";
-    trust = "Max";
-    keyboard = "Colemak";
-    style = "Emacs";
-    githubId = name;
-    fastRepeat = null;
-    publicKeys = [ ];
-    editor = null;
-    textSize = null;
-    emailAddress = "${name}@example.test";
-    matrixId = "@${name}:example.test";
-    gitSigningKey = null;
-    useColemak = true;
-    useFastRepeat = false;
-    isMultimediaDev = false;
-    isCodeDev = true;
-    preferredEditor = "Emacs";
-    resolvedTextSize = "Medium";
-    sshPublicKeys = [ ];
-    sshPublicKey = null;
-    extraGroups = [ ];
-    enableLinger = false;
-  };
+  mkProjectedUser = name: hasPublicKey:
+    let
+      ssh = "AAAAC3NzaC1lZDI1NTE5AAAAIHEtxRF2wjSD1DzlYCW9BivOsz9X0P95msrbXvGATy/p";
+      keygrip = "7FAFE190D2C749B222B249E54E5A7AD71C1BDDBD";
+      sshPublicKey = "ssh-ed25519 ${ssh}";
+    in
+    {
+      inherit hasPublicKey name;
+      role = "Unlimited";
+      size = "Large";
+      trust = "Max";
+      keyboard = "Colemak";
+      style = "Emacs";
+      githubId = name;
+      fastRepeat = null;
+      publicKeys = lib.optional hasPublicKey {
+        node = "lojix-ownership-fixture";
+        inherit ssh keygrip;
+      };
+      editor = null;
+      textSize = null;
+      emailAddress = "${name}@example.test";
+      matrixId = "@${name}:example.test";
+      gitSigningKey = if hasPublicKey then "&${keygrip}" else null;
+      useColemak = true;
+      useFastRepeat = false;
+      isMultimediaDev = false;
+      isCodeDev = true;
+      preferredEditor = "Emacs";
+      resolvedTextSize = "Medium";
+      sshPublicKeys = lib.optional hasPublicKey sshPublicKey;
+      sshPublicKey = if hasPublicKey then sshPublicKey else null;
+      extraGroups = [ ];
+      enableLinger = false;
+    };
   horizon = {
     node = {
       name = "lojix-ownership-fixture";
+      machine.architecture = "x86_64";
       adminSshPublicKeys = [ ];
       behavesAs = {
         edge = false;
@@ -196,6 +206,12 @@ assert fixture.config.services.lojix.user == "li";
 assert fixture.config.services.lojix.user == fixture.config.users.users.li.name;
 assert fixture.config.services.lojix.group == fixture.config.users.users.li.group;
 assert fixture.config.users.users.li.group == "users";
+assert fixture.config.users.users.li.openssh.authorizedKeys.keys == [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHEtxRF2wjSD1DzlYCW9BivOsz9X0P95msrbXvGATy/p"
+];
+assert fixture.config.home-manager.users.li.services.gpg-agent.sshKeys == [
+  "7FAFE190D2C749B222B249E54E5A7AD71C1BDDBD"
+];
 assert claudeRemoteControl.Service.WorkingDirectory == "/home/li/primary";
 assert
   multiUserHomeFixture.config.home-manager.users.li.systemd.user.services.claude-remote-control.Service.WorkingDirectory
