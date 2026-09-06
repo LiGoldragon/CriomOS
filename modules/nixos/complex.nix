@@ -16,27 +16,27 @@ let
   clavifaber = inputs.clavifaber.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   # Per-host artifacts produced by clavifaber. See clavifaber/ARCHITECTURE.md.
-  publicationFile = "${dir}/publication.dotos";
+  publicationFile = "${dir}/publication.datom";
 
   # Clavifaber does NOT create the SSH host key. sshd does
   # (`services.openssh.enable = true` triggers
   # /etc/ssh/ssh_host_ed25519_key generation at first boot).
   # clavifaber's job: read sshd's `.pub` and aggregate it into
-  # publication.nota along with the Yggdrasil projection and the
+  # publication.datom along with the Yggdrasil projection and the
   # WiFi-PKI client cert when those are wired in.
   sshdHostPublicKey = "/etc/ssh/ssh_host_ed25519_key.pub";
 
-  # Operator surface is one NOTA record per call. Today's boot
-  # sequence is one call: assemble publication.nota. The
+  # Operator surface is one generated Datom request per call. Today's boot
+  # sequence is one call: assemble publication.datom. The
   # YggdrasilKeypairSetup / cert-issuance verbs land here when the
   # network/yggdrasil.nix consolidation (primary-8b3) and the
   # WiFi-PKI plumbing land.
-  publicationWriting = "PublicKeyPublicationWriting.{${config.networking.hostName} {${sshdHostPublicKey}} None None ${publicationFile}}";
+  publicationWriting = "PublicKeyPublicationWriting.{ ${config.networking.hostName} { ${sshdHostPublicKey} } None None ${publicationFile} }";
 in
 lib.mkIf includeComplex {
   environment.systemPackages = [ clavifaber ];
 
-  # publication.nota lives in the complex directory; restrict it to
+  # publication.datom lives in the complex directory; restrict it to
   # root since clavifaber writes there. The publication file itself
   # is mode 0644 (publicly readable per the haywire-stage cluster
   # contract); the containing directory is 0755 so consumers (e.g.
