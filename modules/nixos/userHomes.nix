@@ -26,7 +26,7 @@ let
   # has no key there), dragging in unrelated home closures — and any orphaned
   # dep in one of those homes (e.g. a force-pushed git rev) fails the whole
   # node's eval even where that home does not belong.
-  homeUser = inputs.criomos-home.lib.horizonUser;
+  homeUser = inputs.criomos-home.horizonUser;
   homeUsers = listToAttrs (
     map (rawUser: {
       name = rawUser.name;
