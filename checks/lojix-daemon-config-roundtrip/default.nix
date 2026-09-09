@@ -67,7 +67,7 @@ pkgs.runCommand "lojix-daemon-config-roundtrip" { } ''
   test ${toString (builtins.length resetService.conflicts)} = 1
   test ${lib.escapeShellArg (builtins.elemAt resetService.conflicts 0)} = lojix-daemon.service
   test ${lib.escapeShellArg resetService.serviceConfig.ExecStart} = \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store ${lib.escapeShellArg "(ResetStore)"}"}
+    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store ResetStore"}
   test ${lib.escapeShellArg resetService.environment.LOJIX_CONFIGURATION} = \
     ${lib.escapeShellArg startupArchivePath}
   test ${lib.escapeShellArg configurationWriterCommand} = \

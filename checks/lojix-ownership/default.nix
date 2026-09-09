@@ -2,13 +2,10 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  # Pre-existing expectation drift: Lojix was still 0.20.2 at 34a8e9c,
-  # and Orchestrate was dadd537.  Current OS had d3c0ac9/0.20.3; the Home
-  # repin revealed its shared 9585484 Orchestrate lock, now consumed here too.
-  expectedRevision = "d3c0ac9032250e0b12ade7d8c71a8fc8311ab5bf";
-  expectedVersion = "0.20.3";
-  expectedHomeRevision = "2c4975027af1a3fd9d1da3a2c86e4b195c0b0472";
-  expectedOrchestrateRevision = "9585484738ce0748d0cf23f0431285f9693ca2ec";
+  expectedRevision = "cf231859d6897d86ce111c7418fd5634bd75c601";
+  expectedVersion = "0.21.1";
+  expectedHomeRevision = "9548d7d353dd61fad52aab6d31a08a127283a7f6";
+  expectedOrchestrateRevision = "5f016531e765d9b679a86cc47a2d75eaca43d624";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
@@ -264,7 +261,7 @@ assert fixture.config.services.lojix.ordinarySocketMode == 432;
 assert fixture.config.services.lojix.ownerSocketPath == "/run/lojix/owner.sock";
 assert fixture.config.services.lojix.ownerSocketMode == 384;
 assert fixture.config.services.lojix.stateDirectoryPath == "/var/lib/lojix";
-assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix.sema";
+assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix-v5.sema";
 assert fixture.config.services.lojix.startupArchivePath == "/run/lojix/startup.rkyv";
 assert !(builtins.hasAttr "effectTimeoutSeconds" fixture.config.services.lojix);
 assert
@@ -293,6 +290,6 @@ pkgs.runCommand "lojix-ownership"
     grep -F ${lib.escapeShellArg "export SSH_AUTH_SOCK=${expectedRuntimeSshAuthSocket}"} "$daemonWrapper"
     grep -F ${lib.escapeShellArg "exec ${expectedDaemonCommand}"} "$daemonWrapper"
     test "$(printf '%s' "$writerCommand")" = \
-      "${lojix}/bin/lojix-write-configuration 'ConfigurationWriteRequest.{/run/lojix/ordinary.sock 432 /run/lojix/owner.sock 384 /var/lib/lojix /var/lib/lojix/lojix.sema lojix-ownership-fixture NoTestDefaults /run/lojix/startup.rkyv}'"
+      "${lojix}/bin/lojix-write-configuration 'ConfigurationWriteRequest.{/run/lojix/ordinary.sock 432 /run/lojix/owner.sock 384 /var/lib/lojix /var/lib/lojix/lojix-v5.sema lojix-ownership-fixture NoTestDefaults /run/lojix/startup.rkyv}'"
     touch "$out"
   ''

@@ -219,10 +219,10 @@ in
     # startup. Starting it manually stops the daemon through Conflicts and
     # passes one pathless reset object. The binary reads only this service's
     # generated startup archive to obtain the exact configured store path.
-    # It recreates recognised pre-v4 Lojix stores, reports current v4 stores
+    # It recreates recognised pre-v5 Lojix stores, reports current v5 stores
     # without touching their data, and never names or touches a Spirit database.
     systemd.services.lojix-reset-store = {
-      description = "Recreate the exact configured pre-v4 Lojix store";
+      description = "Recreate the exact configured pre-v5 Lojix store";
       conflicts = [ "lojix-daemon.service" ];
       after = [ "lojix-daemon.service" ];
       environment = {
@@ -233,7 +233,7 @@ in
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.stateDirectoryPath;
-        ExecStart = "${cfg.package}/bin/lojix-reset-store ${lib.escapeShellArg "(ResetStore)"}";
+        ExecStart = "${cfg.package}/bin/lojix-reset-store ResetStore";
         NoNewPrivileges = true;
         PrivateTmp = true;
       };

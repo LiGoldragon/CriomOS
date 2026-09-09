@@ -48,7 +48,8 @@ lib.mkIf personaDevelopmentHost (
         ownerSocketPath = "/run/lojix/owner.sock";
         ownerSocketMode = 384;
         stateDirectoryPath = "/var/lib/lojix";
-        storePath = "/var/lib/lojix/lojix.sema";
+        # Lojix 0.21 opens schema v5. Keep the retained v4 store untouched.
+        storePath = "/var/lib/lojix/lojix-v5.sema";
         startupArchivePath = "/run/lojix/startup.rkyv";
         daemonHost = config.networking.hostName;
         sshAuthSocket.mode = "service-user-gpg-agent";
