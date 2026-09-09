@@ -11,6 +11,12 @@ in
   nix = {
     settings.auto-optimise-store = true;
 
+    gc = {
+      automatic = true;
+      dates = "daily";
+      options = "--delete-old";
+    };
+
     # Lowest priorities.
     daemonCPUSchedPolicy = "idle";
     daemonIOSchedPriority = 7;
