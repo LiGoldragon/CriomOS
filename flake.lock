@@ -890,6 +890,7 @@
         "pkgs": [
           "pkgs"
         ],
+        "plannotator-capability": "plannotator-capability",
         "primary-generated-src": "primary-generated-src",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
@@ -909,17 +910,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1788898960,
-        "narHash": "sha256-l5MYdrLel1zz5Y3gNoAUs6EBqbQGzYq4DT7jPhkZEJk=",
+        "lastModified": 1788985569,
+        "narHash": "sha256-xHJg3UiiO4qhrIBOkLz5zAl67C7hm3Alqh/VkIg0vgY=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c327e752c1b3d13cff63e02b9a69f1ea473ebf20",
+        "rev": "9548d7d353dd61fad52aab6d31a08a127283a7f6",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "9548d7d353dd",
         "repo": "CriomOS-home",
-        "rev": "c327e752c1b3d13cff63e02b9a69f1ea473ebf20",
         "type": "github"
       }
     },
@@ -2806,6 +2807,28 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-pkgs",
+        "type": "github"
+      }
+    },
+    "plannotator-capability": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788985321,
+        "narHash": "sha256-+zasi6RQZ5HD09m8/GDCpf8P6pagNu00ThXsdvBmkY8=",
+        "owner": "LiGoldragon",
+        "repo": "plannotator",
+        "rev": "013912e008fff9aca24e2e8b4de13054d116aeeb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "ref": "013912e008ff",
+        "repo": "plannotator",
         "type": "github"
       }
     },
