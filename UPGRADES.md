@@ -1,5 +1,35 @@
 # Breaking upgrades
 
+## Lojix 0.20.3 to 0.21.1
+
+CriomOS pins Lojix `cf231859d6897d86ce111c7418fd5634bd75c601`.
+The 0.21 contract replaces the Dotos socket clients with generated Datom
+clients and opens durable schema v5.  Deploy the daemon, ordinary client, and
+owner client from one system closure; a 0.21 client cannot drive a running
+0.20.3 daemon.
+
+This is a non-destructive store crossing.  Before activation, retain the v4
+store at its configured path and configure the candidate writer with a new,
+distinct v5 store path and startup archive.  Never point the v5 daemon at the
+v4 store, copy the v4 database to the v5 path, or run the reset unit as part of
+this upgrade.  The retained v4 store remains readable only with the compatible
+0.20.3 inspector documented in Lojix `UPGRADES.md`.
+
+Realize the exact immutable complete-host closure through the running 0.20.3
+owner client before activation.  A live crossing uses the old daemon's
+PID-1-owned self-target `ActivateNow` path, then verifies the system profile,
+`/run/current-system`, new daemon and startup archive, client/daemon wire
+compatibility, and the old deployment's terminal record independently.  Stop
+on any partial state or terminal failure; do not retry, reset, reboot, or
+manually replace a daemon or client.
+
+New deployments also require an externally composed public
+`horizon-definition.datom` plus an explicit `NoSecrets` or authorized
+`SecretsDirectory` value.  The legacy `proposal.datom` is not a substitute.
+If either the new public definition, distinct v5 store configuration, or a
+continuity-independent activation window is absent, the 0.21 system remains a
+realized candidate only.
+
 ## ChatGPT Desktop vendor-boundary Home consumer
 
 This consumer advances CriomOS-home to
