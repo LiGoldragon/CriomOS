@@ -8,20 +8,27 @@ clients and opens durable schema v5.  Deploy the daemon, ordinary client, and
 owner client from one system closure; a 0.21 client cannot drive a running
 0.20.3 daemon.
 
-This is a non-destructive store crossing.  Before activation, retain the v4
-store at its configured path and configure the candidate writer with a new,
-distinct v5 store path and startup archive.  Never point the v5 daemon at the
-v4 store, copy the v4 database to the v5 path, or run the reset unit as part of
-this upgrade.  The retained v4 store remains readable only with the compatible
-0.20.3 inspector documented in Lojix `UPGRADES.md`.
+The distinct store path preserves the v4 database bytes, but it is an active
+state discontinuity: the v5 daemon starts with an empty deployment ledger, no
+current-generation record, and none of the v4 in-flight jobs or event history.
+Before activation, retain the v4 store at its configured path and configure
+the candidate writer with a new, distinct v5 store path and startup archive.
+Never point the v5 daemon at the v4 store, copy the v4 database to the v5 path,
+or run the reset unit as part of this upgrade.  The retained v4 store remains
+readable only with the compatible 0.20.3 inspector documented in Lojix
+`UPGRADES.md`; it is an offline archive, not history adopted by the v5 daemon.
 
 Realize the exact immutable complete-host closure through the running 0.20.3
-owner client before activation.  A live crossing uses the old daemon's
-PID-1-owned self-target `ActivateNow` path, then verifies the system profile,
-`/run/current-system`, new daemon and startup archive, client/daemon wire
-compatibility, and the old deployment's terminal record independently.  Stop
-on any partial state or terminal failure; do not retry, reset, reboot, or
-manually replace a daemon or client.
+owner client before activation.  Do not use its self-target `ActivateNow` for
+this crossing: after the service changes to the empty v5 store, the new daemon
+cannot adopt or terminally observe that v4 deployment identifier.  Activation
+requires either a documented state migration/adoption mechanism or explicit
+approval of the active-state discontinuity together with an external,
+continuity-independent procedure that can observe the old terminal record and
+verify the system profile, `/run/current-system`, new daemon and startup
+archive, matching ordinary/owner clients, and rollback boundary.  Stop on any
+partial state or terminal failure; do not retry, reset, reboot, or manually
+replace a daemon or client.
 
 New deployments also require an externally composed public
 `horizon-definition.datom` plus an explicit `NoSecrets` or authorized
