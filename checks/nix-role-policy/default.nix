@@ -96,6 +96,9 @@ pkgs.runCommand "nix-role-policy" { } ''
   test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.cores)} = 2
   test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.max-jobs)} = 1
   test ${lib.escapeShellArg (bool baseConfiguration.nix.settings.auto-optimise-store)} = true
+  test ${lib.escapeShellArg (bool baseConfiguration.nix.gc.automatic)} = true
+  test ${lib.escapeShellArg baseConfiguration.nix.gc.dates} = daily
+  test ${lib.escapeShellArg baseConfiguration.nix.gc.options} = --delete-old
   test ${lib.escapeShellArg (bool baseConfiguration.nix.sshServe.enable)} = false
   test ${lib.escapeShellArg (bool baseConfiguration.nix.distributedBuilds)} = false
   test ${lib.escapeShellArg (bool baseConfiguration.services.nix-serve.enable)} = false
