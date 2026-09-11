@@ -217,6 +217,7 @@
             inherit inputs;
           };
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
+          router-non-router-lazy = pkgs.callPackage ./checks/router-non-router-lazy { inherit inputs; };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
           wispr-keyboard-uaccess = pkgs.callPackage ./checks/wispr-keyboard-uaccess { inherit inputs; };

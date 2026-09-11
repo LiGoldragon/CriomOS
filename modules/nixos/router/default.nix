@@ -85,7 +85,7 @@ in
     ./yggdrasil.nix
   ];
 
-  config = mkIf behavesAs.router {
+  config = optionalAttrs behavesAs.router {
     assertions = [
       {
         assertion = routerWifiSopsFileExists;

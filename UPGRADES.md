@@ -15,13 +15,10 @@ not carry this fact. Evaluate the materialized target first; after a successful
 activation, verify GeoClue's static source and the consumer's resulting state
 separately.
 
-## Lojix 0.20.3 to 0.21.1
+## Lojix 0.21.1 to 1.0.1
 
-CriomOS pins Lojix `cf231859d6897d86ce111c7418fd5634bd75c601`.
-The 0.21 contract replaces the Dotos socket clients with generated Datom
-clients and opens durable schema v5.  Deploy the daemon, ordinary client, and
-owner client from one system closure; a 0.21 client cannot drive a running
-0.20.3 daemon.
+CriomOS pins Lojix `23f09f28accc2d7e9d4e2e8853a0ceb1eb78ac66`.
+The 1.0 contract retains the generated Datom clients and durable schema v5 introduced in 0.21. Deploy the daemon, ordinary client, and owner client from one system closure; a 1.0 client cannot drive a running 0.21.1 daemon.
 
 The distinct store path preserves the v4 database bytes, but it is an active
 state discontinuity: the v5 daemon starts with an empty deployment ledger, no
