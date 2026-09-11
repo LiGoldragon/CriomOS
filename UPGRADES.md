@@ -1,5 +1,20 @@
 # Breaking upgrades
 
+## Horizon fixed location
+
+CriomOS reads the optional `horizon.node.fixedLocation` fact and configures
+GeoClue's static source only when it is present. The four values describe the
+declared fixed location: decimal latitude and longitude, then altitude and
+accuracy in metres. They are not a measurement of a portable device's current
+position.
+
+Before realization, use a Horizon 0.9.0-or-newer producer and an externally
+composed `horizon-definition.datom` that includes the trailing optional field
+for every node. The retained legacy `proposal.datom` and pre-0.9 producers do
+not carry this fact. Evaluate the materialized target first; after a successful
+activation, verify GeoClue's static source and the consumer's resulting state
+separately.
+
 ## Lojix 0.20.3 to 0.21.1
 
 CriomOS pins Lojix `cf231859d6897d86ce111c7418fd5634bd75c601`.

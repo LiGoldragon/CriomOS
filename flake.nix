@@ -190,6 +190,7 @@
           laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
+          fixed-location-policy = pkgs.callPackage ./checks/fixed-location-policy { inherit inputs; };
           ms2130-uvc-aspect-quirk = pkgs.callPackage ./checks/ms2130-uvc-aspect-quirk {
             inherit inputs;
           };

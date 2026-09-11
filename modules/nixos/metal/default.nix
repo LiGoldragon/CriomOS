@@ -19,6 +19,17 @@ let
     optionalAttrs
     ;
   inherit (horizon.node.machine) model;
+  fixedLocation = horizon.node.fixedLocation or null;
+  geoclueLocation =
+    if fixedLocation == null then
+      {
+        latitude = 0;
+        longitude = 0;
+        altitude = 0;
+        accuracy = 1;
+      }
+    else
+      fixedLocation;
   inherit (horizon.node)
     behavesAs
     size
@@ -535,6 +546,11 @@ mkIf behavesAs.bareMetal {
     geoclue2 = {
       enable = size.min;
       enableDemoAgent = lib.mkOverride 0 true;
+      enableStatic = fixedLocation != null;
+      staticLatitude = geoclueLocation.latitude;
+      staticLongitude = geoclueLocation.longitude;
+      staticAltitude = geoclueLocation.altitude;
+      staticAccuracy = geoclueLocation.accuracy;
       geoProviderUrl = "https://beacondb.net/v1/geolocate";
       appConfig.redshift = {
         isAllowed = true;
