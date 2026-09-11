@@ -35,12 +35,13 @@ let
     size
     chipIsIntel
     modelIsThinkpad
-    useColemak
     computerIs
     handleLidSwitch
     handleLidSwitchExternalPower
     handleLidSwitchDocked
     ;
+
+  useColemak = horizon.node.keyboard == "Colemak";
 
   brightnessCtl = inputs.brightness-ctl.packages.${pkgs.system}.default;
   includeHome = deployment.includeHome or true;
