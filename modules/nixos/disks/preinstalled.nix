@@ -1,9 +1,10 @@
 { lib, horizon, ... }:
 let
-  inherit (horizon.node.io) disks bootloader;
+  inherit (horizon.node) installation;
+  inherit (installation) disks bootloader;
 
-  projectedSwapDevices = horizon.node.io.swapDevices or [ ];
-  compressedSwap = horizon.node.io.compressedSwap or null;
+  projectedSwapDevices = installation.swapDevices or [ ];
+  compressedSwap = horizon.node.compressedSwapMemoryPercent or null;
 
   fsTypeFor =
     ft:
@@ -52,13 +53,16 @@ in
       fsType = fsTypeFor disk.fsType;
     }
     // (if disk.options == [ ] then { } else { inherit (disk) options; })
-  ) disks;
+  ) (lib.listToAttrs (map (disk: {
+    name = disk.mount;
+    value = disk // { fsType = disk.fs_type; };
+  }) disks));
 
   swapDevices = map swapDeviceConfiguration projectedSwapDevices;
 }
 // lib.optionalAttrs (compressedSwap != null) {
   zramSwap = {
     enable = true;
-    memoryPercent = compressedSwap.memoryPercent;
+    memoryPercent = compressedSwap;
   };
 }
