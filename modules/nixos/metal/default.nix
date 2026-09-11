@@ -18,7 +18,7 @@ let
     optionalString
     optionalAttrs
     ;
-  inherit (horizon.node.machine) model;
+  inherit (horizon.node.machine.hardware) model;
   fixedLocation = horizon.node.fixedLocation or null;
   geoclueLocation =
     if fixedLocation == null then
@@ -318,7 +318,7 @@ let
   # - intel-compute-runtime (~100MB OpenCL) is essentially niche on
   #   Intel iGPUs (Darktable disables by default; Blender doesn't
   #   support); dropped from default closure pending a real consumer.
-  chipGen = horizon.node.machine.chipGen;
+  chipGen = horizon.node.machine.hardware.chipGeneration;
   igpuIsModern = chipGen != null && chipGen >= 12;
   wantsHwVideoAccel = horizon.node.wantsHwVideoAccel;
 
