@@ -7,39 +7,18 @@
 let
   inherit (inputs.nixpkgs) lib;
 
-  size = {
-    min = true;
-    medium = true;
-    large = true;
-    max = true;
-  };
+  horizonNode = import ../../fixtures/horizon-node.nix { inherit lib; };
 
-  node = fixedLocation: {
-    inherit fixedLocation size;
-    behavesAs = {
-      bareMetal = true;
-      center = false;
-      edge = true;
-      iso = false;
-      largeAi = false;
-      router = false;
+  node =
+    fixedLocation:
+    horizonNode.node {
+      inherit fixedLocation;
+      behavesAs.edge = true;
+      machine.hardware.model = "all-x86-64";
     };
-    chipIsIntel = false;
-    computerIs.rpi3b = false;
-    handleLidSwitch = "ignore";
-    handleLidSwitchDocked = "ignore";
-    handleLidSwitchExternalPower = "ignore";
-    machine = {
-      chipGen = null;
-      model = "all-x86-64";
-    };
-    modelIsThinkpad = false;
-    useColemak = false;
-    wantsHwVideoAccel = false;
-    wantsPrinting = false;
-  };
 
-  configurationFor = fixedLocation:
+  configurationFor =
+    fixedLocation:
     (lib.nixosSystem {
       inherit pkgs;
       specialArgs = {
@@ -61,18 +40,23 @@ let
     accuracy = 1000.0;
   };
 in
-assert lib.assertMsg (!dynamic.services.geoclue2.enableStatic)
-  "nodes without fixedLocation must keep dynamic GeoClue sources";
+assert lib.assertMsg (
+  !dynamic.services.geoclue2.enableStatic
+) "nodes without fixedLocation must keep dynamic GeoClue sources";
 assert lib.assertMsg static.services.geoclue2.enableStatic
   "fixedLocation must enable GeoClue's static source";
-assert lib.assertMsg (static.services.geoclue2.staticLatitude == 16.736944)
-  "fixedLocation latitude must reach GeoClue";
-assert lib.assertMsg (static.services.geoclue2.staticLongitude == -92.6375)
-  "fixedLocation longitude must reach GeoClue";
-assert lib.assertMsg (static.services.geoclue2.staticAltitude == 2121.0)
-  "fixedLocation altitude must reach GeoClue";
-assert lib.assertMsg (static.services.geoclue2.staticAccuracy == 1000.0)
-  "fixedLocation accuracy must reach GeoClue";
+assert lib.assertMsg (
+  static.services.geoclue2.staticLatitude == 16.736944
+) "fixedLocation latitude must reach GeoClue";
+assert lib.assertMsg (
+  static.services.geoclue2.staticLongitude == -92.6375
+) "fixedLocation longitude must reach GeoClue";
+assert lib.assertMsg (
+  static.services.geoclue2.staticAltitude == 2121.0
+) "fixedLocation altitude must reach GeoClue";
+assert lib.assertMsg (
+  static.services.geoclue2.staticAccuracy == 1000.0
+) "fixedLocation accuracy must reach GeoClue";
 pkgs.runCommand "fixed-location-policy" { } ''
   touch "$out"
 ''

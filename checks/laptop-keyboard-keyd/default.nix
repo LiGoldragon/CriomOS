@@ -54,36 +54,18 @@ let
       ];
     }).config;
 
+  horizonNode = import ../../fixtures/horizon-node.nix { inherit lib; };
+
   metalConfiguration =
     (lib.nixosSystem {
       inherit pkgs;
       specialArgs = {
         inherit inputs;
-        horizon = {
-          node = {
-            inherit size;
-            useColemak = true;
-            behavesAs = {
-              bareMetal = true;
-              center = false;
-              edge = true;
-              iso = false;
-              largeAi = false;
-              router = false;
-            };
-            chipIsIntel = false;
-            computerIs.rpi3b = false;
-            handleLidSwitch = "ignore";
-            handleLidSwitchDocked = "ignore";
-            handleLidSwitchExternalPower = "ignore";
-            machine = {
-              chipGen = null;
-              model = "all-x86-64";
-            };
-            modelIsThinkpad = false;
-            wantsHwVideoAccel = false;
-            wantsPrinting = false;
-          };
+        horizon.node = horizonNode.node {
+          keyboard = "Colemak";
+          behavesAs.edge = true;
+          machine.hardware.model = "all-x86-64";
+          inherit size;
         };
       };
       modules = [

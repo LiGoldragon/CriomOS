@@ -9,35 +9,15 @@ let
     config.allowUnfree = true;
   };
 
-  horizon = {
-    node = {
-      behavesAs = {
-        bareMetal = true;
-        center = false;
-        edge = false;
-        iso = false;
-        largeAi = false;
-        router = false;
-      };
-      chipIsIntel = false;
-      computerIs.rpi3b = false;
-      handleLidSwitch = "ignore";
-      handleLidSwitchDocked = "ignore";
-      handleLidSwitchExternalPower = "ignore";
-      machine = {
-        chipGen = null;
-        model = "all-x86-64";
-      };
-      modelIsThinkpad = false;
-      size = {
-        min = false;
-        medium = true;
-        large = false;
-        max = false;
-      };
-      useColemak = false;
-      wantsHwVideoAccel = false;
-      wantsPrinting = false;
+  horizonNode = import ../../fixtures/horizon-node.nix { inherit lib; };
+
+  horizon.node = horizonNode.node {
+    machine.hardware.model = "all-x86-64";
+    size = {
+      min = false;
+      medium = true;
+      large = false;
+      max = false;
     };
   };
 

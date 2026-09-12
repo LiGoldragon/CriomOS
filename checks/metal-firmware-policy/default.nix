@@ -6,38 +6,29 @@ let
 
   bool = value: if value then "true" else "false";
 
-  baseBehavesAs = {
-    bareMetal = true;
-    center = false;
-    edge = false;
-    iso = false;
-    largeAi = false;
-    router = false;
-  };
+  horizonNode = import ../../fixtures/horizon-node.nix { inherit lib; };
 
-  baseSize = {
-    min = false;
-    medium = true;
-    large = false;
-    max = false;
-  };
-
-  baseNode = {
-    behavesAs = baseBehavesAs;
-    chipIsIntel = false;
-    computerIs.rpi3b = false;
-    handleLidSwitch = "ignore";
-    handleLidSwitchDocked = "ignore";
-    handleLidSwitchExternalPower = "ignore";
-    machine = {
-      chipGen = null;
-      model = "all-x86-64";
+  baseNode = horizonNode.node {
+    machine.hardware.model = "all-x86-64";
+    size = {
+      min = false;
+      medium = true;
+      large = false;
+      max = false;
     };
-    modelIsThinkpad = false;
-    size = baseSize;
-    useColemak = false;
-    wantsHwVideoAccel = false;
-    wantsPrinting = false;
+  };
+
+  intelThinkpadNode = horizonNode.node {
+    machine.hardware = {
+      model = "ThinkPadT14Gen5Intel";
+      chipGeneration = 12;
+    };
+    size = {
+      min = false;
+      medium = true;
+      large = false;
+      max = false;
+    };
   };
 
   configurationFor =
@@ -74,22 +65,9 @@ let
     includeAllFirmware = false;
   } baseNode;
 
-  intelT14Configuration =
-    configurationFor
-      {
-        includeHome = true;
-      }
-      (
-        baseNode
-        // {
-          chipIsIntel = true;
-          modelIsThinkpad = true;
-          machine = {
-            chipGen = 12;
-            model = "ThinkPadT14Gen5Intel";
-          };
-        }
-      );
+  intelT14Configuration = configurationFor {
+    includeHome = true;
+  } intelThinkpadNode;
 in
 pkgs.runCommand "metal-firmware-policy" { } ''
   set -eu

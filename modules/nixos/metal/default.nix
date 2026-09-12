@@ -30,16 +30,110 @@ let
       }
     else
       fixedLocation;
-  inherit (horizon.node)
-    behavesAs
-    size
-    chipIsIntel
-    modelIsThinkpad
-    computerIs
-    handleLidSwitch
-    handleLidSwitchExternalPower
-    handleLidSwitchDocked
-    ;
+  inherit (horizon.node) behavesAs size;
+
+  # A Horizon projection says what the machine is: `machine.hardware.model` is
+  # an operator-supplied string.  What it means for this system is CriomOS's
+  # own business.
+  # horizon-rs f1a5eca retired `KnownModel`, `ComputerIs` and `TypeIs` as
+  # "enum-shadow structs" — consumer policy booleans living in the producer's
+  # contract — so the classification sits here, beside the systemd units and
+  # kernel branches that read it.  Add a row when a machine warrants a config
+  # branch.  An unrecognised or absent model is an evaluation error below,
+  # never an all-false default: a default would silently disable every
+  # ThinkPad's battery, thermal and lid handling.
+  modelFactsIndex = {
+    "all-x86-64" = {
+      isThinkpad = false;
+      chipIsIntel = false;
+      isRpi3b = false;
+    };
+    "GMKtec EVO-X2" = {
+      isThinkpad = false;
+      chipIsIntel = false;
+      isRpi3b = false;
+    };
+    rock64 = {
+      isThinkpad = false;
+      chipIsIntel = false;
+      isRpi3b = false;
+    };
+    rpi3B = {
+      isThinkpad = false;
+      chipIsIntel = false;
+      isRpi3b = true;
+    };
+    ThinkPadE15Gen2Intel = {
+      isThinkpad = true;
+      chipIsIntel = true;
+      isRpi3b = false;
+    };
+    ThinkPadT14Gen2Intel = {
+      isThinkpad = true;
+      chipIsIntel = true;
+      isRpi3b = false;
+    };
+    ThinkPadT14Gen5Intel = {
+      isThinkpad = true;
+      chipIsIntel = true;
+      isRpi3b = false;
+    };
+    ThinkPadX230 = {
+      isThinkpad = true;
+      chipIsIntel = true;
+      isRpi3b = false;
+    };
+    ThinkPadX240 = {
+      isThinkpad = true;
+      chipIsIntel = true;
+      isRpi3b = false;
+    };
+    ThinkPadX250 = {
+      isThinkpad = true;
+      chipIsIntel = true;
+      isRpi3b = false;
+    };
+  };
+
+  modelFacts =
+    if model == null then
+      throw ''
+        This bare-metal node's Horizon projection leaves machine.hardware.model unset.
+        CriomOS metal policy (battery thresholds, thinkfan, microcode, kernel modules)
+        is selected by model, so there is nothing to select.  Give the node a model in
+        its Horizon definition.
+      ''
+    else
+      modelFactsIndex.${model} or (throw ''
+        CriomOS does not classify the machine model ${model}.
+        Add a row for it to modelFactsIndex in modules/nixos/metal/default.nix
+        saying whether it is a ThinkPad, whether its chip is Intel, and whether
+        it is a Raspberry Pi 3B.
+      '');
+
+  # `chipIsIntel` is a model fact, so it comes from the same row.  The retired
+  # projection derived it as `resolved_arch.is_intel()` — true across the whole
+  # x86_64 architecture — which claimed Intel microcode and Intel GPU drivers
+  # for every AMD machine in the estate.  Reading it per model is both the
+  # correction and one mechanism fewer.
+  inherit (modelFacts) isThinkpad chipIsIntel isRpi3b;
+
+  # systemd-logind lid policy.  This was never hardware classification: the
+  # derivation horizon-rs carried as `BehavesAs::lid_switch_policy` before
+  # f1a5eca reads only center/lowPower/edge, all three of which the current
+  # projection still carries, and its outputs are logind.conf strings.  So it
+  # is reproduced verbatim here, where logind lives.
+  lidSwitch = {
+    onBattery = if behavesAs.center then "ignore" else "suspend";
+    onExternalPower =
+      if behavesAs.center then
+        "ignore"
+      else if behavesAs.lowPower then
+        "suspend"
+      else
+        "lock";
+    docked = if behavesAs.edge then "lock" else "ignore";
+  };
 
   useColemak = horizon.node.keyboard == "Colemak";
 
@@ -131,7 +225,7 @@ let
   hasTouchpad = true;
 
   needsIntelThrottlingFix = model == "ThinkPadT14Gen2Intel";
-  needsThinkpadThermalGuard = modelIsThinkpad && chipIsIntel;
+  needsThinkpadThermalGuard = isThinkpad && chipIsIntel;
 
   thinkpadFanLevels = [
     [
@@ -333,7 +427,7 @@ let
 
 in
 mkIf behavesAs.bareMetal {
-  assertions = optional modelIsThinkpad {
+  assertions = optional isThinkpad {
     assertion = !(builtins.any (level: builtins.elem "level auto" level) thinkpadFanLevels);
     message = "ThinkPad fan policy must keep user-space fan control at high temperatures; do not use `level auto`.";
   };
@@ -359,7 +453,7 @@ mkIf behavesAs.bareMetal {
   boot = {
     extraModulePackages =
       [ ]
-      ++ (optional modelIsThinkpad config.boot.kernelPackages.acpi_call)
+      ++ (optional isThinkpad config.boot.kernelPackages.acpi_call)
       ++ (optional size.large config.boot.kernelPackages.v4l2loopback);
 
     initrd = {
@@ -398,7 +492,7 @@ mkIf behavesAs.bareMetal {
 
     kernelParams = lib.concatLists [
       (
-        if computerIs.rpi3b then
+        if isRpi3b then
           [
             "cma=32M"
             "console=ttyS0,115200n8"
@@ -438,7 +532,7 @@ mkIf behavesAs.bareMetal {
   # Battery charge thresholds — default to care mode (75–80%).
   # Runs at boot and after resume; ThinkPad EC persists values across reboots
   # but re-applying after suspend is belt-and-suspenders.
-  systemd.services.battery-charge-default = mkIf modelIsThinkpad {
+  systemd.services.battery-charge-default = mkIf isThinkpad {
     description = "Set battery charge thresholds to care mode";
     after = [
       "multi-user.target"
@@ -533,12 +627,12 @@ mkIf behavesAs.bareMetal {
       ++ optionals chipIsIntel intelUtils
       ++ optionals size.large [ v4l-utils ]
       ++ optionals (size.max && behavesAs.edge) waydroidPackages
-      ++ optional modelIsThinkpad batteryCtl;
+      ++ optional isThinkpad batteryCtl;
 
   };
 
   users.groups.plugdev = { };
-  users.groups.power = mkIf modelIsThinkpad { };
+  users.groups.power = mkIf isThinkpad { };
 
   services = {
     # TODO
@@ -578,15 +672,15 @@ mkIf behavesAs.bareMetal {
     udev = {
       packages = [ wisprKeyboardUaccessRules ];
       extraRules = ''
-      # Battery charge threshold — grant group write so unprivileged users can toggle
-      SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
-      # whisrs virtual-keyboard injection
-      KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
-      KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
-      # USBasp - USB programmer for Atmel AVR controllers
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
-      # Pro-micro kp-boot-bootloader - Ergodone keyboard
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="bb05", GROUP="plugdev"
+        # Battery charge threshold — grant group write so unprivileged users can toggle
+        SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
+        # whisrs virtual-keyboard injection
+        KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
+        KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
+        # USBasp - USB programmer for Atmel AVR controllers
+        SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
+        # Pro-micro kp-boot-bootloader - Ergodone keyboard
+        SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="bb05", GROUP="plugdev"
       '';
     };
 
@@ -605,16 +699,16 @@ mkIf behavesAs.bareMetal {
       autoRepeatDelay = 200;
       autoRepeatInterval = 28;
 
-      digimend.enable = false; # !typeIs.center; # Broken
+      digimend.enable = false; # Broken
     };
 
     logind.settings.Login = {
-      HandleLidSwitch = handleLidSwitch;
-      HandleLidSwitchExternalPower = handleLidSwitchExternalPower;
-      HandleLidSwitchDocked = handleLidSwitchDocked;
+      HandleLidSwitch = lidSwitch.onBattery;
+      HandleLidSwitchExternalPower = lidSwitch.onExternalPower;
+      HandleLidSwitchDocked = lidSwitch.docked;
     };
 
-    thinkfan = mkIf modelIsThinkpad {
+    thinkfan = mkIf isThinkpad {
       enable = true;
       levels = thinkpadFanLevels;
       sensors = [

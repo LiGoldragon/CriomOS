@@ -1,0 +1,95 @@
+{
+  "cluster": "alpha",
+  "tailnetBaseDomain": "tailnet.alpha.criome",
+  "trustedBuildPublicKeys": [],
+  "node": {
+    "name": "atlas",
+    "variant": "Live",
+    "isLive": true,
+    "isInstallation": false,
+    "installation": null,
+    "installationDisks": [],
+    "size": "Max",
+    "trust": "Max",
+    "online": true,
+    "keyboard": "Qwerty",
+    "compressedSwapMemoryPercent": null,
+    "machine": {
+      "kind": "Metal",
+      "architecture": "x86_64",
+      "host": null,
+      "additionalHosts": [],
+      "user": null,
+      "diskGib": null,
+      "hardware": {
+        "cores": 4,
+        "model": null,
+        "motherboard": null,
+        "chipGeneration": null,
+        "ramGib": null,
+        "location": null
+      }
+    },
+    "network": {
+      "linkLocalIps": [],
+      "nodeIp": null,
+      "wireguardPublicKey": null,
+      "wireguardProxies": [],
+      "routerInterfaces": null
+    },
+    "keys": {
+      "ssh": "ssh-ed25519 AAAAfixture",
+      "nix": null,
+      "yggdrasil": null
+    },
+    "capabilities": [],
+    "criomeDomainName": "atlas.alpha.criome",
+    "system": "x86_64-linux",
+    "maxJobs": 1,
+    "buildCores": 1,
+    "isFullyTrusted": true,
+    "isRemoteNixBuilder": false,
+    "isDispatcher": true,
+    "isNixCache": false,
+    "isLargeEdge": false,
+    "enableNetworkManager": false,
+    "hasBasePublicKeys": false,
+    "nixPublicKeyLine": null,
+    "nixCacheDomain": null,
+    "nixUrl": null,
+    "behavesAs": {
+      "center": false,
+      "router": false,
+      "edge": false,
+      "nextGeneration": false,
+      "lowPower": false,
+      "bareMetal": true,
+      "virtualMachine": false,
+      "iso": true,
+      "largeAi": false,
+      "testVm": false,
+      "cloudNode": false
+    },
+    "sshPublicKeyLine": "ssh-ed25519 ssh-ed25519 AAAAfixture",
+    "builderConfigs": [],
+    "cacheUrls": [],
+    "exNodesSshPublicKeys": [],
+    "dispatchersSshPublicKeys": [],
+    "adminSshPublicKeys": [],
+    "imageExchangePublicKeys": [],
+    "fixedLocation": null
+  },
+  "exNodes": {},
+  "users": [],
+  "domains": [],
+  "trust": {
+    "cluster": "Max",
+    "clusters": [],
+    "nodes": [],
+    "users": []
+  },
+  "domainConfiguration": {
+    "internalSuffix": "criome",
+    "publicClusterDomains": []
+  }
+}
