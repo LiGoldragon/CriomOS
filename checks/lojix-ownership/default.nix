@@ -4,7 +4,7 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "c4bba4fa12408c39ff745b0773468cd32a74403f";
   expectedPackageName = "lojix-6.0.0";
-  expectedHomeRevision = "b7ccb8756fc7c19255923a963f3d51c63e77f6c0";
+  expectedHomeRevision = "fc51010176cb7d6eb77e73f88bae7405840e7414";
   expectedOrchestrateRevision = "9070cbb8717813b127e448dd5a43a2095daf7d1b";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
