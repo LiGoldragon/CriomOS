@@ -906,6 +906,7 @@
           "pkgs"
         ],
         "plannotator-capability": "plannotator-capability",
+        "prompt-relay-source": "prompt-relay-source",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "rust-overlay": [
@@ -924,17 +925,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1789230952,
-        "narHash": "sha256-OOp3GI75A9+bKUdC2q07fWevxVp2b3h8iy4a6WdMSP8=",
+        "lastModified": 1789752063,
+        "narHash": "sha256-G4kDSWCrov/gkCYPV7YTmmuJlEZa1zYlLcGKX2VMmQw=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "f652ba9ae6b24b7e946e60e98acc270280beb774",
+        "rev": "e17ec33a3ae6c1cf3fa3fc27b0d6af328a086497",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "e17ec33a3ae6",
         "repo": "CriomOS-home",
-        "rev": "f652ba9ae6b24b7e946e60e98acc270280beb774",
         "type": "github"
       }
     },
@@ -2058,17 +2059,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1786575531,
-        "narHash": "sha256-GBY6toTmGJgHXqemJ8xPZeKy8OVrU0hls19oNtGw0ZU=",
+        "lastModified": 1789569240,
+        "narHash": "sha256-6ju1K1+LbazQHQlvLi7PkQQ3bvsQktAvCyUwcBN4izk=",
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "bf7295641bb2f15ad86622f242909a0646166ced",
+        "rev": "fe0d04561051da85292a058ab156e286b7494aa4",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
+        "ref": "fe0d04561051",
         "repo": "message",
-        "rev": "bf7295641bb2f15ad86622f242909a0646166ced",
         "type": "github"
       }
     },
@@ -2891,6 +2892,23 @@
         "owner": "LiGoldragon",
         "ref": "013912e008ff",
         "repo": "plannotator",
+        "type": "github"
+      }
+    },
+    "prompt-relay-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789570794,
+        "narHash": "sha256-0Y66GkkRB/TfD9E685/a8W8lnXzTFmQxcwsyb4It8jw=",
+        "owner": "LiGoldragon",
+        "repo": "primary",
+        "rev": "28532075161275aeca04e5bf2a50d8a7c3195bf7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "primary",
+        "rev": "28532075161275aeca04e5bf2a50d8a7c3195bf7",
         "type": "github"
       }
     },
