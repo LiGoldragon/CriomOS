@@ -116,19 +116,18 @@ let
       }
     ];
   };
-  daemon = fixture.config.systemd.services.lojix-daemon;
+  nexus = fixture.config.systemd.services.lojix;
   codexRemoteControl =
     fixture.config.home-manager.users.li.systemd.user.services.codex-remote-control;
   liHomeActivation = fixture.config.home-manager.users.li.home.activationPackage;
   servicePathEnvironment =
     service: lib.makeBinPath service.path + ":" + lib.makeSearchPath "sbin" service.path;
-  daemonEnvironment = daemon.environment;
+  nexusEnvironment = nexus.environment;
   localUserName = fixture.config.services.lojix.user;
   localUserUid = fixture.config.users.users.${localUserName}.uid;
   expectedRuntimeSshAuthSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
-  expectedDaemonCommand = "${lojix}/bin/lojix-daemon /run/lojix/startup.rkyv";
+  expectedNexusCommand = "${lojix}/bin/lojix-nexus";
   explicitSshAuthSocket = "/run/user/explicit/gnupg/S.gpg-agent.ssh";
-  explicitSocketExpectedDaemonCommand = "${lojix}/bin/lojix-daemon /run/lojix-explicit/startup.rkyv";
   explicitSocketFixture = lib.nixosSystem {
     inherit system;
     modules = [
@@ -145,14 +144,9 @@ let
           package = lojix;
           user = "lojix-explicit";
           group = "lojix-explicit";
-          ordinarySocketPath = "/run/lojix-explicit/ordinary.sock";
-          ordinarySocketMode = 432;
-          ownerSocketPath = "/run/lojix-explicit/owner.sock";
-          ownerSocketMode = 384;
           stateDirectoryPath = "/var/lib/lojix-explicit";
-          storePath = "/var/lib/lojix-explicit/lojix.sema";
-          startupArchivePath = "/run/lojix-explicit/startup.rkyv";
-          daemonHost = "lojix-explicit";
+          runtimeDirectoryPath = "/run/lojix-explicit";
+          nexusHost = "lojix-explicit";
           sshAuthSocket = {
             mode = "path";
             path = explicitSshAuthSocket;
@@ -161,7 +155,7 @@ let
       }
     ];
   };
-  explicitSocketDaemon = explicitSocketFixture.config.systemd.services.lojix-daemon;
+  explicitSocketNexus = explicitSocketFixture.config.systemd.services.lojix;
   invalidIdentityFixture =
     users:
     lib.nixosSystem {
@@ -231,16 +225,18 @@ assert
     path = null;
   };
 assert
-  daemonEnvironment == {
-    PATH = servicePathEnvironment daemon;
+  nexusEnvironment == {
+    PATH = servicePathEnvironment nexus;
   };
-assert daemon.serviceConfig.User == localUserName;
+assert nexus.serviceConfig.User == localUserName;
 assert
-  explicitSocketDaemon.environment == {
-    PATH = servicePathEnvironment explicitSocketDaemon;
+  explicitSocketNexus.environment == {
+    PATH = servicePathEnvironment explicitSocketNexus;
     SSH_AUTH_SOCK = explicitSshAuthSocket;
   };
-assert explicitSocketDaemon.serviceConfig.ExecStart == explicitSocketExpectedDaemonCommand;
+# An explicit SSH-agent path needs no wrapper, so this one starts the Nexus
+# directly - still with no argument.
+assert explicitSocketNexus.serviceConfig.ExecStart == "${lojix}/bin/lojix-nexus";
 assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
 assert builtins.any (
   assertion:
@@ -258,20 +254,18 @@ assert builtins.any (
 ) multipleLocalUserAssertions;
 assert fixture.config.services.lojix.ordinarySocketPath == "/run/lojix/ordinary.sock";
 assert fixture.config.services.lojix.ordinarySocketMode == 432;
-assert fixture.config.services.lojix.ownerSocketPath == "/run/lojix/owner.sock";
+assert fixture.config.services.lojix.ownerSocketPath == "/run/lojix/meta.sock";
 assert fixture.config.services.lojix.ownerSocketMode == 384;
 assert fixture.config.services.lojix.stateDirectoryPath == "/var/lib/lojix";
-assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix-v5.sema";
-assert fixture.config.services.lojix.startupArchivePath == "/run/lojix/startup.rkyv";
+assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix.sema";
+assert fixture.config.services.lojix.runtimeDirectoryPath == "/run/lojix";
+assert
+  fixture.config.services.lojix.resetConfigurationPath == "/var/lib/lojix/reset-configuration.rkyv";
 assert !(builtins.hasAttr "effectTimeoutSeconds" fixture.config.services.lojix);
 assert
-  !(builtins.elem "lojix-daemon.service" (
-    fixture.config.systemd.services.home-manager-li.requires or [ ]
-  ));
+  !(builtins.elem "lojix.service" (fixture.config.systemd.services.home-manager-li.requires or [ ]));
 assert
-  !(builtins.elem "lojix-daemon.service" (
-    fixture.config.systemd.services.home-manager-li.after or [ ]
-  ));
+  !(builtins.elem "lojix.service" (fixture.config.systemd.services.home-manager-li.after or [ ]));
 pkgs.runCommand "lojix-ownership"
   {
     inherit
@@ -279,17 +273,15 @@ pkgs.runCommand "lojix-ownership"
       homeProjectionBoundary
       liHomeActivation
       ;
-    daemonWrapper = daemon.serviceConfig.ExecStart;
-    writerCommand = builtins.elemAt daemon.serviceConfig.ExecStartPre 0;
+    nexusWrapper = nexus.serviceConfig.ExecStart;
   }
   ''
     test -x "$lojix/bin/lojix"
+    test -x "$lojix/bin/lojix-meta"
     test -e "$homeProjectionBoundary"
     test -e "$liHomeActivation"
-    test -x "$daemonWrapper"
-    grep -F ${lib.escapeShellArg "export SSH_AUTH_SOCK=${expectedRuntimeSshAuthSocket}"} "$daemonWrapper"
-    grep -F ${lib.escapeShellArg "exec ${expectedDaemonCommand}"} "$daemonWrapper"
-    test "$(printf '%s' "$writerCommand")" = \
-      "${lojix}/bin/lojix-write-configuration 'ConfigurationWriteRequest.{/run/lojix/ordinary.sock 432 /run/lojix/owner.sock 384 /var/lib/lojix /var/lib/lojix/lojix-v5.sema lojix-ownership-fixture NoTestDefaults /run/lojix/startup.rkyv}'"
+    test -x "$nexusWrapper"
+    grep -F ${lib.escapeShellArg "export SSH_AUTH_SOCK=${expectedRuntimeSshAuthSocket}"} "$nexusWrapper"
+    grep -F ${lib.escapeShellArg "exec ${expectedNexusCommand}"} "$nexusWrapper"
     touch "$out"
   ''
