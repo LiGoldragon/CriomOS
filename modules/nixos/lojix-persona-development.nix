@@ -38,20 +38,16 @@ lib.mkIf personaDevelopmentHost (
     (lib.mkIf hasExactlyOneLocalUser {
       # `users.nix` owns the projected account. Read its evaluated account name
       # and primary group instead of duplicating either identity decision here.
+      # The Nexus self-configures from its own Sema store; socket paths, socket
+      # modes and the store file are the Nexus's own built-in choices, restated
+      # read-only by the module. Only identity and the SSH-agent endpoint are
+      # decided here.
       services.lojix = {
         enable = true;
         package = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.default;
         user = config.users.users.${localUser}.name;
         group = config.users.users.${localUser}.group;
-        ordinarySocketPath = "/run/lojix/ordinary.sock";
-        ordinarySocketMode = 432;
-        ownerSocketPath = "/run/lojix/owner.sock";
-        ownerSocketMode = 384;
-        stateDirectoryPath = "/var/lib/lojix";
-        # Lojix 0.21 opens schema v5. Keep the retained v4 store untouched.
-        storePath = "/var/lib/lojix/lojix-v5.sema";
-        startupArchivePath = "/run/lojix/startup.rkyv";
-        daemonHost = config.networking.hostName;
+        nexusHost = config.networking.hostName;
         sshAuthSocket.mode = "service-user-gpg-agent";
       };
     })

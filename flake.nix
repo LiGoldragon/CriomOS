@@ -93,6 +93,16 @@
 
     # Daemon-based deploy orchestrator. Services opt in with fully explicit
     # socket, state, and identity configuration.
+    # KNOWN UNBUILDABLE. This exact revision fails to compile: its Cargo.lock
+    # carries two `meta-signal-lojix` 2.3.0 entries, and the one the Nexus's
+    # dev-dependency selects is paired with datom-codec 0.25.6, whose
+    # `Datomizable` the generated signal code cannot see (72 errors). The
+    # repair is to repin to a revision with a single meta-signal-lojix —
+    # `fab60e584daf1c33a629cb8e2f3c353f9323f40e` (meta-signal-lojix 3.0.1)
+    # builds and carries an identical Nexus surface: `lojix-nexus`, zero
+    # arguments, the same built-in socket and store locations, the same
+    # `ConfigurationWriteRequest`. That repin also rewrites flake.lock, which
+    # this branch does not own; land the two together.
     lojix.url = "github:LiGoldragon/lojix/23f09f28accc2d7e9d4e2e8853a0ceb1eb78ac66";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -200,11 +210,12 @@
             inherit inputs;
           };
           mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
-          lojix-daemon-config-roundtrip = pkgs.callPackage ./checks/lojix-daemon-config-roundtrip {
+          lojix-nexus-service = pkgs.callPackage ./checks/lojix-nexus-service {
             inherit inputs;
           };
+          lojix-nexus-start = pkgs.callPackage ./checks/lojix-nexus-start { inherit inputs; };
           lojix-ownership = pkgs.callPackage ./checks/lojix-ownership { inherit inputs; };
-          lojix-fresh-daemon-startup = inputs.lojix.checks.${system}.fresh-daemon-startup;
+          lojix-fresh-nexus-startup = inputs.lojix.checks.${system}.fresh-daemon-startup;
           criome-daemon-config-roundtrip = pkgs.callPackage ./checks/criome-daemon-config-roundtrip {
             inherit inputs;
           };
