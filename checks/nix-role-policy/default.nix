@@ -94,7 +94,7 @@ pkgs.runCommand "nix-role-policy" { } ''
 
   test ${lib.escapeShellArg (bool (builtins.hasAttr "nixdev" baseConfiguration.users.groups))} = true
   test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.cores)} = 2
-  test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.max-jobs)} = 1
+  test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.max-jobs)} = 0
   test ${lib.escapeShellArg (bool baseConfiguration.nix.settings.auto-optimise-store)} = true
   test ${lib.escapeShellArg (bool baseConfiguration.nix.gc.automatic)} = true
   test ${lib.escapeShellArg baseConfiguration.nix.gc.dates} = daily
