@@ -94,11 +94,15 @@
     # Lojix Nexus — deployment authority. Its executable owns the default
     # state directory, store file and both socket paths; the NixOS module
     # restates them rather than setting them.
-    # 5.0.0. Its Cargo.lock carries exactly one revision of every contract
-    # crate — `signal-lojix` 5.0.0 (4271b5ce), `meta-signal-lojix` 6.0.0
-    # (35deec4e), `horizon-lib` 0.10.1 (40d04d25) — so the duplicate
-    # `meta-signal-lojix` that made 23f09f28 uncompilable cannot recur.
-    lojix.url = "github:LiGoldragon/lojix/b5cddd2e16ad49d1060cf4109f44c27359195441";
+    # 6.0.0, carrying exactly one revision of every contract crate —
+    # `signal-lojix` 5.0.0 (4271b5ce), `meta-signal-lojix` 6.0.0 (35deec4e),
+    # `horizon-lib` 0.10.1 (40d04d25) — so the duplicate `meta-signal-lojix`
+    # that made 23f09f28 uncompilable cannot recur. The Nexus announces
+    # `(LojixNexusReady <ordinary> <meta>)` once both listeners are bound, and
+    # its own startup test now waits for that announcement instead of polling a
+    # five-second deadline: 5.0.0's test failed reproducibly on a loaded remote
+    # builder while passing on an idle one.
+    lojix.url = "github:LiGoldragon/lojix/c4bba4fa12408c39ff745b0773468cd32a74403f";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
@@ -195,6 +199,9 @@
           laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
+          metal-model-classification = pkgs.callPackage ./checks/metal-model-classification {
+            inherit inputs;
+          };
           fixed-location-policy = pkgs.callPackage ./checks/fixed-location-policy { inherit inputs; };
           ms2130-uvc-aspect-quirk = pkgs.callPackage ./checks/ms2130-uvc-aspect-quirk {
             inherit inputs;

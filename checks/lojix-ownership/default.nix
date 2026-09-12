@@ -2,8 +2,8 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "b5cddd2e16ad49d1060cf4109f44c27359195441";
-  expectedPackageName = "lojix-5.0.0";
+  expectedRevision = "c4bba4fa12408c39ff745b0773468cd32a74403f";
+  expectedPackageName = "lojix-6.0.0";
   expectedHomeRevision = "caffe9a17cc5830d64f838f7d5cf74d9b2b5bf3a";
   expectedOrchestrateRevision = "5f016531e765d9b679a86cc47a2d75eaca43d624";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
@@ -61,7 +61,6 @@ let
         edge = false;
         largeAi = false;
       };
-      typeIs.largeAiRouter = false;
       machine = {
         model = "fixture";
         arch = "x86-64";
