@@ -2,8 +2,8 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "23f09f28accc2d7e9d4e2e8853a0ceb1eb78ac66";
-  expectedPackageName = "lojix-1.0.1";
+  expectedRevision = "b5cddd2e16ad49d1060cf4109f44c27359195441";
+  expectedPackageName = "lojix-5.0.0";
   expectedHomeRevision = "caffe9a17cc5830d64f838f7d5cf74d9b2b5bf3a";
   expectedOrchestrateRevision = "5f016531e765d9b679a86cc47a2d75eaca43d624";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";

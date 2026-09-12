@@ -91,19 +91,14 @@
     spirit.url = "github:LiGoldragon/spirit/008d8ca0e4a309bdd922fae61681cdc97a484bac";
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Daemon-based deploy orchestrator. Services opt in with fully explicit
-    # socket, state, and identity configuration.
-    # KNOWN UNBUILDABLE. This exact revision fails to compile: its Cargo.lock
-    # carries two `meta-signal-lojix` 2.3.0 entries, and the one the Nexus's
-    # dev-dependency selects is paired with datom-codec 0.25.6, whose
-    # `Datomizable` the generated signal code cannot see (72 errors). The
-    # repair is to repin to a revision with a single meta-signal-lojix —
-    # `fab60e584daf1c33a629cb8e2f3c353f9323f40e` (meta-signal-lojix 3.0.1)
-    # builds and carries an identical Nexus surface: `lojix-nexus`, zero
-    # arguments, the same built-in socket and store locations, the same
-    # `ConfigurationWriteRequest`. That repin also rewrites flake.lock, which
-    # this branch does not own; land the two together.
-    lojix.url = "github:LiGoldragon/lojix/23f09f28accc2d7e9d4e2e8853a0ceb1eb78ac66";
+    # Lojix Nexus — deployment authority. Its executable owns the default
+    # state directory, store file and both socket paths; the NixOS module
+    # restates them rather than setting them.
+    # 5.0.0. Its Cargo.lock carries exactly one revision of every contract
+    # crate — `signal-lojix` 5.0.0 (4271b5ce), `meta-signal-lojix` 6.0.0
+    # (35deec4e), `horizon-lib` 0.10.1 (40d04d25) — so the duplicate
+    # `meta-signal-lojix` that made 23f09f28 uncompilable cannot recur.
+    lojix.url = "github:LiGoldragon/lojix/b5cddd2e16ad49d1060cf4109f44c27359195441";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
