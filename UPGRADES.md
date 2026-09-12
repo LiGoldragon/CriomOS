@@ -36,12 +36,27 @@ from the pinned 6.0 offline tools. It copies the archive-selected source store,
 adds the Nexus configuration to the copy, and validates the result; it never
 modifies the source. Do not use `lojix-reset-store` for this crossing.
 
+The 0.21.1 archive encoding may be unreadable by the 6.0 offline tool. If its
+decode is rejected, preserve that archive unchanged and reconstruct an archive
+with the pinned 6.0 `lojix-write-configuration`, using the exact public fields
+from the installed service's `ExecStartPre` request and the preserved v5 source
+store path. Migrate from that reconstructed archive. Do not guess a field or
+replace the v5 source.
+
 Start the pinned 6.0 `lojix-nexus` under the declared service identity and wait
 for its `LojixNexusReady` announcement. Use the matching owner client to submit
 the same immutable `CompleteHost` revision with `ActivateNow`, then use the
 matching ordinary client to query that deployment until it is terminal. A
 bootstrap `BootOnce` only installs and arms a boot generation; it does not make
 the candidate the live system and is not the no-reboot activation witness.
+
+When a temporary 6.0 Nexus bridges the first activation, the managed
+`lojix.service` can initially fail because the bridge still owns the store and
+sockets. Let the activation finish, stop only the known temporary bridge, and
+wait for the managed service's configured restart to acquire them. Once the
+managed service reports `LojixNexusReady`, repeat the identical immutable typed
+deployment to obtain a clean terminal receipt. Preserve the first deployment's
+failure receipt as evidence of the partial activation.
 
 After a successful terminal reply, verify that the persistent system profile
 and `/run/current-system` identify the produced closure, the declared
