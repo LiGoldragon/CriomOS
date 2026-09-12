@@ -78,17 +78,16 @@ let
     };
 
   prometheusHorizon = {
-    cluster.name = "criome";
+    cluster = "criome";
     node = {
       name = "prometheus";
-      nodeIp = "10.0.0.2/24";
-      services = [
+      network.nodeIp = "10.0.0.2/24";
+      capabilities = [
         {
-          VmTesting = {
-            gpuPassthrough = false;
-            display = "Spice";
-            gpu = null;
-          };
+          kind = "vmTesting";
+          gpuPassthrough = false;
+          display = "Spice";
+          gpu = null;
         }
       ];
     };
@@ -96,17 +95,16 @@ let
 
   # A contrasting node that opts INTO passthrough — proves the option is real.
   gpuNodeHorizon = {
-    cluster.name = "criome";
+    cluster = "criome";
     node = {
       name = "gpu-lab";
-      nodeIp = "10.0.0.9/24";
-      services = [
+      network.nodeIp = "10.0.0.9/24";
+      capabilities = [
         {
-          VmTesting = {
-            gpuPassthrough = true;
-            display = "Spice";
-            gpu = "10de:1234";
-          };
+          kind = "vmTesting";
+          gpuPassthrough = true;
+          display = "Spice";
+          gpu = "10de:1234";
         }
       ];
     };

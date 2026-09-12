@@ -464,17 +464,17 @@
         "rust-build": "rust-build"
       },
       "locked": {
-        "lastModified": 1789158494,
-        "narHash": "sha256-9xwF66btZFcEr5v1qcVcX91VsY43ZSkbAG97lLPEHeo=",
+        "lastModified": 1789228326,
+        "narHash": "sha256-f2xlHQKiRHJMP7s8sxdTxU9FeQeSasl1/ERfOItjYk8=",
         "owner": "LiGoldragon",
         "repo": "chroma",
-        "rev": "7fddaabe56c9444662ec0f01e24d0d01cf6a26a3",
+        "rev": "a82bb5018cde02267869e880f2d8d962a6395e48",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "chroma",
-        "rev": "7fddaabe56c9444662ec0f01e24d0d01cf6a26a3",
+        "rev": "a82bb5018cde02267869e880f2d8d962a6395e48",
         "type": "github"
       }
     },
@@ -906,7 +906,6 @@
           "pkgs"
         ],
         "plannotator-capability": "plannotator-capability",
-        "primary-generated-src": "primary-generated-src",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "rust-overlay": [
@@ -925,17 +924,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1789160405,
-        "narHash": "sha256-RFY/I9vOdwB1MKI4z3I41w/186QhcP7RPrudm7sXdbU=",
+        "lastModified": 1789228394,
+        "narHash": "sha256-Mzed5k/3xgjpdKrGz8PXp/Sv4uZ8x8AFeQKrthdiogc=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "caffe9a17cc5830d64f838f7d5cf74d9b2b5bf3a",
+        "rev": "b7ccb8756fc7c19255923a963f3d51c63e77f6c0",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "9548d7d353dd",
         "repo": "CriomOS-home",
+        "rev": "b7ccb8756fc7c19255923a963f3d51c63e77f6c0",
         "type": "github"
       }
     },
@@ -2467,17 +2466,17 @@
         "rust-build": "rust-build_3"
       },
       "locked": {
-        "lastModified": 1788645028,
-        "narHash": "sha256-H/EQREzy7WWj6ZJCZ8hgTWbWLjVZNCuVwkWBcUhAf4M=",
+        "lastModified": 1789215975,
+        "narHash": "sha256-IhsJsKFSKcIri9DnSIcZ3VE+cLQ5gl+R9kR7XykIea8=",
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "5f016531e765d9b679a86cc47a2d75eaca43d624",
+        "rev": "9070cbb8717813b127e448dd5a43a2095daf7d1b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "5f016531e765d9b679a86cc47a2d75eaca43d624",
+        "rev": "9070cbb8717813b127e448dd5a43a2095daf7d1b",
         "type": "github"
       }
     },
@@ -2892,23 +2891,6 @@
         "owner": "LiGoldragon",
         "ref": "013912e008ff",
         "repo": "plannotator",
-        "type": "github"
-      }
-    },
-    "primary-generated-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1787401865,
-        "narHash": "sha256-nJQUt+Hy6u4bVL1Vt/jR53tbcC3b67JuYbjGmIynRjY=",
-        "owner": "LiGoldragon",
-        "repo": "primary",
-        "rev": "fd049d9030a789ccb60e21732acdfc754b30e410",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "primary",
-        "rev": "fd049d9030a789ccb60e21732acdfc754b30e410",
         "type": "github"
       }
     },

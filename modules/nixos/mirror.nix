@@ -10,13 +10,14 @@ let
   inherit (lib) mkIf;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  services = horizon.node.services or [ ];
+  capabilities = horizon.node.capabilities;
 
   # The node shapes that WOULD run the legacy standalone mirror daemon: cluster
   # tailnet members that also carry PersonaDevelopment. Kept as the re-enable
   # target for `mirrorEnabled` below.
   mirrorEligible =
-    (nodeServices.has services "TailnetClient") && (nodeServices.has services "PersonaDevelopment");
+    (nodeServices.has capabilities "tailnetClient")
+    && (nodeServices.has capabilities "personaDevelopment");
 
   # mirror.service is DISABLED on ALL hosts (primary-h945.1): the leading
   # `false` force-disables it regardless of node eligibility. The legacy

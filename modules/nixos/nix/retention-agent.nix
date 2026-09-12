@@ -5,7 +5,18 @@
 }:
 let
   inherit (lib) boolToString;
-  inherit (horizon.node) size;
+  sizeMagnitude = horizon.node.size;
+  size = {
+    medium = builtins.elem sizeMagnitude [
+      "Medium"
+      "Large"
+      "Max"
+    ];
+    large = builtins.elem sizeMagnitude [
+      "Large"
+      "Max"
+    ];
+  };
 in
 {
   nix = {

@@ -23,7 +23,7 @@
 #
 # CRITICAL: this only SUPPRESSES weight. The guest REMAINS a real, deployable
 # CriomOS node — sshd keys-only (normalize.nix), root authorizedKeys =
-# adminSshPubKeys (users.nix), its own networking.hosts / ssh_known_hosts, and
+# adminSshPublicKeys (users.nix), its own networking.hosts / ssh_known_hosts, and
 # a real root disk (disks/preinstalled.nix from its projected io). None of that
 # is touched here, so lojix deploys into it exactly like any node.
 #

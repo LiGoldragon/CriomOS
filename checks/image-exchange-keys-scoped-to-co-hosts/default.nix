@@ -26,67 +26,65 @@ let
   ];
 
   baseMachine = {
-    arch = "X86_64Linux";
-    cores = 2;
-    ramGb = 4;
-    diskGb = 20;
-    location = null;
-    superNode = null;
-    superNodes = [ ];
+    architecture = "x86_64";
+    host = null;
+    additionalHosts = [ ];
+    diskGib = 20;
+    hardware = {
+      cores = 2;
+      ramGib = 4;
+    };
   };
 
   baseNode = name: {
     inherit name;
     cacheUrls = [ ];
-    services = [ ];
+    capabilities = [ ];
     behavesAs = { };
     machine = baseMachine;
   };
 
   virtualMachineHostService = {
-    VmHost = {
-      guestSubnet = "169.254.100.0/22";
-      kvm = "Available";
-      maximumGuests = 4;
-    };
+    kind = "vmHost";
+    guestSubnet = "169.254.100.0/22";
+    kvm = "Available";
+    maximumGuests = 4;
   };
 
   atlas = (baseNode "atlas") // {
-    nixPubKeyLine = atlasKey;
-    services = [ virtualMachineHostService ];
+    nixPublicKeyLine = atlasKey;
+    capabilities = [ virtualMachineHostService ];
   };
 
   prometheus = (baseNode "prometheus") // {
-    nixPubKeyLine = prometheusKey;
-    services = [ virtualMachineHostService ];
+    nixPublicKeyLine = prometheusKey;
+    capabilities = [ virtualMachineHostService ];
   };
 
   apollo = (baseNode "apollo") // {
-    nixPubKeyLine = apolloKey;
+    nixPublicKeyLine = apolloKey;
   };
 
   mercury = (baseNode "mercury") // {
-    nodeIp = "10.77.0.7/24";
+    network.nodeIp = "10.77.0.7/24";
     criomeDomainName = "mercury.fieldlab.criome";
     behavesAs.testVm = true;
     machine = baseMachine // {
-      superNode = "atlas";
-      superNodes = [ "prometheus" ];
+      host = "atlas";
+      additionalHosts = [ "prometheus" ];
     };
   };
 
   singleHostMercury = mercury // {
     machine = baseMachine // {
-      superNode = "atlas";
-      superNodes = [ ];
+      host = "atlas";
+      additionalHosts = [ ];
     };
   };
 
   horizonFor = node: exNodes: {
-    cluster = {
-      name = "fieldlab";
-      trustedBuildPubKeys = clusterKeys;
-    };
+    cluster = "fieldlab";
+    trustedBuildPublicKeys = clusterKeys;
     inherit node exNodes;
   };
 

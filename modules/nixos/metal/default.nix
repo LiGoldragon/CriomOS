@@ -30,7 +30,23 @@ let
       }
     else
       fixedLocation;
-  inherit (horizon.node) behavesAs size;
+  inherit (horizon.node) behavesAs;
+  sizeMagnitude = horizon.node.size;
+  size = {
+    min = builtins.elem sizeMagnitude [
+      "Min"
+      "Medium"
+      "Large"
+      "Max"
+    ];
+    large = builtins.elem sizeMagnitude [
+      "Large"
+      "Max"
+    ];
+    max = sizeMagnitude == "Max";
+  };
+  nodeServices = import ../node-services.nix { inherit lib; };
+  capabilities = horizon.node.capabilities;
 
   # A Horizon projection says what the machine is: `machine.hardware.model` is
   # an operator-supplied string.  What it means for this system is CriomOS's
@@ -359,10 +375,10 @@ let
     python3Packages.pyclip
   ];
 
-  # Operator opt-in via horizon.node.wantsPrinting (default false). The
+  # Operator opt-in via the projected printing capability. The
   # bundle is ~300-500 MB (hplip, samsung, epson) — only worth installing
   # on nodes that actually have a printer reachable.
-  printingDriversPkgs = lib.optionals horizon.node.wantsPrinting (
+  printingDriversPkgs = lib.optionals (nodeServices.has capabilities "printing") (
     with pkgs;
     [
       gutenprint # Drivers for many different printers from many different vendors.
@@ -415,7 +431,7 @@ let
   #   support); dropped from default closure pending a real consumer.
   chipGen = horizon.node.machine.hardware.chipGeneration;
   igpuIsModern = chipGen != null && chipGen >= 12;
-  wantsHwVideoAccel = horizon.node.wantsHwVideoAccel;
+  wantsHwVideoAccel = nodeServices.has capabilities "hardwareVideo";
 
   intelGpuDrivers =
     if gpuUsesVaapi then

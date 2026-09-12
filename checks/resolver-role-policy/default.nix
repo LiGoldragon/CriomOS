@@ -26,30 +26,21 @@ let
     name = "edge-test";
     criomeDomainName = "edge-test.goldragon.criome";
     enableNetworkManager = true;
-    hasNordvpnPubKey = false;
-    hasWifiCertPubKey = false;
-    hasWireguardPubKey = false;
-    hasYggPubKey = false;
     isNixCache = false;
-    linkLocalIps = [ "fe80::50/64" ];
     nixCacheDomain = null;
-    nodeIp = "10.18.0.50/32";
-    routerInterfaces = {
-      wan = "wan-test0";
-      wlan = "wlan-test0";
-      wirelessCountryCode = "PL";
-      wirelessNetworkName = "criome-test";
-      wlanBand = "2g";
-      wlanChannel = 6;
-      wlanStandard = "wifi6";
-      wpa3SaePassword = {
-        name = "routerWifiSaePasswords";
-      };
+    network = {
+      linkLocalIps = [ "fe80::50/64" ];
+      nodeIp = "10.18.0.50/32";
+      wireguardPublicKey = null;
+      wireguardProxies = [ ];
+      routerInterfaces = null;
     };
-    services = [ ];
-    wireguardPubKey = "";
-    wireguardUntrustedProxies = [ ];
-    yggAddress = "200:db8::50";
+    keys.yggdrasil = {
+      address = "200:db8::50";
+      publicKey = "fixture";
+      subnet = "300:db8::";
+    };
+    capabilities = [ ];
     behavesAs = baseBehaviors // {
       edge = true;
     };
@@ -59,38 +50,35 @@ let
     name = "router-test";
     criomeDomainName = "router-test.goldragon.criome";
     enableNetworkManager = false;
-    nodeIp = constants.network.lan.gateway;
-    routerInterfaces = {
+    network.nodeIp = constants.network.lan.gateway;
+    network.routerInterfaces = {
       wan = "wan-test0";
       wlan = "wlan-test0";
-      wirelessCountryCode = "PL";
-      wirelessNetworkName = "criome-test";
       wlanBand = "2g";
       wlanChannel = 6;
       wlanStandard = "wifi6";
-      wpa3SaePassword = {
-        name = "routerWifiSaePasswords";
-      };
+      wpa3SaePasswordReference = "routerWifiSaePasswords";
+      backupWireless = null;
     };
-    yggAddress = "200:db8::1";
+    keys.yggdrasil.address = "200:db8::1";
     behavesAs = baseBehaviors // {
       router = true;
     };
   };
 
   tailnetControllerRouterNode = routerNode // {
-    services = [
-      { TailnetClient = { }; }
-      { TailnetController = { }; }
+    capabilities = [
+      { kind = "tailnetClient"; }
+      { kind = "tailnetController"; }
     ];
   };
 
   peerNode = baseNode // {
     name = "peer-test";
     criomeDomainName = "peer-test.goldragon.criome";
-    linkLocalIps = [ "fe80::51/64" ];
-    nodeIp = "10.18.0.51";
-    yggAddress = "200:db8::51";
+    network.linkLocalIps = [ "fe80::51/64" ];
+    network.nodeIp = "10.18.0.51";
+    keys.yggdrasil.address = "200:db8::51";
   };
 
   configurationFor =
@@ -101,13 +89,11 @@ let
         inherit constants;
         inputs = testInputs;
         horizon = {
-          cluster = {
-            name = "goldragon";
-            tailnetBaseDomain = "tailnet.goldragon.criome";
-            domainConfiguration = {
-              internalSuffix = "criome";
-              publicClusterDomains = [ "goldragon.criome.net" ];
-            };
+          cluster = "goldragon";
+          tailnetBaseDomain = "tailnet.goldragon.criome";
+          domainConfiguration = {
+            internalSuffix = "criome";
+            publicClusterDomains = [ "goldragon.criome.net" ];
           };
           inherit node;
           exNodes = {

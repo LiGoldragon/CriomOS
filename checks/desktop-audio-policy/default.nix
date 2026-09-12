@@ -13,10 +13,12 @@ let
       horizon = {
         exNodes = { };
         node = {
-          size.min = false;
-          useColemak = false;
-          behavesAs.iso = false;
-          hasVideoOutput = true;
+          size = "Min";
+          keyboard = "Qwerty";
+          behavesAs = {
+            edge = true;
+            iso = false;
+          };
           enableNetworkManager = false;
         };
       };

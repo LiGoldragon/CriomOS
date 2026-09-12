@@ -23,9 +23,9 @@ let
     ;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  services = horizon.node.services or [ ];
-  personaRouterEnabled = nodeServices.has services "PersonaRouter";
-  settings = nodeServices.payload services "PersonaRouter";
+  capabilities = horizon.node.capabilities;
+  personaRouterEnabled = nodeServices.has capabilities "personaRouter";
+  settings = nodeServices.payload capabilities "personaRouter";
 
   runtimeDirectory = "/run/persona-router";
   stateDirectory = "/var/lib/persona-router";
@@ -146,7 +146,8 @@ in
         # workingSocketGroupAccess). Membership grants only socket access.
         SupplementaryGroups = [
           criomeSocketGroup
-        ] ++ optionals (spiritSocketGroup != null) [ spiritSocketGroup ];
+        ]
+        ++ optionals (spiritSocketGroup != null) [ spiritSocketGroup ];
         WorkingDirectory = stateDirectory;
         ExecStartPre = optionals hasBootstrap [ writeBootstrap ] ++ [ writeConfiguration ];
         ExecStart = "${routerPackage}/bin/router-daemon ${daemonConfigurationPath}";

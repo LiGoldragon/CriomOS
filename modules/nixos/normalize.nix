@@ -20,14 +20,21 @@ let
   inherit (pkgs) mksh;
   inherit (horizon) exNodes;
   inherit (horizon.node)
-    size
-    useColemak
     behavesAs
-    hasVideoOutput
     enableNetworkManager
     ;
+  useColemak = horizon.node.keyboard == "Colemak";
+  sizeMagnitude = horizon.node.size;
+  size.min = builtins.elem sizeMagnitude [
+    "Min"
+    "Medium"
+    "Large"
+    "Max"
+  ];
 
-  hasAudioOutput = hasVideoOutput;
+  # The retired hasVideoOutput projection was derived exactly from edge. Audio
+  # is the only remaining system consumer, so state its desktop policy here.
+  hasAudioOutput = behavesAs.edge;
 
   jsonHorizonFail = pkgs.writeText "horizon.json" (builtins.toJSON horizon);
 
@@ -37,7 +44,7 @@ let
     n: node:
     concatSep " " [
       node.criomeDomainName
-      node.sshPubKeyLine
+      node.sshPublicKeyLine
     ];
 
   sshKnownHosts = concatSep "\n" (mapAttrsToList mkNodeKnownHost exNodes);

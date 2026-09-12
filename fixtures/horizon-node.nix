@@ -28,31 +28,9 @@
 let
   producerNode = (builtins.fromJSON (builtins.readFile ./horizon-projection.json)).node;
 
-  # Fields the CriomOS modules still read that the current projection does not
-  # emit.  They are kept here, in one place and named for what they are, rather
-  # than scattered through the checks as if Horizon had supplied them.
-  #
-  # `size`: the projection carries a `Magnitude` name ("Zero" | "Min" |
-  #   "Medium" | "Large" | "Max"); the modules branch on the "at least this
-  #   size" booleans the retired `AtLeast` projection carried.  Deriving those
-  #   consumer-side is a separate migration — it touches `metal`, `edge`,
-  #   `normalize`, `nspawn` and `nix/retention-agent` together.
-  # `wantsPrinting`, `wantsHwVideoAccel`: operator opt-ins that no horizon-rs
-  #   revision has ever emitted.  They need either a Horizon field or a
-  #   CriomOS-side decision; neither exists yet.
-  consumerPending = {
-    size = {
-      min = true;
-      medium = true;
-      large = true;
-      max = true;
-    };
-    wantsPrinting = false;
-    wantsHwVideoAccel = false;
-  };
 in
 {
-  inherit producerNode consumerPending;
+  inherit producerNode;
 
-  node = overrides: lib.recursiveUpdate (producerNode // consumerPending) overrides;
+  node = overrides: lib.recursiveUpdate producerNode overrides;
 }

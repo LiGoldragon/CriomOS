@@ -15,39 +15,39 @@ not carry this fact. Evaluate the materialized target first; after a successful
 activation, verify GeoClue's static source and the consumer's resulting state
 separately.
 
-## Lojix 0.21.1 to 1.0.1
+## Lojix 0.21.1 to 6.0.0
 
-CriomOS pins Lojix `23f09f28accc2d7e9d4e2e8853a0ceb1eb78ac66`.
-The 1.0 contract retains the generated Datom clients and durable schema v5 introduced in 0.21. Deploy the daemon, ordinary client, and owner client from one system closure; a 1.0 client cannot drive a running 0.21.1 daemon.
+CriomOS pins one Lojix release for the Nexus, ordinary client, owner client,
+offline migration tool, and daemon-free bootstrap. A 6.0 client cannot drive a
+running 0.21.1 Nexus, so the crossing uses the bootstrap and migration tools
+before the 6.0 owner client performs the live activation.
 
-The distinct store path preserves the v4 database bytes, but it is an active
-state discontinuity: the v5 daemon starts with an empty deployment ledger, no
-current-generation record, and none of the v4 in-flight jobs or event history.
-Before activation, retain the v4 store at its configured path and configure
-the candidate writer with a new, distinct v5 store path and startup archive.
-Never point the v5 daemon at the v4 store, copy the v4 database to the v5 path,
-or run the reset unit as part of this upgrade.  The retained v4 store remains
-readable only with the compatible 0.20.3 inspector documented in Lojix
-`UPGRADES.md`; it is an offline archive, not history adopted by the v5 daemon.
+First run the pinned `lojix-bootstrap` with `BuildOnly`, an immutable CriomOS
+revision, `CompleteHost`, the externally composed regular
+`horizon-definition.datom`, and the target's configured remote builder. Keep
+its private journal, GC root, and terminal evidence. Continue only after the
+bootstrap returns `BootstrapTerminal.Succeeded`.
 
-Realize the exact immutable complete-host closure through the running 0.20.3
-owner client before activation.  Do not use its self-target `ActivateNow` for
-this crossing: after the service changes to the empty v5 store, the new daemon
-cannot adopt or terminally observe that v4 deployment identifier.  Activation
-requires either a documented state migration/adoption mechanism or explicit
-approval of the active-state discontinuity together with an external,
-continuity-independent procedure that can observe the old terminal record and
-verify the system profile, `/run/current-system`, new daemon and startup
-archive, matching ordinary/owner clients, and rollback boundary.  Stop on any
-partial state or terminal failure; do not retry, reset, reboot, or manually
-replace a daemon or client.
+The old service's startup archive selects its pre-Nexus v5 store. Preserve the
+archive and that source store, stop the old service, and make the 6.0 default
+store path absent while retaining any previous file at that path for rollback.
+Run `lojix-migrate-configuration <preserved-startup-archive> <default-store>`
+from the pinned 6.0 offline tools. It copies the archive-selected source store,
+adds the Nexus configuration to the copy, and validates the result; it never
+modifies the source. Do not use `lojix-reset-store` for this crossing.
 
-New deployments also require an externally composed public
-`horizon-definition.datom` plus an explicit `NoSecrets` or authorized
-`SecretsDirectory` value.  The legacy `proposal.datom` is not a substitute.
-If either the new public definition, distinct v5 store configuration, or a
-continuity-independent activation window is absent, the 0.21 system remains a
-realized candidate only.
+Start the pinned 6.0 `lojix-nexus` under the declared service identity and wait
+for its `LojixNexusReady` announcement. Use the matching owner client to submit
+the same immutable `CompleteHost` revision with `ActivateNow`, then use the
+matching ordinary client to query that deployment until it is terminal. A
+bootstrap `BootOnce` only installs and arms a boot generation; it does not make
+the candidate the live system and is not the no-reboot activation witness.
+
+After a successful terminal reply, verify that the persistent system profile
+and `/run/current-system` identify the produced closure, the declared
+`lojix.service` runs `lojix-nexus`, both sockets answer through matching 6.0
+clients, and the migrated default store is retained. Stop on any partial state
+or terminal failure. This crossing neither resets a store nor reboots.
 
 ## ChatGPT Desktop vendor-boundary Home consumer
 

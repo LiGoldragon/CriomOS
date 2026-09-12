@@ -6,10 +6,6 @@ let
 
   bool = value: if value then "true" else "false";
 
-  baseSize = {
-    large = false;
-  };
-
   baseBehavesAs = {
     center = false;
     iso = false;
@@ -18,16 +14,14 @@ let
   baseNode = {
     buildCores = 2;
     cacheUrls = [ ];
-    size = baseSize;
+    size = "Medium";
     behavesAs = baseBehavesAs;
   };
 
   largeCenterNode = {
     buildCores = 8;
     cacheUrls = [ ];
-    size = {
-      large = true;
-    };
+    size = "Large";
     behavesAs = {
       center = true;
       iso = false;
@@ -41,7 +35,7 @@ let
       specialArgs = {
         inherit inputs;
         horizon = {
-          cluster.trustedBuildPubKeys = [ ];
+          trustedBuildPublicKeys = [ ];
           inherit node;
         };
       };

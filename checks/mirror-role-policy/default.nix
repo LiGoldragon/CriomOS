@@ -16,17 +16,14 @@ let
   bool = value: if value then "true" else "false";
 
   baseNode = {
-    services = [ ];
+    capabilities = [ ];
   };
 
   personaOnlyNode = {
-    services = [
+    capabilities = [
       {
-        PersonaDevelopment = {
-          capabilities = [
-            { GitoliteServer = { }; }
-          ];
-        };
+        kind = "personaDevelopment";
+        capabilities = [ "GitoliteServer" ];
       }
     ];
   };
@@ -35,14 +32,11 @@ let
   # carries PersonaDevelopment (ouranos). Before the disable, mirror.service ran
   # here; it must now be absent too.
   mirrorEligibleNode = {
-    services = [
-      { TailnetClient = { }; }
+    capabilities = [
+      { kind = "tailnetClient"; }
       {
-        PersonaDevelopment = {
-          capabilities = [
-            { GitoliteServer = { }; }
-          ];
-        };
+        kind = "personaDevelopment";
+        capabilities = [ "GitoliteServer" ];
       }
     ];
   };

@@ -13,12 +13,7 @@ let
 
   horizon.node = horizonNode.node {
     machine.hardware.model = "all-x86-64";
-    size = {
-      min = false;
-      medium = true;
-      large = false;
-      max = false;
-    };
+    size = "Medium";
   };
 
   configuration =

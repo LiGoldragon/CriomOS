@@ -21,8 +21,8 @@ recovery surface:
 4. Invokes nix against `github:LiGoldragon/CriomOS` with those override
    inputs.
 
-For a fresh, explicitly-authorized first bootstrap, use this flake's exact
-re-export of the maintained v0.17.5 `lojix-bootstrap` app. It accepts one inline
+For a fresh, explicitly-authorized first bootstrap or documented Lojix
+crossing, use this flake's exact re-export of the pinned `lojix-bootstrap` app. It accepts one inline
 `BootstrapRun` DOTOS object only—no installed daemon, daemon socket, request
 file, flag, local store, route, account, or path default. `BuildOnly` is the
 exact build-only variant; `BootOnce` names either an explicit remote transport

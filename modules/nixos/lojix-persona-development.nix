@@ -13,8 +13,9 @@ let
     length
     ;
   nodeServices = import ./node-services.nix { inherit lib; };
-  personaDevelopmentHost = nodeServices.has (horizon.node.services or [ ]) "PersonaDevelopment";
-  localUserNames = attrNames (lib.filterAttrs (_name: user: user.hasPubKey) horizon.users);
+  personaDevelopmentHost = nodeServices.has horizon.node.capabilities "personaDevelopment";
+  usersByName = inputs.criomos-home.horizonUsersByName horizon.users;
+  localUserNames = attrNames (lib.filterAttrs (_name: user: user.hasPublicKey) usersByName);
   hasExactlyOneLocalUser = length localUserNames == 1;
   localUser = if hasExactlyOneLocalUser then head localUserNames else null;
 in
@@ -27,11 +28,11 @@ lib.mkIf personaDevelopmentHost (
       assertions = [
         {
           assertion = localUserNames != [ ];
-          message = "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPubKey); found none";
+          message = "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPublicKey); found none";
         }
         {
           assertion = length localUserNames <= 1;
-          message = "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPubKey); found multiple: ${lib.concatStringsSep ", " localUserNames}";
+          message = "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPublicKey); found multiple: ${lib.concatStringsSep ", " localUserNames}";
         }
       ];
     }

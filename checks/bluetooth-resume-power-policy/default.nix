@@ -12,12 +12,7 @@ let
     specialArgs = {
       horizon = {
         node = {
-          size = {
-            min = true;
-            medium = false;
-            large = false;
-            max = false;
-          };
+          size = "Min";
           behavesAs = {
             edge = true;
             iso = false;

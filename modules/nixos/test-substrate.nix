@@ -86,7 +86,7 @@
   substrate ? "microvm",
   # The harness/deploy public key appended to root's authorizedKeys so the
   # test driver can reach the guest. `null` leaves the
-  # projection's adminSshPubKeys as the only root keys.
+  # projection's adminSshPublicKeys as the only root keys.
   deployKey ? null,
 }:
 
@@ -108,7 +108,7 @@ let
       # The guest's own horizon-derived Criome address for test-side name
       # resolution. It does not decide a Lojix deployment transport.
       node = horizon.node;
-      clusterName = horizon.cluster.name or node.name;
+      clusterName = horizon.cluster;
       criomeDomainName = node.criomeDomainName or "${node.name}.${clusterName}.criome";
     in
     {
@@ -142,7 +142,7 @@ let
 
       # sshd keys-only + the deploy key. normalize.nix already disables
       # password auth; reassert it and APPEND the harness deploy key to root's
-      # authorizedKeys (additive — the projection's adminSshPubKeys stay).
+      # authorizedKeys (additive — the projection's adminSshPublicKeys stay).
       services.openssh = {
         enable = mkForce true;
         settings.PasswordAuthentication = mkForce false;

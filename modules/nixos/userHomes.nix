@@ -9,6 +9,8 @@
 let
   inherit (builtins) mapAttrs;
 
+  usersByName = inputs.criomos-home.horizonUsersByName horizon.users;
+
   mkUserConfig = name: user: {
     _module.args = {
       inherit user;
@@ -17,7 +19,7 @@ let
   };
 
   # Deploy a user's home ONLY on nodes where that user has a presence — i.e. a
-  # per-node pub-key entry for THIS viewpoint node (`hasPubKey`). `horizon.users`
+  # per-node public-key entry for THIS viewpoint node (`hasPublicKey`). `horizon.users`
   # is the FULL cluster user set (every node's projection lists all users, for
   # identity/keys/trust — e.g. both prometheus and ouranos list `bird` even
   # though `bird`'s home-nodes are only tiger/zeus). A user's HOME belongs only
@@ -26,7 +28,7 @@ let
   # has no key there), dragging in unrelated home closures — and any orphaned
   # dep in one of those homes (e.g. a force-pushed git rev) fails the whole
   # node's eval even where that home does not belong.
-  homeUsers = lib.filterAttrs (_name: user: user.hasPubKey) horizon.users;
+  homeUsers = lib.filterAttrs (_name: user: user.hasPublicKey) usersByName;
 
 in
 {

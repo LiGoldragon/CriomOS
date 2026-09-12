@@ -10,7 +10,8 @@ let
   inherit (constants.fileSystem.wifiPki) caCertFile certsDir;
   inherit (constants.fileSystem.complex) keyFile;
 
-  hasWifiCertPubKey = horizon.node.hasWifiCertPubKey or (horizon.node.wifiCert or false);
+  nodeServices = import ../node-services.nix { inherit lib; };
+  hasWifiCertPubKey = nodeServices.has horizon.node.capabilities "wifiCertificate";
 
   nodeCertFile = "${certsDir}/${node.name}.pem";
 

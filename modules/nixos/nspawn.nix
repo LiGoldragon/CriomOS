@@ -7,7 +7,11 @@
 }:
 let
   inherit (lib) mkAfter mkIf;
-  inherit (horizon.node) behavesAs size;
+  inherit (horizon.node) behavesAs;
+  size.large = builtins.elem horizon.node.size [
+    "Large"
+    "Max"
+  ];
 
   enable = size.large && behavesAs.center && !config.boot.isContainer && !behavesAs.iso;
   trustedGroup = "nixdev";

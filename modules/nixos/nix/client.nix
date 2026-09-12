@@ -8,7 +8,7 @@
 let
   inherit (lib) filterAttrs mapAttrsToList;
 
-  inherit (horizon.cluster) trustedBuildPubKeys;
+  trustedBuildPubKeys = horizon.trustedBuildPublicKeys;
   inherit (horizon) node;
   inherit (horizon.node) cacheUrls;
 

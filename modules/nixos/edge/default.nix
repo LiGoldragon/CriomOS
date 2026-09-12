@@ -6,7 +6,26 @@
 }:
 let
   inherit (lib) mkIf optionals;
-  inherit (horizon.node) size behavesAs;
+  inherit (horizon.node) behavesAs;
+  sizeMagnitude = horizon.node.size;
+  size = {
+    min = builtins.elem sizeMagnitude [
+      "Min"
+      "Medium"
+      "Large"
+      "Max"
+    ];
+    medium = builtins.elem sizeMagnitude [
+      "Medium"
+      "Large"
+      "Max"
+    ];
+    large = builtins.elem sizeMagnitude [
+      "Large"
+      "Max"
+    ];
+    max = sizeMagnitude == "Max";
+  };
 
   minPackages = optionals size.min (
     with pkgs;

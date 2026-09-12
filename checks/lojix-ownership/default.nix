@@ -4,8 +4,8 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   expectedRevision = "c4bba4fa12408c39ff745b0773468cd32a74403f";
   expectedPackageName = "lojix-6.0.0";
-  expectedHomeRevision = "caffe9a17cc5830d64f838f7d5cf74d9b2b5bf3a";
-  expectedOrchestrateRevision = "5f016531e765d9b679a86cc47a2d75eaca43d624";
+  expectedHomeRevision = "b7ccb8756fc7c19255923a963f3d51c63e77f6c0";
+  expectedOrchestrateRevision = "9070cbb8717813b127e448dd5a43a2095daf7d1b";
   expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
@@ -14,69 +14,66 @@ let
   homeApps = inputs.criomos-home.apps.${system} or { };
   homeChecks = inputs.criomos-home.checks.${system} or { };
   homeProjectionBoundary = homeChecks.system-projection-boundary;
-  mkProjectedUser = name: hasPubKey: {
-    inherit hasPubKey name;
-    species = "Code";
-    size = {
-      min = true;
-      medium = false;
-      large = false;
-      max = false;
-    };
-    trust = {
-      min = true;
-      medium = false;
-      large = false;
-      max = false;
-    };
+  mkProjectedUser = name: hasPublicKey: {
+    inherit hasPublicKey name;
+    role = "Unlimited";
+    size = "Min";
+    trust = "Min";
     keyboard = "Colemak";
     style = "Emacs";
     githubId = name;
-    pubKeys =
-      if hasPubKey then
-        {
-          "lojix-ownership-fixture".keygrip = "fixture-keygrip";
-        }
+    publicKeys =
+      if hasPublicKey then
+        [
+          {
+            node = "lojix-ownership-fixture";
+            ssh = "fixture-ssh-key";
+            keygrip = "fixture-keygrip";
+          }
+        ]
       else
-        { };
+        [ ];
     emailAddress = "${name}@example.invalid";
     matrixId = "@${name}:example.invalid";
-    gitSigningKey = if hasPubKey then "&fixture-keygrip" else null;
+    gitSigningKey = if hasPublicKey then "&fixture-keygrip" else null;
     useColemak = true;
     useFastRepeat = true;
     isMultimediaDev = false;
     isCodeDev = true;
     preferredEditor = "Emacs";
     textSize = "Medium";
-    sshPubKeys = [ ];
-    sshPubKey = null;
+    resolvedTextSize = "Medium";
+    sshPublicKeys = lib.optional hasPublicKey "ssh-ed25519 fixture-ssh-key";
+    sshPublicKey = if hasPublicKey then "ssh-ed25519 fixture-ssh-key" else null;
     extraGroups = [ ];
     enableLinger = false;
   };
   horizon = {
     node = {
       name = "lojix-ownership-fixture";
-      adminSshPubKeys = [ ];
+      adminSshPublicKeys = [ ];
       behavesAs = {
         edge = false;
         largeAi = false;
       };
-      machine = {
-        model = "fixture";
-        arch = "x86-64";
-      };
-      services = [ "PersonaDevelopment" ];
+      capabilities = [
+        {
+          kind = "personaDevelopment";
+          capabilities = [ ];
+        }
+      ];
     };
     exNodes = { };
-    users = {
-      li = mkProjectedUser "li" true;
-      remote = mkProjectedUser "remote" false;
-    };
+    users = [
+      (mkProjectedUser "li" true)
+      (mkProjectedUser "remote" false)
+    ];
   };
   multiUserHorizon = horizon // {
-    users = horizon.users // {
-      remote = mkProjectedUser "remote" true;
-    };
+    users = [
+      (mkProjectedUser "li" true)
+      (mkProjectedUser "remote" true)
+    ];
   };
   multiUserHomeFixture = lib.nixosSystem {
     inherit system;
@@ -162,7 +159,12 @@ let
       specialArgs = {
         inherit inputs;
         horizon = {
-          node.services = [ "PersonaDevelopment" ];
+          node.capabilities = [
+            {
+              kind = "personaDevelopment";
+              capabilities = [ ];
+            }
+          ];
           inherit users;
         };
       };
@@ -174,12 +176,12 @@ let
         }
       ];
     };
-  noLocalUserAssertions = (invalidIdentityFixture { }).config.assertions;
+  noLocalUserAssertions = (invalidIdentityFixture [ ]).config.assertions;
   multipleLocalUserAssertions =
-    (invalidIdentityFixture {
-      alpha.hasPubKey = true;
-      beta.hasPubKey = true;
-    }).config.assertions;
+    (invalidIdentityFixture [
+      (mkProjectedUser "alpha" true)
+      (mkProjectedUser "beta" true)
+    ]).config.assertions;
 in
 assert rootLock.nodes.lojix.locked.rev == expectedRevision;
 assert lojix.name == expectedPackageName;
@@ -242,14 +244,14 @@ assert builtins.any (
   !assertion.assertion
   &&
     assertion.message
-    == "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPubKey); found none"
+    == "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPublicKey); found none"
 ) noLocalUserAssertions;
 assert builtins.any (
   assertion:
   !assertion.assertion
   &&
     assertion.message
-    == "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPubKey); found multiple: alpha, beta"
+    == "PersonaDevelopment Lojix identity requires exactly one projected local horizon.users user (hasPublicKey); found multiple: alpha, beta"
 ) multipleLocalUserAssertions;
 assert fixture.config.services.lojix.ordinarySocketPath == "/run/lojix/ordinary.sock";
 assert fixture.config.services.lojix.ordinarySocketMode == 432;

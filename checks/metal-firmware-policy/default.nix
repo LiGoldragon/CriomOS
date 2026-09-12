@@ -10,12 +10,7 @@ let
 
   baseNode = horizonNode.node {
     machine.hardware.model = "all-x86-64";
-    size = {
-      min = false;
-      medium = true;
-      large = false;
-      max = false;
-    };
+    size = "Medium";
   };
 
   intelThinkpadNode = horizonNode.node {
@@ -23,12 +18,7 @@ let
       model = "ThinkPadT14Gen5Intel";
       chipGeneration = 12;
     };
-    size = {
-      min = false;
-      medium = true;
-      large = false;
-      max = false;
-    };
+    size = "Medium";
   };
 
   configurationFor =

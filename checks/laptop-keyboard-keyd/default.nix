@@ -7,12 +7,7 @@
 let
   inherit (inputs.nixpkgs) lib;
 
-  size = {
-    min = true;
-    medium = true;
-    large = false;
-    max = false;
-  };
+  size = "Medium";
 
   edgeConfiguration =
     (lib.nixosSystem {
@@ -40,9 +35,11 @@ let
           exNodes = { };
           node = {
             inherit size;
-            useColemak = true;
-            behavesAs.iso = false;
-            hasVideoOutput = true;
+            keyboard = "Colemak";
+            behavesAs = {
+              edge = true;
+              iso = false;
+            };
             enableNetworkManager = false;
           };
         };

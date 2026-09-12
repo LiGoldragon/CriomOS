@@ -41,12 +41,11 @@ let
     optionalAttrs
     ;
   inherit (horizon) node;
-  cluster = horizon.cluster or { };
 
   nodeServices = import ../node-services.nix { inherit lib; };
 
-  enabled = nodeServices.has (node.services or [ ]) "VmTesting";
-  payload = nodeServices.payload (node.services or [ ]) "VmTesting";
+  enabled = nodeServices.has node.capabilities "vmTesting";
+  payload = nodeServices.payload node.capabilities "vmTesting";
 
   # Payload defaults. Per the design these are chosen-and-adjustable:
   #   display = Spice (best interactive latency + clipboard),
@@ -60,14 +59,14 @@ let
   # Criome domain for the persistent routed test VM. Rendered from cluster
   # facts (Horizon-derived data), never a Nix control-flow predicate, per
   # CriomOS's network-neutrality rule. `cluster.name` flows from Horizon.
-  clusterName = cluster.name or node.name;
+  clusterName = horizon.cluster;
   criomeDomain = "vm-testing.${clusterName}.criome";
 
   # The reachable address the domain resolves to: the host's own node IP
   # (CriomOS nodes are in the tailnet; the .criome authority delegates the
   # name to this node). Strip any CIDR suffix.
   inherit (builtins) head split;
-  rawNodeIp = node.nodeIp or null;
+  rawNodeIp = node.network.nodeIp or null;
   nodeAddress = if rawNodeIp == null then null else head (split "/" rawNodeIp);
 
   # microvm.nix is available as a flake input when wired (it is, on the

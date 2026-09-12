@@ -14,17 +14,28 @@ let
     unique
     ;
 
-  inherit (horizon) node users;
-  inherit (node) adminSshPubKeys behavesAs;
+  inherit (horizon) node;
+  users = builtins.listToAttrs (
+    map (user: {
+      inherit (user) name;
+      value = user;
+    }) horizon.users
+  );
+  inherit (node) adminSshPublicKeys behavesAs;
   needsUinputGroup = behavesAs.edge;
 
   mkUser =
     _attrName: user:
     let
-      inherit (user) trust sshPubKeys;
-      authorizedSshPubKeys = unique sshPubKeys;
+      inherit (user) trust sshPublicKeys;
+      authorizedSshPubKeys = unique sshPublicKeys;
+      hasMediumTrust = builtins.elem trust [
+        "Medium"
+        "Large"
+        "Max"
+      ];
     in
-    optionalAttrs trust.min {
+    {
       name = user.name;
 
       useDefaultShell = true;
@@ -40,7 +51,7 @@ let
         user.extraGroups
         ++ (optional needsUinputGroup "uinput")
         ++ (optional (config.programs.sway.enable == true) "sway")
-        ++ (optional (trust.medium && config.networking.networkmanager.enable == true) "networkmanager");
+        ++ (optional (hasMediumTrust && config.networking.networkmanager.enable == true) "networkmanager");
 
       linger = user.enableLinger;
     };
@@ -49,7 +60,7 @@ let
 
   rootUserAkses = {
     root = {
-      openssh.authorizedKeys.keys = adminSshPubKeys;
+      openssh.authorizedKeys.keys = adminSshPublicKeys;
     };
   };
 
