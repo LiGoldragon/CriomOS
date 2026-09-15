@@ -41,7 +41,11 @@ loader/KV headroom measurement against both systemd limits.
 
 ## Validation boundary
 
-`nix-instantiate --parse modules/nixos/llm.nix` passes. A full module evaluation
-was not run because this checkout lacks the materialized external flake inputs;
-weight builds and service activation were not attempted. The change is a
-reviewable catalog proposal only.
+`nix-instantiate --parse modules/nixos/llm.nix` passes. A narrow direct module
+evaluation with a temporary fixture `criomos-lib` JSON, `largeAi = true`, and
+`enableProposalModels = true` also passes: it materializes the service attrset
+and reports `MemoryMax = "110G"` without building weights. The repository-wide
+`nix flake check --no-build --impure` remains blocked by its documented
+materialization requirement: `CriomOS: no system input was provided`. Weight
+builds and service activation were not attempted. The change is a reviewable
+catalog proposal only.
