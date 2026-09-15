@@ -29,6 +29,7 @@ in
     ./spirit.nix
     ./lojix.nix
     ./lojix-persona-development.nix
+    ./core-checkup.nix
     ./nix
     ./complex.nix
     ./nspawn.nix
