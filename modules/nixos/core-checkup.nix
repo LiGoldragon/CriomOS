@@ -7,7 +7,7 @@ let
 in {
   options.services.coreCheckup = {
     enable = mkOption { type = types.bool; default = false; };
-    roster = mkOption { type = types.path; readOnly = true; };
+    roster = mkOption { type = types.str; readOnly = true; };
   };
   config = lib.mkIf (horizon.node.coreCheckup or false) {
     services.coreCheckup.enable = true;
