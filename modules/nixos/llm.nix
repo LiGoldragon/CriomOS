@@ -24,6 +24,62 @@ let
   configPath = inputs.criomos-lib + "/data/largeAI/llm.json";
   cfg = fromJSON (readFile configPath);
 
+  # Proposal-only catalog.  The external llm.json remains authoritative until
+  # its owner opts into `enableProposalModels`; the default is false, so this
+  # branch cannot fetch or start any of these weights.  Hashes are the Hub's
+  # content hashes for the pinned files, not a permission to prefetch them.
+  proposalModels = [
+    {
+      modelId = "laguna-s-2.1-ud-q4-k-m";
+      descriptor = "Laguna S 2.1 UD-Q4_K_M (Prometheus proposal)";
+      ctxSize = 262144;
+      source = {
+        kind = "multi-shard";
+        shards = [
+          { filename = "Laguna-S-2.1-UD-Q4_K_M-00001-of-00003.gguf"; url = "https://huggingface.co/unsloth/Laguna-S-2.1-GGUF/resolve/750f92f90cf54159c4d7a610cb7b3e74498e75c6/UD-Q4_K_M/Laguna-S-2.1-UD-Q4_K_M-00001-of-00003.gguf"; sha256 = "sha256-DPr0aRcmDSU3c+Xi+rZDKfpcnGD98NsPWfMSBbX13TI="; size = 3683648; }
+          { filename = "Laguna-S-2.1-UD-Q4_K_M-00002-of-00003.gguf"; url = "https://huggingface.co/unsloth/Laguna-S-2.1-GGUF/resolve/750f92f90cf54159c4d7a610cb7b3e74498e75c6/UD-Q4_K_M/Laguna-S-2.1-UD-Q4_K_M-00002-of-00003.gguf"; sha256 = "sha256-lPB1d0ypk1X2FGrPYpL2ifvpLRrf0GBZ9uurwObrinE="; size = 49930584576; }
+          { filename = "Laguna-S-2.1-UD-Q4_K_M-00003-of-00003.gguf"; url = "https://huggingface.co/unsloth/Laguna-S-2.1-GGUF/resolve/750f92f90cf54159c4d7a610cb7b3e74498e75c6/UD-Q4_K_M/Laguna-S-2.1-UD-Q4_K_M-00003-of-00003.gguf"; sha256 = "sha256-DXMLkZoFkXOQkfE1zeU8KGMcidAiFIJ3j2/HCjEB60k="; size = 23184915328; }
+        ];
+      };
+    }
+    {
+      modelId = "qwen3.8-27b-q8-0";
+      descriptor = "Qwen3.8 27B Q8_0 (Prometheus proposal)";
+      ctxSize = 131072;
+      source = {
+        kind = "fetchurl";
+        filename = "Qwen3.8-27B-Q8_0.gguf";
+        url = "https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF/resolve/0669b98607d47046c7c2b3f801011d54a08cfccf/Qwen3.8-27B-Q8_0.gguf";
+        sha256 = "sha256-9ccC2IINNvtVmFuyOPyD7joxPpIPS3UqQ3w6ap4U5Mg=";
+        size = 28595763552;
+      };
+    }
+    # Disabled: the requested Laguna XS Q8 revision and immutable file hash
+    # were not verified in the bounded source lookup.
+    {
+      modelId = "laguna-s-2.1-xs-q8-disabled";
+      descriptor = "Laguna S 2.1 XS Q8 (DISABLED: source revision unresolved)";
+      disabled = true;
+    }
+    # Disabled: Ouranos' requested XS IQ4 source revision/hash is likewise
+    # unresolved; keep the inventory visible without a fake fetcher.
+    {
+      modelId = "laguna-s-2.1-xs-iq4-disabled";
+      descriptor = "Laguna S 2.1 XS IQ4 (DISABLED: source revision unresolved)";
+      disabled = true;
+    }
+    # Disabled: no verified GGUF source was found for the requested Motif 2.
+    {
+      modelId = "motif-2-disabled";
+      descriptor = "Motif 2 (DISABLED: verified GGUF source pending)";
+      disabled = true;
+    }
+    # Motif 3 remains a living choice and is intentionally not enabled here;
+    # llama.cpp support and a verified source are still open.
+  ];
+
+  modelCatalog = cfg.models ++ lib.optionals (cfg.enableProposalModels or false) (lib.filter (model: !(model.disabled or false)) proposalModels);
+
   serverPort = cfg.serverPort;
 
   runtimeUser = "llama";
@@ -80,7 +136,7 @@ let
   modelsDir = pkgs.runCommand "llm-models-dir" { } (
     "mkdir -p $out\n"
     + concatStringsSep "\n" (
-      map (spec: "ln -s ${mkModelStorePath spec} $out/${spec.modelId}") cfg.models
+      map (spec: "ln -s ${mkModelStorePath spec} $out/${spec.modelId}") modelCatalog
     )
   );
 
@@ -110,7 +166,7 @@ let
     concatStringsSep "\n" lines + "\n";
 
   presetsIni = pkgs.writeText "llm-presets.ini" (
-    globalPreset + concatStringsSep "\n" (map mkModelPreset cfg.models)
+    globalPreset + concatStringsSep "\n" (map mkModelPreset modelCatalog)
   );
 
   serviceName = "${nodeName}-llama-router";
