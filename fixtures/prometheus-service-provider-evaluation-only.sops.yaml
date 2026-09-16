@@ -1,0 +1,7 @@
+# Synthetic public fixture for Nix evaluation only. It is not a certificate, key,
+# deployment secret, or decryptable production material.
+certificate: ENC[AES256_GCM,data:Zml4dHVyZS1ub3QtYS1jZXJ0aWZpY2F0ZQ==,iv:AAAAAAAAAAAAAAAA,tag:AAAAAAAAAAAAAAAAAAAAAA==,type:str]
+key: ENC[AES256_GCM,data:Zml4dHVyZS1ub3QtYS1rZXk=,iv:AAAAAAAAAAAAAAAA,tag:AAAAAAAAAAAAAAAAAAAAAA==,type:str]
+sops:
+  version: 3.9.0
+  mac: ENC[AES256_GCM,data:Zml4dHVyZS1ldmFsdWF0aW9uLW9ubHk=,iv:AAAAAAAAAAAAAAAA,tag:AAAAAAAAAAAAAAAAAAAAAA==,type:str]

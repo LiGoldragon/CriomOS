@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -16,10 +17,21 @@ let
   generatedTlsDirectory = "/var/lib/prometheus-service-tls";
   generatedCertificatePath = "${generatedTlsDirectory}/current/certificate.pem";
   generatedKeyPath = "${generatedTlsDirectory}/current/key.pem";
+  certificateSecretName = "prometheus-service-certificate";
+  keySecretName = "prometheus-service-key";
+  usingSops = cfg.enable && cfg.tls.sopsFileKey != null;
+  # The secrets input remains lazy for disabled and self-signed configurations.
+  sopsFiles = if usingSops then inputs.secrets.sopsFiles else { };
+  sopsFileExists = usingSops && builtins.hasAttr cfg.tls.sopsFileKey sopsFiles;
   certificatePath =
-    if cfg.tls.certificatePath == null then generatedCertificatePath else cfg.tls.certificatePath;
-  keyPath = if cfg.tls.keyPath == null then generatedKeyPath else cfg.tls.keyPath;
-  generatedTls = cfg.tls.certificatePath == null && cfg.tls.generateSelfSigned;
+    if usingSops then config.sops.secrets.${certificateSecretName}.path
+    else if cfg.tls.certificatePath == null then generatedCertificatePath
+    else cfg.tls.certificatePath;
+  keyPath =
+    if usingSops then config.sops.secrets.${keySecretName}.path
+    else if cfg.tls.keyPath == null then generatedKeyPath
+    else cfg.tls.keyPath;
+  generatedTls = !usingSops && cfg.tls.certificatePath == null && cfg.tls.generateSelfSigned;
   tlsPreparation = pkgs.writeShellApplication {
     name = "prometheus-service-tls";
     runtimeInputs = [
@@ -68,6 +80,12 @@ in
         default = true;
         description = "Generate a short-lived runtime certificate when no deployment-owned TLS paths are supplied.";
       };
+
+      sopsFileKey = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Key in inputs.secrets.sopsFiles for an encrypted YAML fixture with certificate and key fields; null retains explicit paths or self-signed TLS.";
+      };
     };
 
     reviewRunner = {
@@ -102,8 +120,16 @@ in
         message = "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath";
       }
       {
-        assertion = cfg.tls.certificatePath != null || cfg.tls.generateSelfSigned;
-        message = "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths or generateSelfSigned";
+        assertion = cfg.tls.sopsFileKey == null || (cfg.tls.certificatePath == null && cfg.tls.keyPath == null);
+        message = "criomos.prometheusServiceProvider.tls.sopsFileKey conflicts with explicit certificatePath or keyPath";
+      }
+      {
+        assertion = !usingSops || sopsFileExists;
+        message = "criomos.prometheusServiceProvider.tls.sopsFileKey is missing from inputs.secrets.sopsFiles";
+      }
+      {
+        assertion = usingSops || cfg.tls.certificatePath != null || cfg.tls.generateSelfSigned;
+        message = "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths, sopsFileKey, or generateSelfSigned";
       }
     ];
 
@@ -116,6 +142,27 @@ in
       "prosody"
       "forgejo"
     ];
+
+    sops.secrets = lib.mkIf (usingSops && sopsFileExists) {
+      ${certificateSecretName} = {
+        sopsFile = sopsFiles.${cfg.tls.sopsFileKey};
+        key = "certificate";
+        format = "yaml";
+        owner = "root";
+        group = "prometheus-service-tls";
+        mode = "0440";
+        restartUnits = [ "prosody.service" "forgejo.service" ];
+      };
+      ${keySecretName} = {
+        sopsFile = sopsFiles.${cfg.tls.sopsFileKey};
+        key = "key";
+        format = "yaml";
+        owner = "root";
+        group = "prometheus-service-tls";
+        mode = "0440";
+        restartUnits = [ "prosody.service" "forgejo.service" ];
+      };
+    };
 
     systemd.services.prometheus-service-tls = mkIf generatedTls {
       description = "Prepare Prometheus service self-signed TLS certificate";
@@ -167,7 +214,14 @@ in
       # This narrowly scoped POC does not provision MUC or HTTP file sharing,
       # so it explicitly declines the XEP-0423 compliance-suite promise.
       xmppComplianceSuite = false;
-      modules.pep = true;
+      modules = {
+        pep = true;
+        # These server modules support offline synchronization but do not prove
+        # an OMEMO 2 client or bot end-to-end workflow.
+        mam = true;
+        carbons = true;
+        smacks = true;
+      };
       virtualHosts.${cfg.xmppDomain} = {
         domain = cfg.xmppDomain;
         enabled = true;

@@ -3,11 +3,19 @@ let
   inherit (inputs.nixpkgs) lib;
   inherit (pkgs.stdenv.hostPlatform) system;
 
+  fixtureInputs = inputs // {
+    secrets = {
+      sopsFiles = {
+        prometheusServiceTls = ../../fixtures/prometheus-service-provider-evaluation-only.sops.yaml;
+      };
+    };
+  };
+
   configurationFor =
-    providerConfiguration:
+    providerConfiguration: configurationInputs:
     lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit inputs; };
+      specialArgs = { inputs = configurationInputs; };
       modules = [
         inputs.sops-nix.nixosModules.sops
         ../../modules/nixos/prometheus-service-provider.nix
@@ -23,7 +31,7 @@ let
       ];
     };
 
-  disabled = (configurationFor { }).config;
+  disabled = (configurationFor { } inputs).config;
   enabled =
     (configurationFor {
       enable = true;
@@ -34,19 +42,28 @@ let
         keyPath = "/run/secrets/prometheus-service-key";
       };
       reviewRunner.enable = true;
-    }).config;
+    } inputs).config;
+
+  sopsEnabled =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      forgejoDomain = "git.example";
+      tls.sopsFileKey = "prometheusServiceTls";
+    } fixtureInputs).config;
 
   # Force the enabled host toplevel derivation so NixOS module assertions are
   # evaluated, then retain only a boolean. This avoids putting its drvPath
   # string (and the full host closure it carries) in this focused fixture.
   enabledToplevelEvaluated = builtins.deepSeq enabled.system.build.toplevel.drvPath true;
+  sopsToplevelEvaluated = builtins.deepSeq sopsEnabled.system.build.toplevel.drvPath true;
 
   missingTls =
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
       forgejoDomain = "git.example";
-    }).config;
+    } inputs).config;
 
   missingKey =
     (configurationFor {
@@ -54,7 +71,27 @@ let
       xmppDomain = "chat.example";
       forgejoDomain = "git.example";
       tls.certificatePath = "/run/secrets/prometheus-service-certificate";
-    }).config;
+    } inputs).config;
+
+  missingSops =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      forgejoDomain = "git.example";
+      tls.sopsFileKey = "prometheusServiceTls";
+    } (inputs // { secrets = { sopsFiles = { }; }; })).config;
+
+  conflictingTls =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      forgejoDomain = "git.example";
+      tls = {
+        sopsFileKey = "prometheusServiceTls";
+        certificatePath = "/run/secrets/explicit-certificate";
+        keyPath = "/run/secrets/explicit-key";
+      };
+    } fixtureInputs).config;
 
   bool = value: if value then "true" else "false";
   hasFailedAssertion =
@@ -74,8 +111,10 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
   test ${lib.escapeShellArg (bool (builtins.hasAttr "prometheus-nix-review" disabled.systemd.services))} = false
-  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths or generateSelfSigned" missingTls))} = false
+  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths, sopsFileKey, or generateSelfSigned" missingTls))} = false
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath" missingKey))} = true
+  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls.sopsFileKey is missing from inputs.secrets.sopsFiles" missingSops))} = true
+  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls.sopsFileKey conflicts with explicit certificatePath or keyPath" conflictingTls))} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
   test ${lib.escapeShellArg (bool missingTls.systemd.services.prometheus-service-tls.enable)} = true
   test ${lib.escapeShellArg (bool (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.before))} = true
@@ -95,8 +134,18 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool enabled.services.prosody.c2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.modules.pep)} = true
+  test ${lib.escapeShellArg (bool enabled.services.prosody.modules.mam)} = true
+  test ${lib.escapeShellArg (bool enabled.services.prosody.modules.carbons)} = true
+  test ${lib.escapeShellArg (bool enabled.services.prosody.modules.smacks)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.xmppComplianceSuite)} = false
   test ${lib.escapeShellArg (bool enabledToplevelEvaluated)} = true
+  test ${lib.escapeShellArg (bool sopsToplevelEvaluated)} = true
+  test ${lib.escapeShellArg sopsEnabled.services.prosody.virtualHosts."chat.example".ssl.cert} = /run/secrets/prometheus-service-certificate
+  test ${lib.escapeShellArg sopsEnabled.services.forgejo.settings.server.KEY_FILE} = /run/secrets/prometheus-service-key
+  test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-certificate.sopsFile} = ${lib.escapeShellArg fixtureInputs.secrets.sopsFiles.prometheusServiceTls}
+  test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-key.key} = key
+  test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-certificate.mode} = 0440
+  test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-key.group} = prometheus-service-tls
   test ${
     lib.escapeShellArg (bool enabled.services.prosody.virtualHosts."chat.example".enabled)
   } = true
