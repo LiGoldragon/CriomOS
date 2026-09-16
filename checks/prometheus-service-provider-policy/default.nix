@@ -117,6 +117,8 @@ pkgs.runCommand "prometheus-service-provider-policy" {
 
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
+  test ${lib.escapeShellArg (bool (builtins.elem 5222 disabled.networking.firewall.allowedTCPPorts))} = false
+  test ${lib.escapeShellArg (bool (builtins.elem 3000 disabled.networking.firewall.allowedTCPPorts))} = false
   test ${lib.escapeShellArg (bool (builtins.hasAttr "prometheus-nix-review" disabled.systemd.services))} = false
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths, sopsFileKey, or generateSelfSigned" missingTls))} = false
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath" missingKey))} = true
@@ -169,10 +171,14 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool enabled.services.forgejo.enable)} = true
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.DOMAIN} = git.example
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.PROTOCOL} = https
+  test ${lib.escapeShellArg (toString enabled.services.forgejo.settings.server.HTTP_PORT)} = 3000
+  test ${lib.escapeShellArg enabled.services.forgejo.settings.server.ROOT_URL} = https://git.example:3000/
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.CERT_FILE} = /run/secrets/prometheus-service-certificate
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.KEY_FILE} = /run/secrets/prometheus-service-key
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.service.DISABLE_REGISTRATION)} = true
-  test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.actions.ENABLED)} = true
+  test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.actions.ENABLED)} = false
+  test ${lib.escapeShellArg (bool (builtins.elem 5222 enabled.networking.firewall.allowedTCPPorts))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem 3000 enabled.networking.firewall.allowedTCPPorts))} = true
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.Type} = oneshot
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.TimeoutStartSec} = 15min
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.KillMode} = control-group

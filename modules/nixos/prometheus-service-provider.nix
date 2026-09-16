@@ -64,6 +64,12 @@ in
       description = "Public Forgejo domain when this POC is enabled.";
     };
 
+    forgejoHttpsPort = mkOption {
+      type = types.port;
+      default = 3000;
+      description = "TCP port on which Forgejo serves its configured HTTPS endpoint.";
+    };
+
     tls = {
       certificatePath = mkOption {
         type = types.nullOr types.str;
@@ -241,17 +247,26 @@ in
       settings = {
         server = {
           DOMAIN = cfg.forgejoDomain;
-          ROOT_URL = "https://${cfg.forgejoDomain}/";
+          ROOT_URL = "https://${cfg.forgejoDomain}:${toString cfg.forgejoHttpsPort}/";
           PROTOCOL = "https";
+          HTTP_PORT = cfg.forgejoHttpsPort;
           CERT_FILE = certificatePath;
           KEY_FILE = keyPath;
         };
         service.DISABLE_REGISTRATION = true;
-        # This advertises review workflows but does not register a Forgejo
-        # account or runner. The bounded unit below is manually started.
-        actions.ENABLED = cfg.reviewRunner.enable;
+        # No Forgejo runner is provisioned or registered by this POC. The
+        # bounded review unit remains manually started, so Actions must not
+        # advertise an unsupported workflow surface.
+        actions.ENABLED = false;
       };
     };
+
+    # Prosody's client-to-server listener is 5222. Forgejo serves HTTPS on
+    # forgejoHttpsPort above; no administrative or runner ports are exposed.
+    networking.firewall.allowedTCPPorts = [
+      5222
+      cfg.forgejoHttpsPort
+    ];
 
     systemd.services.prometheus-nix-review = mkIf cfg.reviewRunner.enable {
       description = "Bounded Prometheus native Nix review";
