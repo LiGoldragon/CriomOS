@@ -13,6 +13,11 @@ let
         ../../modules/nixos/prometheus-service-provider.nix
         {
           system.stateVersion = "26.05";
+          fileSystems."/" = {
+            device = "/dev/disk/by-label/fixture-root";
+            fsType = "ext4";
+          };
+          boot.loader.grub.devices = [ "/dev/sda" ];
           criomos.prometheusServiceProvider = providerConfiguration;
         }
       ];
