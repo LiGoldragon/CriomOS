@@ -26,6 +26,7 @@ pkgs.runCommand "prometheus-notify-proof"
 
     import omemo
     import twomemo
+    from twomemo.twomemo import ContentImpl
     from notify_proof import (
         EncryptedEnvelope,
         OMEMO2_NAMESPACE,
@@ -103,7 +104,7 @@ pkgs.runCommand "prometheus-notify-proof"
         try:
             envelope = await transport.encrypt(BareJid(BOB), b"tamper fixture")
             message = envelope.value
-            tampered_content = twomemo.ContentImpl(
+            tampered_content = ContentImpl(
                 message.content.ciphertext[:-1] + bytes([message.content.ciphertext[-1] ^ 1])
             )
             tampered = EncryptedEnvelope(message._replace(content=tampered_content))
@@ -124,6 +125,7 @@ pkgs.runCommand "prometheus-notify-proof"
     for malformed in [
         "Notify.{ bob@example.org «missing guillemets» }",
         "Notify.{ «bob@example.org» missing-guillemets }",
+        "Notify.{ «bob@example.org/resource» «resource is not bare» }",
         "Other.{ «bob@example.org» «wrong variant» }",
     ]:
         try:

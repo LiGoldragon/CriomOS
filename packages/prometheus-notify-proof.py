@@ -3,8 +3,8 @@
 
 This is deliberately a strict, proposal-only subset, not a general Datom
 parser and not a Message contract.  It accepts precisely one input shaped as
-``Notify.{ «bare-jid» «body» }``.  The transport interface is typed so the
-parser cannot grow a plaintext delivery path.
+``Notify.{ «bare-jid» «body» }``. The offline fixture supplies the encrypted
+transport; this CLI only validates input and never claims to enqueue delivery.
 """
 
 from __future__ import annotations
@@ -67,7 +67,12 @@ def parse_notify(text: str) -> Notify:
     if recipient_text.count("@") != 1:
         raise NotifyError("recipient must be a bare JID")
     localpart, domain = recipient_text.split("@", 1)
-    if not localpart or not domain or any(character.isspace() for character in recipient_text):
+    if (
+        not localpart
+        or not domain
+        or "/" in recipient_text
+        or any(character.isspace() for character in recipient_text)
+    ):
         raise NotifyError("recipient must be a bare JID")
     if not body:
         raise NotifyError("Notify body must not be empty")
@@ -94,7 +99,7 @@ def main(arguments: list[str]) -> int:
     except NotifyError as error:
         print(f"malformed Notify Datom: {error}", file=sys.stderr)
         return 2
-    print("NotifyAccepted.{}")
+    print("NotifyValidatedOffline.{}")
     return 0
 
 
