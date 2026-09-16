@@ -160,6 +160,12 @@
         lojix-bootstrap = inputs.lojix.apps.${bootstrapSystem}.lojix-bootstrap;
       });
 
+      # A target-dependent, immutable roster projection. It consumes the
+      # materialized Horizon input at build time; Home receives only this file.
+      rosterPackages = system: pkgs: projection: {
+        core-checkup-roster = pkgs.callPackage ./artifacts/core-checkup-roster.nix { horizon = projection; };
+      };
+
       horizon = inputs.horizon.horizon;
       system = inputs.system.system;
       # Consume CriomOS-home's explicit package-set boundary.  Forcing a
@@ -301,7 +307,9 @@
       # Exact maintained bootstrap re-export.  This is a flake-owned app, not
       # a service wrapper: every authority-bearing bootstrap value stays in
       # the one inline Lojix request.
-      packages = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.packages or { }) bootstrapPackages;
+      packages = inputs.nixpkgs.lib.recursiveUpdate
+        (inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.packages or { }) bootstrapPackages)
+        { ${system} = rosterPackages system pkgs horizon; };
 
       apps = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.apps or { }) bootstrapApps;
 

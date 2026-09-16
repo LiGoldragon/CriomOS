@@ -1,29 +1,15 @@
 { lib, horizon, ... }:
 let
-  inherit (lib) attrValues filter mkOption types;
-  nodeServices = import ./node-services.nix { inherit lib; };
-  services = nodeServices.of horizon.node;
-  coreCheckupEnabled = nodeServices.has services "coreCheckup";
-  allNodes = [ horizon.node ] ++ attrValues (horizon.exNodes or { });
-  addressOf = node: node.yggAddress or (node.yggdrasil.address or null);
-  reachableNodes = filter (node: addressOf node != null) allNodes;
+  inherit (lib) mkOption types;
+  rosterProjection = import ./core-checkup-roster.nix { inherit lib horizon; };
 in {
   options.services.coreCheckup = {
     enable = mkOption { type = types.bool; default = false; };
     roster = mkOption { type = types.str; readOnly = true; };
   };
-  config = lib.mkIf coreCheckupEnabled {
+  config = lib.mkIf rosterProjection.enabled {
     services.coreCheckup.enable = true;
-    environment.etc."core-checkup/roster.json".text = builtins.toJSON {
-      endpoints = map (node: { name = node.name; address = addressOf node; }) reachableNodes;
-      units = [
-        { name = "orchestrate-nexus.service"; scope = "user"; owned = true; allowRestart = false; }
-        { name = "message-daemon.service"; scope = "user"; owned = true; allowRestart = false; }
-        { name = "codex-remote-control.service"; scope = "user"; owned = true; allowRestart = false; }
-        { name = "lojix.service"; scope = "system"; owned = false; allowRestart = false; }
-      ];
-      allowRepair = false;
-    };
+    environment.etc."core-checkup/roster.json".text = builtins.toJSON rosterProjection.roster;
     services.coreCheckup.roster = "/etc/core-checkup/roster.json";
   };
 }
