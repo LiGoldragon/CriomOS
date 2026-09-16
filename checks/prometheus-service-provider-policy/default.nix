@@ -148,5 +148,10 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   fi
   test ! -e "$fixture/invalid-certificate.pem"
   test ! -e "$fixture/invalid-key.pem"
+  touch "$fixture/partial-certificate.pem"
+  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/partial-certificate.pem" "$fixture/partial-key.pem" chat.example git.example; then
+    exit 1
+  fi
+  test ! -e "$fixture/partial-key.pem"
   touch "$out"
 ''
