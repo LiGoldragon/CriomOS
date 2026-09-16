@@ -53,8 +53,8 @@ in
       enable = mkEnableOption "a manually-started, bounded native Nix review runner";
 
       sourceRevision = mkOption {
-        type = types.enum [ "7c9975afbcf44cb580d1491e7f8447fd1def1fbd" ];
-        default = "7c9975afbcf44cb580d1491e7f8447fd1def1fbd";
+        type = types.enum [ "7ee784103dac929bda499875a98504fd15ca6523" ];
+        default = "7ee784103dac929bda499875a98504fd15ca6523";
         description = "Allowlisted immutable CriomOS revision for the review runner.";
       };
 

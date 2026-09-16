@@ -17,7 +17,7 @@ let
     test "$7" = --impure
     test "$8" = --expr
     case "$9" in
-      *'builtins.fetchGit'*'7c9975afbcf44cb580d1491e7f8447fd1def1fbd'*'checks/prometheus-service-provider-policy'*) ;;
+      *'builtins.fetchGit'*'7ee784103dac929bda499875a98504fd15ca6523'*'checks/prometheus-service-provider-policy'*) ;;
       *) exit 65 ;;
     esac
     exit 0
@@ -39,13 +39,13 @@ pkgs.runCommand "prometheus-nix-review-runner" { } ''
 
   ${runner}/bin/prometheus-nix-review-runner \
     ${successfulNix} "$out/current.json" github:LiGoldragon/CriomOS \
-    7c9975afbcf44cb580d1491e7f8447fd1def1fbd
+    7ee784103dac929bda499875a98504fd15ca6523
   grep -F '"status": "passed"' "$out/current.json"
   first_run_id=$(${pkgs.gnused}/bin/sed -n 's/  "runId": "\(.*\)",/\1/p' "$out/current.json")
 
   if ${runner}/bin/prometheus-nix-review-runner \
     ${failingNix} "$out/failure.json" github:LiGoldragon/CriomOS \
-    7c9975afbcf44cb580d1491e7f8447fd1def1fbd; then
+    7ee784103dac929bda499875a98504fd15ca6523; then
     exit 1
   fi
   grep -F '"status": "failed"' "$out/failure.json"
@@ -53,7 +53,7 @@ pkgs.runCommand "prometheus-nix-review-runner" { } ''
 
   if ${runner}/bin/prometheus-nix-review-runner \
     ${interruptingNix} "$out/current.json" github:LiGoldragon/CriomOS \
-    7c9975afbcf44cb580d1491e7f8447fd1def1fbd; then
+    7ee784103dac929bda499875a98504fd15ca6523; then
     exit 1
   fi
   grep -F '"status": "interrupted"' "$out/current.json"
@@ -63,7 +63,7 @@ pkgs.runCommand "prometheus-nix-review-runner" { } ''
 
   if ${runner}/bin/prometheus-nix-review-runner \
     ${successfulNix} "$out/rejected.json" invalid-source \
-    7c9975afbcf44cb580d1491e7f8447fd1def1fbd; then
+    7ee784103dac929bda499875a98504fd15ca6523; then
     exit 1
   fi
   test ! -e "$out/rejected.json"
