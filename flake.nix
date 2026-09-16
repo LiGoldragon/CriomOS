@@ -217,6 +217,7 @@
           };
           prometheus-nix-review-runner = pkgs.callPackage ./checks/prometheus-nix-review-runner { };
           omemo2-encrypted-roundtrip = pkgs.callPackage ./checks/omemo2-encrypted-roundtrip { };
+          prometheus-notify-proof = pkgs.callPackage ./checks/prometheus-notify-proof { };
           lojix-nexus-service = pkgs.callPackage ./checks/lojix-nexus-service {
             inherit inputs;
           };
