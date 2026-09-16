@@ -188,8 +188,20 @@
       # apply its platform predicate. Keep those values for other systems, but
       # build the materialized target system from CriomOS's explicit checks so
       # selecting one sibling does not force an unrelated check.
+      blueprintPackageChecks = inputs.nixpkgs.lib.mapAttrs' (name: value: {
+        name = "pkgs-${name}";
+        inherit value;
+      }) (blueprintOutputs.packages.${system} or { });
+      bootstrapPackageChecks = inputs.nixpkgs.lib.mapAttrs' (name: value: {
+        name = "pkgs-${name}";
+        inherit value;
+      }) (bootstrapPackages.${system} or { });
+      blueprintDevShellChecks = inputs.nixpkgs.lib.mapAttrs' (name: value: {
+        name = "devshell-${name}";
+        inherit value;
+      }) (blueprintOutputs.devShells.${system} or { });
       projectChecks = inputs.nixpkgs.lib.filterAttrs (name: _: name != system) blueprintChecks // {
-        ${system} = {
+        ${system} = blueprintPackageChecks // bootstrapPackageChecks // blueprintDevShellChecks // {
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };
