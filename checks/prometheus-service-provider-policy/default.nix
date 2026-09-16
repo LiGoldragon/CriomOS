@@ -69,7 +69,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
     pkgs.openssl
   ];
 } ''
-  set -eu
+  set -eux
 
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
@@ -78,14 +78,14 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath" missingKey))} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
   test ${lib.escapeShellArg (bool missingTls.systemd.services.prometheus-service-tls.enable)} = true
-  test ${lib.escapeShellArg (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.before)} = true
-  test ${lib.escapeShellArg (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.before)} = true
-  test ${lib.escapeShellArg (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.requiredBy)} = true
-  test ${lib.escapeShellArg (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.requiredBy)} = true
-  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.requires)} = true
-  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.after)} = true
-  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.requires)} = true
-  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.after)} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.before))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.before))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.requiredBy))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.requiredBy))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.requires))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.after))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.requires))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.after))} = true
   test ${
     lib.escapeShellArg missingTls.services.prosody.virtualHosts."chat.example".ssl.cert
   } = /var/lib/prometheus-service-tls/certificate.pem
