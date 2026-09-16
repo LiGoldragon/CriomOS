@@ -1,0 +1,104 @@
+{
+  "quotaEventLog": "/home/li/.local/state/core-checkup/events.ndjson",
+  "stateFile": "/home/li/.local/state/core-checkup/heartbeat-state.json",
+  "reportFile": "/home/li/.local/state/core-checkup/heartbeat-events.ndjson",
+  "messageFile": "/home/li/.local/state/core-checkup/heartbeat-message.json",
+  "luna": true,
+  "send": true,
+  "lanes": [
+    {
+      "id": "efa157",
+      "repo": "/home/li/wt/github.com/LiGoldragon/primary/claude-successor-840e42-bootstrap-local/.claude/worktrees/claude-successor-840e42",
+      "bookmark": "flow/efa157",
+      "reports": [
+        "/home/li/wt/github.com/LiGoldragon/primary/claude-successor-840e42-bootstrap-local/.claude/worktrees/claude-successor-840e42/flows/efa157/log.md",
+        "/home/li/wt/github.com/LiGoldragon/primary/claude-successor-840e42-bootstrap-local/.claude/worktrees/claude-successor-840e42/flows/efa157/reports/ordersToCodex-2026-09-16.md"
+      ],
+      "transcript": "/home/li/.claude/projects/-home-li-wt-github-com-LiGoldragon-primary-claude-successor-840e42-bootstrap-local--claude-worktrees-claude-successor-840e42/efa15708-dc5d-42ce-af62-8ffb84c9815e.jsonl"
+    },
+    {
+      "id": "cf7879",
+      "repo": "/home/li/wt/github.com/LiGoldragon/primary/cf7879-report-recovery",
+      "bookmark": "flow/cf7879",
+      "reports": [
+        "/home/li/wt/github.com/LiGoldragon/primary/cf7879-report-recovery/flows/cf7879/log.md",
+        "/home/li/wt/github.com/LiGoldragon/primary/cf7879-report-recovery/flows/cf7879/reports/to-efa157.md"
+      ],
+      "transcript": "/home/li/.codex/sessions/2026/09/15/rollout-2026-09-15T23-59-38-01a0a715-2d5d-7342-b278-1dbcf78795bd.jsonl"
+    },
+    {
+      "id": "d9961c",
+      "repo": "/git/github.com/LiGoldragon/primary/codex-successor-cf7879-bootstrap-a1acf612-da24-4d54-a05c-12b4a6028d9e",
+      "bookmark": "flow/d9961c",
+      "reports": [
+        "/git/github.com/LiGoldragon/primary/codex-successor-cf7879-bootstrap-a1acf612-da24-4d54-a05c-12b4a6028d9e/flows/d9961c/log.md"
+      ],
+      "transcript": "/home/li/.codex/sessions/2026/09/16/rollout-2026-09-16T17-17-49-01a0aacb-ac84-71a1-88a0-05ed9961ca9d.jsonl"
+    },
+    {
+      "id": "57a7aa",
+      "repo": "/git/github.com/LiGoldragon/secondary",
+      "bookmark": "main",
+      "reports": [
+        "/home/li/secondary/flows/57a7aa/log.md"
+      ],
+      "transcript": "/home/li/.claude/projects/-git-github-com-LiGoldragon-secondary/57a7aa02-e52d-4266-8746-6770ff770d11.jsonl"
+    },
+    {
+      "id": "348e7b",
+      "repo": "/git/github.com/LiGoldragon/secondary",
+      "bookmark": "main",
+      "reports": [
+        "/home/li/secondary/flows/348e7b/log.md"
+      ],
+      "transcript": "/home/li/.codex/sessions/2026/09/14/rollout-2026-09-14T20-13-03-01a0a11f-6130-70e2-80b1-796348e7b086.jsonl"
+    },
+    {
+      "id": "e43002",
+      "repo": "/home/li/wt/github.com/LiGoldragon/primary/core-e43002",
+      "bookmark": "@",
+      "reports": [
+        "/home/li/wt/github.com/LiGoldragon/primary/core-e43002/flows/e43002/log.md"
+      ],
+      "transcript": "/home/li/.codex/sessions/2026/09/16/rollout-2026-09-16T02-16-09-01a0a792-2d0e-7a53-ac0b-9b3e43002941.jsonl"
+    }
+  ],
+  "recipients": [
+    {
+      "id": "efa157",
+      "route": "prompt_relay",
+      "session": "efa15708-dc5d-42ce-af62-8ffb84c9815e",
+      "transcript": "/home/li/.claude/projects/-home-li-wt-github-com-LiGoldragon-primary-claude-successor-840e42-bootstrap-local--claude-worktrees-claude-successor-840e42/efa15708-dc5d-42ce-af62-8ffb84c9815e.jsonl"
+    },
+    {
+      "id": "cf7879",
+      "route": "codex_queue",
+      "session": "01a0a715-2d5d-7342-b278-1dbcf78795bd",
+      "transcript": "/home/li/.codex/sessions/2026/09/15/rollout-2026-09-15T23-59-38-01a0a715-2d5d-7342-b278-1dbcf78795bd.jsonl"
+    },
+    {
+      "id": "d9961c",
+      "route": "codex_queue",
+      "session": "01a0aacb-ac84-71a1-88a0-05ed9961ca9d",
+      "transcript": "/home/li/.codex/sessions/2026/09/16/rollout-2026-09-16T17-17-49-01a0aacb-ac84-71a1-88a0-05ed9961ca9d.jsonl"
+    },
+    {
+      "id": "57a7aa",
+      "route": "prompt_relay",
+      "session": "57a7aa02-e52d-4266-8746-6770ff770d11",
+      "transcript": "/home/li/.claude/projects/-git-github-com-LiGoldragon-secondary/57a7aa02-e52d-4266-8746-6770ff770d11.jsonl"
+    },
+    {
+      "id": "348e7b",
+      "route": "codex_queue",
+      "session": "01a0a11f-6130-70e2-80b1-796348e7b086",
+      "transcript": "/home/li/.codex/sessions/2026/09/14/rollout-2026-09-14T20-13-03-01a0a11f-6130-70e2-80b1-796348e7b086.jsonl"
+    },
+    {
+      "id": "e43002",
+      "route": "codex_queue",
+      "session": "01a0a792-2d0e-7a53-ac0b-9b3e43002941",
+      "transcript": "/home/li/.codex/sessions/2026/09/16/rollout-2026-09-16T02-16-09-01a0a792-2d0e-7a53-ac0b-9b3e43002941.jsonl"
+    }
+  ]
+}
