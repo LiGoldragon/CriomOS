@@ -1,10 +1,36 @@
 { lib, horizon, ... }:
 let
-  inherit (horizon.node) installation;
+  # Horizon's current projection stores installation facts in `node.io`.
+  # Preserve the older `installation` form for already-pinned consumers; every
+  # adapter field below is a direct spelling change from that emitted record.
+  legacyInstallation = horizon.node.installation or null;
+  io = horizon.node.io or null;
+  installation =
+    if legacyInstallation != null then
+      legacyInstallation
+    else if io != null then
+      {
+        bootloader = io.bootloader;
+        disks = lib.mapAttrsToList (mount: disk: {
+          inherit mount;
+          inherit (disk) device;
+          fs_type = disk.fsType;
+          options = disk.options or [ ];
+        }) io.disks;
+        swapDevices = io.swapDevices or [ ];
+      }
+    else
+      throw "preinstalled disks require Horizon node.installation or node.io";
   inherit (installation) disks bootloader;
 
   projectedSwapDevices = installation.swapDevices or [ ];
-  compressedSwap = horizon.node.compressedSwapMemoryPercent or null;
+  compressedSwap =
+    if horizon.node.compressedSwapMemoryPercent or null != null then
+      horizon.node.compressedSwapMemoryPercent
+    else if io != null then
+      io.compressedSwap.memoryPercent or null
+    else
+      null;
 
   fsTypeFor =
     ft:
