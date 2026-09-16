@@ -15,14 +15,14 @@ let
     && (horizon.node.name or null) == "prometheus";
   secretsFiles = inputs.secrets.sopsFiles or { };
   hasAccountSecrets =
-    builtins.hasAttr "prosody/li" secretsFiles
-    && builtins.hasAttr "prosody/persona" secretsFiles;
+    builtins.hasAttr "prosodyLiPassword" secretsFiles
+    && builtins.hasAttr "prosodyPersonaPassword" secretsFiles;
 in
 lib.mkIf isPrometheusTarget {
   assertions = [
     {
       assertion = hasAccountSecrets;
-      message = "Goldragon Prometheus Prosody consumer requires inputs.secrets.sopsFiles prosody/li and prosody/persona";
+      message = "Goldragon Prometheus Prosody consumer requires inputs.secrets.sopsFiles prosodyLiPassword and prosodyPersonaPassword";
     }
   ];
 
@@ -40,7 +40,7 @@ lib.mkIf isPrometheusTarget {
   # prosodyctl and never exposes a credential to an agent.
   sops.secrets = lib.mkIf hasAccountSecrets {
     "prosody-li-password" = {
-      sopsFile = secretsFiles."prosody/li";
+      sopsFile = secretsFiles.prosodyLiPassword;
       format = "binary";
       key = "";
       owner = "root";
@@ -48,7 +48,7 @@ lib.mkIf isPrometheusTarget {
       mode = "0400";
     };
     "prosody-persona-password" = {
-      sopsFile = secretsFiles."prosody/persona";
+      sopsFile = secretsFiles.prosodyPersonaPassword;
       format = "binary";
       key = "";
       owner = "root";

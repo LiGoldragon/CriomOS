@@ -8,8 +8,8 @@ let
   targetInputs = inputs // {
     secrets = {
       sopsFiles = {
-        "prosody/li" = fixtureSecret;
-        "prosody/persona" = fixtureSecret;
+        prosodyLiPassword = fixtureSecret;
+        prosodyPersonaPassword = fixtureSecret;
       };
     };
   };
