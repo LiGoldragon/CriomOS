@@ -184,8 +184,12 @@
       # aggregate is formed, so one evaluation-time assertion hides unrelated
       # sibling checks and the target output. Preserve the check values lazily.
       blueprintChecks = blueprintOutputs.checks or { };
-      projectChecks = blueprintChecks // {
-        ${system} = (blueprintChecks.${system} or { }) // {
+      # Blueprint's per-system check set has already traversed every check to
+      # apply its platform predicate. Keep those values for other systems, but
+      # build the materialized target system from CriomOS's explicit checks so
+      # selecting one sibling does not force an unrelated check.
+      projectChecks = inputs.nixpkgs.lib.filterAttrs (name: _: name != system) blueprintChecks // {
+        ${system} = {
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
             inherit inputs;
           };
