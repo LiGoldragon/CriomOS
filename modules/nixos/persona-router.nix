@@ -23,7 +23,7 @@ let
     ;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  capabilities = horizon.node.capabilities;
+  capabilities = nodeServices.of horizon.node;
   personaRouterEnabled = nodeServices.has capabilities "personaRouter";
   settings = nodeServices.payload capabilities "personaRouter";
 

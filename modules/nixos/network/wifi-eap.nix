@@ -11,7 +11,7 @@ let
   inherit (constants.fileSystem.complex) keyFile;
 
   nodeServices = import ../node-services.nix { inherit lib; };
-  hasWifiCertPubKey = nodeServices.has horizon.node.capabilities "wifiCertificate";
+  hasWifiCertPubKey = nodeServices.has (nodeServices.of horizon.node) "wifiCertificate";
 
   nodeCertFile = "${certsDir}/${node.name}.pem";
 

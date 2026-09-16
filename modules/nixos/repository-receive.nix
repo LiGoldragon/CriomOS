@@ -11,7 +11,7 @@ let
   inherit (lib) mkIf;
 
   nodeServices = import ./node-services.nix { inherit lib; };
-  repositoryReceiveEnabled = nodeServices.personaDevelopmentHas horizon.node.capabilities "GitoliteServer";
+  repositoryReceiveEnabled = nodeServices.personaDevelopmentHas (nodeServices.of horizon.node) "GitoliteServer";
 
   adminSshPubKeys = horizon.node.adminSshPublicKeys;
   gitoliteAdminPubkey =

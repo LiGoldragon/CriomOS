@@ -8,7 +8,7 @@ let
   nodeServices = import ../node-services.nix { inherit lib; };
 in
 {
-  config = lib.mkIf (nodeServices.has node.capabilities "tailnetClient") {
+  config = lib.mkIf (nodeServices.has (nodeServices.of node) "tailnetClient") {
     # Phase 1 scaffolding only: enrollment remains manual.
     services.tailscale = {
       enable = true;

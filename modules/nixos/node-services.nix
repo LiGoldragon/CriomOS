@@ -29,6 +29,8 @@ let
       throw "horizon.node.capabilities must be a vector of capability records";
 in
 rec {
+  of = node: node.services or node.capabilities or [ ];
+
   has = services: name: builtins.any (service: serviceName service == lib.toLower name) (servicesList services);
 
   payload =

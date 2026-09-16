@@ -2,7 +2,7 @@
 let
   inherit (lib) attrValues filter mkOption types;
   nodeServices = import ./node-services.nix { inherit lib; };
-  services = horizon.node.services or horizon.node.capabilities or [ ];
+  services = nodeServices.of horizon.node;
   coreCheckupEnabled = nodeServices.has services "coreCheckup";
   allNodes = [ horizon.node ] ++ attrValues (horizon.exNodes or { });
   addressOf = node: node.yggAddress or (node.yggdrasil.address or null);

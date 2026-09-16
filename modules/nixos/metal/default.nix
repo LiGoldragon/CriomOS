@@ -18,7 +18,13 @@ let
     optionalString
     optionalAttrs
     ;
-  inherit (horizon.node.machine.hardware) model;
+  machine = horizon.node.machine;
+  legacyHardware = machine.hardware or { };
+  model =
+    if legacyHardware.model or null != null then
+      legacyHardware.model
+    else
+      machine.model or null;
   fixedLocation = horizon.node.fixedLocation or null;
   geoclueLocation =
     if fixedLocation == null then
@@ -46,9 +52,9 @@ let
     max = sizeMagnitude == "Max";
   };
   nodeServices = import ../node-services.nix { inherit lib; };
-  capabilities = horizon.node.capabilities;
+  capabilities = nodeServices.of horizon.node;
 
-  # A Horizon projection says what the machine is: `machine.hardware.model` is
+  # A Horizon projection says what the machine is: `machine.model` is
   # an operator-supplied string.  What it means for this system is CriomOS's
   # own business.
   # horizon-rs f1a5eca retired `KnownModel`, `ComputerIs` and `TypeIs` as
@@ -114,7 +120,7 @@ let
   modelFacts =
     if model == null then
       throw ''
-        This bare-metal node's Horizon projection leaves machine.hardware.model unset.
+        This bare-metal node's Horizon projection leaves machine.model unset.
         CriomOS metal policy (battery thresholds, thinkfan, microcode, kernel modules)
         is selected by model, so there is nothing to select.  Give the node a model in
         its Horizon definition.
@@ -429,7 +435,11 @@ let
   # - intel-compute-runtime (~100MB OpenCL) is essentially niche on
   #   Intel iGPUs (Darktable disables by default; Blender doesn't
   #   support); dropped from default closure pending a real consumer.
-  chipGen = horizon.node.machine.hardware.chipGeneration;
+  chipGen =
+    if legacyHardware.chipGeneration or null != null then
+      legacyHardware.chipGeneration
+    else
+      machine.chipGen or null;
   igpuIsModern = chipGen != null && chipGen >= 12;
   wantsHwVideoAccel = nodeServices.has capabilities "hardwareVideo";
 

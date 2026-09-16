@@ -12,7 +12,7 @@ let
 
   headscaleFqdn = node.criomeDomainName;
   nodeServices = import ../node-services.nix { inherit lib; };
-  tailnetControllerEnabled = nodeServices.has node.capabilities "tailnetController";
+  tailnetControllerEnabled = nodeServices.has (nodeServices.of node) "tailnetController";
   headscalePort = constants.network.headscale.port;
   tailnetBaseDomain = horizon.tailnetBaseDomain;
 
