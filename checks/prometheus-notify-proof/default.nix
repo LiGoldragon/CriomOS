@@ -18,7 +18,7 @@ pkgs.runCommand "prometheus-notify-proof"
     mkdir source
     tar -xzf ${upstreamTests} --strip-components=1 -C source
     cp ${../../packages/prometheus-notify-proof.py} notify_proof.py
-    notify-datom 'Notify.{ bob@example.org «hello {quoted} text» }'
+    notify-datom 'Notify.{ bob@example.org «hello «quoted\» text» }'
     if notify-datom 'Submit.{ x }'; then
       echo "non-Notify Datom unexpectedly accepted" >&2
       exit 1

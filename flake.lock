@@ -3809,13 +3809,13 @@
         "narHash": "sha256-YsqGn7NeNqf/6v89CRDRV/RKkwCQsEdUi4S4ePjCfyo=",
         "owner": "LiGoldragon",
         "repo": "signal-message",
-        "rev": "e30a235baad56695c2be768be756a4336836a666",
+        "rev": "aec96bf40807f4452aaf3729b7e834eb6182b44f",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "signal-message",
-        "rev": "e30a235baad56695c2be768be756a4336836a666",
+        "rev": "aec96bf40807f4452aaf3729b7e834eb6182b44f",
         "type": "github"
       }
     },
