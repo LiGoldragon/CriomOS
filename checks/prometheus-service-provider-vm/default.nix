@@ -10,7 +10,7 @@ pkgs.testers.nixosTest {
 
   nodes = {
     server =
-      { ... }:
+      { pkgs, ... }:
       {
         imports = [
           inputs.sops-nix.nixosModules.sops
@@ -20,6 +20,7 @@ pkgs.testers.nixosTest {
         system.stateVersion = "26.05";
         networking.hostName = "prometheus-service-provider";
         networking.firewall.enable = true;
+        environment.systemPackages = [ pkgs.openssl ];
         criomos.prometheusServiceProvider = {
           enable = true;
           xmppDomain = "xmpp.goldragon.criome.net";
