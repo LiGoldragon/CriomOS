@@ -1,6 +1,9 @@
 { lib, horizon, ... }:
 let
   inherit (lib) attrValues filter mkOption types;
+  nodeServices = import ./node-services.nix { inherit lib; };
+  services = horizon.node.services or horizon.node.capabilities or [ ];
+  coreCheckupEnabled = nodeServices.has services "coreCheckup";
   allNodes = [ horizon.node ] ++ attrValues (horizon.exNodes or { });
   addressOf = node: node.yggAddress or (node.yggdrasil.address or null);
   reachableNodes = filter (node: addressOf node != null) allNodes;
@@ -9,7 +12,7 @@ in {
     enable = mkOption { type = types.bool; default = false; };
     roster = mkOption { type = types.str; readOnly = true; };
   };
-  config = lib.mkIf (horizon.node.coreCheckup or false) {
+  config = lib.mkIf coreCheckupEnabled {
     services.coreCheckup.enable = true;
     environment.etc."core-checkup/roster.json".text = builtins.toJSON {
       endpoints = map (node: { name = node.name; address = addressOf node; }) reachableNodes;

@@ -1,0 +1,25 @@
+[
+  {
+    "TailnetClient": {}
+  },
+  {
+    "TailnetController": {}
+  },
+  {
+    "NixBuilder": {
+      "maximumJobs": null
+    }
+  },
+  {
+    "CoreCheckup": {}
+  },
+  {
+    "PersonaDevelopment": {
+      "capabilities": [
+        {
+          "GitoliteServer": {}
+        }
+      ]
+    }
+  }
+]
