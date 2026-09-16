@@ -36,7 +36,7 @@
     # Core-only Home deployment keeps the live Message 0.11.1 store while
     # the 0.12 relay migration remains held. The selected module is composed
     # by userHomes only when the OS projection enables Core Checkup.
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/ca7bfbd318b0cb4ab640c08383e6cc13f9272c3a";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/4eaf22574918e801400dbfc2c75ff922c1c68e2c";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
