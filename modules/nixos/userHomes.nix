@@ -10,7 +10,13 @@
 let
   inherit (builtins) mapAttrs;
 
-  usersByName = inputs.criomos-home.horizonUsersByName horizon.users;
+  # Horizon projections have existed in both list and keyed-attribute forms.
+  # Preserve a keyed projection as-is; the Home helper converts only the
+  # older list form.
+  usersByName =
+    if builtins.isAttrs horizon.users
+    then horizon.users
+    else inputs.criomos-home.horizonUsersByName horizon.users;
 
   mkUserConfig = name: user: {
     _module.args = {
