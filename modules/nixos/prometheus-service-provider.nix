@@ -134,27 +134,18 @@ in
       };
       script = ''
         install -d -m 0750 -o root -g prometheus-service-tls ${generatedTlsDirectory}
+        previous="$(readlink ${generatedTlsDirectory}/current 2>/dev/null || true)"
         ${tlsPreparation}/bin/prometheus-service-tls ${generatedCertificatePath} ${generatedKeyPath} ${lib.escapeShellArg cfg.xmppDomain} ${lib.escapeShellArg cfg.forgejoDomain}
+        current="$(readlink ${generatedTlsDirectory}/current)"
+        if [ -n "$previous" ] && [ "$previous" != "$current" ]; then
+          ${pkgs.systemd}/bin/systemctl --no-block try-reload-or-restart prosody.service forgejo.service
+        fi
       '';
     };
 
     systemd.timers.prometheus-service-tls = mkIf generatedTls {
       wantedBy = [ "timers.target" ];
       timerConfig = { OnCalendar = "weekly"; Persistent = true; };
-    };
-
-    systemd.services.prometheus-service-tls-reload = mkIf generatedTls {
-      description = "Reload Prometheus services after TLS publication";
-      serviceConfig.Type = "oneshot";
-      # A path event happens after the symlink publication. It is deliberately
-      # separate from the bootstrap dependency graph.
-      script = "${pkgs.systemd}/bin/systemctl try-reload-or-restart prosody.service forgejo.service";
-    };
-
-    systemd.paths.prometheus-service-tls-reload = mkIf generatedTls {
-      wantedBy = [ "multi-user.target" ];
-      pathConfig.PathChanged = generatedCertificatePath;
-      unit = "prometheus-service-tls-reload.service";
     };
 
     systemd.services.prosody = mkIf generatedTls {

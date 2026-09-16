@@ -86,6 +86,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.after))} = true
   test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.requires))} = true
   test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.after))} = true
+  printf '%s\n' ${lib.escapeShellArg missingTls.systemd.services.prometheus-service-tls.script} | grep -F -- 'systemctl --no-block try-reload-or-restart prosody.service forgejo.service' 
   test ${
     lib.escapeShellArg missingTls.services.prosody.virtualHosts."chat.example".ssl.cert
   } = /var/lib/prometheus-service-tls/current/certificate.pem
