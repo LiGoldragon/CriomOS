@@ -36,15 +36,11 @@ let
       reviewRunner.enable = true;
     }).config;
 
-  # Evaluate the enabled services and complete assertion list, including
-  # assertions from stock Prosody and Forgejo modules, without forcing the
-  # host toplevel derivation into this focused policy fixture.
-  enabledPolicyEvaluated = builtins.deepSeq [
-    enabled.assertions
-    enabled.services.prosody
-    enabled.services.forgejo
-    enabled.systemd.services
-  ] true;
+  # Force every enabled assertion condition, including ones contributed by
+  # stock Prosody and Forgejo modules, without deriving the host toplevel or
+  # eagerly evaluating unrelated assertion diagnostic messages.
+  enabledPolicyEvaluated =
+    builtins.deepSeq (builtins.map (assertion: assertion.assertion) enabled.assertions) true;
 
   missingTls =
     (configurationFor {
