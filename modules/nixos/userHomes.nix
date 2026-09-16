@@ -48,11 +48,11 @@ let
     }
   ];
 
-  # Keep the wrapper independently testable on nodes without the typed Core
-  # Checkup capability. The Core Checkup module also enables it, but that
-  # composition must remain gated by the OS-owned capability above.
+  # The pinned Home aggregate already imports the wrapper module and exposes
+  # its option. Enable that existing module here without importing the
+  # exported wrapper a second time: its wrapper also imports Stylix, and a
+  # second Stylix import makes Home Manager reject the read-only base16 option.
   codexLayerResumeHomeModules = [
-    inputs.criomos-home.homeModules."codex-layer-resume"
     { criomosHome.codexLayerResume.enable = true; }
   ];
 
