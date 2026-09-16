@@ -39,18 +39,21 @@ write_result() {
   temporary_result=$(mktemp "$result_directory/.result.XXXXXX")
   trap 'rm -f "$temporary_result"' EXIT
 
-  printf '%s\n' '{' >"$temporary_result"
-  printf '  "runId": "%s",\n' "$run_id" >>"$temporary_result"
-  printf '  "source": "%s",\n' "$source" >>"$temporary_result"
-  printf '  "revision": "%s",\n' "$revision" >>"$temporary_result"
-  printf '  "check": "%s",\n' "$check_attribute" >>"$temporary_result"
-  printf '  "status": "%s",\n' "$status" >>"$temporary_result"
-  printf '  "exitCode": %s\n' "$exit_code" >>"$temporary_result"
-  printf '%s\n' '}' >>"$temporary_result"
+  {
+    printf '%s\n' '{'
+    printf '  "runId": "%s",\n' "$run_id"
+    printf '  "source": "%s",\n' "$source"
+    printf '  "revision": "%s",\n' "$revision"
+    printf '  "check": "%s",\n' "$check_attribute"
+    printf '  "status": "%s",\n' "$status"
+    printf '  "exitCode": %s\n' "$exit_code"
+    printf '%s\n' '}'
+  } >"$temporary_result"
   mv "$temporary_result" "$result_path"
   trap - EXIT
 }
 
+# shellcheck disable=SC2329 # Invoked by the INT/TERM trap below.
 interrupted() {
   write_result interrupted 130
   exit 130

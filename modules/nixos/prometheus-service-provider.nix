@@ -97,6 +97,9 @@ in
       c2sRequireEncryption = true;
       s2sRequireEncryption = true;
       s2sInsecureDomains = [ ];
+      # This narrowly scoped POC does not provision MUC or HTTP file sharing,
+      # so it explicitly declines the XEP-0423 compliance-suite promise.
+      xmppComplianceSuite = false;
       modules.pep = true;
       virtualHosts.${cfg.xmppDomain} = {
         domain = cfg.xmppDomain;
