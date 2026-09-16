@@ -72,6 +72,17 @@ let
       xmppDomainAliases = [ "chat.internal" ];
     } inputs).config;
 
+  forgejoEnabledSelfSigned =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      xmppDomainAliases = [ "chat.internal" ];
+      forgejo = {
+        enable = true;
+        domain = "git.example";
+      };
+    } inputs).config;
+
   missingKey =
     (configurationFor {
       enable = true;
@@ -175,7 +186,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
     lib.escapeShellArg enabled.services.prosody.virtualHosts."chat.example".ssl.key
   } = /run/secrets/prometheus-service-key
   test ${lib.escapeShellArg (bool (builtins.hasAttr "chat.internal" enabled.services.prosody.virtualHosts))} = false
-  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" enabled.systemd.services.prometheus-service-tls.before))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" forgejoEnabledSelfSigned.systemd.services.prometheus-service-tls.before))} = true
   test ${lib.escapeShellArg (bool enabled.services.forgejo.enable)} = true
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.DOMAIN} = git.example
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.PROTOCOL} = https
