@@ -13,6 +13,21 @@ let
     ;
   cfg = config.criomos.prometheusServiceProvider;
   reviewSource = "github:LiGoldragon/CriomOS";
+  generatedTlsDirectory = "/var/lib/prometheus-service-tls";
+  generatedCertificatePath = "${generatedTlsDirectory}/certificate.pem";
+  generatedKeyPath = "${generatedTlsDirectory}/key.pem";
+  certificatePath =
+    if cfg.tls.certificatePath == null then generatedCertificatePath else cfg.tls.certificatePath;
+  keyPath = if cfg.tls.keyPath == null then generatedKeyPath else cfg.tls.keyPath;
+  generatedTls = cfg.tls.certificatePath == null && cfg.tls.generateSelfSigned;
+  tlsPreparation = pkgs.writeShellApplication {
+    name = "prometheus-service-tls";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.openssl
+    ];
+    text = builtins.readFile ./prometheus-service-tls.sh;
+  };
   reviewRunner = pkgs.writeShellApplication {
     name = "prometheus-nix-review-runner";
     runtimeInputs = [ pkgs.coreutils ];
@@ -46,6 +61,12 @@ in
         type = types.nullOr types.str;
         default = null;
         description = "Runtime private-key path, normally config.sops.secrets.<name>.path from a deployment-owned secret declaration.";
+      };
+
+      generateSelfSigned = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Generate a short-lived runtime certificate when no deployment-owned TLS paths are supplied.";
       };
     };
 
@@ -81,8 +102,8 @@ in
         message = "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath";
       }
       {
-        assertion = cfg.tls.certificatePath != null;
-        message = "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths when enabled";
+        assertion = cfg.tls.certificatePath != null || cfg.tls.generateSelfSigned;
+        message = "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths or generateSelfSigned";
       }
     ];
 
@@ -91,6 +112,42 @@ in
     # end-to-end-encryption implementation or client interoperability claim.
     # No chime bot is configured here; a bot/library and its encrypted-message
     # handling remain a separately verified integration boundary.
+    users.groups.prometheus-service-tls.members = [
+      "prosody"
+      "forgejo"
+    ];
+
+    systemd.services.prometheus-service-tls = mkIf generatedTls {
+      description = "Prepare Prometheus service self-signed TLS certificate";
+      before = [
+        "prosody.service"
+        "forgejo.service"
+      ];
+      requiredBy = [
+        "prosody.service"
+        "forgejo.service"
+      ];
+      serviceConfig = {
+        Type = "oneshot";
+        StateDirectory = "prometheus-service-tls";
+        UMask = "0027";
+      };
+      script = ''
+        install -d -m 0750 -o root -g prometheus-service-tls ${generatedTlsDirectory}
+        ${tlsPreparation}/bin/prometheus-service-tls ${generatedCertificatePath} ${generatedKeyPath} ${lib.escapeShellArg cfg.xmppDomain} ${lib.escapeShellArg cfg.forgejoDomain}
+      '';
+    };
+
+    systemd.services.prosody = mkIf generatedTls {
+      requires = [ "prometheus-service-tls.service" ];
+      after = [ "prometheus-service-tls.service" ];
+    };
+
+    systemd.services.forgejo = mkIf generatedTls {
+      requires = [ "prometheus-service-tls.service" ];
+      after = [ "prometheus-service-tls.service" ];
+    };
+
     services.prosody = {
       enable = true;
       allowRegistration = false;
@@ -105,10 +162,10 @@ in
         domain = cfg.xmppDomain;
         enabled = true;
       }
-      // lib.optionalAttrs (cfg.tls.certificatePath != null) {
+      // lib.optionalAttrs (true) {
         ssl = {
-          cert = cfg.tls.certificatePath;
-          key = cfg.tls.keyPath;
+          cert = certificatePath;
+          key = keyPath;
         };
       };
     };
@@ -120,8 +177,8 @@ in
           DOMAIN = cfg.forgejoDomain;
           ROOT_URL = "https://${cfg.forgejoDomain}/";
           PROTOCOL = "https";
-          CERT_FILE = cfg.tls.certificatePath;
-          KEY_FILE = cfg.tls.keyPath;
+          CERT_FILE = certificatePath;
+          KEY_FILE = keyPath;
         };
         service.DISABLE_REGISTRATION = true;
         # This advertises review workflows but does not register a Forgejo

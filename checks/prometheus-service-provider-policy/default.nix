@@ -58,15 +58,33 @@ let
       assertion: !assertion.assertion && assertion.message == message
     ) configuration.assertions;
 in
-pkgs.runCommand "prometheus-service-provider-policy" { } ''
+pkgs.runCommand "prometheus-service-provider-policy" {
+  nativeBuildInputs = [
+    pkgs.coreutils
+    pkgs.openssl
+  ];
+} ''
   set -eu
 
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
   test ${lib.escapeShellArg (bool (builtins.hasAttr "prometheus-nix-review" disabled.systemd.services))} = false
-  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths when enabled" missingTls))} = true
+  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths or generateSelfSigned" missingTls))} = false
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath" missingKey))} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
+  test ${lib.escapeShellArg (bool missingTls.systemd.services.prometheus-service-tls.enable)} = true
+  test ${lib.escapeShellArg (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.before)} = true
+  test ${lib.escapeShellArg (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.before)} = true
+  test ${lib.escapeShellArg (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.requiredBy)} = true
+  test ${lib.escapeShellArg (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.requiredBy)} = true
+  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.requires)} = true
+  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.after)} = true
+  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.requires)} = true
+  test ${lib.escapeShellArg (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.after)} = true
+  test ${
+    lib.escapeShellArg missingTls.services.prosody.virtualHosts."chat.example".ssl.cert
+  } = /var/lib/prometheus-service-tls/certificate.pem
+  test ${lib.escapeShellArg missingTls.services.forgejo.settings.server.KEY_FILE} = /var/lib/prometheus-service-tls/key.pem
   test ${lib.escapeShellArg (bool enabled.services.prosody.allowRegistration)} = false
   test ${lib.escapeShellArg (bool enabled.services.prosody.c2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
@@ -95,5 +113,37 @@ pkgs.runCommand "prometheus-service-provider-policy" { } ''
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.TimeoutStartSec} = 15min
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.KillMode} = control-group
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.ExecStart} | grep -F -- 'github:LiGoldragon/CriomOS 7c9975afbcf44cb580d1491e7f8447fd1def1fbd'
+
+  fixture="$TMPDIR/tls fixture"
+  certificate="$fixture/certificate.pem"
+  key="$fixture/key.pem"
+  mkdir -p "$fixture/bin"
+  cat > "$fixture/bin/chown" <<'SCRIPT'
+  # Nix builders cannot change ownership. The fixture checks the requested
+  # ownership while the real unit runs as root.
+  test "$1" = root:prometheus-service-tls
+  shift
+  test "$#" = 2
+  SCRIPT
+  chmod +x "$fixture/bin/chown"
+  PATH="$fixture/bin:$PATH"
+
+  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
+  test -s "$certificate"
+  test -s "$key"
+  test "$(stat -c %a "$certificate")" = 640
+  test "$(stat -c %a "$key")" = 640
+  openssl x509 -in "$certificate" -noout -ext subjectAltName | grep -F -- 'DNS:chat.example, DNS:git.example'
+  cp "$certificate" "$fixture/first-certificate.pem"
+  cp "$key" "$fixture/first-key.pem"
+  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
+  cmp "$certificate" "$fixture/first-certificate.pem"
+  cmp "$key" "$fixture/first-key.pem"
+
+  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/invalid-certificate.pem" "$fixture/invalid-key.pem" 'chat.example;touch-owned' git.example; then
+    exit 1
+  fi
+  test ! -e "$fixture/invalid-certificate.pem"
+  test ! -e "$fixture/invalid-key.pem"
   touch "$out"
 ''
