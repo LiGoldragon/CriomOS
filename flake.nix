@@ -130,7 +130,7 @@
 
     # Horizon — the projected (cluster, node) view. lojix overrides
     # per deploy.
-    horizon.url = "path:./stubs/no-horizon";
+    horizon.url = "github:LiGoldragon/horizon-rs/76f2c05c6fa4cd361ab3671cddb79cbdce42d447";
 
     # Deployment shape — lojix overrides per request. The default keeps
     # the historical full system+home target.
@@ -192,6 +192,7 @@
             inherit inputs;
           };
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
+          core-checkup-roster = pkgs.callPackage ./checks/core-checkup-roster { };
           clavifaber-publication-request = pkgs.callPackage ./checks/clavifaber-publication-request {
             inherit inputs;
           };
