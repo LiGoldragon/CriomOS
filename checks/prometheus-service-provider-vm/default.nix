@@ -30,6 +30,9 @@ pkgs.testers.nixosTest {
       { pkgs, ... }:
       {
         environment.systemPackages = [ pkgs.curl pkgs.netcat ];
+        # The explicit server hostname keeps this focused two-node test
+        # independent of the test driver's machine-name hosts projection.
+        networking.extraHosts = "192.168.1.1 server";
         system.stateVersion = "26.05";
       };
   };
