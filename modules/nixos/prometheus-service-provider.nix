@@ -14,8 +14,8 @@ let
   cfg = config.criomos.prometheusServiceProvider;
   reviewSource = "github:LiGoldragon/CriomOS";
   generatedTlsDirectory = "/var/lib/prometheus-service-tls";
-  generatedCertificatePath = "${generatedTlsDirectory}/certificate.pem";
-  generatedKeyPath = "${generatedTlsDirectory}/key.pem";
+  generatedCertificatePath = "${generatedTlsDirectory}/current/certificate.pem";
+  generatedKeyPath = "${generatedTlsDirectory}/current/key.pem";
   certificatePath =
     if cfg.tls.certificatePath == null then generatedCertificatePath else cfg.tls.certificatePath;
   keyPath = if cfg.tls.keyPath == null then generatedKeyPath else cfg.tls.keyPath;
@@ -136,6 +136,23 @@ in
         install -d -m 0750 -o root -g prometheus-service-tls ${generatedTlsDirectory}
         ${tlsPreparation}/bin/prometheus-service-tls ${generatedCertificatePath} ${generatedKeyPath} ${lib.escapeShellArg cfg.xmppDomain} ${lib.escapeShellArg cfg.forgejoDomain}
       '';
+    };
+
+    systemd.timers.prometheus-service-tls = mkIf generatedTls {
+      wantedBy = [ "timers.target" ];
+      timerConfig = { OnCalendar = "weekly"; Persistent = true; };
+    };
+
+    systemd.services.prometheus-service-tls-reload = mkIf generatedTls {
+      description = "Reload Prometheus services after TLS publication";
+      serviceConfig.Type = "oneshot";
+      script = "${pkgs.systemd}/bin/systemctl try-reload-or-restart prosody.service forgejo.service";
+    };
+
+    systemd.paths.prometheus-service-tls-reload = mkIf generatedTls {
+      wantedBy = [ "multi-user.target" ];
+      pathConfig.PathChanged = generatedCertificatePath;
+      unit = "prometheus-service-tls-reload.service";
     };
 
     systemd.services.prosody = mkIf generatedTls {

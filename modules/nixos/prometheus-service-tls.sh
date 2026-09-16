@@ -26,31 +26,29 @@ valid_domain "$xmpp_domain" || { printf '%s\n' 'invalid XMPP domain' >&2; exit 6
 valid_domain "$forgejo_domain" || { printf '%s\n' 'invalid Forgejo domain' >&2; exit 64; }
 
 if [ -e "$certificate" ] || [ -e "$key" ]; then
-  if [ ! -s "$certificate" ] || [ ! -s "$key" ]; then
-    printf '%s\n' 'incomplete existing TLS pair' >&2
-    exit 1
-  fi
-  if ! openssl x509 -in "$certificate" -noout -checkend 0 >/dev/null 2>&1; then
-    printf '%s\n' 'invalid or expired existing TLS certificate' >&2
-    exit 1
-  fi
+  [ -s "$certificate" ] && [ -s "$key" ] || { printf '%s\n' 'incomplete existing TLS pair' >&2; exit 1; }
+  openssl x509 -in "$certificate" -noout >/dev/null 2>&1 || { printf '%s\n' 'invalid existing TLS certificate' >&2; exit 1; }
   san_output=$(openssl x509 -in "$certificate" -noout -ext subjectAltName)
-  if [[ "$san_output" != *"DNS:$xmpp_domain, DNS:$forgejo_domain"* ]]; then
-    printf '%s\n' 'existing TLS certificate SANs do not match service domains' >&2
-    exit 1
-  fi
-  if ! cmp <(openssl x509 -in "$certificate" -noout -pubkey | openssl pkey -pubin -outform DER) <(openssl pkey -in "$key" -pubout -outform DER); then
-    printf '%s\n' 'existing TLS certificate and key do not match' >&2
-    exit 1
-  fi
-  exit 0
+  [[ "$san_output" == *"DNS:$xmpp_domain, DNS:$forgejo_domain"* ]] || { printf '%s\n' 'existing TLS certificate SANs do not match service domains' >&2; exit 1; }
+  cmp <(openssl x509 -in "$certificate" -noout -pubkey | openssl pkey -pubin -outform DER) <(openssl pkey -in "$key" -pubout -outform DER) || { printf '%s\n' 'existing TLS certificate and key do not match' >&2; exit 1; }
+  openssl x509 -in "$certificate" -noout -checkend 604800 >/dev/null 2>&1 && exit 0
 fi
 
+root=$(dirname "$(dirname "$certificate")")
+releases="$root/releases"
+mkdir -p "$releases"
+chown root:prometheus-service-tls "$releases"
+chmod 0750 "$releases"
+release=$(mktemp -d "$releases/.new.XXXXXX")
+trap 'rm -rf "$release" "$root/.next"' EXIT
 umask 027
-mkdir -p "$(dirname "$certificate")"
 openssl req -x509 -newkey rsa:3072 -nodes -sha256 -days 30 \
-  -keyout "$key" -out "$certificate" \
+  -keyout "$release/key.pem" -out "$release/certificate.pem" \
   -subj "/CN=$xmpp_domain" \
   -addext "subjectAltName=DNS:$xmpp_domain,DNS:$forgejo_domain"
-chown root:prometheus-service-tls "$certificate" "$key"
-chmod 0640 "$certificate" "$key"
+chown root:prometheus-service-tls "$release" "$release/certificate.pem" "$release/key.pem"
+chmod 0750 "$release"
+chmod 0640 "$release/certificate.pem" "$release/key.pem"
+ln -s "releases/$(basename "$release")" "$root/.next"
+mv -Tf "$root/.next" "$root/current"
+trap - EXIT

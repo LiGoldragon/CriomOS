@@ -88,8 +88,8 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.after))} = true
   test ${
     lib.escapeShellArg missingTls.services.prosody.virtualHosts."chat.example".ssl.cert
-  } = /var/lib/prometheus-service-tls/certificate.pem
-  test ${lib.escapeShellArg missingTls.services.forgejo.settings.server.KEY_FILE} = /var/lib/prometheus-service-tls/key.pem
+  } = /var/lib/prometheus-service-tls/current/certificate.pem
+  test ${lib.escapeShellArg missingTls.services.forgejo.settings.server.KEY_FILE} = /var/lib/prometheus-service-tls/current/key.pem
   test ${lib.escapeShellArg (bool enabled.services.prosody.allowRegistration)} = false
   test ${lib.escapeShellArg (bool enabled.services.prosody.c2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
@@ -118,8 +118,8 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   printf '%s\n' ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.ExecStart} | grep -F -- 'github:LiGoldragon/CriomOS 7ee784103dac929bda499875a98504fd15ca6523'
 
   fixture="$TMPDIR/tls fixture"
-  certificate="$fixture/certificate.pem"
-  key="$fixture/key.pem"
+  certificate="$fixture/current/certificate.pem"
+  key="$fixture/current/key.pem"
   mkdir -p "$fixture/bin"
   cat > "$fixture/bin/chown" <<'SCRIPT'
   # Nix builders cannot change ownership. The fixture checks the requested
@@ -137,11 +137,15 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test "$(stat -c %a "$certificate")" = 640
   test "$(stat -c %a "$key")" = 640
   openssl x509 -in "$certificate" -noout -ext subjectAltName | grep -F -- 'DNS:chat.example, DNS:git.example'
+  test -L "$fixture/current"
+  test "$(stat -c %a "$fixture/releases")" = 750
+  test "$(stat -c %a "$(readlink -f "$fixture/current")")" = 750
   cp "$certificate" "$fixture/first-certificate.pem"
   cp "$key" "$fixture/first-key.pem"
   bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
   cmp "$certificate" "$fixture/first-certificate.pem"
   cmp "$key" "$fixture/first-key.pem"
+  openssl x509 -in "$certificate" -noout -checkend 2592000 || true
 
   if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/invalid-certificate.pem" "$fixture/invalid-key.pem" 'chat.example;touch-owned' git.example; then
     exit 1
