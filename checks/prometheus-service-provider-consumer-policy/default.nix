@@ -88,4 +88,5 @@ pkgs.runCommand "prometheus-service-provider-consumer-policy" { } ''
   test ${lib.escapeShellArg (bool wrongCluster.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool (builtins.hasAttr "prosody-li-password" wrongNode.sops.secrets))} = false
   test ${lib.escapeShellArg (bool (builtins.hasAttr "prosody-persona-password" wrongCluster.sops.secrets))} = false
+  touch "$out"
 ''
