@@ -10,6 +10,8 @@ result_path=$2
 source=$3
 revision=$4
 check_attribute='#checks.x86_64-linux.prometheus-service-provider-policy'
+nixpkgs_revision='f83fc3c307e74bc5fd5adb7eb6b8b13ffd2a36e1'
+sops_nix_revision='a8627b21b9107c5711c96b84f32a9a4b3d45295f'
 
 case "$source" in
   github:LiGoldragon/CriomOS) ;;
@@ -57,7 +59,12 @@ interrupted() {
 trap interrupted INT TERM
 write_result running null
 
-if "$nix_binary" build --refresh --no-link --print-out-paths --max-jobs 0 "${source}/${revision}${check_attribute}"; then
+# CriomOS's public flake requires Lojix-materialized inputs. This expression
+# deliberately evaluates only the fixed policy fixture with the same pinned
+# nixpkgs and sops-nix inputs; it never constructs the host target.
+review_expression="let source = builtins.fetchGit { url = \"https://github.com/LiGoldragon/CriomOS.git\"; rev = \"$revision\"; }; inputs = { nixpkgs = builtins.getFlake \"github:NixOS/nixpkgs/$nixpkgs_revision\"; sops-nix = builtins.getFlake \"github:Mic92/sops-nix/$sops_nix_revision\"; }; pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux; in import (source + \"/checks/prometheus-service-provider-policy\") { inherit inputs pkgs; }"
+
+if "$nix_binary" build --refresh --no-link --print-out-paths --max-jobs 0 --impure --expr "$review_expression"; then
   exit_code=0
   status=passed
 else
