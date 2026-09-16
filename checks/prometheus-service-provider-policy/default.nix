@@ -36,11 +36,10 @@ let
       reviewRunner.enable = true;
     }).config;
 
-  # Force every enabled assertion condition, including ones contributed by
-  # stock Prosody and Forgejo modules, without deriving the host toplevel or
-  # eagerly evaluating unrelated assertion diagnostic messages.
-  enabledPolicyEvaluated =
-    builtins.deepSeq (builtins.map (assertion: assertion.assertion) enabled.assertions) true;
+  # Force the enabled host toplevel derivation so NixOS module assertions are
+  # evaluated, then retain only a boolean. This avoids putting its drvPath
+  # string (and the full host closure it carries) in this focused fixture.
+  enabledToplevelEvaluated = builtins.deepSeq enabled.system.build.toplevel.drvPath true;
 
   missingTls =
     (configurationFor {
@@ -96,7 +95,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.modules.pep)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.xmppComplianceSuite)} = false
-  test ${lib.escapeShellArg (bool enabledPolicyEvaluated)} = true
+  test ${lib.escapeShellArg (bool enabledToplevelEvaluated)} = true
   test ${
     lib.escapeShellArg (bool enabled.services.prosody.virtualHosts."chat.example".enabled)
   } = true
