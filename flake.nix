@@ -33,7 +33,10 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/f652ba9ae6b24b7e946e60e98acc270280beb774";
+    # Core-only Home deployment keeps the live Message 0.11.1 store while
+    # the 0.12 relay migration remains held. The selected module is composed
+    # by userHomes only when the OS projection enables Core Checkup.
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/ca7bfbd318b0cb4ab640c08383e6cc13f9272c3a";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";

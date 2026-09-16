@@ -1,4 +1,5 @@
 {
+  config,
   horizon,
   inputs,
   constants,
@@ -30,6 +31,17 @@ let
   # node's eval even where that home does not belong.
   homeUsers = lib.filterAttrs (_name: user: user.hasPublicKey) usersByName;
 
+  # The OS owns the typed capability and immutable roster artifact. Home
+  # receives the artifact source only when the projected OS service is
+  # enabled; nodes without Core Checkup keep the ordinary Home surface and
+  # do not get a fabricated `/etc` roster.
+  coreCheckupHomeModules = lib.optionals config.services.coreCheckup.enable [
+    inputs.criomos-home.homeModules."core-checkup-only"
+    {
+      criomosHome.coreCheckup.rosterFile = config.environment.etc."core-checkup/roster.json".source;
+    }
+  ];
+
 in
 {
   home-manager = {
@@ -46,7 +58,7 @@ in
       inherit horizon constants pkgs;
       homeSystem = pkgs.stdenv.hostPlatform.system;
     };
-    sharedModules = [ inputs.criomos-home.homeModules.default ];
+    sharedModules = [ inputs.criomos-home.homeModules.default ] ++ coreCheckupHomeModules;
     useGlobalPkgs = true;
     users = mapAttrs mkUserConfig homeUsers;
   };
