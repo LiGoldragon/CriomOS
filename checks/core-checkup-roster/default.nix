@@ -11,14 +11,21 @@ let
   # The matching proposal is goldragon:proposal/cf7879-core-checkup-ouranos.
   projectedServices = builtins.fromJSON (builtins.readFile ./ouranos-services.json);
   baseline = evaluate { node = { name = "edge"; services = [ ]; yggAddress = "200:db8::1"; }; exNodes = { }; };
-  evaluated = evaluate {
+  selectedHorizon = {
     node = { name = "edge"; services = projectedServices; yggAddress = "200:db8::1"; };
     exNodes = { worker = { name = "worker"; yggAddress = "200:db8::2"; }; absent = { name = "absent"; }; };
   };
+  evaluated = evaluate selectedHorizon;
+  artifact = pkgs.callPackage ../../artifacts/core-checkup-roster.nix { horizon = selectedHorizon; };
   text = evaluated.config.environment.etc."core-checkup/roster.json".text;
+  roster = builtins.fromJSON text;
 in
 assert !baseline.config.services.coreCheckup.enable;
 assert evaluated.config.services.coreCheckup.enable;
 assert builtins.match ".*200:db8::1.*200:db8::2.*" text != null;
-assert builtins.match ".*allowRestart.*false.*" text != null;
+assert roster.allowRestart == false;
+assert !(roster ? allowRepair);
+assert text == builtins.readFile artifact;
+assert builtins.length roster.units == 4;
+assert builtins.all (unit: unit.allowRestart == false) roster.units;
 pkgs.runCommand "core-checkup-roster" { } "touch $out"
