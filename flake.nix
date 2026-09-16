@@ -179,9 +179,11 @@
 
       criomos-lib = inputs.criomos-lib.lib;
       constants = criomos-lib.constants;
-      blueprintChecks = inputs.nixpkgs.lib.mapAttrs (
-        _: checks: inputs.nixpkgs.lib.filterAttrs (_: inputs.nixpkgs.lib.isDerivation) checks
-      ) (blueprintOutputs.checks or { });
+      # Blueprint's checks output is already the per-system derivation surface.
+      # Re-filtering it with isDerivation forces every check while the
+      # aggregate is formed, so one evaluation-time assertion hides unrelated
+      # sibling checks and the target output. Preserve the check values lazily.
+      blueprintChecks = blueprintOutputs.checks or { };
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
           headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
