@@ -238,6 +238,9 @@
           prometheus-service-provider-policy = pkgs.callPackage ./checks/prometheus-service-provider-policy {
             inherit inputs;
           };
+          prometheus-service-provider-consumer-policy = pkgs.callPackage ./checks/prometheus-service-provider-consumer-policy {
+            inherit inputs;
+          };
           prometheus-service-provider-vm = pkgs.callPackage ./checks/prometheus-service-provider-vm {
             inherit inputs;
           };
