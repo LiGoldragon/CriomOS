@@ -25,7 +25,7 @@
 
     # Offline Notify Datom validation command.  The proof consumes the
     # contract crate's parser rather than reproducing its grammar in Python.
-    signal-message.url = "github:LiGoldragon/signal-message/87278034b3446a9ae9990135ba583b2809019757";
+    signal-message.url = "github:LiGoldragon/signal-message/e30a235baad56695c2be768be756a4336836a666";
 
     # Shared constants, helpers, and cross-repo data. Consumed by both
     # CriomOS and CriomOS-home.

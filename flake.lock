@@ -3805,17 +3805,17 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1789546717,
-        "narHash": "sha256-X1vRiSFc8pJUUrQfJUnX0pMjVfbsNp8PnkeuJMk6Kb0=",
+        "lastModified": 1789548967,
+        "narHash": "sha256-YsqGn7NeNqf/6v89CRDRV/RKkwCQsEdUi4S4ePjCfyo=",
         "owner": "LiGoldragon",
         "repo": "signal-message",
-        "rev": "87278034b3446a9ae9990135ba583b2809019757",
+        "rev": "e30a235baad56695c2be768be756a4336836a666",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "signal-message",
-        "rev": "87278034b3446a9ae9990135ba583b2809019757",
+        "rev": "e30a235baad56695c2be768be756a4336836a666",
         "type": "github"
       }
     },
