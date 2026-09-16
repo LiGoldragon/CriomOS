@@ -69,6 +69,10 @@ in
         assertion = (cfg.tls.certificatePath == null) == (cfg.tls.keyPath == null);
         message = "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath";
       }
+      {
+        assertion = cfg.tls.certificatePath != null;
+        message = "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths when enabled";
+      }
     ];
 
     # PEP is the Prosody publication mechanism needed by OMEMO-capable clients:
@@ -101,7 +105,7 @@ in
         server = {
           DOMAIN = cfg.forgejoDomain;
           ROOT_URL = "https://${cfg.forgejoDomain}/";
-          PROTOCOL = if cfg.tls.certificatePath == null then "http" else "https";
+          PROTOCOL = "https";
           CERT_FILE = cfg.tls.certificatePath;
           KEY_FILE = cfg.tls.keyPath;
         };

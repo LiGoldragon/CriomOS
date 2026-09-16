@@ -31,13 +31,35 @@ let
       reviewPipeline.enable = true;
     }).config;
 
+  missingTls =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      forgejoDomain = "git.example";
+    }).config;
+
+  missingKey =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      forgejoDomain = "git.example";
+      tls.certificatePath = "/run/secrets/prometheus-service-certificate";
+    }).config;
+
   bool = value: if value then "true" else "false";
+  hasFailedAssertion =
+    message: configuration:
+    builtins.any (
+      assertion: !assertion.assertion && assertion.message == message
+    ) configuration.assertions;
 in
 pkgs.runCommand "prometheus-service-provider-policy" { } ''
   set -eu
 
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
+  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths when enabled" missingTls))} = true
+  test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath" missingKey))} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.allowRegistration)} = false
   test ${lib.escapeShellArg (bool enabled.services.prosody.c2sRequireEncryption)} = true
