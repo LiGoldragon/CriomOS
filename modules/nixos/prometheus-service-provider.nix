@@ -10,6 +10,7 @@ let
     mkEnableOption
     mkIf
     mkOption
+    optional
     types
     ;
   cfg = config.criomos.prometheusServiceProvider;
@@ -19,6 +20,7 @@ let
   generatedKeyPath = "${generatedTlsDirectory}/current/key.pem";
   certificateSecretName = "prometheus-service-certificate";
   keySecretName = "prometheus-service-key";
+  forgejoEnabled = cfg.enable && cfg.forgejo.enable;
   usingSops = cfg.enable && cfg.tls.sopsFileKey != null;
   # The secrets input remains lazy for disabled and self-signed configurations.
   sopsFiles = if usingSops then (inputs.secrets.sopsFiles or { }) else { };
@@ -34,6 +36,10 @@ let
     else if cfg.tls.keyPath == null then generatedKeyPath
     else cfg.tls.keyPath;
   generatedTls = !usingSops && cfg.tls.certificatePath == null && cfg.tls.generateSelfSigned;
+  xmppCertificateNames = [ cfg.xmppDomain ] ++ cfg.xmppDomainAliases;
+  certificateNames = xmppCertificateNames ++ optional forgejoEnabled cfg.forgejo.domain;
+  certificateNameArgs = lib.concatMapStringsSep " " lib.escapeShellArg certificateNames;
+  serviceUnits = [ "prosody.service" ] ++ optional forgejoEnabled "forgejo.service";
   tlsPreparation = pkgs.writeShellApplication {
     name = "prometheus-service-tls";
     runtimeInputs = [
@@ -58,16 +64,26 @@ in
       description = "XMPP domain served by Prosody when this POC is enabled.";
     };
 
-    forgejoDomain = mkOption {
-      type = types.str;
-      default = "";
-      description = "Public Forgejo domain when this POC is enabled.";
+    xmppDomainAliases = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      description = "DNS aliases for the XMPP certificate; these names do not create additional Prosody virtual hosts.";
     };
 
-    forgejoHttpsPort = mkOption {
-      type = types.port;
-      default = 3000;
-      description = "TCP port on which Forgejo serves its configured HTTPS endpoint.";
+    forgejo = {
+      enable = mkEnableOption "the separate Forgejo service";
+
+      domain = mkOption {
+        type = types.str;
+        default = "";
+        description = "Public Forgejo domain when the separate Forgejo service is enabled.";
+      };
+
+      httpsPort = mkOption {
+        type = types.port;
+        default = 3000;
+        description = "TCP port on which the separate Forgejo service serves HTTPS.";
+      };
     };
 
     tls = {
@@ -120,8 +136,16 @@ in
         message = "criomos.prometheusServiceProvider.xmppDomain is required when enabled";
       }
       {
-        assertion = cfg.forgejoDomain != "";
-        message = "criomos.prometheusServiceProvider.forgejoDomain is required when enabled";
+        assertion = lib.all (domain: domain != "") cfg.xmppDomainAliases;
+        message = "criomos.prometheusServiceProvider.xmppDomainAliases cannot contain empty names";
+      }
+      {
+        assertion = lib.all (domain: domain != cfg.xmppDomain) cfg.xmppDomainAliases;
+        message = "criomos.prometheusServiceProvider.xmppDomainAliases must differ from xmppDomain";
+      }
+      {
+        assertion = !forgejoEnabled || cfg.forgejo.domain != "";
+        message = "criomos.prometheusServiceProvider.forgejo.domain is required when Forgejo is enabled";
       }
       {
         assertion = (cfg.tls.certificatePath == null) == (cfg.tls.keyPath == null);
@@ -146,10 +170,7 @@ in
     # end-to-end-encryption implementation or client interoperability claim.
     # No chime bot is configured here; a bot/library and its encrypted-message
     # handling remain a separately verified integration boundary.
-    users.groups.prometheus-service-tls.members = [
-      "prosody"
-      "forgejo"
-    ];
+    users.groups.prometheus-service-tls.members = [ "prosody" ] ++ optional forgejoEnabled "forgejo";
 
     sops.secrets = lib.mkIf (usingSops && sopsFileExists) {
       ${certificateSecretName} = {
@@ -159,7 +180,7 @@ in
         owner = "root";
         group = "prometheus-service-tls";
         mode = "0440";
-        restartUnits = [ "prosody.service" "forgejo.service" ];
+        restartUnits = serviceUnits;
       };
       ${keySecretName} = {
         sopsFile = sopsFiles.${cfg.tls.sopsFileKey};
@@ -168,7 +189,7 @@ in
         owner = "root";
         group = "prometheus-service-tls";
         mode = "0440";
-        restartUnits = [ "prosody.service" "forgejo.service" ];
+        restartUnits = serviceUnits;
       };
     };
 
@@ -176,12 +197,8 @@ in
       description = "Prepare Prometheus service self-signed TLS certificate";
       before = [
         "prosody.service"
-        "forgejo.service"
-      ];
-      requiredBy = [
-        "prosody.service"
-        "forgejo.service"
-      ];
+      ] ++ optional forgejoEnabled "forgejo.service";
+      requiredBy = [ "prosody.service" ] ++ optional forgejoEnabled "forgejo.service";
       serviceConfig = {
         Type = "oneshot";
         StateDirectory = "prometheus-service-tls";
@@ -190,10 +207,10 @@ in
       script = ''
         install -d -m 0750 -o root -g prometheus-service-tls ${generatedTlsDirectory}
         previous="$(readlink ${generatedTlsDirectory}/current 2>/dev/null || true)"
-        ${tlsPreparation}/bin/prometheus-service-tls ${generatedCertificatePath} ${generatedKeyPath} ${lib.escapeShellArg cfg.xmppDomain} ${lib.escapeShellArg cfg.forgejoDomain}
+        ${tlsPreparation}/bin/prometheus-service-tls ${generatedCertificatePath} ${generatedKeyPath} ${certificateNameArgs}
         current="$(readlink ${generatedTlsDirectory}/current)"
         if [ -n "$previous" ] && [ "$previous" != "$current" ]; then
-          ${pkgs.systemd}/bin/systemctl --no-block try-reload-or-restart prosody.service forgejo.service
+          ${pkgs.systemd}/bin/systemctl --no-block try-reload-or-restart ${lib.concatStringsSep " " serviceUnits}
         fi
       '';
     };
@@ -208,7 +225,7 @@ in
       after = [ "prometheus-service-tls.service" ];
     };
 
-    systemd.services.forgejo = mkIf generatedTls {
+    systemd.services.forgejo = mkIf (generatedTls && forgejoEnabled) {
       requires = [ "prometheus-service-tls.service" ];
       after = [ "prometheus-service-tls.service" ];
     };
@@ -242,14 +259,14 @@ in
       };
     };
 
-    services.forgejo = {
+    services.forgejo = mkIf forgejoEnabled {
       enable = true;
       settings = {
         server = {
-          DOMAIN = cfg.forgejoDomain;
-          ROOT_URL = "https://${cfg.forgejoDomain}:${toString cfg.forgejoHttpsPort}/";
+          DOMAIN = cfg.forgejo.domain;
+          ROOT_URL = "https://${cfg.forgejo.domain}:${toString cfg.forgejo.httpsPort}/";
           PROTOCOL = "https";
-          HTTP_PORT = cfg.forgejoHttpsPort;
+          HTTP_PORT = cfg.forgejo.httpsPort;
           CERT_FILE = certificatePath;
           KEY_FILE = keyPath;
         };
@@ -262,11 +279,9 @@ in
     };
 
     # Prosody's client-to-server listener is 5222. Forgejo serves HTTPS on
-    # forgejoHttpsPort above; no administrative or runner ports are exposed.
-    networking.firewall.allowedTCPPorts = [
-      5222
-      cfg.forgejoHttpsPort
-    ];
+    # forgejo.httpsPort only when that separate service is enabled; no
+    # administrative or runner ports are exposed.
+    networking.firewall.allowedTCPPorts = [ 5222 ] ++ optional forgejoEnabled cfg.forgejo.httpsPort;
 
     systemd.services.prometheus-nix-review = mkIf cfg.reviewRunner.enable {
       description = "Bounded Prometheus native Nix review";

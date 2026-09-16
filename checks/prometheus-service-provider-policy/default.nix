@@ -38,7 +38,11 @@ let
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
-      forgejoDomain = "git.example";
+      xmppDomainAliases = [ "chat.internal" ];
+      forgejo = {
+        enable = true;
+        domain = "git.example";
+      };
       tls = {
         certificatePath = "/run/secrets/prometheus-service-certificate";
         keyPath = "/run/secrets/prometheus-service-key";
@@ -50,7 +54,7 @@ let
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
-      forgejoDomain = "git.example";
+      xmppDomainAliases = [ "chat.internal" ];
       tls.sopsFileKey = "prometheusServiceTls";
     } fixtureInputs).config;
 
@@ -65,14 +69,14 @@ let
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
-      forgejoDomain = "git.example";
+      xmppDomainAliases = [ "chat.internal" ];
     } inputs).config;
 
   missingKey =
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
-      forgejoDomain = "git.example";
+      xmppDomainAliases = [ "chat.internal" ];
       tls.certificatePath = "/run/secrets/prometheus-service-certificate";
     } inputs).config;
 
@@ -80,7 +84,7 @@ let
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
-      forgejoDomain = "git.example";
+      xmppDomainAliases = [ "chat.internal" ];
       tls.sopsFileKey = "prometheusServiceTls";
     } (inputs // { secrets = { sopsFiles = { }; }; })).config;
 
@@ -88,7 +92,7 @@ let
     (configurationFor {
       enable = true;
       xmppDomain = "chat.example";
-      forgejoDomain = "git.example";
+      xmppDomainAliases = [ "chat.internal" ];
       tls = {
         sopsFileKey = "prometheusServiceTls";
         certificatePath = "/run/secrets/explicit-certificate";
@@ -127,18 +131,18 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
   test ${lib.escapeShellArg (bool missingTls.systemd.services.prometheus-service-tls.enable)} = true
   test ${lib.escapeShellArg (bool (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.before))} = true
-  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.before))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.before))} = false
   test ${lib.escapeShellArg (bool (builtins.elem "prosody.service" missingTls.systemd.services.prometheus-service-tls.requiredBy))} = true
-  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.requiredBy))} = true
+  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" missingTls.systemd.services.prometheus-service-tls.requiredBy))} = false
   test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.requires))} = true
   test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.prosody.after))} = true
-  test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.requires))} = true
-  test ${lib.escapeShellArg (bool (builtins.elem "prometheus-service-tls.service" missingTls.systemd.services.forgejo.after))} = true
-  printf '%s\n' ${lib.escapeShellArg missingTls.systemd.services.prometheus-service-tls.script} | grep -F -- 'systemctl --no-block try-reload-or-restart prosody.service forgejo.service' 
+  printf '%s\n' ${lib.escapeShellArg missingTls.systemd.services.prometheus-service-tls.script} | grep -F -- 'systemctl --no-block try-reload-or-restart prosody.service'
   test ${
     lib.escapeShellArg missingTls.services.prosody.virtualHosts."chat.example".ssl.cert
   } = /var/lib/prometheus-service-tls/current/certificate.pem
-  test ${lib.escapeShellArg missingTls.services.forgejo.settings.server.KEY_FILE} = /var/lib/prometheus-service-tls/current/key.pem
+  test ${lib.escapeShellArg (bool missingTls.services.forgejo.enable)} = false
+  test ${lib.escapeShellArg (bool (builtins.hasAttr "chat.internal" missingTls.services.prosody.virtualHosts))} = false
+  test ${lib.escapeShellArg (bool (builtins.elem 3000 missingTls.networking.firewall.allowedTCPPorts))} = false
   test ${lib.escapeShellArg (bool enabled.services.prosody.allowRegistration)} = false
   test ${lib.escapeShellArg (bool enabled.services.prosody.c2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
@@ -154,7 +158,9 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool missingSopsToplevelRefused)} = true
   test ${lib.escapeShellArg (bool conflictingTlsToplevelRefused)} = true
   test ${lib.escapeShellArg sopsEnabled.services.prosody.virtualHosts."chat.example".ssl.cert} = /run/secrets/prometheus-service-certificate
-  test ${lib.escapeShellArg sopsEnabled.services.forgejo.settings.server.KEY_FILE} = /run/secrets/prometheus-service-key
+  test ${lib.escapeShellArg (bool sopsEnabled.services.forgejo.enable)} = false
+  test ${lib.escapeShellArg (bool (builtins.elem 3000 sopsEnabled.networking.firewall.allowedTCPPorts))} = false
+  test ${lib.escapeShellArg (bool (builtins.elem "prosody.service" sopsEnabled.sops.secrets.prometheus-service-certificate.restartUnits))} = true
   test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-certificate.sopsFile} = ${lib.escapeShellArg fixtureInputs.secrets.sopsFiles.prometheusServiceTls}
   test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-key.key} = key
   test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-certificate.mode} = 0440
@@ -168,6 +174,8 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${
     lib.escapeShellArg enabled.services.prosody.virtualHosts."chat.example".ssl.key
   } = /run/secrets/prometheus-service-key
+  test ${lib.escapeShellArg (bool (builtins.hasAttr "chat.internal" enabled.services.prosody.virtualHosts))} = false
+  test ${lib.escapeShellArg (bool (builtins.elem "forgejo.service" enabled.systemd.services.prometheus-service-tls.before))} = true
   test ${lib.escapeShellArg (bool enabled.services.forgejo.enable)} = true
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.DOMAIN} = git.example
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.PROTOCOL} = https
@@ -198,18 +206,18 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   chmod +x "$fixture/bin/chown"
   PATH="$fixture/bin:$PATH"
 
-  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
+  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example chat.internal
   test -s "$certificate"
   test -s "$key"
   test "$(stat -c %a "$certificate")" = 640
   test "$(stat -c %a "$key")" = 640
-  openssl x509 -in "$certificate" -noout -ext subjectAltName | grep -F -- 'DNS:chat.example, DNS:git.example'
+  openssl x509 -in "$certificate" -noout -ext subjectAltName | grep -F -- 'DNS:chat.example, DNS:chat.internal'
   test -L "$fixture/current"
   test "$(stat -c %a "$fixture/releases")" = 750
   test "$(stat -c %a "$(readlink -f "$fixture/current")")" = 750
   cp "$certificate" "$fixture/first-certificate.pem"
   cp "$key" "$fixture/first-key.pem"
-  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
+  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example chat.internal
   cmp "$certificate" "$fixture/first-certificate.pem"
   cmp "$key" "$fixture/first-key.pem"
 
@@ -217,23 +225,23 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
     -keyout "$key" -out "$certificate" \
     -subj /CN=chat.example \
-    -addext 'subjectAltName=DNS:chat.example,DNS:git.example' >/dev/null 2>&1
-  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
+    -addext 'subjectAltName=DNS:chat.example,DNS:chat.internal' >/dev/null 2>&1
+  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example chat.internal
   test "$(readlink "$fixture/current")" != "$old_current"
   openssl x509 -in "$certificate" -noout -checkend 604800
   renewed_current=$(readlink "$fixture/current")
-  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" 'chat.example;touch-owned' git.example; then
+  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" 'chat.example;touch-owned' chat.internal; then
     exit 1
   fi
   test "$(readlink "$fixture/current")" = "$renewed_current"
 
-  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/invalid-certificate.pem" "$fixture/invalid-key.pem" 'chat.example;touch-owned' git.example; then
+  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/invalid-certificate.pem" "$fixture/invalid-key.pem" 'chat.example;touch-owned' chat.internal; then
     exit 1
   fi
   test ! -e "$fixture/invalid-certificate.pem"
   test ! -e "$fixture/invalid-key.pem"
   touch "$fixture/partial-certificate.pem"
-  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/partial-certificate.pem" "$fixture/partial-key.pem" chat.example git.example; then
+  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/partial-certificate.pem" "$fixture/partial-key.pem" chat.example chat.internal; then
     exit 1
   fi
   test ! -e "$fixture/partial-key.pem"

@@ -1,8 +1,9 @@
 { inputs, pkgs, ... }:
 
 # Runtime witness for the Prometheus service-provider POC.  Evaluation checks
-# cover the option contract; this boots the enabled module with its generated
-# TLS material and reaches both declared public listeners from another guest.
+# cover the option contract; this boots the Prosody-only deployment with its
+# generated TLS material and reaches its declared public listener from another
+# guest.
 pkgs.testers.nixosTest {
   name = "prometheus-service-provider-vm";
   globalTimeout = 180;
@@ -21,8 +22,8 @@ pkgs.testers.nixosTest {
         networking.firewall.enable = true;
         criomos.prometheusServiceProvider = {
           enable = true;
-          xmppDomain = "chat.test";
-          forgejoDomain = "git.test";
+          xmppDomain = "xmpp.goldragon.criome.net";
+          xmppDomainAliases = [ "xmpp.goldragon.criome" ];
         };
       };
 
@@ -41,7 +42,6 @@ pkgs.testers.nixosTest {
     start_all()
 
     server.wait_for_unit("prosody.service")
-    server.wait_for_unit("forgejo.service")
     server.succeed(
         "test $(systemctl show prometheus-service-tls.service "
         "--property=Result --value) = success && "
@@ -53,25 +53,35 @@ pkgs.testers.nixosTest {
         "&& test -r /var/lib/prometheus-service-tls/current/key.pem"
     )
 
-    # The owning root creates the material, while both daemons can read it via
-    # the dedicated group.  This witnesses the file-access contract used at
-    # service startup rather than only checking that the files exist.
-    for user in ("prosody", "forgejo"):
-        server.succeed(
-            "runuser -u " + user + " -- test -r "
-            "/var/lib/prometheus-service-tls/current/certificate.pem"
-        )
-        server.succeed(
-            "runuser -u " + user + " -- test -r "
-            "/var/lib/prometheus-service-tls/current/key.pem"
-        )
-
-    # The client crosses the server's enabled firewall.  Forgejo returns an
-    # HTTPS response with the generated certificate, and Prosody accepts TCP
-    # client-to-server connections on the only other exposed service port.
-    client.wait_until_succeeds(
-        "nc -z -w 5 server 5222 && nc -z -w 5 server 3000"
+    # The owning root creates the material, while Prosody can read it via the
+    # dedicated group. This witnesses the file-access contract used at service
+    # startup rather than only checking that the files exist.
+    server.succeed(
+        "runuser -u prosody -- test -r "
+        "/var/lib/prometheus-service-tls/current/certificate.pem"
     )
-    client.succeed("curl --fail --insecure --connect-timeout 10 https://server:3000/")
+    server.succeed(
+        "runuser -u prosody -- test -r "
+        "/var/lib/prometheus-service-tls/current/key.pem"
+    )
+
+    server.succeed(
+        "openssl x509 -in /var/lib/prometheus-service-tls/current/certificate.pem "
+        "-noout -ext subjectAltName | grep -F -- "
+        "'DNS:xmpp.goldragon.criome.net, DNS:xmpp.goldragon.criome'"
+    )
+
+    # Prosody 13's documented register command consumes two password lines
+    # from stdin when no password argument is supplied. This uses a disposable
+    # fixture account to witness that supported transport before any SOPS
+    # account consumer is enabled.
+    server.succeed(
+        "printf 'fixture-password\\nfixture-password\\n' | "
+        "prosodyctl register fixture xmpp.goldragon.criome.net"
+    )
+
+    # The client crosses the server's enabled firewall on Prosody's only
+    # declared public listener. Forgejo is a separate option and remains off.
+    client.wait_until_succeeds("nc -z -w 5 server 5222")
   '';
 }
