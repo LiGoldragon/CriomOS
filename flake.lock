@@ -3805,8 +3805,8 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1789548967,
-        "narHash": "sha256-YsqGn7NeNqf/6v89CRDRV/RKkwCQsEdUi4S4ePjCfyo=",
+        "lastModified": 1789549317,
+        "narHash": "sha256-GsZZUqHlYuMld/NPLda8HZbQTDszEyYSx58tONIsMhM=",
         "owner": "LiGoldragon",
         "repo": "signal-message",
         "rev": "aec96bf40807f4452aaf3729b7e834eb6182b44f",
