@@ -131,6 +131,8 @@ in
       description = "Bounded Prometheus native Nix review";
       serviceConfig = {
         Type = "oneshot";
+        TimeoutStartSec = "15min";
+        KillMode = "control-group";
         ExecStart = "${reviewRunner}/bin/prometheus-nix-review-runner ${lib.getExe config.nix.package} ${cfg.reviewRunner.resultPath} ${reviewSource} ${cfg.reviewRunner.sourceRevision}";
         StateDirectory = "prometheus-nix-review";
         NoNewPrivileges = true;

@@ -15,6 +15,12 @@ let
     test "$1" = build
     exit 23
   '';
+
+  interruptingNix = pkgs.writeShellScript "interrupting-nix" ''
+    test "$1" = build
+    kill -TERM "$PPID"
+    exit 0
+  '';
 in
 pkgs.runCommand "prometheus-nix-review-runner" { } ''
   set -eu
@@ -32,4 +38,12 @@ pkgs.runCommand "prometheus-nix-review-runner" { } ''
   fi
   grep -F '"status": "failed"' "$out/failure.json"
   grep -F '"exitCode": 23' "$out/failure.json"
+
+  if ${runner}/bin/prometheus-nix-review-runner \
+    ${interruptingNix} "$out/interrupted.json" github:LiGoldragon/CriomOS \
+    7c9975afbcf44cb580d1491e7f8447fd1def1fbd; then
+    exit 1
+  fi
+  grep -F '"status": "interrupted"' "$out/interrupted.json"
+  grep -F '"exitCode": 130' "$out/interrupted.json"
 ''

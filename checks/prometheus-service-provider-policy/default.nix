@@ -83,6 +83,8 @@ pkgs.runCommand "prometheus-service-provider-policy" { } ''
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.service.DISABLE_REGISTRATION)} = true
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.actions.ENABLED)} = true
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.Type} = oneshot
+  test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.TimeoutStartSec} = 15min
+  test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.KillMode} = control-group
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.ExecStart} | grep -F -- 'github:LiGoldragon/CriomOS 7c9975afbcf44cb580d1491e7f8447fd1def1fbd'
   touch "$out"
 ''
