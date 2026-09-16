@@ -11,7 +11,7 @@ let
   };
 in
 pkgs.runCommand "prometheus-notify-proof"
-  { nativeBuildInputs = [ python pkgs.gnutar pkgs.gnused ]; }
+  { nativeBuildInputs = [ python pkgs.gnutar ]; }
   ''
     set -eu
     mkdir source
@@ -141,7 +141,6 @@ pkgs.runCommand "prometheus-notify-proof"
     asyncio.run(encrypted_round_trip())
     asyncio.run(tamper_is_rejected())
     PY
-    sed -i 's/^    //' fixture.py
     ${python}/bin/python fixture.py
     touch "$out"
   ''
