@@ -24,6 +24,20 @@ in
       description = "Public Forgejo domain when this POC is enabled.";
     };
 
+    tls = {
+      certificatePath = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Runtime certificate path, normally config.sops.secrets.<name>.path from a deployment-owned secret declaration.";
+      };
+
+      keyPath = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Runtime private-key path, normally config.sops.secrets.<name>.path from a deployment-owned secret declaration.";
+      };
+    };
+
     reviewPipeline = {
       enable = mkEnableOption "Forgejo Actions metadata for the native Nix review-pipeline POC";
 
@@ -51,6 +65,10 @@ in
         assertion = cfg.forgejoDomain != "";
         message = "criomos.prometheusServiceProvider.forgejoDomain is required when enabled";
       }
+      {
+        assertion = (cfg.tls.certificatePath == null) == (cfg.tls.keyPath == null);
+        message = "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath";
+      }
     ];
 
     # PEP is the Prosody publication mechanism needed by OMEMO-capable clients:
@@ -68,6 +86,12 @@ in
       virtualHosts.${cfg.xmppDomain} = {
         domain = cfg.xmppDomain;
         enabled = true;
+      }
+      // lib.optionalAttrs (cfg.tls.certificatePath != null) {
+        ssl = {
+          cert = cfg.tls.certificatePath;
+          key = cfg.tls.keyPath;
+        };
       };
     };
 
@@ -77,6 +101,9 @@ in
         server = {
           DOMAIN = cfg.forgejoDomain;
           ROOT_URL = "https://${cfg.forgejoDomain}/";
+          PROTOCOL = if cfg.tls.certificatePath == null then "http" else "https";
+          CERT_FILE = cfg.tls.certificatePath;
+          KEY_FILE = cfg.tls.keyPath;
         };
         service.DISABLE_REGISTRATION = true;
         # This advertises review workflows without installing or registering a

@@ -24,6 +24,10 @@ let
       enable = true;
       xmppDomain = "chat.example";
       forgejoDomain = "git.example";
+      tls = {
+        certificatePath = "/run/secrets/prometheus-service-certificate";
+        keyPath = "/run/secrets/prometheus-service-key";
+      };
       reviewPipeline.enable = true;
     }).config;
 
@@ -42,8 +46,17 @@ pkgs.runCommand "prometheus-service-provider-policy" { } ''
   test ${
     lib.escapeShellArg (bool enabled.services.prosody.virtualHosts."chat.example".enabled)
   } = true
+  test ${
+    lib.escapeShellArg enabled.services.prosody.virtualHosts."chat.example".ssl.cert
+  } = /run/secrets/prometheus-service-certificate
+  test ${
+    lib.escapeShellArg enabled.services.prosody.virtualHosts."chat.example".ssl.key
+  } = /run/secrets/prometheus-service-key
   test ${lib.escapeShellArg (bool enabled.services.forgejo.enable)} = true
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.DOMAIN} = git.example
+  test ${lib.escapeShellArg enabled.services.forgejo.settings.server.PROTOCOL} = https
+  test ${lib.escapeShellArg enabled.services.forgejo.settings.server.CERT_FILE} = /run/secrets/prometheus-service-certificate
+  test ${lib.escapeShellArg enabled.services.forgejo.settings.server.KEY_FILE} = /run/secrets/prometheus-service-key
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.service.DISABLE_REGISTRATION)} = true
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.actions.ENABLED)} = true
   touch "$out"
