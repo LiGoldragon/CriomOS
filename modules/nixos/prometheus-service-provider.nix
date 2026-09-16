@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (lib)
     mkEnableOption
@@ -7,6 +12,12 @@ let
     types
     ;
   cfg = config.criomos.prometheusServiceProvider;
+  reviewSource = "github:LiGoldragon/CriomOS";
+  reviewRunner = pkgs.writeShellApplication {
+    name = "prometheus-nix-review-runner";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = builtins.readFile ./prometheus-nix-review-runner.sh;
+  };
 in
 {
   options.criomos.prometheusServiceProvider = {
@@ -38,19 +49,19 @@ in
       };
     };
 
-    reviewPipeline = {
-      enable = mkEnableOption "Forgejo Actions metadata for the native Nix review-pipeline POC";
+    reviewRunner = {
+      enable = mkEnableOption "a manually-started, bounded native Nix review runner";
 
-      checkAttribute = mkOption {
-        type = types.str;
-        default = ".#checks.x86_64-linux.prometheus-service-provider-policy";
-        description = "Flake check attribute a future isolated Forgejo runner must evaluate.";
+      sourceRevision = mkOption {
+        type = types.enum [ "7c9975afbcf44cb580d1491e7f8447fd1def1fbd" ];
+        default = "7c9975afbcf44cb580d1491e7f8447fd1def1fbd";
+        description = "Allowlisted immutable CriomOS revision for the review runner.";
       };
 
-      command = mkOption {
-        type = types.str;
-        default = "nix flake check --no-build";
-        description = "Native Nix command recorded for a future isolated review runner.";
+      resultPath = mkOption {
+        type = types.enum [ "/var/lib/prometheus-nix-review/result.json" ];
+        default = "/var/lib/prometheus-nix-review/result.json";
+        description = "Bounded structured result artifact retained for human review.";
       };
     };
   };
@@ -110,17 +121,24 @@ in
           KEY_FILE = cfg.tls.keyPath;
         };
         service.DISABLE_REGISTRATION = true;
-        # This advertises review workflows without installing or registering a
-        # runner. A runner must be isolated and receive remote-build authority.
-        actions.ENABLED = cfg.reviewPipeline.enable;
+        # This advertises review workflows but does not register a Forgejo
+        # account or runner. The bounded unit below is manually started.
+        actions.ENABLED = cfg.reviewRunner.enable;
       };
     };
 
-    # A future runner reads this declarative handoff; this module never runs
-    # review commands itself and therefore has no plaintext notification path.
-    environment.etc."forgejo-review-pipeline/nix-review-pipeline.conf".text = ''
-      check-attribute=${cfg.reviewPipeline.checkAttribute}
-      command=${cfg.reviewPipeline.command}
-    '';
+    systemd.services.prometheus-nix-review = mkIf cfg.reviewRunner.enable {
+      description = "Bounded Prometheus native Nix review";
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${reviewRunner}/bin/prometheus-nix-review-runner ${lib.getExe config.nix.package} ${cfg.reviewRunner.resultPath} ${reviewSource} ${cfg.reviewRunner.sourceRevision}";
+        StateDirectory = "prometheus-nix-review";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectHome = true;
+        ProtectSystem = "strict";
+        ReadWritePaths = [ "/var/lib/prometheus-nix-review" ];
+      };
+    };
   };
 }

@@ -215,6 +215,7 @@
           prometheus-service-provider-policy = pkgs.callPackage ./checks/prometheus-service-provider-policy {
             inherit inputs;
           };
+          prometheus-nix-review-runner = pkgs.callPackage ./checks/prometheus-nix-review-runner { };
           lojix-nexus-service = pkgs.callPackage ./checks/lojix-nexus-service {
             inherit inputs;
           };

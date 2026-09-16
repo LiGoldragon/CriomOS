@@ -28,7 +28,7 @@ let
         certificatePath = "/run/secrets/prometheus-service-certificate";
         keyPath = "/run/secrets/prometheus-service-key";
       };
-      reviewPipeline.enable = true;
+      reviewRunner.enable = true;
     }).config;
 
   missingTls =
@@ -58,6 +58,7 @@ pkgs.runCommand "prometheus-service-provider-policy" { } ''
 
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
+  test ${lib.escapeShellArg (bool (builtins.hasAttr "prometheus-nix-review" disabled.systemd.services))} = false
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires deployment-owned runtime TLS paths when enabled" missingTls))} = true
   test ${lib.escapeShellArg (bool (hasFailedAssertion "criomos.prometheusServiceProvider.tls requires both certificatePath and keyPath" missingKey))} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
@@ -81,5 +82,7 @@ pkgs.runCommand "prometheus-service-provider-policy" { } ''
   test ${lib.escapeShellArg enabled.services.forgejo.settings.server.KEY_FILE} = /run/secrets/prometheus-service-key
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.service.DISABLE_REGISTRATION)} = true
   test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.actions.ENABLED)} = true
+  test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.Type} = oneshot
+  test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.ExecStart} | grep -F -- 'github:LiGoldragon/CriomOS 7c9975afbcf44cb580d1491e7f8447fd1def1fbd'
   touch "$out"
 ''
