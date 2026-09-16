@@ -21,14 +21,16 @@ let
   keySecretName = "prometheus-service-key";
   usingSops = cfg.enable && cfg.tls.sopsFileKey != null;
   # The secrets input remains lazy for disabled and self-signed configurations.
-  sopsFiles = if usingSops then inputs.secrets.sopsFiles else { };
+  sopsFiles = if usingSops then (inputs.secrets.sopsFiles or { }) else { };
   sopsFileExists = usingSops && builtins.hasAttr cfg.tls.sopsFileKey sopsFiles;
   certificatePath =
-    if usingSops then config.sops.secrets.${certificateSecretName}.path
+    if usingSops && sopsFileExists then config.sops.secrets.${certificateSecretName}.path
+    else if usingSops then "/run/secrets/prometheus-service-certificate-unavailable"
     else if cfg.tls.certificatePath == null then generatedCertificatePath
     else cfg.tls.certificatePath;
   keyPath =
-    if usingSops then config.sops.secrets.${keySecretName}.path
+    if usingSops && sopsFileExists then config.sops.secrets.${keySecretName}.path
+    else if usingSops then "/run/secrets/prometheus-service-key-unavailable"
     else if cfg.tls.keyPath == null then generatedKeyPath
     else cfg.tls.keyPath;
   generatedTls = !usingSops && cfg.tls.certificatePath == null && cfg.tls.generateSelfSigned;

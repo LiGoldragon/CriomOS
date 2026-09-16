@@ -26,6 +26,8 @@ let
             fsType = "ext4";
           };
           boot.loader.grub.devices = [ "/dev/sda" ];
+          # Evaluation-only key path: no key is created or read by this check.
+          sops.age.keyFile = "/run/keys/prometheus-service-provider-evaluation-only.age";
           criomos.prometheusServiceProvider = providerConfiguration;
         }
       ];
@@ -55,6 +57,7 @@ let
   # Force the enabled host toplevel derivation so NixOS module assertions are
   # evaluated, then retain only a boolean. This avoids putting its drvPath
   # string (and the full host closure it carries) in this focused fixture.
+  disabledToplevelEvaluated = builtins.deepSeq disabled.system.build.toplevel.drvPath true;
   enabledToplevelEvaluated = builtins.deepSeq enabled.system.build.toplevel.drvPath true;
   sopsToplevelEvaluated = builtins.deepSeq sopsEnabled.system.build.toplevel.drvPath true;
 
@@ -92,6 +95,10 @@ let
         keyPath = "/run/secrets/explicit-key";
       };
     } fixtureInputs).config;
+
+  selfSignedToplevelEvaluated = builtins.deepSeq missingTls.system.build.toplevel.drvPath true;
+  missingSopsToplevelRefused = !(builtins.tryEval missingSops.system.build.toplevel.drvPath).success;
+  conflictingTlsToplevelRefused = !(builtins.tryEval conflictingTls.system.build.toplevel.drvPath).success;
 
   bool = value: if value then "true" else "false";
   hasFailedAssertion =
@@ -138,8 +145,12 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool enabled.services.prosody.modules.carbons)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.modules.smacks)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.xmppComplianceSuite)} = false
+  test ${lib.escapeShellArg (bool disabledToplevelEvaluated)} = true
   test ${lib.escapeShellArg (bool enabledToplevelEvaluated)} = true
+  test ${lib.escapeShellArg (bool selfSignedToplevelEvaluated)} = true
   test ${lib.escapeShellArg (bool sopsToplevelEvaluated)} = true
+  test ${lib.escapeShellArg (bool missingSopsToplevelRefused)} = true
+  test ${lib.escapeShellArg (bool conflictingTlsToplevelRefused)} = true
   test ${lib.escapeShellArg sopsEnabled.services.prosody.virtualHosts."chat.example".ssl.cert} = /run/secrets/prometheus-service-certificate
   test ${lib.escapeShellArg sopsEnabled.services.forgejo.settings.server.KEY_FILE} = /run/secrets/prometheus-service-key
   test ${lib.escapeShellArg sopsEnabled.sops.secrets.prometheus-service-certificate.sopsFile} = ${lib.escapeShellArg fixtureInputs.secrets.sopsFiles.prometheusServiceTls}
