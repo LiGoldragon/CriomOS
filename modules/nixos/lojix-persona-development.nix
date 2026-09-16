@@ -13,7 +13,7 @@ let
     length
     ;
   nodeServices = import ./node-services.nix { inherit lib; };
-  personaDevelopmentHost = nodeServices.has horizon.node.capabilities "personaDevelopment";
+  personaDevelopmentHost = nodeServices.has (nodeServices.of horizon.node) "personaDevelopment";
   usersByName = inputs.criomos-home.horizonUsersByName horizon.users;
   localUserNames = attrNames (lib.filterAttrs (_name: user: user.hasPublicKey) usersByName);
   hasExactlyOneLocalUser = length localUserNames == 1;

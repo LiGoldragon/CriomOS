@@ -81,7 +81,7 @@ let
   # Read the VmHost payload from the current projected capability rather than
   # reconstructing the cluster's declaration here.
   nodeServices = import ./node-services.nix { inherit lib; };
-  capabilities = horizon.node.capabilities;
+  capabilities = nodeServices.of horizon.node;
   vmHost =
     if nodeServices.has capabilities "vmHost" then nodeServices.payload capabilities "vmHost" else null;
 

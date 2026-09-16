@@ -44,8 +44,9 @@ let
 
   nodeServices = import ../node-services.nix { inherit lib; };
 
-  enabled = nodeServices.has node.capabilities "vmTesting";
-  payload = nodeServices.payload node.capabilities "vmTesting";
+  services = nodeServices.of node;
+  enabled = nodeServices.has services "vmTesting";
+  payload = nodeServices.payload services "vmTesting";
 
   # Payload defaults. Per the design these are chosen-and-adjustable:
   #   display = Spice (best interactive latency + clipboard),

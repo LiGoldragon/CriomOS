@@ -50,6 +50,15 @@ let
     machine.hardware.model = "GMKtec EVO-X2";
   };
 
+  currentProjectedShape = configurationFor {
+    behavesAs.edge = true;
+    machine = {
+      model = "ThinkPadT14Gen5Intel";
+      chipGen = 12;
+    };
+    services = [ ];
+  };
+
   lowPowerEdge = configurationFor {
     behavesAs = {
       center = false;
@@ -93,6 +102,11 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   !generic.hardware.cpu.intel.updateMicrocode
 ) "a generic x86-64 projection must not claim an Intel chip";
+
+assert lib.assertMsg currentProjectedShape.services.thinkfan.enable
+  "the current Horizon machine.model/chipGen shape must retain ThinkPad policy";
+assert lib.assertMsg currentProjectedShape.hardware.cpu.intel.updateMicrocode
+  "the current Horizon machine.model/chipGen shape must retain Intel microcode policy";
 
 assert lib.assertMsg (
   center.services.logind.settings.Login.HandleLidSwitch == "ignore"

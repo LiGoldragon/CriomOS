@@ -12,7 +12,7 @@ let
   inherit (constants.fileSystem.nordvpn) privateKeyFile;
 
   nodeServices = import ../node-services.nix { inherit lib; };
-  hasNordvpnPubKey = nodeServices.has horizon.node.capabilities "nordvpn";
+  hasNordvpnPubKey = nodeServices.has (nodeServices.of horizon.node) "nordvpn";
 
   /*
     Server data is read from the lock file at build time.
