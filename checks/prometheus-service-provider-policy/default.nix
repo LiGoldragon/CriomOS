@@ -36,6 +36,11 @@ let
       reviewRunner.enable = true;
     }).config;
 
+  # Evaluate the complete enabled NixOS configuration, including assertions
+  # from the stock Prosody and Forgejo modules, without placing its toplevel
+  # derivation in this focused policy fixture's build closure.
+  enabledToplevelEvaluated = builtins.deepSeq enabled.system.build.toplevel true;
+
   missingTls =
     (configurationFor {
       enable = true;
@@ -90,9 +95,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.modules.pep)} = true
   test ${lib.escapeShellArg (bool enabled.services.prosody.xmppComplianceSuite)} = false
-  # Referencing the derivation path forces the complete enabled NixOS system
-  # evaluation, including assertions contributed by stock service modules.
-  test -n ${lib.escapeShellArg enabled.system.build.toplevel.drvPath}
+  test ${lib.escapeShellArg (bool enabledToplevelEvaluated)} = true
   test ${
     lib.escapeShellArg (bool enabled.services.prosody.virtualHosts."chat.example".enabled)
   } = true
