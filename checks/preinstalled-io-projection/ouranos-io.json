@@ -1,0 +1,28 @@
+{
+  "keyboard": "Colemak",
+  "bootloader": "Uefi",
+  "disks": {
+    "/": {
+      "device": "/dev/disk/by-uuid/38a88e99-3b6e-4de6-9772-05adddc3a1ca",
+      "fsType": "Ext4",
+      "options": []
+    },
+    "/boot": {
+      "device": "/dev/disk/by-uuid/725A-E86A",
+      "fsType": "Vfat",
+      "options": [
+        "fmask=0022",
+        "dmask=0022"
+      ]
+    }
+  },
+  "swapDevices": [
+    {
+      "device": "/swapfile",
+      "sizeMebibytes": 32768
+    }
+  ],
+  "compressedSwap": {
+    "memoryPercent": 25
+  }
+}

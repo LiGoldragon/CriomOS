@@ -193,6 +193,7 @@
           };
           desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
           core-checkup-roster = pkgs.callPackage ./checks/core-checkup-roster { };
+          preinstalled-io-projection = pkgs.callPackage ./checks/preinstalled-io-projection { };
           clavifaber-publication-request = pkgs.callPackage ./checks/clavifaber-publication-request {
             inherit inputs;
           };
