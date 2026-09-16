@@ -23,6 +23,10 @@
     rust-build.url = "github:LiGoldragon/rust-build";
     rust-build.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Offline Notify Datom validation command.  The proof consumes the
+    # contract crate's parser rather than reproducing its grammar in Python.
+    signal-message.url = "github:LiGoldragon/signal-message/87278034b3446a9ae9990135ba583b2809019757";
+
     # Shared constants, helpers, and cross-repo data. Consumed by both
     # CriomOS and CriomOS-home.
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
@@ -217,7 +221,7 @@
           };
           prometheus-nix-review-runner = pkgs.callPackage ./checks/prometheus-nix-review-runner { };
           omemo2-encrypted-roundtrip = pkgs.callPackage ./checks/omemo2-encrypted-roundtrip { };
-          prometheus-notify-proof = pkgs.callPackage ./checks/prometheus-notify-proof { };
+          prometheus-notify-proof = pkgs.callPackage ./checks/prometheus-notify-proof { inherit inputs; };
           lojix-nexus-service = pkgs.callPackage ./checks/lojix-nexus-service {
             inherit inputs;
           };

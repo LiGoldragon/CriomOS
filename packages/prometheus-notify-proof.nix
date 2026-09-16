@@ -1,8 +1,2 @@
-{ pkgs, ... }:
-pkgs.writeShellApplication {
-  name = "prometheus-notify-proof";
-  runtimeInputs = [ pkgs.python3 ];
-  text = ''
-    exec ${pkgs.python3}/bin/python ${./prometheus-notify-proof.py} "$@"
-  '';
-}
+{ inputs, pkgs, ... }:
+inputs.signal-message.packages.${pkgs.stdenv.hostPlatform.system}.notify-datom

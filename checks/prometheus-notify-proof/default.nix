@@ -1,5 +1,6 @@
-{ pkgs }:
+{ inputs, pkgs }:
 let
+  notifyDatom = inputs.signal-message.packages.${pkgs.stdenv.hostPlatform.system}.notify-datom;
   python = pkgs.python3.withPackages (ps: [
     ps.omemo
     ps.twomemo
@@ -11,12 +12,27 @@ let
   };
 in
 pkgs.runCommand "prometheus-notify-proof"
-  { nativeBuildInputs = [ python pkgs.gnutar ]; }
+  { nativeBuildInputs = [ notifyDatom python pkgs.gnutar ]; }
   ''
     set -eu
     mkdir source
     tar -xzf ${upstreamTests} --strip-components=1 -C source
     cp ${../../packages/prometheus-notify-proof.py} notify_proof.py
+    notify-datom 'Notify.{ bob@example.org “hello «quoted» text” }'
+    if notify-datom 'Submit.{ x }'; then
+      echo "non-Notify Datom unexpectedly accepted" >&2
+      exit 1
+    fi
+    oversized_body="$(${python}/bin/python -c 'print("x" * 1025)')"
+    if notify-datom "Notify.{ bob@example.org “$oversized_body” }"; then
+      echo "oversized Notify body unexpectedly accepted" >&2
+      exit 1
+    fi
+    oversized_input="$(${python}/bin/python -c 'print("x" * 4097)')"
+    if notify-datom "$oversized_input"; then
+      echo "oversized Notify input unexpectedly accepted" >&2
+      exit 1
+    fi
     cat > fixture.py <<'PY'
     import asyncio
     import sys
@@ -30,12 +46,8 @@ pkgs.runCommand "prometheus-notify-proof"
     from notify_proof import (
         EncryptedEnvelope,
         OMEMO2_NAMESPACE,
-        Notify,
-        NotifyError,
         BareJid,
         deliver_encrypted,
-        main,
-        parse_notify,
     )
     from tests.in_memory_storage import InMemoryStorage
     from tests.session_manager_impl import TrustLevel, make_session_manager_impl
@@ -93,7 +105,7 @@ pkgs.runCommand "prometheus-notify-proof"
         transport, alice, bob = await make_transport()
         try:
             await deliver_encrypted(
-                Notify(BareJid(BOB), "fixture encrypted Notify"), transport
+                BareJid(BOB), b"fixture encrypted Notify", transport
             )
         finally:
             await alice.shutdown()
@@ -119,27 +131,6 @@ pkgs.runCommand "prometheus-notify-proof"
             await bob.shutdown()
 
     assert OMEMO2_NAMESPACE == "urn:xmpp:omemo:2"
-    parsed = parse_notify("Notify.{ «bob@example.org» «fixture encrypted Notify» }")
-    assert parsed.recipient.value == BOB
-    assert main(["Notify.{ «bob@example.org» «accepted» }"]) == 0
-    for malformed in [
-        "Notify.{ bob@example.org «missing guillemets» }",
-        "Notify.{ «bob@example.org» missing-guillemets }",
-        "Notify.{ «bob@example.org/resource» «resource is not bare» }",
-        "Other.{ «bob@example.org» «wrong variant» }",
-    ]:
-        try:
-            parse_notify(malformed)
-        except NotifyError:
-            pass
-        else:
-            raise AssertionError("malformed Notify input was accepted")
-    try:
-        parse_notify("Notify.{ «bob@example.org» «" + "x" * 1025 + "» }")
-    except NotifyError:
-        pass
-    else:
-        raise AssertionError("oversized Notify body was accepted")
     asyncio.run(encrypted_round_trip())
     asyncio.run(tamper_is_rejected())
     PY
