@@ -69,7 +69,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
     pkgs.openssl
   ];
 } ''
-  set -eux
+  set -eu
 
   test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
   test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
@@ -115,7 +115,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.Type} = oneshot
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.TimeoutStartSec} = 15min
   test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.KillMode} = control-group
-  test ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.ExecStart} | grep -F -- 'github:LiGoldragon/CriomOS 7ee784103dac929bda499875a98504fd15ca6523'
+  printf '%s\n' ${lib.escapeShellArg enabled.systemd.services.prometheus-nix-review.serviceConfig.ExecStart} | grep -F -- 'github:LiGoldragon/CriomOS 7ee784103dac929bda499875a98504fd15ca6523'
 
   fixture="$TMPDIR/tls fixture"
   certificate="$fixture/certificate.pem"
