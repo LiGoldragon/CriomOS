@@ -18,13 +18,13 @@ pkgs.runCommand "prometheus-notify-proof"
     mkdir source
     tar -xzf ${upstreamTests} --strip-components=1 -C source
     cp ${../../packages/prometheus-notify-proof.py} notify_proof.py
-    notify-datom '{ bob@example.org “hello «quoted» text” }'
+    notify-datom '{ bob@example.org «hello {quoted} text» }'
     if notify-datom 'Submit.{ x }'; then
       echo "non-Notify Datom unexpectedly accepted" >&2
       exit 1
     fi
     oversized_body="$(${python}/bin/python -c 'print("x" * 1025)')"
-    if notify-datom "{ bob@example.org “$oversized_body” }"; then
+    if notify-datom "{ bob@example.org «$oversized_body» }"; then
       echo "oversized Notify body unexpectedly accepted" >&2
       exit 1
     fi
