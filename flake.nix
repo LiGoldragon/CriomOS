@@ -212,6 +212,9 @@
             inherit inputs;
           };
           mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
+          prometheus-service-provider-policy = pkgs.callPackage ./checks/prometheus-service-provider-policy {
+            inherit inputs;
+          };
           lojix-nexus-service = pkgs.callPackage ./checks/lojix-nexus-service {
             inherit inputs;
           };

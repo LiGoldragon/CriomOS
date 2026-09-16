@@ -1,0 +1,50 @@
+{ inputs, pkgs, ... }:
+let
+  inherit (inputs.nixpkgs) lib;
+  inherit (pkgs.stdenv.hostPlatform) system;
+
+  configurationFor =
+    providerConfiguration:
+    lib.nixosSystem {
+      inherit system;
+      specialArgs = { inherit inputs; };
+      modules = [
+        inputs.sops-nix.nixosModules.sops
+        ../../modules/nixos/prometheus-service-provider.nix
+        {
+          system.stateVersion = "26.05";
+          criomos.prometheusServiceProvider = providerConfiguration;
+        }
+      ];
+    };
+
+  disabled = (configurationFor { }).config;
+  enabled =
+    (configurationFor {
+      enable = true;
+      xmppDomain = "chat.example";
+      forgejoDomain = "git.example";
+      reviewPipeline.enable = true;
+    }).config;
+
+  bool = value: if value then "true" else "false";
+in
+pkgs.runCommand "prometheus-service-provider-policy" { } ''
+  set -eu
+
+  test ${lib.escapeShellArg (bool disabled.services.prosody.enable)} = false
+  test ${lib.escapeShellArg (bool disabled.services.forgejo.enable)} = false
+  test ${lib.escapeShellArg (bool enabled.services.prosody.enable)} = true
+  test ${lib.escapeShellArg (bool enabled.services.prosody.allowRegistration)} = false
+  test ${lib.escapeShellArg (bool enabled.services.prosody.c2sRequireEncryption)} = true
+  test ${lib.escapeShellArg (bool enabled.services.prosody.s2sRequireEncryption)} = true
+  test ${lib.escapeShellArg (bool enabled.services.prosody.modules.pep)} = true
+  test ${
+    lib.escapeShellArg (bool enabled.services.prosody.virtualHosts."chat.example".enabled)
+  } = true
+  test ${lib.escapeShellArg (bool enabled.services.forgejo.enable)} = true
+  test ${lib.escapeShellArg enabled.services.forgejo.settings.server.DOMAIN} = git.example
+  test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.service.DISABLE_REGISTRATION)} = true
+  test ${lib.escapeShellArg (bool enabled.services.forgejo.settings.actions.ENABLED)} = true
+  touch "$out"
+''

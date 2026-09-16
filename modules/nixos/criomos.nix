@@ -18,6 +18,9 @@ in
     ./normalize.nix
     ./secrets.nix
     ./repository-receive.nix
+    # Disabled-by-default POC for Prosody, Forgejo, and a future isolated Nix
+    # review runner. Deployment providers and credentials remain outside it.
+    ./prometheus-service-provider.nix
     ./mirror.nix
     ./persona-router.nix
     # criome + spirit node modules (persistent-Spirit-mirror pieces 6/8). Both
