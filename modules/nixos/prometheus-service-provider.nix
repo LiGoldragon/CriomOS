@@ -146,6 +146,8 @@ in
     systemd.services.prometheus-service-tls-reload = mkIf generatedTls {
       description = "Reload Prometheus services after TLS publication";
       serviceConfig.Type = "oneshot";
+      # A path event happens after the symlink publication. It is deliberately
+      # separate from the bootstrap dependency graph.
       script = "${pkgs.systemd}/bin/systemctl try-reload-or-restart prosody.service forgejo.service";
     };
 

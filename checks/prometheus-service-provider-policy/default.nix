@@ -126,7 +126,7 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   # ownership while the real unit runs as root.
   test "$1" = root:prometheus-service-tls
   shift
-  test "$#" = 2
+  test "$#" -ge 1
   SCRIPT
   chmod +x "$fixture/bin/chown"
   PATH="$fixture/bin:$PATH"
@@ -145,7 +145,20 @@ pkgs.runCommand "prometheus-service-provider-policy" {
   bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
   cmp "$certificate" "$fixture/first-certificate.pem"
   cmp "$key" "$fixture/first-key.pem"
-  openssl x509 -in "$certificate" -noout -checkend 2592000 || true
+
+  old_current=$(readlink "$fixture/current")
+  openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+    -keyout "$key" -out "$certificate" \
+    -subj /CN=chat.example \
+    -addext 'subjectAltName=DNS:chat.example,DNS:git.example' >/dev/null 2>&1
+  bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" chat.example git.example
+  test "$(readlink "$fixture/current")" != "$old_current"
+  openssl x509 -in "$certificate" -noout -checkend 604800
+  renewed_current=$(readlink "$fixture/current")
+  if bash ${../../modules/nixos/prometheus-service-tls.sh} "$certificate" "$key" 'chat.example;touch-owned' git.example; then
+    exit 1
+  fi
+  test "$(readlink "$fixture/current")" = "$renewed_current"
 
   if bash ${../../modules/nixos/prometheus-service-tls.sh} "$fixture/invalid-certificate.pem" "$fixture/invalid-key.pem" 'chat.example;touch-owned' git.example; then
     exit 1
