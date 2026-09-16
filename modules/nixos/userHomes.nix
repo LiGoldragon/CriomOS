@@ -48,6 +48,14 @@ let
     }
   ];
 
+  # Keep the wrapper independently testable on nodes without the typed Core
+  # Checkup capability. The Core Checkup module also enables it, but that
+  # composition must remain gated by the OS-owned capability above.
+  codexLayerResumeHomeModules = [
+    inputs.criomos-home.homeModules."codex-layer-resume"
+    { criomosHome.codexLayerResume.enable = true; }
+  ];
+
 in
 {
   home-manager = {
@@ -64,7 +72,10 @@ in
       inherit horizon constants pkgs;
       homeSystem = pkgs.stdenv.hostPlatform.system;
     };
-    sharedModules = [ inputs.criomos-home.homeModules.default ] ++ coreCheckupHomeModules;
+    sharedModules =
+      [ inputs.criomos-home.homeModules.default ]
+      ++ codexLayerResumeHomeModules
+      ++ coreCheckupHomeModules;
     useGlobalPkgs = true;
     users = mapAttrs mkUserConfig homeUsers;
   };
