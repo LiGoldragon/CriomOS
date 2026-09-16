@@ -46,9 +46,9 @@ let
 
   virtualMachineHostService = {
     kind = "vmHost";
-    guestSubnet = "169.254.100.0/22";
+    guest_subnet = "169.254.100.0/22";
     kvm = "Available";
-    maximumGuests = 4;
+    maximum_guests = 4;
   };
 
   atlas = (baseNode "atlas") // {
