@@ -196,6 +196,7 @@
             inherit inputs;
           };
           devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
+          message-flow-home = pkgs.callPackage ./checks/message-flow-home { inherit inputs; };
           laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
           legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
           metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
