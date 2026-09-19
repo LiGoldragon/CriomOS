@@ -222,6 +222,9 @@
             inherit inputs;
           };
           spirit-role-policy = pkgs.callPackage ./checks/spirit-role-policy { inherit inputs; };
+          opencode-testing-policy = pkgs.callPackage ./checks/opencode-testing-policy {
+            inherit inputs;
+          };
           persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
             inherit inputs;
           };

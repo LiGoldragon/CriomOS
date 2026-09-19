@@ -33,6 +33,7 @@ in
     ./complex.nix
     ./nspawn.nix
     ./llm.nix
+    ./testing/opencode.nix
     ./users.nix
     # Agent Intercom wrapper package; user broker/adapters and session state
     # remain in CriomOS-home. Edge and metal own graphical facilities.
