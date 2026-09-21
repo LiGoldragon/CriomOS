@@ -75,6 +75,7 @@ in
     ./networkd.nix
     ./wireguard.nix
     ./resolver.nix
+    ./usb-ipv4-gateway.nix
   ];
 
   networking = {
