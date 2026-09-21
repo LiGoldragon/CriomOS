@@ -36,6 +36,9 @@ let
   wirelessCountryCode = routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
   wirelessNetworkName =
     routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${horizon.cluster}.criome";
+  wanLeaseRecovery = pkgs.writeShellScript "router-wan-lease-recovery" (
+    builtins.readFile ./wan-lease-recovery.sh
+  );
 
   backupWireless = routerInterfaces.backupWireless or null;
   hasBackupWireless = backupWireless != null;
@@ -274,6 +277,24 @@ in
         restartIfChanged = false;
         stopIfChanged = false;
       };
+
+      # The LAN stays available while an upstream DHCP server comes up late.
+      # Retry only the WAN link when it has carrier but no IPv4 default route;
+      # never restart the AP, LAN DHCP, DNS, or networkd.
+      router-wan-lease-recovery = {
+        description = "Recover a late router WAN DHCP lease";
+        after = [ "systemd-networkd.service" ];
+        requires = [ "systemd-networkd.service" ];
+        path = [
+          pkgs.iproute2
+          pkgs.gnugrep
+          pkgs.systemd
+        ];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${wanLeaseRecovery} ${lib.escapeShellArg routerInterfaces.wan}";
+        };
+      };
     }
     // optionalAttrs hasBackupWireless {
       hostapd-backup-wireless = {
@@ -352,6 +373,16 @@ in
           SystemCallArchitectures = "native";
           UMask = "0077";
         };
+      };
+    };
+
+    systemd.timers.router-wan-lease-recovery = {
+      description = "Check for a missing router WAN DHCP lease";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "2min";
+        OnUnitInactiveSec = "2min";
+        AccuracySec = "15s";
       };
     };
 
