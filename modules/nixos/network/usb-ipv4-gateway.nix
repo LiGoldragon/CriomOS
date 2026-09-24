@@ -157,7 +157,14 @@ in
             address1 = gateway;
             "never-default" = "true";
           };
-          ipv6.method = "disabled";
+          # Yggdrasil discovers directly attached peers with IPv6 link-local
+          # multicast.  Keep IPv6 on for that local control plane while
+          # refusing a default route or DNS from the downstream link.
+          ipv6 = {
+            method = "link-local";
+            "never-default" = "true";
+            "ignore-auto-dns" = "true";
+          };
         };
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
         networking.firewall.extraCommands = ''

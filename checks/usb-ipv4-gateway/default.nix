@@ -54,6 +54,9 @@ let
     && profile.ipv4.method == "shared"
     && profile.ipv4.address1 == service.usbIpv4Gateway.gateway
     && profile.ipv4."never-default" == "true"
+    && profile.ipv6.method == "link-local"
+    && profile.ipv6."never-default" == "true"
+    && profile.ipv6."ignore-auto-dns" == "true"
     && active.networking.networkmanager.settings.main."firewall-backend" == "none"
     && lib.hasInfix "-o enp0s31f6" rules
     && lib.hasInfix "-i enp0s20f0u1c2" rules
