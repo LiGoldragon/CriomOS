@@ -10,6 +10,7 @@
 }:
 let
   inherit (lib)
+    concatMapStringsSep
     concatStringsSep
     mkIf
     optional
@@ -76,6 +77,10 @@ let
   ]
   ++ optional hasBackupWireless backupWireless.interface;
   localInputInterfaceSet = concatStringsSep ", " localInputInterfaces;
+  declaredTcpPortRules = concatMapStringsSep "\n" (
+    port:
+    ''tcp dport ${toString port} accept comment "Allow declared TCP service port ${toString port}"''
+  ) config.networking.firewall.allowedTCPPorts;
 
   useNftables = true;
 
@@ -144,6 +149,12 @@ in
               iifname "${routerInterfaces.wan}" ip6 saddr fe80::/64 ip6 daddr { fe80::/64, ff02::/16 } icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow link-local NDP for Yggdrasil discovery"
 
               tcp dport ssh accept
+
+              # Router mode owns nftables directly and disables the NixOS
+              # firewall. Compose the ordinary service-port declarations into
+              # this input chain so a service such as nix-serve does not become
+              # unreachable merely because the host is also a router.
+              ${declaredTcpPortRules}
 
               # test-VM guest taps (vmt*, emitted by test-vm-host.nix only when
               # this host runs TestVm guests): admit the guests' ICMPv6 so the

@@ -239,6 +239,9 @@
           router-yggdrasil-ndp = pkgs.callPackage ./checks/router-yggdrasil-ndp {
             inherit inputs;
           };
+          router-declared-tcp-ports = pkgs.callPackage ./checks/router-declared-tcp-ports {
+            inherit inputs;
+          };
           usb-ipv4-gateway = pkgs.callPackage ./checks/usb-ipv4-gateway {
             inherit inputs;
           };
