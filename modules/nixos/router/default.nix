@@ -136,6 +136,13 @@ in
               ip6 saddr fe80::/64 ip6 daddr fe80::/64 udp dport 9001 accept
               ip6 saddr fe80::/64 ip6 daddr fe80::/64 tcp dport 10001 accept
 
+              # Yggdrasil's link-local port rules are unreachable until the
+              # WAN neighbours can resolve each other.  Admit only IPv6
+              # neighbour solicitation/advertisement on the declared WAN;
+              # the default-drop policy still applies to every other
+              # unsolicited packet from that interface.
+              iifname "${routerInterfaces.wan}" ip6 saddr fe80::/64 ip6 daddr { fe80::/64, ff02::/16 } icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow link-local NDP for Yggdrasil discovery"
+
               tcp dport ssh accept
 
               # test-VM guest taps (vmt*, emitted by test-vm-host.nix only when
