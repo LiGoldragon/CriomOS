@@ -123,7 +123,13 @@ in
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
       "net.ipv6.conf.all.forwarding" = true;
+      # Reboot after a kernel panic or oops instead of freezing forever.
+      "kernel.panic" = 10;
+      "kernel.panic_on_oops" = 1;
     };
+
+    # Arm the hardware watchdog so a hang that never panics also reboots.
+    systemd.settings.Manager.RuntimeWatchdogSec = "30s";
 
     networking = {
       useNetworkd = true;
