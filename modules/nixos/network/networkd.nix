@@ -26,11 +26,14 @@ mkIf (behavesAs.center && !behavesAs.router) {
     linkConfig.RequiredForOnline = "routable";
   };
 
-  # USB ethernet dongles — act as router, serve DHCP
-  systemd.network.networks."20-usb-eth" = {
+  # USB ethernet dongles act as router and serve DHCP.  This sorts before the
+  # broad main-Ethernet DHCP client rule: networkd selects the first match.
+  # ID_NET_DRIVER can be absent while an adapter is renamed, but the udev USB
+  # bus role remains available.
+  systemd.network.networks."05-usb-eth" = {
     matchConfig = {
       Type = "ether";
-      Driver = "cdc_ether cdc_ncm r8152 ax88179_178a asix";
+      Property = "ID_BUS=usb";
     };
     networkConfig = {
       Address = "${hotplugSubnet}.1/24";
