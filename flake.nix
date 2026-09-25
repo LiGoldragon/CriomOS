@@ -236,6 +236,9 @@
           router-non-router-lazy = pkgs.callPackage ./checks/router-non-router-lazy { inherit inputs; };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           router-wan-recovery = pkgs.callPackage ./checks/router-wan-recovery { inherit inputs; };
+          router-usb-downlink-activation = pkgs.callPackage ./checks/router-usb-downlink-activation {
+            inherit inputs;
+          };
           router-yggdrasil-ndp = pkgs.callPackage ./checks/router-yggdrasil-ndp {
             inherit inputs;
           };

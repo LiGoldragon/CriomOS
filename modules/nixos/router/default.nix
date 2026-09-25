@@ -40,6 +40,9 @@ let
   wanLeaseRecovery = pkgs.writeShellScript "router-wan-lease-recovery" (
     builtins.readFile ./wan-lease-recovery.sh
   );
+  usbEthernetReconcile = pkgs.writeShellScript "router-usb-ethernet-reconcile" (
+    builtins.readFile ./usb-ethernet-reconcile.sh
+  );
 
   backupWireless = routerInterfaces.backupWireless or null;
   hasBackupWireless = backupWireless != null;
@@ -319,6 +322,26 @@ in
           ExecStart = "${wanLeaseRecovery} ${lib.escapeShellArg routerInterfaces.wan}";
         };
       };
+
+      # A new generation can add or change a .network file while networkd is
+      # deliberately kept running to preserve router connectivity. Reload the
+      # files, then reconfigure only USB Ethernet downlinks that might already
+      # exist. Future hotplug is handled by networkd's normal .network match.
+      router-usb-ethernet-reconcile = {
+        description = "Apply router USB Ethernet bridge configuration";
+        after = [ "systemd-networkd.service" ];
+        requires = [ "systemd-networkd.service" ];
+        wantedBy = [ "multi-user.target" ];
+        restartTriggers = [ usbEthernetReconcile ];
+        path = [
+          pkgs.coreutils
+          pkgs.systemd
+        ];
+        serviceConfig.Type = "oneshot";
+        script = ''
+          ${usbEthernetReconcile} ${lib.escapeShellArg routerInterfaces.wan}
+        '';
+      };
     }
     // optionalAttrs hasBackupWireless {
       hostapd-backup-wireless = {
@@ -442,7 +465,8 @@ in
         "30-usb-eth" = {
           matchConfig = {
             Type = "ether";
-            Driver = "cdc_ether cdc_ncm r8152 ax88179_178a asix";
+            Name = "!${routerInterfaces.wan}";
+            Property = [ "ID_BUS=usb" ];
           };
           networkConfig = {
             Bridge = lanBridgeInterface;
