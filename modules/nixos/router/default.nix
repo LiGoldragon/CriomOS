@@ -438,11 +438,14 @@ in
 
         # USB ethernet dongles are optional hotplug LAN ports: if absent,
         # boot and router networking continue; if plugged later, networkd
-        # applies this match and joins the dongle to the bridge.
-        "30-usb-eth" = {
+        # applies this match and joins the dongle to the bridge. Match the
+        # stable udev bus role instead of ID_NET_DRIVER: it can be absent while
+        # a USB adapter is being renamed. This sorts before Ethernet catch-alls.
+        "05-usb-eth" = {
           matchConfig = {
             Type = "ether";
-            Driver = "cdc_ether cdc_ncm r8152 ax88179_178a asix";
+            Property = "ID_BUS=usb";
+            Name = "!${routerInterfaces.wan}";
           };
           networkConfig = {
             Bridge = lanBridgeInterface;
