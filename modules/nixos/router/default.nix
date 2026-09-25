@@ -42,6 +42,7 @@ let
   );
 
   backupWireless = routerInterfaces.backupWireless or null;
+  usbLanMacAddress = routerInterfaces.usbLanMacAddress or null;
   hasBackupWireless = backupWireless != null;
   backupWirelessPasswordSecret = if hasBackupWireless then backupWireless.passwordReference else null;
   backupWirelessPasswordSecretName = if hasBackupWireless then backupWirelessPasswordSecret else null;
@@ -443,6 +444,9 @@ in
           matchConfig = {
             Type = "ether";
             Driver = "cdc_ether cdc_ncm r8152 ax88179_178a asix";
+          }
+          // optionalAttrs (usbLanMacAddress != null) {
+            MACAddress = usbLanMacAddress;
           };
           networkConfig = {
             Bridge = lanBridgeInterface;

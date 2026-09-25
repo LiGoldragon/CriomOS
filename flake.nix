@@ -102,7 +102,7 @@
     # its own startup test now waits for that announcement instead of polling a
     # five-second deadline: 5.0.0's test failed reproducibly on a loaded remote
     # builder while passing on an idle one.
-    lojix.url = "github:LiGoldragon/lojix/c4bba4fa12408c39ff745b0773468cd32a74403f";
+    lojix.url = "git+ssh://git@github.com/LiGoldragon/lojix?rev=387c13b512766c596e1461c202adce39bc948c73";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
@@ -236,6 +236,9 @@
           router-non-router-lazy = pkgs.callPackage ./checks/router-non-router-lazy { inherit inputs; };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           router-wan-recovery = pkgs.callPackage ./checks/router-wan-recovery { inherit inputs; };
+          router-usb-downlink-binding = pkgs.callPackage ./checks/router-usb-downlink-binding {
+            inherit inputs;
+          };
           router-yggdrasil-ndp = pkgs.callPackage ./checks/router-yggdrasil-ndp {
             inherit inputs;
           };

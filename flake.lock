@@ -1925,18 +1925,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1789189939,
-        "narHash": "sha256-ke3//v+Kr5QyG520wjqKQDqOg22fFGyRrviVNjzUL5U=",
-        "owner": "LiGoldragon",
-        "repo": "horizon-rs",
-        "rev": "40d04d2504fee619e9b2b2564b8a769a3a9d6049",
-        "type": "github"
+        "lastModified": 1790297997,
+        "narHash": "sha256-MrsZXg1bIHRMeQIkomdNM/k9B/S1fCIbZFdlZgLdbes=",
+        "ref": "refs/heads/main",
+        "rev": "fed0a12a37632003a883a499bdd9536510d89f09",
+        "revCount": 159,
+        "type": "git",
+        "url": "ssh://git@github.com/LiGoldragon/horizon-rs"
       },
       "original": {
-        "owner": "LiGoldragon",
-        "repo": "horizon-rs",
-        "rev": "40d04d2504fee619e9b2b2564b8a769a3a9d6049",
-        "type": "github"
+        "rev": "fed0a12a37632003a883a499bdd9536510d89f09",
+        "type": "git",
+        "url": "ssh://git@github.com/LiGoldragon/horizon-rs"
       }
     },
     "judge-provider": {
@@ -2015,18 +2015,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1789216336,
-        "narHash": "sha256-AJmXjg8QicPzqfl2AHnSXCmf454ZOPrjR4IIVjHCrpA=",
-        "owner": "LiGoldragon",
-        "repo": "lojix",
-        "rev": "c4bba4fa12408c39ff745b0773468cd32a74403f",
-        "type": "github"
+        "lastModified": 1790298298,
+        "narHash": "sha256-Aoqx1MndUHeyHMZl+f3njCZ9uEzHNdlDfjNGHHyFJRE=",
+        "ref": "refs/heads/main",
+        "rev": "387c13b512766c596e1461c202adce39bc948c73",
+        "revCount": 179,
+        "type": "git",
+        "url": "ssh://git@github.com/LiGoldragon/lojix"
       },
       "original": {
-        "owner": "LiGoldragon",
-        "repo": "lojix",
-        "rev": "c4bba4fa12408c39ff745b0773468cd32a74403f",
-        "type": "github"
+        "rev": "387c13b512766c596e1461c202adce39bc948c73",
+        "type": "git",
+        "url": "ssh://git@github.com/LiGoldragon/lojix"
       }
     },
     "mentci-src": {
