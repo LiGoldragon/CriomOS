@@ -851,6 +851,7 @@
         "criomos-lib": [
           "criomos-lib"
         ],
+        "field-clj": "field-clj",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
         "herdr": "herdr",
@@ -925,17 +926,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1790260444,
-        "narHash": "sha256-WNRenyM6r2sqst4dLWK9f38vvLuWYm8T5E7L7diJdPQ=",
+        "lastModified": 1790368388,
+        "narHash": "sha256-KcPFYdVaH8Dx6Uu3OAGHth+AGZFA4AzCJi6K0odlfKY=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "09c56b37d12df750b33900b2c86f9c2412bd4e54",
+        "rev": "2ab91c1ecba56b54b6f0112c7747033f4cb0ab22",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "09c56b37d12df750b33900b2c86f9c2412bd4e54",
+        "rev": "2ab91c1ecba56b54b6f0112c7747033f4cb0ab22",
         "type": "github"
       }
     },
@@ -1395,6 +1396,27 @@
         "owner": "nix-community",
         "repo": "fenix",
         "type": "github"
+      }
+    },
+    "field-clj": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790367662,
+        "narHash": "sha256-0DltuMGHqepYrEOSA5d1SVU186aT749CruoXZ/S20qo=",
+        "ref": "refs/heads/main",
+        "rev": "212cf38f67a3f6729169902bb490e61880e204cb",
+        "revCount": 2,
+        "type": "git",
+        "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
       }
     },
     "firefox-gnome-theme": {
