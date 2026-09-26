@@ -34,9 +34,11 @@ let
       ];
     }).config;
 
-  registryPath = builtins.head (
+  # builtins.match drops string context; restore it from extraOptions so the
+  # registry file is an input of the check derivation.
+  registryPath = builtins.appendContext (builtins.head (
     builtins.match ".*flake-registry = ([^\n]*)\n.*" configuration.nix.extraOptions
-  );
+  )) (builtins.getContext configuration.nix.extraOptions);
   registeredIds = [
     "brightness-ctl"
     "criomos-home"
@@ -68,7 +70,10 @@ pkgs.runCommand "flake-registry-shape"
     export HOME="$TMPDIR" NIX_STATE_DIR="$TMPDIR/state" NIX_CONFIG="experimental-features = nix-command flakes"
     nix --store dummy:// --option flake-registry "$registry" registry list > listing 2> warnings
     cat listing warnings
-    test ! -s warnings
+    # The sandbox has no network; that notice is expected. Any other stderr
+    # line (such as "input attribute 'owner' is missing") fails the check.
+    grep -v "you don't have Internet access" warnings > unexpected || true
+    test ! -s unexpected
     test "$(grep -c '^global flake:' listing)" = ${toString (builtins.length registeredIds)}
     grep -E '^global flake:criomos-home github:LiGoldragon/CriomOS-home/[0-9a-f]{40}$' listing
     cp listing "$out"
