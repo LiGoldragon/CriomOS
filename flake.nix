@@ -144,7 +144,16 @@
   outputs =
     inputs:
     let
-      blueprintOutputs = inputs.blueprint { inherit inputs; };
+      # Host toplevels are deploy artefacts that Lojix evaluates, not checks.
+      # Blueprint turns every nixosConfigurations entry into a nixos-* check and
+      # must evaluate the host to list it, so it is not shown the host at all.
+      blueprintOutputs = inputs.blueprint {
+        inputs = inputs // {
+          self = inputs.self // {
+            nixosConfigurations = { };
+          };
+        };
+      };
 
       # Bootstrap is a maintained operator app, not a target-system output.
       # Publish it for the supported Nix platforms without forcing the
