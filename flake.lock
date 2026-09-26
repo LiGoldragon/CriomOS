@@ -546,6 +546,28 @@
         "type": "github"
       }
     },
+    "clj-build": {
+      "inputs": {
+        "nixpkgs": [
+          "criomos-home",
+          "field-clj",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790375940,
+        "narHash": "sha256-XBSNgrdG4zjhzlgs/zPc1AHQADli3urskn5RKBe81V8=",
+        "owner": "LiGoldragon",
+        "repo": "clj-build",
+        "rev": "9c1778b236544a3b6155d2c203b18cb4f70bff86",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "clj-build",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1776635034,
@@ -942,17 +964,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1790386658,
-        "narHash": "sha256-2DaXriI8PH6HDTyn9lbaFClYkIEvQDQmdbZmsrCxkpI=",
+        "lastModified": 1790388485,
+        "narHash": "sha256-Akx/gu4qFks+Ik9IiSLFVQZWL7xW0a337mLPhGYczS0=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5d647e967968579887d7dd6d74a0690b64a2d316",
+        "rev": "478b4ea0401e055cca4b7b8b977cc324215f7895",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "5d647e967968579887d7dd6d74a0690b64a2d316",
+        "rev": "478b4ea0401e055cca4b7b8b977cc324215f7895",
         "type": "github"
       }
     },
@@ -1439,17 +1461,18 @@
     },
     "field-clj": {
       "inputs": {
+        "clj-build": "clj-build",
         "nixpkgs": [
           "criomos-home",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1790367662,
-        "narHash": "sha256-0DltuMGHqepYrEOSA5d1SVU186aT749CruoXZ/S20qo=",
+        "lastModified": 1790388321,
+        "narHash": "sha256-G1CvKETW6DSLlAY98k7GOFH2Nz2N9NFQ/8ascuxCe58=",
         "ref": "refs/heads/main",
-        "rev": "212cf38f67a3f6729169902bb490e61880e204cb",
-        "revCount": 2,
+        "rev": "75d77597b7e9b00d51d3e3759ced571929ccb8b6",
+        "revCount": 11,
         "type": "git",
         "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
       },
