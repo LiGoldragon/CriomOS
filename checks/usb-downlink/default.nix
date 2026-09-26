@@ -116,6 +116,13 @@ let
   matches =
     link: link.Type == usbRule.matchConfig.Type && link.Property == usbRule.matchConfig.Property;
   routerUsb = routerNode.systemd.network.networks."05-usb-eth";
+  # The same program the gateway node's activation runs, built from that
+  # node's own package set and settings.
+  hotfixRemoval = import ../../modules/nixos/network/usb-downlink-hotfix.nix {
+    pkgs = (edge [ (downlink "10.44.0.0/24") ]).pkgs;
+    systemd = gatewayNode.systemd.package;
+    networkmanager = gatewayNode.networking.networkmanager.package;
+  };
 in
 assert lib.assertMsg (failedAssertions gatewayNode == [ ]) (
   "gateway fixture has failed assertions: " + toString (failedAssertions gatewayNode)
@@ -185,12 +192,11 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   !gatewayNode.systemd.network.wait-online.enable
 ) "networkd's wait-online does not gate a NetworkManager node";
+# The hotfix removal is wired into this node's activation.
 assert lib.assertMsg (
-  let
-    text = gatewayNode.system.activationScripts.usbDownlinkLegacyHotfix;
-  in
-  lib.hasInfix "prometheus-share-temporary" text && lib.hasInfix "90-field-prometheus-usb.conf" text
-) "activation names the undeclared hotfix while it exists";
+  gatewayNode.system.activationScripts.usbDownlinkLegacyHotfix.text
+  == "${hotfixRemoval}/bin/usb-downlink-remove-hotfix /"
+) "activation runs the hotfix removal on the live root";
 # Absent capability: nothing.
 assert lib.assertMsg (
   !plainNode.services.kea.dhcp4.enable
@@ -238,6 +244,35 @@ assert lib.assertMsg (rejects [
   (downlink "10.44.0.0/24")
   (downlink "10.45.0.0/24")
 ]) "two declarations are refused";
+# Run the removal against a fixture root holding the ouranos hotfix as
+# found on ouranos beside files it
+# must leave alone.
 pkgs.runCommand "usb-downlink-policy" { } ''
+  root="$PWD/root"
+  dropins="$root/etc/systemd/system.control/firewall.service.d"
+  connections="$root/etc/NetworkManager/system-connections"
+  mkdir -p "$dropins" "$connections"
+  printf '[Service]\nExecStartPost=/etc/systemd/field-prometheus-usb-firewall.sh\n' \
+    > "$dropins/90-field-prometheus-usb.conf"
+  printf '[Service]\nCPUWeight=50\n' > "$dropins/50-other.conf"
+  printf '#!/bin/sh\niptables -t nat -A POSTROUTING -s 10.44.0.0/24 -j MASQUERADE\n' \
+    > "$root/etc/systemd/field-prometheus-usb-firewall.sh"
+  printf '[connection]\nid=prometheus-share-temporary\nuuid=92eb01d2-2087-44c9-a6ff-b2420df89d33\n[ipv4]\nmethod=shared\n' \
+    > "$connections/prometheus-share-temporary.nmconnection"
+  printf '[connection]\nid=Wired connection 1\n[ipv4]\nmethod=auto\n' \
+    > "$connections/Wired connection 1.nmconnection"
+  printf '[connection]\nid=prometheus-share-temporary-2\n' > "$connections/other-share.nmconnection"
+
+  ${hotfixRemoval}/bin/usb-downlink-remove-hotfix "$root"
+  # Idempotent: a second activation finds nothing and succeeds.
+  ${hotfixRemoval}/bin/usb-downlink-remove-hotfix "$root/"
+
+  fail() { echo "usb-downlink-policy: $*" >&2; exit 1; }
+  [ ! -e "$dropins/90-field-prometheus-usb.conf" ] || fail "the hotfix firewall drop-in survived"
+  [ ! -e "$root/etc/systemd/field-prometheus-usb-firewall.sh" ] || fail "the hotfix firewall script survived"
+  [ ! -e "$connections/prometheus-share-temporary.nmconnection" ] || fail "the hotfix NetworkManager profile survived"
+  [ -e "$dropins/50-other.conf" ] || fail "another firewall drop-in was removed"
+  [ -e "$connections/Wired connection 1.nmconnection" ] || fail "the uplink NetworkManager profile was removed"
+  [ -e "$connections/other-share.nmconnection" ] || fail "a profile with a different id was removed"
   touch "$out"
 ''

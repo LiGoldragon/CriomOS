@@ -117,10 +117,15 @@ let
 
   routerLan = constants.network.lan.subnet;
 
-  # Field's pre-declaration hotfix on ouranos. The module is correct without
-  # them; while they exist they are a second owner of the same hop.
-  legacyNetworkManagerProfile = "prometheus-share-temporary";
-  legacyFirewallDropIn = "/etc/systemd/system.control/firewall.service.d/90-field-prometheus-usb.conf";
+  # Field's pre-declaration hotfix on ouranos, removed by the same
+  # generation that declares the downlink. It lives inside this capability:
+  # a node without the UsbDownlink declaration may still depend on it.
+  hotfixRemoval = import ./usb-downlink-hotfix.nix {
+    inherit pkgs;
+    systemd = config.systemd.package;
+    networkmanager =
+      if config.networking.networkmanager.enable then config.networking.networkmanager.package else null;
+  };
 in
 {
   config = mkIf declared (mkMerge [
@@ -134,17 +139,13 @@ in
         }
       ];
 
-      system.activationScripts.usbDownlinkLegacyHotfix = ''
-        if [ -e ${lib.escapeShellArg legacyFirewallDropIn} ]; then
-          echo "warning: usbDownlink: undeclared firewall drop-in ${legacyFirewallDropIn} is present; it is a second owner of the USB downlink firewall and must be removed" >&2
-        fi
-        for profile in /etc/NetworkManager/system-connections/* /run/NetworkManager/system-connections/*; do
-          [ -f "$profile" ] || continue
-          if ${pkgs.gnugrep}/bin/grep -qxF 'id=${legacyNetworkManagerProfile}' "$profile"; then
-            echo "warning: usbDownlink: undeclared NetworkManager profile ${legacyNetworkManagerProfile} ($profile) is present; USB Ethernet is no longer NetworkManager's, so it stays inactive, and it must be removed" >&2
-          fi
-        done
-      '';
+      # Activation, not tmpfiles: switch-to-configuration runs activation
+      # before its daemon-reload and unit restarts, so firewall.service is
+      # reloaded in this same switch without the hotfix drop-in.
+      system.activationScripts.usbDownlinkLegacyHotfix = {
+        text = "${hotfixRemoval}/bin/usb-downlink-remove-hotfix /";
+        deps = [ ];
+      };
     }
 
     (mkIf isRouter {
