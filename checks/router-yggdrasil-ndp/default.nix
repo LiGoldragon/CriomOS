@@ -15,7 +15,7 @@ let
         wlanChannel = 6;
         wlanStandard = "Wifi4";
         ssid = "router-yggdrasil-ndp-fixture";
-        country = "PL";
+        country = "MX";
         wpa3SaePasswordReference = "fixtureWifiPassword";
       };
     };

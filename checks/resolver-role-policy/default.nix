@@ -57,6 +57,7 @@ let
       wlanBand = "2g";
       wlanChannel = 6;
       wlanStandard = "Wifi6";
+      country = "MX";
       wpa3SaePasswordReference = "routerWifiSaePasswords";
       backupWireless = null;
     };

@@ -34,7 +34,11 @@ let
       routerWifiSopsFiles.${routerWifiPasswordSecretName}
     else
       throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.network.routerInterfaces.wpa3SaePasswordReference";
-  wirelessCountryCode = routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
+  # The regulatory country is a declared fact of the router record; a radio
+  # without one is not a valid declaration, so there is no fallback.
+  wirelessCountryCode =
+    routerInterfaces.country
+      or (throw "router: horizon.node.network.routerInterfaces.country is required (the radio's regulatory domain)");
   # hostapd logger level (0 verbose debug .. 4 warning). Debug level makes the
   # authentication and SAE exchange of a failing client visible in the journal.
   hostapdLogLevel = 1;
@@ -122,6 +126,10 @@ in
         restartUnits = [ "hostapd-backup-wireless.service" ];
       };
     };
+
+    # The kernel's global regulatory domain comes from the same declared
+    # country, so it does not wait for hostapd's country_code to set it.
+    boot.kernelParams = [ "cfg80211.ieee80211_regdom=${wirelessCountryCode}" ];
 
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
