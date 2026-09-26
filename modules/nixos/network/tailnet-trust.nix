@@ -24,5 +24,10 @@ in
   config = lib.mkIf tailnet.hasRole {
     assertions = tailnet.assertions;
     security.pki.certificateFiles = [ tailnet.certificateAuthorityFile ];
+
+    # tailscaled loads the system trust store when the daemon starts.  The
+    # projected cluster CA therefore needs to restart it before the declared
+    # enrollment service asks it to reach the control server.
+    systemd.services.tailscaled.restartTriggers = [ tailnet.certificateAuthorityFile ];
   };
 }
