@@ -18,6 +18,23 @@
 }:
 let
   inherit (pkgs) lib;
+
+  # Without NetworkManager on the node, no running daemon holds the deleted
+  # profile, so there is nothing to reload.
+  reloadNetworkManagerDefinition =
+    if networkmanager == null then
+      ''
+        reloadNetworkManager() { :; }
+      ''
+    else
+      ''
+        reloadNetworkManager() {
+          if systemctl is-active --quiet NetworkManager.service; then
+            timeout 30 nmcli connection reload \
+              || echo "usbDownlink: nmcli connection reload failed; the removed profile leaves NetworkManager at its next restart" >&2
+          fi
+        }
+      '';
 in
 pkgs.writeShellApplication {
   name = "usb-downlink-remove-hotfix";
@@ -30,6 +47,8 @@ pkgs.writeShellApplication {
   text = ''
     root="''${1:?usage: usb-downlink-remove-hotfix ROOT}"
     root="''${root%/}"
+
+    ${reloadNetworkManagerDefinition}
 
     remove() {
       if [ -e "$1" ] || [ -L "$1" ]; then
@@ -52,12 +71,8 @@ pkgs.writeShellApplication {
 
     # On the live system, make a running NetworkManager forget the deleted
     # profile now, which also takes down its shared-mode dnsmasq and NAT.
-    ${lib.optionalString (networkmanager != null) ''
-      if [ -n "$profileRemoved" ] && [ -z "$root" ] \
-        && systemctl is-active --quiet NetworkManager.service; then
-        timeout 30 nmcli connection reload \
-          || echo "usbDownlink: nmcli connection reload failed; the removed profile leaves NetworkManager at its next restart" >&2
-      fi
-    ''}
+    if [ -n "$profileRemoved" ] && [ -z "$root" ]; then
+      reloadNetworkManager
+    fi
   '';
 }
