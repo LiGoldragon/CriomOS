@@ -31,7 +31,14 @@ let
     else
       0;
 
-  # Build a flake-registry entry from a locked input's `sourceInfo`.
+  # A locked github input's `sourceInfo` carries only outPath, rev, narHash
+  # and lastModified, so the source identity (type, owner, repo) is read
+  # from this flake's own lock node for the input. The revision stays read
+  # from `sourceInfo`, so a deploy-time `--override-input` still registers
+  # the revision that was actually built.
+  flakeLock = builtins.fromJSON (builtins.readFile ../../../flake.lock);
+  lockedInput = name: flakeLock.nodes.${flakeLock.nodes.${flakeLock.root}.inputs.${name}}.locked;
+
   # Same lock input -> same registry entry on deployed nodes.
   mkFlakeEntry = name: input: {
     from = {
@@ -39,9 +46,7 @@ let
       type = "indirect";
     };
     to = filterAttrs (_: v: v != null && v != "") {
-      type = input.sourceInfo.type or "github";
-      owner = input.sourceInfo.owner or null;
-      repo = input.sourceInfo.repo or null;
+      inherit (lockedInput name) type owner repo;
       rev = input.sourceInfo.rev or null;
     };
   };

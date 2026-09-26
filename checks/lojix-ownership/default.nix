@@ -2,13 +2,15 @@
 let
   lib = inputs.nixpkgs.lib;
   system = pkgs.stdenv.hostPlatform.system;
-  expectedRevision = "c4bba4fa12408c39ff745b0773468cd32a74403f";
-  expectedPackageName = "lojix-6.0.0";
-  expectedHomeRevision = "f652ba9ae6b24b7e946e60e98acc270280beb774";
-  expectedOrchestrateRevision = "9070cbb8717813b127e448dd5a43a2095daf7d1b";
-  expectedSchemaRustRevision = "f3b4563163dd11ba1cbbcca8081701ab7830b8f5";
+  # Expectations come from the lock files themselves, never from retyped
+  # revisions: the check tests ownership (who pins what, and that the pins
+  # agree), so it keeps holding whenever the lock moves.
   rootLock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   homeLock = builtins.fromJSON (builtins.readFile "${inputs.criomos-home}/flake.lock");
+  lockedInput = lock: name: lock.nodes.${lock.nodes.${lock.root}.inputs.${name}}.locked;
+  rootLocked = lockedInput rootLock;
+  homeLocked = lockedInput homeLock;
+  sourceIdentity = locked: "${locked.type}:${locked.owner}/${locked.repo}";
   lojix = inputs.lojix.packages.${system}.default;
   homePackages = inputs.criomos-home.packages.${system} or { };
   homeApps = inputs.criomos-home.apps.${system} or { };
@@ -183,15 +185,17 @@ let
       (mkProjectedUser "beta" true)
     ]).config.assertions;
 in
-assert rootLock.nodes.lojix.locked.rev == expectedRevision;
-assert lojix.name == expectedPackageName;
-assert rootLock.nodes."criomos-home".locked.rev == expectedHomeRevision;
-assert !(builtins.hasAttr "lojix" (rootLock.nodes."criomos-home".inputs or { }));
+assert sourceIdentity (rootLocked "lojix") == "github:LiGoldragon/lojix";
+assert (rootLocked "lojix").rev == inputs.lojix.rev;
+assert lib.getName lojix == "lojix";
+assert sourceIdentity (rootLocked "criomos-home") == "github:LiGoldragon/CriomOS-home";
+assert !(builtins.hasAttr "lojix" (rootLock.nodes.${rootLock.nodes.${rootLock.root}.inputs."criomos-home"}.inputs or { }));
 assert !(builtins.hasAttr "lojix" homeLock.nodes);
-assert rootLock.nodes.orchestrate.locked.rev == expectedOrchestrateRevision;
-assert homeLock.nodes.orchestrate.locked.rev == expectedOrchestrateRevision;
-assert rootLock.nodes."schema-rust-source".locked.rev == expectedSchemaRustRevision;
-assert homeLock.nodes."schema-rust-source".locked.rev == expectedSchemaRustRevision;
+assert sourceIdentity (rootLocked "orchestrate") == sourceIdentity (homeLocked "orchestrate");
+assert (rootLocked "orchestrate").rev == (homeLocked "orchestrate").rev;
+# schema-rust-source is a transitive node (not a root input) in both locks.
+assert sourceIdentity rootLock.nodes."schema-rust-source".locked == sourceIdentity homeLock.nodes."schema-rust-source".locked;
+assert rootLock.nodes."schema-rust-source".locked.rev == homeLock.nodes."schema-rust-source".locked.rev;
 assert fixture.config.services.lojix.package == lojix;
 assert !(builtins.hasAttr "lojix" homePackages);
 assert !(builtins.hasAttr "lojix-client" homePackages);

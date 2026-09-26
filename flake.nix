@@ -208,6 +208,7 @@
           };
           nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
           nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
+          flake-registry-shape = pkgs.callPackage ./checks/flake-registry-shape { inherit inputs; };
           repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
             inherit inputs;
           };
