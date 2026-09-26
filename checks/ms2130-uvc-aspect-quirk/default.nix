@@ -54,7 +54,7 @@ assert lib.assertMsg (
   adjustmentFor virtualEdgeConfiguration == null
 ) "MS2130 UVC aspect adjustment must be inactive on non-bare-metal edge hosts";
 assert lib.assertMsg (
-  kernel.version == "7.0.1"
+  kernel.version == "7.1.8"
 ) "MS2130 UVC patch must be reviewed for the selected kernel";
 pkgs.runCommand "ms2130-uvc-aspect-quirk-check"
   {
@@ -67,13 +67,13 @@ pkgs.runCommand "ms2130-uvc-aspect-quirk-check"
   ''
     set -eu
 
-    test -e ${kernel}/${pkgs.stdenv.hostPlatform.linux-kernel.target}
+    test -e ${kernel}/${kernel.target}
 
     mkdir -p source/drivers/media/usb/uvc
     tar -xJf ${kernel.src} --strip-components=1 -C source \
-      linux-7.0.1/drivers/media/usb/uvc/uvc_driver.c \
-      linux-7.0.1/drivers/media/usb/uvc/uvc_video.c \
-      linux-7.0.1/drivers/media/usb/uvc/uvcvideo.h
+      linux-${kernel.version}/drivers/media/usb/uvc/uvc_driver.c \
+      linux-${kernel.version}/drivers/media/usb/uvc/uvc_video.c \
+      linux-${kernel.version}/drivers/media/usb/uvc/uvcvideo.h
 
     patch -d source -p1 < ${adjustment.patch}
 
@@ -82,7 +82,7 @@ pkgs.runCommand "ms2130-uvc-aspect-quirk-check"
     header=source/drivers/media/usb/uvc/uvcvideo.h
     ms2130_id=ms2130-uvc-id-entry
 
-    sed -n '/MacroSilicon MS2130 HDMI capture/,/Intel D410\/ASR depth camera/p' \
+    sed -n '/MacroSilicon MS2130 HDMI capture/,/Intel Realsense D410\/ASR depth camera/p' \
       "$driver" > "$ms2130_id"
 
     grep -F 'UVC_QUIRK_RESTRICT_FRAME_ASPECT_16_9' "$header"
