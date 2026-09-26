@@ -180,9 +180,10 @@
       ) (blueprintOutputs.checks or { });
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
-          headscale-selfsigned-cert = pkgs.callPackage ./checks/headscale-selfsigned-cert {
+          tailnet-declaration = pkgs.callPackage ./checks/tailnet-declaration {
             inherit inputs;
           };
+          tailnet-enrollment = pkgs.callPackage ./checks/tailnet-enrollment { inherit inputs; };
           image-exchange-keys-scoped-to-co-hosts =
             pkgs.callPackage ./checks/image-exchange-keys-scoped-to-co-hosts
               {

@@ -68,6 +68,7 @@ in
   imports = [
     ./dnsmasq.nix
     ./yggdrasil.nix
+    ./tailnet-trust.nix
     ./tailscale.nix
     ./headscale.nix
     ./nordvpn.nix

@@ -9,6 +9,9 @@ let
     secrets = (inputs.secrets or { }) // {
       sopsFiles = {
         routerWifiSaePasswords = pkgs.writeText "router-wifi-sae-passwords" "password";
+        tailnetPreauthKeyRouterTest = pkgs.writeText "tailnet-preauth-key" "fixture";
+        headscaleTlsCertificate = pkgs.writeText "headscale-tls-certificate" "fixture";
+        headscaleTlsKey = pkgs.writeText "headscale-tls-key" "fixture";
       };
     };
   };
@@ -69,8 +72,16 @@ let
 
   tailnetControllerRouterNode = routerNode // {
     capabilities = [
-      { kind = "tailnetClient"; }
-      { kind = "tailnetController"; }
+      {
+        kind = "tailnetClient";
+        preauthKeyReference = "tailnetPreauthKeyRouterTest";
+      }
+      {
+        kind = "tailnetController";
+        certificateAuthority = "MIIBfixture";
+        tlsCertificateReference = "headscaleTlsCertificate";
+        tlsKeyReference = "headscaleTlsKey";
+      }
     ];
   };
 
