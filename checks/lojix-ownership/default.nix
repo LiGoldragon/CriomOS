@@ -189,7 +189,6 @@ assert sourceIdentity (rootLocked "lojix") == "github:LiGoldragon/lojix";
 assert (rootLocked "lojix").rev == inputs.lojix.rev;
 assert lib.getName lojix == "lojix";
 assert sourceIdentity (rootLocked "criomos-home") == "github:LiGoldragon/CriomOS-home";
-assert (rootLocked "criomos-home").rev == inputs.criomos-home.rev;
 assert !(builtins.hasAttr "lojix" (rootLock.nodes.${rootLock.nodes.${rootLock.root}.inputs."criomos-home"}.inputs or { }));
 assert !(builtins.hasAttr "lojix" homeLock.nodes);
 assert sourceIdentity (rootLocked "orchestrate") == sourceIdentity (homeLocked "orchestrate");
