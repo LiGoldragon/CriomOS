@@ -49,7 +49,9 @@ let
     };
   };
 
-  routerNode = baseNode // {
+  # Nested fields (network.*, keys.yggdrasil.*) must merge into baseNode's,
+  # not replace them: `//` is shallow and would drop network.wireguardPublicKey.
+  routerNode = lib.recursiveUpdate baseNode {
     name = "router-test";
     criomeDomainName = "router-test.goldragon.criome";
     enableNetworkManager = false;
@@ -85,7 +87,7 @@ let
     ];
   };
 
-  peerNode = baseNode // {
+  peerNode = lib.recursiveUpdate baseNode {
     name = "peer-test";
     criomeDomainName = "peer-test.goldragon.criome";
     network.linkLocalIps = [ "fe80::51/64" ];
