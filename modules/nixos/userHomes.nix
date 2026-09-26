@@ -23,6 +23,11 @@ let
       inherit user;
     };
     home.stateVersion = "26.05";
+    # Explicit secondary activation consumer; no node-name feature inference.
+    criomosHome.coreHeartbeat = {
+      enable = true;
+      settings = builtins.fromJSON (builtins.readFile ../../deployments/348e7b-heartbeat.json);
+    };
   };
 
   # Deploy a user's home ONLY on nodes where that user has a presence — i.e. a
