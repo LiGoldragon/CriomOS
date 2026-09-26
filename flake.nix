@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/7dd9e666a601945d99422c5dd63c65c8f8c4d474";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/7e96dcf51485ab5c10812a637df1ff1374215e61";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -102,7 +102,7 @@
     # its own startup test now waits for that announcement instead of polling a
     # five-second deadline: 5.0.0's test failed reproducibly on a loaded remote
     # builder while passing on an idle one.
-    lojix.url = "github:LiGoldragon/lojix/f090da079f71b75a5d8c5dc45bffab6298b7d2a3";
+    lojix.url = "github:LiGoldragon/lojix/3fc95f0cf4eaf14ff62898c4783ebbc670fdf96b";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
