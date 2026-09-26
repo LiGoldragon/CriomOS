@@ -54,6 +54,17 @@ let
     node = {
       name = "lojix-ownership-fixture";
       adminSshPublicKeys = [ ];
+      # Horizon projects the machine record on every node; the Home min
+      # profile reads machine.architecture.
+      machine = {
+        kind = "Metal";
+        architecture = "x86_64";
+        host = null;
+        additionalHosts = [ ];
+        user = null;
+        diskGib = null;
+        hardware = null;
+      };
       behavesAs = {
         edge = false;
         largeAi = false;
