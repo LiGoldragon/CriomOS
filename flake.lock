@@ -590,6 +590,23 @@
         "type": "github"
       }
     },
+    "core-checkup-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789521073,
+        "narHash": "sha256-G7oeqkVZL6Y1VyUC3WaoQuxZF5lIk0yEiJmbkSOmM5A=",
+        "owner": "LiGoldragon",
+        "repo": "primary",
+        "rev": "d3002f4bf9ae81852c3b7e5e65f4793afbc1e3da",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "primary",
+        "rev": "d3002f4bf9ae81852c3b7e5e65f4793afbc1e3da",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1776635034,
@@ -906,11 +923,14 @@
         "chroma": "chroma",
         "chroma-emacs": "chroma-emacs",
         "claude-answers": "claude-answers",
+        "core-checkup-source": "core-checkup-source",
         "crane": "crane_5",
         "criomos-lib": [
           "criomos-lib"
         ],
         "field-clj": "field-clj",
+        "field-luna-research-source": "field-luna-research-source",
+        "field-monitoring-source": "field-monitoring-source",
         "flow": "flow",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
@@ -987,17 +1007,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1790400420,
-        "narHash": "sha256-rE9VLjyo1ihF0sdkzm0kuDPGzbuqC6Fb0FmSpqjV0ms=",
+        "lastModified": 1790405656,
+        "narHash": "sha256-zYeizpy65AoQOiLziNZ4ug6VzpvUq0GLECaaBQdZMaI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "98255d100e9627f30b2e66e0772801a100cdfc03",
+        "rev": "5ed097a167e6103facbbc19566833a85dd9c5f83",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "98255d100e9627f30b2e66e0772801a100cdfc03",
+        "rev": "5ed097a167e6103facbbc19566833a85dd9c5f83",
         "type": "github"
       }
     },
@@ -1504,6 +1524,40 @@
         "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
       }
     },
+    "field-luna-research-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790206006,
+        "narHash": "sha256-GkfCRNW4T0Uu6cvUKHuuZNSg+C24rWjpY/0jGBLoPn0=",
+        "owner": "LiGoldragon",
+        "repo": "field",
+        "rev": "34fe6c8899684de4f892142d4357a3ca3d67895b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "field",
+        "rev": "34fe6c8899684de4f892142d4357a3ca3d67895b",
+        "type": "github"
+      }
+    },
+    "field-monitoring-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790402714,
+        "narHash": "sha256-eA3vjYgGgDGyKaZ3zegt9tz66vTwy4tIL2qUGMGO4ck=",
+        "owner": "LiGoldragon",
+        "repo": "primary",
+        "rev": "1e8eee26974c68857a3caf9d95ceff4570146294",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "primary",
+        "rev": "1e8eee26974c68857a3caf9d95ceff4570146294",
+        "type": "github"
+      }
+    },
     "firefox-gnome-theme": {
       "flake": false,
       "locked": {
@@ -1876,17 +1930,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790390839,
-        "narHash": "sha256-KV/+AkJwZHEvk5LVKbemDZouhfR4jx38veU0jaVQ+qU=",
+        "lastModified": 1790403312,
+        "narHash": "sha256-csg03pZj0p/sSA9P460lM8/dOoOrozVQKSX6mV7cjFs=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "34aaf7875af11cb539218c61cf2fc51996db271b",
+        "rev": "9fcd625ac7a0d44be58b9d365a94064e91f09219",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "34aaf7875af11cb539218c61cf2fc51996db271b",
+        "rev": "9fcd625ac7a0d44be58b9d365a94064e91f09219",
         "type": "github"
       }
     },
@@ -2190,17 +2244,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790281885,
-        "narHash": "sha256-iqSswfny5NXuGB3UXXl4yzjtmIVdrBzEwXVIOKAmop8=",
+        "lastModified": 1790398209,
+        "narHash": "sha256-tZIlT0v4/SemEaxs6YSHvQsal7AynezEk4MGx9jtJR4=",
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "8aa6d7b465c9ba3720eb21f17b833c251b828353",
+        "rev": "930c5169ffcf5fa3784b34b2751763009e926d1d",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "8aa6d7b465c9ba3720eb21f17b833c251b828353",
+        "rev": "930c5169ffcf5fa3784b34b2751763009e926d1d",
         "type": "github"
       }
     },
