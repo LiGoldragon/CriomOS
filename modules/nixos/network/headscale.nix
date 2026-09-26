@@ -4,116 +4,86 @@
   pkgs,
   horizon,
   constants,
+  inputs,
   ...
 }:
 let
   inherit (builtins) toString;
   inherit (horizon) node;
 
+  tailnet = import ./tailnet-roles.nix {
+    inherit
+      lib
+      pkgs
+      horizon
+      constants
+      ;
+  };
+
   headscaleFqdn = node.criomeDomainName;
-  nodeServices = import ../node-services.nix { inherit lib; };
-  tailnetControllerEnabled = nodeServices.has node.capabilities "tailnetController";
-  headscalePort = constants.network.headscale.port;
-  tailnetBaseDomain = horizon.tailnetBaseDomain;
+  headscalePort = tailnet.controlPort;
+  headscaleUser = config.services.headscale.user;
+  headscaleGroup = config.services.headscale.group;
 
-  tlsDir = "/var/lib/headscale/tls";
-  tlsCertPath = "${tlsDir}/headscale.crt";
-  tlsKeyPath = "${tlsDir}/headscale.key";
+  tlsCertificatePath = config.sops.secrets.${tailnet.tlsCertificateSecret}.path;
+  tlsKeyPath = config.sops.secrets.${tailnet.tlsKeySecret}.path;
 
-  mkCertScript = ''
+  # Refuse to serve a certificate that the cluster CA did not issue or that
+  # does not name this node's current domain. A renamed cluster or a stale
+  # certificate stops Headscale with a reason instead of serving a name no
+  # client can verify.
+  verifyServerCertificate = pkgs.writeShellScript "headscale-verify-server-certificate" ''
     set -euo pipefail
-
-    certDir=${lib.escapeShellArg tlsDir}
-    certFile=${lib.escapeShellArg tlsCertPath}
-    keyFile=${lib.escapeShellArg tlsKeyPath}
-    fqdn=${lib.escapeShellArg headscaleFqdn}
-    primaryIpv4="$(
-      ${lib.getExe' pkgs.iproute2 "ip"} -4 route get 1.1.1.1 2>/dev/null \
-        | ${lib.getExe' pkgs.gawk "awk"} '/src/ {for (i = 1; i <= NF; i++) if ($i == "src") { print $(i+1); exit }}' \
-        || true
-    )"
-
-    umask 077
-    mkdir -p "$certDir"
-
-    # Allow headscale (group) to traverse the TLS directory.
-    hsGroup=${lib.escapeShellArg config.services.headscale.group}
-    chown root:"$hsGroup" "$certDir"
-    chmod 0750 "$certDir"
-
-    if [ -s "$certFile" ] && [ -s "$keyFile" ]; then
-      exit 0
-    fi
-
-    sanList="DNS:$fqdn,DNS:localhost,IP:127.0.0.1"
-    if [ -n "$primaryIpv4" ]; then
-      sanList="$sanList,IP:$primaryIpv4"
-    fi
-
-    # Self-signed cert for Phase 1; will be replaced with real PKI later.
-    ${lib.getExe pkgs.openssl} req \
-      -x509 -newkey rsa:4096 -nodes \
-      -keyout "$keyFile" \
-      -out "$certFile" \
-      -sha256 -days 3650 \
-      -subj "/CN=$fqdn" \
-      -addext "subjectAltName=$sanList"
-
-    chown root:"$hsGroup" "$certFile" "$keyFile"
-    chmod 0644 "$certFile"
-    chmod 0640 "$keyFile"
+    ${lib.getExe pkgs.openssl} verify \
+      -CAfile ${tailnet.certificateAuthorityFile} \
+      -purpose sslserver \
+      ${tlsCertificatePath}
+    ${lib.getExe pkgs.openssl} x509 -noout -in ${tlsCertificatePath} \
+      -checkhost ${lib.escapeShellArg headscaleFqdn} \
+      | ${lib.getExe' pkgs.gnugrep "grep"} -F ' does match certificate'
   '';
-
 in
 {
-  config = lib.mkIf tailnetControllerEnabled {
+  config = lib.mkIf tailnet.isController {
+    sops.secrets = {
+      ${tailnet.tlsCertificateSecret} = tailnet.sopsSecret inputs "TailnetController" tailnet.tlsCertificateSecret {
+        owner = headscaleUser;
+        group = headscaleGroup;
+        mode = "0400";
+        restartUnits = [ "headscale.service" ];
+      };
+      ${tailnet.tlsKeySecret} = tailnet.sopsSecret inputs "TailnetController" tailnet.tlsKeySecret {
+        owner = headscaleUser;
+        group = headscaleGroup;
+        mode = "0400";
+        restartUnits = [ "headscale.service" ];
+      };
+    };
+
     services.headscale = {
       enable = true;
       address = "0.0.0.0";
       port = headscalePort;
 
-      # Direct TLS (no reverse proxy) for Phase 1.
+      # Direct TLS (no reverse proxy). The certificate and key are sops
+      # secrets named by the TailnetController capability; the cluster CA
+      # that issued them is in every tailnet node's trust store.
       settings = {
         server_url = "https://${headscaleFqdn}:${toString headscalePort}";
 
-        tls_cert_path = tlsCertPath;
+        tls_cert_path = tlsCertificatePath;
         tls_key_path = tlsKeyPath;
 
         # Must differ from server_url domain.
         dns = {
           magic_dns = true;
-          base_domain = tailnetBaseDomain;
+          base_domain = horizon.tailnetBaseDomain;
           override_local_dns = false;
         };
       };
     };
 
-    systemd.services.headscale-selfsigned-cert = {
-      description = "Generate headscale self-signed TLS certificate (Phase 1)";
-      before = [ "headscale.service" ];
-
-      serviceConfig = {
-        Type = "oneshot";
-        User = "root";
-        Group = "root";
-      };
-
-      # Ensure required binaries are in PATH for the script.
-      path = [
-        pkgs.coreutils
-        pkgs.openssl
-        pkgs.iproute2
-        pkgs.gawk
-      ];
-
-      script = mkCertScript;
-    };
-
-    # Ensure the certificate exists before starting headscale.
-    systemd.services.headscale = {
-      requires = [ "headscale-selfsigned-cert.service" ];
-      after = [ "headscale-selfsigned-cert.service" ];
-    };
+    systemd.services.headscale.serviceConfig.ExecStartPre = [ verifyServerCertificate ];
 
     networking.firewall.allowedTCPPorts = [ headscalePort ];
   };

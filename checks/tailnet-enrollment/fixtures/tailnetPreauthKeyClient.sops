@@ -1,0 +1,14 @@
+{
+	"data": "ENC[AES256_GCM,data:uVhhbZ+q3PoU27tC68sEwXnEMBb5Ih5e7QFj5wszVws=,iv:WmdMiHZWPYJZqjQCBVOMNhkBPJ3IN4IRPC5qpI6rXaE=,tag:mGQb9knkP6Uo5b5ef2geYg==,type:str]",
+	"sops": {
+		"age": [
+			{
+				"enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzRmIwVVpBMFVSZEVKRjEr\nZFkySXhaRHlwenBGSDFUQlJFdVRoMXdxalhrCktXSG1hbFlyaGdvSWtFRHdwSGVa\nRmtQVFg5bzFrNkFTRGhwekFXWmlzencKLS0tIEpoOSttMzhma3dtMGoxZEpkRnU2\na1pqRUJGLzFTemNFT20vd0NCaE5UbmcKRCIqhWWfwCgEa2rvGMRvybWSL39Zv5jZ\nUzYrFmhBB6Dimw450n/t4KPieJhw0iqPjUdKXrEAvj/p4YHXdpx8eQ==\n-----END AGE ENCRYPTED FILE-----\n",
+				"recipient": "age1ahmp79jpr6jl043u3c4a4vjm0r2ujqmf095es5nze5z5eg64v42q3w6f02"
+			}
+		],
+		"lastmodified": "2026-09-26T03:52:31Z",
+		"mac": "ENC[AES256_GCM,data:sKeiViJHT5yme+cpd1K65FfGww82pwSqyPAQnKGpD2oJP6msTH5xUFtW8zjJmnpumCJERwYqhjQHAUG0BcTSlI7xRFIYMwGHE6jwymRoaTirZFQ7dgbhBX00bOMXndF/GGE6LLoOCB3UTLFnUmyri3H5gujfY/kwisoNqBFJcA4=,iv:cHD6/5BfAOHNshTgZkUvXGMPhQxnPAqrjpTvRZTf/yg=,tag:Lj0HIj6b6XpOso6nAVR23A==,type:str]",
+		"version": "3.13.3"
+	}
+}
