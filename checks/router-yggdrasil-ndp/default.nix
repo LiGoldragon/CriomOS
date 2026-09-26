@@ -13,7 +13,7 @@ let
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
-        wlanStandard = "wifi4";
+        wlanStandard = "Wifi4";
         ssid = "router-yggdrasil-ndp-fixture";
         country = "PL";
         wpa3SaePasswordReference = "fixtureWifiPassword";

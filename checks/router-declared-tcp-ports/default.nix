@@ -13,7 +13,7 @@ let
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
-        wlanStandard = "wifi4";
+        wlanStandard = "Wifi4";
         country = "US";
         ssid = "router-declared-tcp-ports-fixture";
         wpa3SaePasswordReference = "routerWifiSaePasswords";

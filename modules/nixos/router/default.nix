@@ -35,6 +35,9 @@ let
     else
       throw "router: inputs.secrets.sopsFiles.${routerWifiPasswordSecretName} is required by horizon.node.network.routerInterfaces.wpa3SaePasswordReference";
   wirelessCountryCode = routerInterfaces.country or routerInterfaces.wirelessCountryCode or "PL";
+  # hostapd logger level (0 verbose debug .. 4 warning). Debug level makes the
+  # authentication and SAE exchange of a failing client visible in the journal.
+  hostapdLogLevel = 1;
   wirelessNetworkName =
     routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${horizon.cluster}.criome";
   wanLeaseRecovery = pkgs.writeShellScript "router-wan-lease-recovery" (
@@ -214,13 +217,15 @@ in
             band = routerInterfaces.wlanBand;
             channel = routerInterfaces.wlanChannel;
             countryCode = wirelessCountryCode;
-            wifi4.enable = routerInterfaces.wlanStandard == "wifi4";
-            wifi6.enable = routerInterfaces.wlanStandard == "wifi6" || routerInterfaces.wlanStandard == "wifi7";
-            wifi7.enable = routerInterfaces.wlanStandard == "wifi7";
+            # Horizon projects WlanStandard by its schema name: Wifi4, Wifi6, Wifi7.
+            wifi4.enable = routerInterfaces.wlanStandard == "Wifi4";
+            wifi6.enable = routerInterfaces.wlanStandard == "Wifi6" || routerInterfaces.wlanStandard == "Wifi7";
+            wifi7.enable = routerInterfaces.wlanStandard == "Wifi7";
             networks = {
               # WPA3-SAE — primary SSID (EAP-TLS will replace this once PKI is deployed)
               "${routerInterfaces.wlan}" = {
                 ssid = wirelessNetworkName;
+                logLevel = hostapdLogLevel;
                 authentication = {
                   mode = "wpa3-sae";
                   saePasswordsFile = config.sops.secrets.${routerWifiPasswordSecretName}.path;
@@ -348,6 +353,10 @@ in
           bridge=${lanBridgeInterface}
           ssid=${backupWireless.networkName}
           utf8_ssid=1
+          logger_syslog=-1
+          logger_syslog_level=${toString hostapdLogLevel}
+          logger_stdout=-1
+          logger_stdout_level=${toString hostapdLogLevel}
           country_code=${wirelessCountryCode}
           ieee80211d=1
           ieee80211h=1

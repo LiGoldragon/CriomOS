@@ -56,7 +56,7 @@ let
       wlan = "wlan-test0";
       wlanBand = "2g";
       wlanChannel = 6;
-      wlanStandard = "wifi6";
+      wlanStandard = "Wifi6";
       wpa3SaePasswordReference = "routerWifiSaePasswords";
       backupWireless = null;
     };

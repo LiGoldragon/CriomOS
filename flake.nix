@@ -233,6 +233,7 @@
             inherit inputs;
           };
           router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
+          router-wifi-radio = pkgs.callPackage ./checks/router-wifi-radio { inherit inputs; };
           router-non-router-lazy = pkgs.callPackage ./checks/router-non-router-lazy { inherit inputs; };
           router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
           router-wan-recovery = pkgs.callPackage ./checks/router-wan-recovery { inherit inputs; };
