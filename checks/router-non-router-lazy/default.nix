@@ -5,10 +5,8 @@ let
   inherit (pkgs.stdenv.hostPlatform) system;
 
   horizonFor = router: {
-    cluster = {
-      name = "goldragon";
-      tailnetBaseDomain = "tailnet.goldragon.criome";
-    };
+    cluster = "goldragon";
+    tailnetBaseDomain = "tailnet.goldragon.criome";
     node = {
       name = "router-laziness-fixture";
       behavesAs = { inherit router; };
@@ -26,7 +24,18 @@ let
       modules = [
         inputs.sops-nix.nixosModules.sops
         ../../modules/nixos/router/default.nix
-        { nixpkgs.config.allowUnfree = true; }
+        {
+          nixpkgs.config.allowUnfree = true;
+          # A bootable minimum, so the only thing that can fail the toplevel
+          # is the router module itself, not NixOS's root-filesystem and
+          # boot-loader assertions.
+          fileSystems."/" = {
+            device = "none";
+            fsType = "tmpfs";
+          };
+          boot.loader.grub.enable = false;
+          system.stateVersion = "26.05";
+        }
       ];
     };
 
