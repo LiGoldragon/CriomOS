@@ -9,6 +9,10 @@ let
   inherit (horizon.node) behavesAs;
 
   hotplugSubnet = "10.47.0";
+  usbEthernet = import ./usb-ethernet-role.nix { inherit lib; };
+  declaresUsbDownlink = builtins.any (
+    capability: builtins.isAttrs capability && (capability.kind or null) == "usbDownlink"
+  ) (horizon.node.capabilities or [ ]);
 
 in
 # Router nodes provide their own networkd config with bridge/hostapd
@@ -29,12 +33,10 @@ mkIf (behavesAs.center && !behavesAs.router) {
   # USB ethernet dongles act as router and serve DHCP.  This sorts before the
   # broad main-Ethernet DHCP client rule: networkd selects the first match.
   # ID_NET_DRIVER can be absent while an adapter is renamed, but the udev USB
-  # bus role remains available.
-  systemd.network.networks."05-usb-eth" = {
-    matchConfig = {
-      Type = "ether";
-      Property = "ID_BUS=usb";
-    };
+  # bus role remains available.  A node that declares the UsbDownlink
+  # capability gets its declared downlink from usb-downlink.nix instead.
+  systemd.network.networks."05-usb-eth" = mkIf (!declaresUsbDownlink) {
+    matchConfig = usbEthernet.networkdMatch { };
     networkConfig = {
       Address = "${hotplugSubnet}.1/24";
       DHCPServer = true;

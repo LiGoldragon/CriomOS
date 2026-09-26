@@ -17,6 +17,7 @@ let
     optionalAttrs
     ;
   inherit (horizon.node) behavesAs;
+  usbEthernet = import ../network/usb-ethernet-role.nix { inherit lib; };
   # WiFi PKI paths — uncomment when EAP-TLS is deployed
   # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
 
@@ -438,15 +439,12 @@ in
 
         # USB ethernet dongles are optional hotplug LAN ports: if absent,
         # boot and router networking continue; if plugged later, networkd
-        # applies this match and joins the dongle to the bridge. Match the
-        # stable udev bus role instead of ID_NET_DRIVER: it can be absent while
-        # a USB adapter is being renamed. This sorts before Ethernet catch-alls.
+        # applies this match and joins the dongle to the bridge. The match is
+        # the shared USB bus role (network/usb-ethernet-role.nix), the same one
+        # the UsbDownlink feature uses; on a Router node this rule is that
+        # feature's downlink. This sorts before Ethernet catch-alls.
         "05-usb-eth" = {
-          matchConfig = {
-            Type = "ether";
-            Property = "ID_BUS=usb";
-            Name = "!${routerInterfaces.wan}";
-          };
+          matchConfig = usbEthernet.networkdMatch { exclude = [ routerInterfaces.wan ]; };
           networkConfig = {
             Bridge = lanBridgeInterface;
             ConfigureWithoutCarrier = true;

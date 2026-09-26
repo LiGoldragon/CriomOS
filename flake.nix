@@ -242,9 +242,8 @@
           router-declared-tcp-ports = pkgs.callPackage ./checks/router-declared-tcp-ports {
             inherit inputs;
           };
-          usb-ipv4-gateway = pkgs.callPackage ./checks/usb-ipv4-gateway {
-            inherit inputs;
-          };
+          usb-downlink = pkgs.callPackage ./checks/usb-downlink { inherit inputs; };
+          usb-downlink-chain = pkgs.callPackage ./checks/usb-downlink-chain { inherit inputs; };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
           wispr-keyboard-uaccess = pkgs.callPackage ./checks/wispr-keyboard-uaccess { inherit inputs; };
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
