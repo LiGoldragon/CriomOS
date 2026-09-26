@@ -3,15 +3,33 @@
 let
   inherit (inputs.nixpkgs) lib;
 
-  configurationFor = settings:
+  # The module reads the Horizon projection and the secrets input as module
+  # arguments, so the fixture supplies them as specialArgs; a node without
+  # the capability and without a Yggdrasil key is the default.
+  defaultNode = {
+    capabilities = [ ];
+    keys.yggdrasil = null;
+  };
+
+  configurationFor =
+    {
+      node ? defaultNode,
+      sopsFiles ? { },
+      settings ? { },
+    }:
     lib.nixosSystem {
       inherit pkgs;
+      specialArgs = {
+        horizon.node = node;
+        inputs.secrets.sopsFiles = sopsFiles;
+      };
       modules = [
         ../../modules/nixos/testing/opencode.nix
         {
           options.sops.secrets = lib.mkOption {
             type = lib.types.attrsOf (
               lib.types.submodule {
+                freeformType = lib.types.attrsOf lib.types.anything;
                 options.path = lib.mkOption {
                   type = lib.types.str;
                   default = "/run/secrets/opencodeServerPassword";
@@ -30,21 +48,29 @@ let
   hasOpenCode = settings: lib.elem pkgs.opencode (packagesFor settings);
   serviceFor = settings: (configurationFor settings).config.systemd.user.services.opencode;
   enabledSettings = {
-    horizon.node = {
+    node = {
       capabilities = [ { kind = "openCodeTesting"; } ];
       keys.yggdrasil.address = "201:6de1:5500:7cac:2db9:759e:42d2:fb1d";
     };
-    inputs.secrets.sopsFiles.opencodeServerPassword = "/dev/null";
+    sopsFiles.opencodeServerPassword = "/dev/null";
   };
 in
 assert lib.assertMsg (!(hasOpenCode { })) "OpenCode testing must be disabled by default";
 assert lib.assertMsg (hasOpenCode {
-  criomos.testing.opencode.enable = true;
+  settings.criomos.testing.opencode.enable = true;
 }) "Enabling OpenCode testing must install pkgs.opencode";
 assert lib.assertMsg (hasOpenCode enabledSettings) "OpenCode capability must install pkgs.opencode";
-assert lib.assertMsg (serviceFor enabledSettings).environment.OPENCODE_CONFIG_CONTENT == ''{"share":"disabled"}'' "OpenCode server must disable sharing without replacing user configuration";
-assert lib.assertMsg (serviceFor enabledSettings).serviceConfig.LoadCredential == [ "opencode-server-password:/run/secrets/opencodeServerPassword" ] "OpenCode server must receive its password through LoadCredential";
-assert lib.assertMsg (serviceFor enabledSettings).serviceConfig.ExecStart.text != "" "OpenCode server must have an execution contract";
+assert lib.assertMsg (
+  (serviceFor enabledSettings).environment.OPENCODE_CONFIG_CONTENT == ''{"share":"disabled"}''
+) "OpenCode server must disable sharing without replacing user configuration";
+assert lib.assertMsg (
+  (serviceFor enabledSettings).serviceConfig.LoadCredential == [
+    "opencode-server-password:/run/secrets/opencodeServerPassword"
+  ]
+) "OpenCode server must receive its password through LoadCredential";
+assert lib.assertMsg (
+  (serviceFor enabledSettings).serviceConfig.ExecStart.text != ""
+) "OpenCode server must have an execution contract";
 pkgs.runCommand "opencode-testing-policy" { } ''
   touch "$out"
 ''
