@@ -10,16 +10,20 @@ let
     specialArgs = {
       inherit constants;
       horizon = {
-        node = {
+        # The Horizon node network record (horizon-rs NodeNetworkView):
+        # a node with a WireGuard key carries its proxies in the record.
+        node.network = {
+          linkLocalIps = [ ];
           nodeIp = "10.18.0.9/32";
-          hasWireguardPubKey = true;
-          wireguardUntrustedProxies = [
+          wireguardPublicKey = "node-public-key";
+          wireguardProxies = [
             {
               publicKey = "proxy-public-key";
               endpoint = "proxy.example.test:51820";
               interfaceIp = "10.77.0.2/32";
             }
           ];
+          routerInterfaces = null;
         };
         exNodes = { };
       };
