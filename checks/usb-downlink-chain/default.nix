@@ -114,6 +114,19 @@ pkgs.testers.runNixOSTest {
           }
         ];
         networking.firewall.enable = false;
+        # dnsmasq binds 192.168.1.1 and 1.1.1.1 by address (bind-interfaces),
+        # so it must start only once the scripted networking has put both
+        # addresses on their links.
+        systemd.services.dnsmasq = {
+          after = [
+            "network-addresses-lo.service"
+            "network-addresses-eth1.service"
+          ];
+          requires = [
+            "network-addresses-lo.service"
+            "network-addresses-eth1.service"
+          ];
+        };
         services.dnsmasq = {
           enable = true;
           resolveLocalQueries = false;
