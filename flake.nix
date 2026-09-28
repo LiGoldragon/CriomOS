@@ -42,11 +42,15 @@
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
     criomos-home.inputs.orchestrate.follows = "orchestrate";
+    criomos-home.inputs.messenger-clj.follows = "messenger-clj";
     # Unify Home with CriomOS's one maintained Spirit release. The Spirit flake
     # owns the daemon, judge, judge configuration, provider, contracts, and user
     # service artifact composition; Home consumes that interface without
     # independently pinning any Spirit service component.
     criomos-home.inputs.spirit.follows = "spirit";
+
+    messenger-clj.url = "github:LiGoldragon/messenger-clj/830f27a746709d5cde083b120cbb018d786c8ca2";
+    messenger-clj.inputs.nixpkgs.follows = "nixpkgs";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
     brightness-ctl.url = "github:LiGoldragon/brightness-ctl";

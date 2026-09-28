@@ -571,17 +571,16 @@
     "clj-build_2": {
       "inputs": {
         "nixpkgs": [
-          "criomos-home",
           "messenger-clj",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1790372915,
-        "narHash": "sha256-5r/NvchgUrsMidcZpAEZ3cabwc7iIALwPn9q5Uv3S00=",
+        "lastModified": 1790438077,
+        "narHash": "sha256-+32wW0sv3yl0Z+oYOHGZ36X4NhpmGuSqN6HN9nSDcio=",
         "owner": "LiGoldragon",
         "repo": "clj-build",
-        "rev": "01126ad41b8f06ebd1469db30e89efc7dc74b649",
+        "rev": "8cc9991fcb840636215bf829ca6ed9489e3071d7",
         "type": "github"
       },
       "original": {
@@ -962,7 +961,9 @@
         "mentci-src": "mentci-src",
         "message": "message",
         "message-next": "message-next",
-        "messenger-clj": "messenger-clj",
+        "messenger-clj": [
+          "messenger-clj"
+        ],
         "niri-flake": "niri-flake",
         "nixpkgs": [
           "nixpkgs"
@@ -2377,22 +2378,21 @@
       "inputs": {
         "clj-build": "clj-build_2",
         "nixpkgs": [
-          "criomos-home",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1790390181,
-        "narHash": "sha256-OllH6b3t/qJ3P045pfjp3KAANki8Qx4dmtqbZ3d4q9A=",
+        "lastModified": 1790616895,
+        "narHash": "sha256-czTlMACleW2oWnh9m0DH238S3t0sxJ1DRiWXnu0rxmQ=",
         "owner": "LiGoldragon",
         "repo": "messenger-clj",
-        "rev": "dfcf91f0ff8b4b8a5bb6edc18830fdc2d0323494",
+        "rev": "830f27a746709d5cde083b120cbb018d786c8ca2",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "messenger-clj",
-        "rev": "dfcf91f0ff8b4b8a5bb6edc18830fdc2d0323494",
+        "rev": "830f27a746709d5cde083b120cbb018d786c8ca2",
         "type": "github"
       }
     },
@@ -3320,6 +3320,7 @@
         "home-manager": "home-manager",
         "horizon": "horizon",
         "lojix": "lojix",
+        "messenger-clj": "messenger-clj",
         "microvm": "microvm",
         "mirror": "mirror",
         "nixpkgs": "nixpkgs_3",
