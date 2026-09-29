@@ -176,16 +176,20 @@ fn write_state(dir: &Path, state: &State, raw: Option<&str>) {
     let public_path = dir.join("public.json");
     let _ = fs::write(&public_path, &public);
     let _ = fs::set_permissions(public_path, fs::Permissions::from_mode(0o644));
-    let raw_text = raw
-        .map(|v| {
+    let root = dir.join("root-diagnostics.json");
+    if let Some(raw) = raw {
+        let raw_text = {
+            let v = raw;
             format!(
                 "{{\"rootRawAddressEvidence\":{{\"rawValue\":\"{}\"}}}}",
                 v.replace('"', "")
             )
-        })
-        .unwrap_or_else(|| "{}".into());
-    let root = dir.join("root-diagnostics.json");
-    let _ = fs::write(&root, raw_text);
+        };
+        let _ = fs::write(&root, raw_text);
+    } else if !root.exists() {
+        // A host with no raw address evidence still gets a root-only view.
+        let _ = fs::write(&root, "{}");
+    }
     let _ = fs::set_permissions(root, fs::Permissions::from_mode(0o600));
     println!("usb-downlink-observer transition {}", public);
 }
@@ -313,5 +317,30 @@ mod tests {
         assert!(public.contains("dhcp-lease"));
         assert!(!public.contains("10.44.0.148"));
         assert!(!public.contains("aa:bb:cc"));
+    }
+    #[test]
+    fn raw_diagnostic_survives_a_later_redacted_transition() {
+        let directory = std::env::temp_dir().join(format!("usb-downlink-observer-{}", now()));
+        fs::create_dir_all(&directory).unwrap();
+        let mut state = State::initial();
+        state.carrier(true, Some(true));
+        write_state(&directory, &state, Some("10.44.0.148 aa:bb:cc"));
+        state.witnessed_peer("bridge-fdb", "fresh fdb entry");
+        write_state(&directory, &state, None);
+        let public = fs::read_to_string(directory.join("public.json")).unwrap();
+        let root = fs::read_to_string(directory.join("root-diagnostics.json")).unwrap();
+        assert!(!public.contains("10.44.0.148"));
+        assert!(!public.contains("aa:bb:cc"));
+        assert!(root.contains("10.44.0.148"));
+        assert!(root.contains("aa:bb:cc"));
+        assert_eq!(
+            fs::metadata(directory.join("root-diagnostics.json"))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o600
+        );
+        fs::remove_dir_all(directory).unwrap();
     }
 }
