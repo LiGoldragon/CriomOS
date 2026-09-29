@@ -49,7 +49,7 @@
     # independently pinning any Spirit service component.
     criomos-home.inputs.spirit.follows = "spirit";
 
-    messenger-clj.url = "github:LiGoldragon/messenger-clj/830f27a746709d5cde083b120cbb018d786c8ca2";
+    messenger-clj.url = "github:LiGoldragon/messenger-clj/4bce278cea740dd76da655db18e0f4ccd33adb0f";
     messenger-clj.inputs.nixpkgs.follows = "nixpkgs";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
