@@ -263,12 +263,6 @@
           usb-downlink-observer = pkgs.callPackage ./checks/usb-downlink-observer { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
           wispr-keyboard-uaccess = pkgs.callPackage ./checks/wispr-keyboard-uaccess { inherit inputs; };
-          agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
-            inherit inputs;
-          };
-          agent-intercom-command-ownership = import ./gates/agent-intercom-command-ownership.nix {
-            inherit inputs pkgs target;
-          };
           home-activation-equivalence = import ./home-activation-equivalence.nix {
             inherit
               pkgs
