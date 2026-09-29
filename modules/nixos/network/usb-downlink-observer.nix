@@ -5,7 +5,7 @@ let
   capabilities = horizon.node.capabilities or [ ];
   declared = builtins.any (capability: builtins.isAttrs capability && (capability.kind or null) == "usbDownlink") capabilities;
   isRouter = horizon.node.behavesAs.router or false;
-  observer = pkgs.callPackage ../../../packages/usb-downlink-observer { };
+  observer = pkgs.callPackage ../../../packages/usb-downlink-observer { inherit pkgs; };
 in {
   config = lib.mkIf (declared && !isRouter) {
     systemd.tmpfiles.rules = [ "d /run/usb-downlink-observer 0755 root root -" ];
