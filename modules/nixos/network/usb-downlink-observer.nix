@@ -11,6 +11,7 @@ in {
     systemd.tmpfiles.rules = [ "d /run/usb-downlink-observer 0755 root root -" ];
     systemd.services.usb-downlink-observer = {
       description = "Passive USB downlink evidence observer";
+      path = [ pkgs.iproute2 ];
       wantedBy = [ "multi-user.target" ];
       after = [ "systemd-networkd.service" "kea-dhcp4-server.service" ];
       wants = [ "systemd-networkd.service" ];
