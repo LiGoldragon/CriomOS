@@ -260,6 +260,7 @@
           };
           usb-downlink = pkgs.callPackage ./checks/usb-downlink { inherit inputs; };
           usb-downlink-chain = pkgs.callPackage ./checks/usb-downlink-chain { inherit inputs; };
+          usb-downlink-observer = pkgs.callPackage ./checks/usb-downlink-observer { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
           wispr-keyboard-uaccess = pkgs.callPackage ./checks/wispr-keyboard-uaccess { inherit inputs; };
           agent-intercom-transport = pkgs.callPackage ./checks/agent-intercom-transport {
