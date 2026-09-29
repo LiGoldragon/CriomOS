@@ -1025,17 +1025,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1790624568,
-        "narHash": "sha256-GhE1i5/K2Ex0MuJQk6iafLpOmg80dY6TmcB0w5yNz60=",
+        "lastModified": 1790639921,
+        "narHash": "sha256-tukWjQ4BDyfg70z+7Z0bTdcA3+reVK37Ec0pYdptlcI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9c8a041aead841799f3aa837a7582f854b310b79",
+        "rev": "35a6d75a4e2121882f0629ceba90402bef4732af",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9c8a041aead841799f3aa837a7582f854b310b79",
+        "rev": "35a6d75a4e2121882f0629ceba90402bef4732af",
         "type": "github"
       }
     },
@@ -2306,17 +2306,17 @@
     "mentci-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786575526,
-        "narHash": "sha256-cq+0oZxqL0p0yAcx9/gljfZW89+U83g4b1dDZ7ilqvE=",
+        "lastModified": 1790627604,
+        "narHash": "sha256-kHgU1mxni6/Hcw2Jc4vb4LqA47NOvhbQXtaipZ1Dd5c=",
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "235b1b44ecd93857df60c36a2ca4fa16fab5984f",
+        "rev": "a1eb5e2bb1a3658df530d7eea4862f94f556fc61",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "235b1b44ecd93857df60c36a2ca4fa16fab5984f",
+        "rev": "a1eb5e2bb1a3658df530d7eea4862f94f556fc61",
         "type": "github"
       }
     },
