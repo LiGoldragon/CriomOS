@@ -126,6 +126,27 @@ fn opaque(value: &str) -> String {
     value.hash(&mut h);
     format!("ephemeral:{:016x}", h.finish())
 }
+fn json_string(value: &str) -> String {
+    let mut escaped = String::with_capacity(value.len() + 2);
+    escaped.push('"');
+    for character in value.chars() {
+        match character {
+            '"' => escaped.push_str("\\\""),
+            '\\' => escaped.push_str("\\\\"),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            '\t' => escaped.push_str("\\t"),
+            '\u{08}' => escaped.push_str("\\b"),
+            '\u{0c}' => escaped.push_str("\\f"),
+            control if control.is_control() => {
+                escaped.push_str(&format!("\\u{:04x}", control as u32))
+            }
+            ordinary => escaped.push(ordinary),
+        }
+    }
+    escaped.push('"');
+    escaped
+}
 fn carrier(bridge: &str) -> (bool, Option<bool>) {
     // usb-downlink.nix is the sole bridge-member selector, so an entry in
     // brif is a matching USB Ethernet member.  The bridge device itself is
@@ -178,13 +199,10 @@ fn write_state(dir: &Path, state: &State, raw: Option<&str>) {
     let _ = fs::set_permissions(public_path, fs::Permissions::from_mode(0o644));
     let root = dir.join("root-diagnostics.json");
     if let Some(raw) = raw {
-        let raw_text = {
-            let v = raw;
-            format!(
-                "{{\"rootRawAddressEvidence\":{{\"rawValue\":\"{}\"}}}}",
-                v.replace('"', "")
-            )
-        };
+        let raw_text = format!(
+            "{{\"rootRawAddressEvidence\":{{\"rawValue\":{}}}}}",
+            json_string(raw)
+        );
         let _ = fs::write(&root, raw_text);
     } else if !root.exists() {
         // A host with no raw address evidence still gets a root-only view.
@@ -311,12 +329,23 @@ mod tests {
     fn lease_is_opaque_and_not_peer_identity() {
         let mut s = State::initial();
         s.carrier(true, Some(true));
-        s.lease("10.44.0.148 aa:bb:cc", false);
+        s.lease("10.44.0.148 aa:bb:cc duid:00:01:00:01:de:ad:be:ef", false);
         assert!(matches!(s.peer, Peer::Unknown(_)));
         let public = s.public_json();
         assert!(public.contains("dhcp-lease"));
         assert!(!public.contains("10.44.0.148"));
         assert!(!public.contains("aa:bb:cc"));
+        assert!(!public.contains("00:01:00:01:de:ad:be:ef"));
+    }
+    #[test]
+    fn link_absent_and_carrier_down_are_distinct() {
+        let mut state = State::initial();
+        state.carrier(false, None);
+        assert_eq!(state.link, Link::Absent);
+        assert_eq!(state.peer, Peer::Unknown("no-matching-usb-ethernet"));
+        state.carrier(true, Some(false));
+        assert_eq!(state.link, Link::CarrierDown);
+        assert_eq!(state.peer, Peer::Unknown("carrier-down"));
     }
     #[test]
     fn raw_diagnostic_survives_a_later_redacted_transition() {
@@ -324,7 +353,8 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let mut state = State::initial();
         state.carrier(true, Some(true));
-        write_state(&directory, &state, Some("10.44.0.148 aa:bb:cc"));
+        let raw = "10.44.0.148 aa:bb:cc duid:00:01:00:01:de:ad:be:ef\\newline\ncontrol:\u{0001}";
+        write_state(&directory, &state, Some(raw));
         state.witnessed_peer("bridge-fdb", "fresh fdb entry");
         write_state(&directory, &state, None);
         let public = fs::read_to_string(directory.join("public.json")).unwrap();
@@ -333,6 +363,18 @@ mod tests {
         assert!(!public.contains("aa:bb:cc"));
         assert!(root.contains("10.44.0.148"));
         assert!(root.contains("aa:bb:cc"));
+        assert!(
+            root.contains("\\\\newline\\ncontrol:\\u0001"),
+            "root JSON must escape slash, newline, and control data: {root}"
+        );
+        assert_eq!(
+            root,
+            format!(
+                "{{\"rootRawAddressEvidence\":{{\"rawValue\":{}}}}}",
+                json_string(raw)
+            ),
+            "root diagnostic is parseable JSON assembled from one escaped string"
+        );
         assert_eq!(
             fs::metadata(directory.join("root-diagnostics.json"))
                 .unwrap()
