@@ -278,7 +278,7 @@ pkgs.testers.runNixOSTest {
         # carrier-only startup snapshot.
         public = ouranos.succeed("cat /run/usb-downlink-observer/public.json")
         assert "recognizerDisabled" in public
-        assert "10.44." not in public and ouranosUsbMac not in public
+        assert "10.44." not in public and "${ouranosUsbMac}" not in public
         ouranos.succeed("test \"$(stat -c %a /run/usb-downlink-observer/root-diagnostics.json)\" = 600")
         ouranos.succeed("systemctl show usb-downlink-observer -p RestrictAddressFamilies | grep -q AF_NETLINK")
         ouranos.succeed("systemctl show usb-downlink-observer -p RestrictAddressFamilies | grep -q AF_UNIX")
