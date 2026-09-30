@@ -358,6 +358,14 @@ mod tests {
         assert_eq!(state.peer, Peer::Unknown("carrier-down"));
     }
     #[test]
+    fn identical_carrier_samples_do_not_emit_a_duplicate_transition() {
+        let mut state = State::initial();
+        state.carrier(true, Some(true));
+        let sequence = state.sequence;
+        state.carrier(true, Some(true));
+        assert_eq!(state.sequence, sequence);
+    }
+    #[test]
     fn bridge_member_carrier_comes_from_the_member_nic() {
         let directory = std::env::temp_dir().join(format!("usb-downlink-sysfs-{}", now()));
         let net = directory.join("class/net");
