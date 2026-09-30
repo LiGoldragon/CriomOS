@@ -148,11 +148,14 @@ fn json_string(value: &str) -> String {
     escaped
 }
 fn carrier(bridge: &str) -> (bool, Option<bool>) {
+    carrier_in(Path::new("/sys/class/net"), bridge)
+}
+fn carrier_in(net: &Path, bridge: &str) -> (bool, Option<bool>) {
     // usb-downlink.nix is the sole bridge-member selector, so an entry in
     // brif is a matching USB Ethernet member.  The bridge device itself is
     // created even when no USB NIC exists and therefore cannot distinguish
     // LinkAbsent from CarrierDown.
-    let members = match fs::read_dir(format!("/sys/class/net/{bridge}/brif")) {
+    let members = match fs::read_dir(net.join(bridge).join("brif")) {
         Ok(entries) => entries.filter_map(Result::ok).collect::<Vec<_>>(),
         Err(_) => return (false, None),
     };
@@ -161,7 +164,12 @@ fn carrier(bridge: &str) -> (bool, Option<bool>) {
     }
     let states = members
         .iter()
-        .filter_map(|entry| fs::read_to_string(entry.path().join("carrier")).ok())
+        // `brif/<member>` proves bridge membership, but Linux resolves that
+        // entry to the member's `brport` directory.  Carrier belongs to the
+        // NIC device, so read it through the matching `class/net/<member>`
+        // entry instead of treating a missing brport/carrier as unknown.
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .filter_map(|member| fs::read_to_string(net.join(member).join("carrier")).ok())
         .map(|value| value.trim() == "1")
         .collect::<Vec<_>>();
     if states.is_empty() {
@@ -309,13 +317,15 @@ mod tests {
         assert!(!s.public_json().contains("FAILURE"));
     }
     #[test]
-    fn carrier_up_is_unknown_until_witnessed() {
+    fn fresh_post_start_fdb_promotes_peer_without_known_identity() {
         let mut s = State::initial();
         s.carrier(true, Some(true));
-        assert_eq!(s.peer, Peer::Unknown("no-current-evidence"));
-        s.witnessed_peer("bridge-fdb", "aa:bb:cc");
+        s.witnessed_peer("bridge-fdb", "fresh post-start FDB entry");
         assert!(matches!(s.peer, Peer::Present { .. }));
-        assert!(s.public_json().contains("witnessed-source-event"));
+        let public = s.public_json();
+        assert!(public.contains("witnessed-source-event"));
+        assert!(public.contains("recognizerDisabled"));
+        assert!(!public.contains("knownClusterNode"));
     }
     #[test]
     fn startup_snapshot_never_becomes_fresh() {
@@ -346,6 +356,26 @@ mod tests {
         state.carrier(true, Some(false));
         assert_eq!(state.link, Link::CarrierDown);
         assert_eq!(state.peer, Peer::Unknown("carrier-down"));
+    }
+    #[test]
+    fn bridge_member_carrier_comes_from_the_member_nic() {
+        let directory = std::env::temp_dir().join(format!("usb-downlink-sysfs-{}", now()));
+        let net = directory.join("class/net");
+        let bridge = net.join("br-downlink");
+        let member = net.join("enxusb0");
+        fs::create_dir_all(bridge.join("brif")).unwrap();
+        fs::create_dir_all(member.join("brport")).unwrap();
+        fs::write(member.join("carrier"), "1\n").unwrap();
+        // Linux brif entries resolve to the member's brport directory, which
+        // carries bridge-port attributes but no NIC carrier file.
+        std::os::unix::fs::symlink("../../../enxusb0/brport", bridge.join("brif/enxusb0")).unwrap();
+        assert!(bridge
+            .join("brif/enxusb0")
+            .join("carrier")
+            .metadata()
+            .is_err());
+        assert_eq!(carrier_in(&net, "br-downlink"), (true, Some(true)));
+        fs::remove_dir_all(directory).unwrap();
     }
     #[test]
     fn raw_diagnostic_survives_a_later_redacted_transition() {
