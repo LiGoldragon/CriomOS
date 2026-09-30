@@ -9,7 +9,7 @@ use std::{
     os::unix::{fs::PermissionsExt, net::UnixListener},
     path::Path,
     process::{Command, Stdio},
-    sync::{Arc, Mutex},
+    sync::{mpsc, Arc, Mutex},
     thread,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -56,7 +56,7 @@ impl State {
             sequence: 0,
         }
     }
-    fn carrier(&mut self, present: bool, carrier: Option<bool>) {
+    fn carrier(&mut self, present: bool, carrier: Option<bool>) -> bool {
         let link = if !present {
             Link::Absent
         } else {
@@ -66,41 +66,56 @@ impl State {
                 None => Link::Unknown,
             }
         };
+        if self.link == link {
+            // Carrier is a link dimension. Re-reading the same classification
+            // must not erase fresher peer evidence from a monitor event.
+            return false;
+        }
         let peer = match link {
             Link::CarrierDown => Peer::Unknown("carrier-down"),
             Link::CarrierUp => Peer::Unknown("no-current-evidence"),
             Link::Absent => Peer::Unknown("no-matching-usb-ethernet"),
             Link::Unknown => Peer::Unknown("link-state-unknown"),
         };
-        if self.link != link || self.peer != peer {
-            self.link = link;
+        self.link = link;
+        self.peer = peer;
+        self.sequence += 1;
+        true
+    }
+    fn witnessed_peer(&mut self, source: &'static str, raw: &str) -> bool {
+        if self.link == Link::CarrierUp {
+            let peer = Peer::Present {
+                source,
+                reference: opaque(raw),
+            };
+            if self.peer != peer {
+                self.peer = peer;
+                self.sequence += 1;
+                return true;
+            }
+        }
+        false
+    }
+    fn startup_peer_without_source_age(&mut self, source: &'static str, raw: &str) {
+        let peer = Peer::Stale {
+            source,
+            reference: opaque(raw),
+        };
+        if self.peer != peer {
             self.peer = peer;
             self.sequence += 1;
         }
     }
-    fn witnessed_peer(&mut self, source: &'static str, raw: &str) {
-        if self.link == Link::CarrierUp {
-            self.peer = Peer::Present {
-                source,
-                reference: opaque(raw),
-            };
-            self.sequence += 1;
-        }
-    }
-    fn startup_peer_without_source_age(&mut self, source: &'static str, raw: &str) {
-        self.peer = Peer::Stale {
-            source,
-            reference: opaque(raw),
-        };
-        self.sequence += 1;
-    }
     fn lease(&mut self, raw: &str, fresh: bool) {
-        self.addresses = vec![Address {
+        let addresses = vec![Address {
             kind: "dhcp-lease",
             reference: opaque(raw),
             fresh,
         }];
-        self.sequence += 1;
+        if self.addresses != addresses {
+            self.addresses = addresses;
+            self.sequence += 1;
+        }
     }
     fn public_json(&self) -> String {
         let link = match self.link {
@@ -191,14 +206,78 @@ fn lease_snapshot() -> Option<String> {
                 .map(str::to_owned)
         })
 }
-fn bridge_member_event(bridge: &str, line: &str) -> bool {
+fn tokens(line: &str) -> Vec<&str> {
+    line.split_whitespace().collect()
+}
+fn has_pair(tokens: &[&str], key: &str, value: &str) -> bool {
+    tokens.windows(2).any(|pair| pair == [key, value])
+}
+fn deleted(token: &str) -> bool {
+    token.eq_ignore_ascii_case("deleted")
+}
+fn interface_token(token: &str, bridge: &str) -> bool {
+    token.strip_suffix(':') == Some(bridge)
+}
+fn ifindex_token(token: &str) -> bool {
+    token
+        .strip_suffix(':')
+        .and_then(|index| index.parse::<u32>().ok())
+        .is_some()
+}
+fn link_event_for(bridge: &str, line: &str) -> bool {
+    let event = tokens(line);
+    match event.as_slice() {
+        [operation, index, name, ..] if deleted(operation) => {
+            ifindex_token(index) && interface_token(name, bridge)
+        }
+        [index, name, ..] => ifindex_token(index) && interface_token(name, bridge),
+        _ => false,
+    }
+}
+fn neighbor_event_for(bridge: &str, line: &str) -> bool {
+    let event = tokens(line);
+    event
+        .first()
+        .and_then(|address| address.parse::<std::net::IpAddr>().ok())
+        .is_some()
+        && has_pair(&event, "dev", bridge)
+        && event
+            .iter()
+            .any(|state| matches!(*state, "REACHABLE" | "DELAY" | "PROBE"))
+        && !event
+            .iter()
+            .any(|state| deleted(state) || matches!(*state, "FAILED" | "STALE" | "PERMANENT"))
+}
+fn mac_token(token: &str) -> bool {
+    let octets = token.split(':').collect::<Vec<_>>();
+    octets.len() == 6
+        && octets
+            .iter()
+            .all(|octet| octet.len() == 2 && u8::from_str_radix(octet, 16).is_ok())
+}
+fn fdb_event_for(bridge: &str, members: &[String], line: &str) -> bool {
+    let event = tokens(line);
+    let affirmative = match event.as_slice() {
+        [mac, "dev", member, "master", master, ..] => {
+            mac_token(mac) && master == &bridge && members.iter().any(|known| known == member)
+        }
+        _ => false,
+    };
+    affirmative
+        && !event.iter().any(|token| {
+            deleted(token)
+                || token.eq_ignore_ascii_case("static")
+                || token.eq_ignore_ascii_case("permanent")
+        })
+}
+fn bridge_members(bridge: &str) -> Vec<String> {
     fs::read_dir(format!("/sys/class/net/{bridge}/brif"))
         .ok()
         .into_iter()
         .flatten()
         .filter_map(Result::ok)
         .filter_map(|entry| entry.file_name().into_string().ok())
-        .any(|member| line.contains(&format!(" dev {member}")))
+        .collect()
 }
 fn write_state(dir: &Path, state: &State, raw: Option<&str>) {
     let public = state.public_json();
@@ -226,6 +305,93 @@ fn serve(listener: UnixListener, shared: Arc<Mutex<State>>) {
             .and_then(|mut s| s.write_all(shared.lock().unwrap().public_json().as_bytes()));
     }
 }
+#[derive(Clone, Copy)]
+enum MonitorKind {
+    LinkNeighbor,
+    Fdb,
+}
+impl MonitorKind {
+    fn name(self) -> &'static str {
+        match self {
+            Self::LinkNeighbor => "link-neighbor",
+            Self::Fdb => "fdb",
+        }
+    }
+}
+fn supervise_reader(
+    kind: MonitorKind,
+    stdout: impl std::io::Read + Send + 'static,
+    state: Arc<Mutex<State>>,
+    dir: std::path::PathBuf,
+    bridge: String,
+    exited: mpsc::Sender<(MonitorKind, &'static str)>,
+) {
+    thread::spawn(move || {
+        let mut reader = BufReader::new(stdout);
+        let mut line = String::new();
+        loop {
+            line.clear();
+            match reader.read_line(&mut line) {
+                Ok(0) => {
+                    let _ = exited.send((kind, "eof"));
+                    return;
+                }
+                Err(_) => {
+                    let _ = exited.send((kind, "read-error"));
+                    return;
+                }
+                Ok(_) => {
+                    let witnessed = match kind {
+                        MonitorKind::LinkNeighbor => {
+                            if link_event_for(&bridge, &line) {
+                                let mut current = state.lock().unwrap();
+                                let (present, up) = carrier(&bridge);
+                                let changed = current.carrier(present, up);
+                                if changed {
+                                    write_state(&dir, &current, None);
+                                }
+                            }
+                            neighbor_event_for(&bridge, &line)
+                        }
+                        MonitorKind::Fdb => fdb_event_for(&bridge, &bridge_members(&bridge), &line),
+                    };
+                    if witnessed {
+                        let mut current = state.lock().unwrap();
+                        let source = match kind {
+                            MonitorKind::LinkNeighbor => "rtnetlink-neighbor",
+                            MonitorKind::Fdb => "bridge-fdb",
+                        };
+                        if current.witnessed_peer(source, &line) {
+                            write_state(&dir, &current, None);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+fn spawn_monitor(
+    kind: MonitorKind,
+    command: &str,
+    args: &[&str],
+    state: Arc<Mutex<State>>,
+    dir: std::path::PathBuf,
+    bridge: String,
+    exited: mpsc::Sender<(MonitorKind, &'static str)>,
+) -> Result<std::process::Child, &'static str> {
+    let mut child = Command::new(command)
+        .args(args)
+        .stdout(Stdio::piped())
+        .spawn()
+        .map_err(|_| "spawn-error")?;
+    let stdout = child.stdout.take().ok_or("stdout-unavailable")?;
+    supervise_reader(kind, stdout, state, dir, bridge, exited);
+    Ok(child)
+}
+fn stop_monitor(child: &mut std::process::Child) -> std::io::Result<std::process::ExitStatus> {
+    let _ = child.kill();
+    child.wait()
+}
 fn main() {
     let bridge = env::args().nth(1).unwrap_or_else(|| "br-downlink".into());
     let dir = std::path::PathBuf::from("/run/usb-downlink-observer");
@@ -250,56 +416,55 @@ fn main() {
         }
         write_state(&dir, &state, lease.as_deref());
     }
-    // ip monitor subscribes to already-produced rtnetlink events. It has no mutating subcommand.
-    let child = Command::new("ip")
-        .args(["monitor", "link", "neigh", "dev", &bridge])
-        .stdout(Stdio::piped())
-        .spawn();
-    if let Ok(mut child) = child {
-        if let Some(out) = child.stdout.take() {
-            let state = shared.clone();
-            let dir = dir.clone();
-            thread::spawn(move || {
-                for line in BufReader::new(out).lines().map_while(Result::ok) {
-                    let mut s = state.lock().unwrap();
-                    if line.contains("lladdr") {
-                        s.witnessed_peer("rtnetlink-neighbor", &line);
-                        write_state(&dir, &s, None);
-                    }
-                }
-            });
+    // Both subscriptions are required evidence sources. A spawn failure, read
+    // error, or EOF terminates this process so systemd's Restart=on-failure can
+    // recreate a complete observer; the surviving child is always reaped.
+    let (exited_tx, exited_rx) = mpsc::channel();
+    let monitor_bridge = bridge.clone();
+    let mut link_neighbor = match spawn_monitor(
+        MonitorKind::LinkNeighbor,
+        "ip",
+        &["monitor", "link", "neigh", "dev", &bridge],
+        shared.clone(),
+        dir.clone(),
+        monitor_bridge,
+        exited_tx.clone(),
+    ) {
+        Ok(child) => child,
+        Err(class) => {
+            eprintln!("usb-downlink-observer monitor=link-neighbor error={class}");
+            std::process::exit(1);
         }
-    }
-    // bridge monitor reports FDB changes.  Events from another bridge are not
-    // evidence for this edge: only the current usb-downlink bridge members
-    // qualify, and only events observed after this process started are fresh.
-    let fdb = Command::new("bridge")
-        .args(["monitor", "fdb"])
-        .stdout(Stdio::piped())
-        .spawn();
-    if let Ok(mut fdb) = fdb {
-        if let Some(out) = fdb.stdout.take() {
-            let state = shared.clone();
-            let dir = dir.clone();
-            let bridge = bridge.clone();
-            thread::spawn(move || {
-                for line in BufReader::new(out).lines().map_while(Result::ok) {
-                    if bridge_member_event(&bridge, &line) {
-                        let mut s = state.lock().unwrap();
-                        s.witnessed_peer("bridge-fdb", &line);
-                        write_state(&dir, &s, None);
-                    }
-                }
-            });
+    };
+    let mut fdb = match spawn_monitor(
+        MonitorKind::Fdb,
+        "bridge",
+        &["monitor", "fdb"],
+        shared.clone(),
+        dir.clone(),
+        bridge.clone(),
+        exited_tx,
+    ) {
+        Ok(child) => child,
+        Err(class) => {
+            let _ = stop_monitor(&mut link_neighbor);
+            eprintln!("usb-downlink-observer monitor=fdb error={class}");
+            std::process::exit(1);
         }
-    }
+    };
     loop {
-        thread::sleep(Duration::from_secs(2));
+        if let Ok((kind, class)) = exited_rx.recv_timeout(Duration::from_secs(2)) {
+            let _ = stop_monitor(&mut link_neighbor);
+            let _ = stop_monitor(&mut fdb);
+            eprintln!(
+                "usb-downlink-observer monitor={} error={class}",
+                kind.name()
+            );
+            std::process::exit(1);
+        }
         let mut s = shared.lock().unwrap();
         let (present, up) = carrier(&bridge);
-        let before = s.clone();
-        s.carrier(present, up);
-        if *s != before {
+        if s.carrier(present, up) {
             write_state(&dir, &s, None);
         }
     }
@@ -364,6 +529,217 @@ mod tests {
         let sequence = state.sequence;
         state.carrier(true, Some(true));
         assert_eq!(state.sequence, sequence);
+    }
+    #[test]
+    fn unchanged_carrier_preserves_witnessed_peer() {
+        let mut state = State::initial();
+        state.carrier(true, Some(true));
+        assert!(state.witnessed_peer("bridge-fdb", "fresh event"));
+        let sequence = state.sequence;
+        assert!(!state.carrier(true, Some(true)));
+        assert!(matches!(state.peer, Peer::Present { .. }));
+        assert_eq!(state.sequence, sequence);
+    }
+    #[test]
+    fn repeated_same_peer_event_does_not_advance_sequence() {
+        let mut state = State::initial();
+        state.carrier(true, Some(true));
+        assert!(state.witnessed_peer(
+            "rtnetlink-neighbor",
+            "192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 REACHABLE"
+        ));
+        let sequence = state.sequence;
+        assert!(!state.witnessed_peer(
+            "rtnetlink-neighbor",
+            "192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 REACHABLE"
+        ));
+        assert_eq!(state.sequence, sequence);
+    }
+    #[test]
+    fn strict_neighbor_fixture_rejects_delete_wrong_port_and_prefixes() {
+        assert!(neighbor_event_for(
+            "br-downlink",
+            "192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 REACHABLE"
+        ));
+        assert!(neighbor_event_for(
+            "br-downlink",
+            "192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 PROBE"
+        ));
+        assert!(!neighbor_event_for(
+            "br-downlink",
+            "Deleted 192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 REACHABLE"
+        ));
+        assert!(!neighbor_event_for(
+            "br-downlink",
+            "deleted 192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 REACHABLE"
+        ));
+        assert!(!neighbor_event_for(
+            "br-downlink",
+            "192.0.2.2 dev br-downlink0 lladdr 00:11:22:33:44:55 REACHABLE"
+        ));
+        assert!(!neighbor_event_for(
+            "br-downlink",
+            "192.0.2.2 dev br-downlink lladdr 00:11:22:33:44:55 STALE"
+        ));
+    }
+    #[test]
+    fn strict_fdb_fixture_requires_current_member_and_exact_master() {
+        let members = vec!["enxusb0".to_owned()];
+        assert!(fdb_event_for(
+            "br-downlink",
+            &members,
+            "00:11:22:33:44:55 dev enxusb0 master br-downlink"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "Deleted 00:11:22:33:44:55 dev enxusb0 master br-downlink"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "00:11:22:33:44:55 dev enxusb0 master br-downlink0"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "00:11:22:33:44:55 dev enxusb01 master br-downlink"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "00:11:22:33:44:55 dev enxusb0 master br-downlink static"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "00:11:22:33:44:55 dev enxusb0 master br-downlink permanent"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "deleted 00:11:22:33:44:55 dev enxusb0 master br-downlink"
+        ));
+        assert!(!fdb_event_for(
+            "br-downlink",
+            &members,
+            "noise dev enxusb0 master br-downlink"
+        ));
+    }
+    #[test]
+    fn link_fixture_refreshes_without_lladdr() {
+        assert!(link_event_for(
+            "br-downlink",
+            "5: br-downlink: <BROADCAST,MULTICAST,UP> mtu 1500"
+        ));
+        assert!(!link_event_for(
+            "br-downlink",
+            "5: br-downlink0: <BROADCAST,MULTICAST,UP> mtu 1500"
+        ));
+        assert!(!link_event_for(
+            "br-downlink",
+            "noise br-downlink: <BROADCAST,MULTICAST,UP> mtu 1500"
+        ));
+    }
+    #[test]
+    fn link_deletion_is_a_valid_refresh_that_can_make_link_absent() {
+        assert!(link_event_for(
+            "br-downlink",
+            "Deleted 5: br-downlink: <BROADCAST,MULTICAST> mtu 1500"
+        ));
+        let mut state = State::initial();
+        state.carrier(true, Some(true));
+        assert!(state.carrier(false, None));
+        assert_eq!(state.link, Link::Absent);
+        assert_eq!(state.peer, Peer::Unknown("no-matching-usb-ethernet"));
+    }
+    #[test]
+    fn fake_monitor_eof_is_reported_for_supervision() {
+        let directory = std::env::temp_dir().join(format!("usb-downlink-monitor-{}", now()));
+        fs::create_dir_all(&directory).unwrap();
+        let (tx, rx) = mpsc::channel();
+        supervise_reader(
+            MonitorKind::Fdb,
+            std::io::Cursor::new(Vec::<u8>::new()),
+            Arc::new(Mutex::new(State::initial())),
+            directory.clone(),
+            "br-downlink".to_owned(),
+            tx,
+        );
+        let (kind, class) = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(kind.name(), "fdb");
+        assert_eq!(class, "eof");
+        fs::remove_dir_all(directory).unwrap();
+    }
+    #[test]
+    fn fake_monitor_spawn_failure_is_visible() {
+        let (tx, _rx) = mpsc::channel();
+        let result = spawn_monitor(
+            MonitorKind::Fdb,
+            "/definitely/not/a/monitor",
+            &[],
+            Arc::new(Mutex::new(State::initial())),
+            std::env::temp_dir(),
+            "br-downlink".to_owned(),
+            tx,
+        );
+        assert_eq!(result.err(), Some("spawn-error"));
+    }
+    #[test]
+    fn fake_monitor_read_error_is_reported_for_supervision() {
+        struct BrokenReader;
+        impl std::io::Read for BrokenReader {
+            fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
+                Err(std::io::Error::other("fixture"))
+            }
+        }
+        let (tx, rx) = mpsc::channel();
+        supervise_reader(
+            MonitorKind::Fdb,
+            BrokenReader,
+            Arc::new(Mutex::new(State::initial())),
+            std::env::temp_dir(),
+            "br-downlink".to_owned(),
+            tx,
+        );
+        let (kind, class) = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(kind.name(), "fdb");
+        assert_eq!(class, "read-error");
+    }
+    #[test]
+    fn fake_monitor_child_eof_is_reported_and_reaped() {
+        let (tx, rx) = mpsc::channel();
+        let mut child = spawn_monitor(
+            MonitorKind::LinkNeighbor,
+            "sh",
+            &["-c", "exit 0"],
+            Arc::new(Mutex::new(State::initial())),
+            std::env::temp_dir(),
+            "br-downlink".to_owned(),
+            tx,
+        )
+        .unwrap();
+        let (kind, class) = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(kind.name(), "link-neighbor");
+        assert_eq!(class, "eof");
+        assert!(child.wait().unwrap().success());
+    }
+    #[test]
+    fn sibling_monitor_cleanup_kills_and_reaps_the_other_child() {
+        let (tx, rx) = mpsc::channel();
+        let mut child = spawn_monitor(
+            MonitorKind::Fdb,
+            "sh",
+            &["-c", "exec sleep 60"],
+            Arc::new(Mutex::new(State::initial())),
+            std::env::temp_dir(),
+            "br-downlink".to_owned(),
+            tx,
+        )
+        .unwrap();
+        assert!(!stop_monitor(&mut child).unwrap().success());
+        let (_, class) = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(class, "eof");
     }
     #[test]
     fn bridge_member_carrier_comes_from_the_member_nic() {
