@@ -240,6 +240,11 @@ in
       # DNS is one system dnsmasq on loopback and the downstream bridge.
       services.resolved.enable = lib.mkForce false;
       networking.resolvconf.enable = lib.mkForce false;
+      # With both dynamic resolver writers disabled, own the host file directly.
+      environment.etc."resolv.conf".text = ''
+        nameserver 127.0.0.1
+        nameserver ::1
+      '';
       networking.nameservers = lib.mkForce [
         "127.0.0.1"
         "::1"
