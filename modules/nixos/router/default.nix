@@ -136,6 +136,24 @@ in
     networking = {
       useNetworkd = true;
       useDHCP = false;
+      # The NixOS backend admits broader ICMPv6 by default than this
+      # router's prior WAN boundary. Keep that boundary before its chain,
+      # while LAN/AP/overlay and guest-tap traffic retain their policy.
+      nftables.tables.router-upstream-boundary = {
+        family = "inet";
+        content = ''
+          chain input {
+            type filter hook input priority -1; policy accept;
+            ct state { established, related } return
+            iifname { ${
+              lib.concatStringsSep ", " (map (i: ''"${i}"'') ([ "lo" ] ++ localInputInterfaces))
+            } } return
+            iifname "vmt*" meta l4proto ipv6-icmp return
+            ip6 saddr fe80::/64 ip6 daddr { fe80::/64, ff02::/16 } icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert } return
+            meta l4proto ipv6-icmp drop
+          }
+        '';
+      };
       firewall = {
         trustedInterfaces = localInputInterfaces;
         # The old router policy exposed declared TCP services, but UDP only

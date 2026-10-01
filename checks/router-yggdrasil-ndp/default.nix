@@ -48,7 +48,8 @@ assert lib.assertMsg (
   cfg.networking.firewall.enable && cfg.networking.firewall.backend == "nftables"
 ) "overlay discovery uses the shared firewall";
 assert lib.assertMsg (
-  lib.hasInfix "nd-neighbor-solicit" rules && lib.hasInfix "nd-neighbor-advert" rules
+  lib.hasInfix "nd-neighbor-solicit" cfg.networking.nftables.tables.router-upstream-boundary.content
+  && lib.hasInfix "nd-neighbor-advert" cfg.networking.nftables.tables.router-upstream-boundary.content
 ) "link-local neighbour discovery remains admitted";
 assert lib.assertMsg
   (lib.hasInfix "ip6 saddr fe80::/64 ip6 daddr fe80::/64 udp dport 9001 accept" rules)
