@@ -127,7 +127,7 @@ in
       assertions = [
         {
           assertion = network.cidr == routerLan;
-          message = "usbDownlink: on a Router node the downlink network (${network.cidr}) must be the router LAN (${routerLan}); the router module owns the USB downlink there";
+          message = "usbDownlink: on a Router node the downlink network (${network.cidr}) must be the router LAN (${routerLan}); the shared capability owns the router USB downlink";
         }
       ];
     })
@@ -136,8 +136,8 @@ in
 
       systemd.network = {
         enable = true;
-        # networkd owns only the downlink here; NetworkManager (or the
-        # node's own networkd rules) decide when the node is online.
+        # networkd owns Ethernet; Wi-Fi recovery remains independently managed.
+        # Downlink readiness must not block workstation startup.
         wait-online.enable = mkIf (!config.networking.useNetworkd) (mkDefault false);
 
         netdevs."20-${bridge}".netdevConfig = {

@@ -87,6 +87,7 @@ let
 in
 pkgs.testers.runNixOSTest {
   name = "usb-downlink-chain";
+  globalTimeout = 900;
 
   node.specialArgs = {
     inherit constants;
@@ -171,12 +172,19 @@ pkgs.testers.runNixOSTest {
         };
         networking.networkmanager.enable = true;
         # Two integrated upstream candidates exercise the explicit policy.
-        virtualisation.interfaces.eth2.vlan = 1;
+        virtualisation.interfaces.eth2 = {
+          vlan = 1;
+          assignIP = false;
+        };
         virtualisation.qemu.options = usbNic {
           vlan = 2;
           mac = ouranosUsbMac;
         };
-        environment.systemPackages = [ pkgs.iproute2 ];
+        environment.systemPackages = [
+          pkgs.iproute2
+          pkgs.curl
+          pkgs.procps
+        ];
       };
 
     prometheus =
@@ -201,22 +209,29 @@ pkgs.testers.runNixOSTest {
         environment.systemPackages = [
           pkgs.dig
           pkgs.curl
+          pkgs.procps
+          pkgs.python3
         ];
       };
 
     client =
       { ... }:
       {
-        imports = [ (integratedNic 3) ];
-        networking.useNetworkd = true;
-        systemd.network.networks."10-eth1" = {
-          matchConfig.Name = "eth1";
-          networkConfig.DHCP = "ipv4";
+        imports = [
+          (integratedNic 3)
+          ../../modules/nixos/network/usb-downlink.nix
+        ];
+        _module.args.horizon.node = {
+          capabilities = [ (downlink "10.45.0.0/24") ];
+          behavesAs.router = false;
         };
+        networking.useNetworkd = true;
         services.resolved.enable = true;
         environment.systemPackages = [
           pkgs.dig
           pkgs.curl
+          pkgs.procps
+          pkgs.python3
         ];
       };
   };
@@ -309,6 +324,12 @@ pkgs.testers.runNixOSTest {
         prometheus.wait_for_unit("kea-dhcp4-server.service")
         prometheus.wait_for_unit("dnsmasq.service")
         prometheus.succeed("nft list table ip nixos-nat | grep -q masquerade")
+        for machine, bridge in [(ouranos, "br-downlink"), (prometheus, "br-lan"), (client, "br-downlink")]:
+            machine.wait_for_unit("kea-dhcp4-server.service")
+            bridges = machine.succeed("ip -o link show type bridge | awk -F': ' '{print $2}'").split()
+            assert bridges == [bridge], bridges
+            assert machine.succeed("pgrep -xc kea-dhcp4").strip() == "1"
+            assert machine.succeed("nft list table ip nixos-nat | grep -c masquerade").strip() == "1"
         assert prometheus.succeed("nft list ruleset | grep -c masquerade").strip() == "1", "exactly one NAT owner on prometheus"
 
     with subtest("hop D: the client fetches through the chain over its wired NIC"):
@@ -321,6 +342,12 @@ pkgs.testers.runNixOSTest {
         seen = upstream.succeed("tail -n1 /var/log/nginx/access.log | cut -d' ' -f1").strip()
         assert seen == selected_source, f"upstream saw {seen}, not selected route source {selected_source}"
         upstream.fail("ip -4 route get 10.18.0.1 | grep -q ' via '")
+
+    with subtest("inbound services remain closed from upstream"):
+        prometheus.succeed("systemd-run --unit=inbound-fixture python3 -m http.server 8443 --bind 0.0.0.0")
+        client.wait_until_succeeds("curl -4 -sf --max-time 3 http://10.18.0.1:8443/ >/dev/null", timeout=30)
+        wan_address = prometheus.succeed("ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1").strip()
+        ouranos.fail(f"curl -4 -sf --max-time 3 http://{wan_address}:8443/ >/dev/null")
 
     with subtest("hotplug: re-plugging each USB NIC converges to the same roles"):
         prometheus.send_monitor_command("device_del usbdownlink-nic")

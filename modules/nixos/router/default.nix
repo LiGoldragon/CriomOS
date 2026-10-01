@@ -152,6 +152,13 @@ in
             ip6 saddr fe80::/64 ip6 daddr { fe80::/64, ff02::/16 } icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert } return
             meta l4proto ipv6-icmp drop
           }
+          chain forward {
+            type filter hook forward priority -1; policy accept;
+            ct state { established, related } return
+            iifname "${lanBridgeInterface}" return
+            iifname "vmt*" oifname "vmt*" return
+            meta l4proto ipv6-icmp drop
+          }
         '';
       };
       firewall = {
