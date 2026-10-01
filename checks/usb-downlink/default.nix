@@ -67,7 +67,7 @@ let
             inherit capabilities;
             behavesAs.router = true;
             network.routerInterfaces = {
-              wan = "eno1";
+
               wlan = "wlan0";
               wlanBand = "2g";
               wlanChannel = 6;
@@ -115,10 +115,10 @@ let
   option = name: (lib.findFirst (item: item.name == name) null subnet.option-data).data;
   matches =
     link: link.Type == usbRule.matchConfig.Type && link.Property == usbRule.matchConfig.Property;
-  routerUsb = routerNode.systemd.network.networks."05-usb-eth";
+  routerUsb = routerNode.systemd.network.networks."05-usb-downlink";
   # The same program the gateway node's activation runs, built from that
   # node's own package set and settings.
-  hotfixRemoval = import ../../modules/nixos/network/usb-downlink-hotfix.nix {
+  hotfixRemoval = import ../../packages/usb-sharing-migration {
     pkgs = (edge [ (downlink "10.44.0.0/24") ]).pkgs;
     systemd = gatewayNode.systemd.package;
     networkmanager = gatewayNode.networking.networkmanager.package;
@@ -164,9 +164,7 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   option "routers" == "10.44.0.1" && option "domain-name-servers" == "10.44.0.1"
 ) "clients route and resolve through the gateway";
-assert lib.assertMsg (
-  gatewayNode.services.resolved.settings.Resolve.DNSStubListenerExtra == "10.44.0.1"
-) "resolved answers DNS on the gateway";
+assert lib.assertMsg (!gatewayNode.services.resolved.enable) "resolved answers DNS on the gateway";
 # NAT, firewall, ownership.
 assert lib.assertMsg (
   gatewayNode.networking.nat.enable
@@ -192,11 +190,9 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   !gatewayNode.systemd.network.wait-online.enable
 ) "networkd's wait-online does not gate a NetworkManager node";
-# The hotfix removal is wired into this node's activation.
 assert lib.assertMsg (
-  gatewayNode.system.activationScripts.usbDownlinkLegacyHotfix.text
-  == "${hotfixRemoval}/bin/usb-downlink-remove-hotfix /"
-) "activation runs the hotfix removal on the live root";
+  !(gatewayNode.system.activationScripts ? usbDownlinkLegacyHotfix)
+) "ordinary activation never executes the separately controlled migration";
 # Absent capability: nothing.
 assert lib.assertMsg (
   !plainNode.services.kea.dhcp4.enable
@@ -210,29 +206,25 @@ assert lib.assertMsg (
   && centerNode.systemd.network.networks."40-br-downlink".address == [ "10.47.0.1/24" ]
 ) "on a networkd center node the declared downlink replaces the hotplug rule";
 assert lib.assertMsg (
-  plainCenter.systemd.network.networks ? "05-usb-eth"
-) "a center node without the capability keeps its hotplug rule";
-# Router node: the router module is the one owner.
-assert lib.assertMsg (failedAssertions routerNode == [ ]) (
-  "router fixture has failed assertions: " + toString (failedAssertions routerNode)
-);
+  !(plainCenter.systemd.network.networks ? "05-usb-eth")
+) "a center node without the capability does not share USB Ethernet";
+# The router uses exactly the same sharing implementation and backend.
+assert lib.assertMsg (failedAssertions routerNode == [ ]) "router policy is valid";
 assert lib.assertMsg (
-  !routerNode.networking.nat.enable
-  && !(routerNode.systemd.network.netdevs ? "20-br-downlink")
-  && !(routerNode.systemd.network.networks ? "05-usb-downlink")
+  routerNode.networking.nat.enable
+  && routerNode.networking.nftables.enable
+  && routerNode.networking.firewall.enable
+  && routerNode.networking.nat.internalInterfaces == [ "br-lan" ]
   && routerNode.services.kea.dhcp4.settings.interfaces-config.interfaces == [ "br-lan" ]
-  && lib.hasInfix ''oifname "eno1" masquerade'' routerNode.networking.nftables.ruleset
-) "on a Router node the router module stays the single bridge, DHCP and NAT owner";
-assert lib.assertMsg (
-  routerUsb.matchConfig == {
-    Type = "ether";
-    Property = "ID_BUS=usb";
-    Name = "!eno1";
-  }
-) "the router's USB LAN rule is the shared bus-role match minus its WAN";
+  &&
+    routerUsb.matchConfig == {
+      Type = "ether";
+      Property = "ID_BUS=usb";
+    }
+) "the router uses the common declared USB sharing owner";
 assert lib.assertMsg (builtins.any (lib.hasInfix "must be the router LAN") (
   failedAssertions foreignRouter
-)) "a Router node refuses a downlink network other than its LAN";
+)) "a router's AP and sharing network must agree";
 # Malformed declarations fail.
 assert lib.assertMsg (rejects [ (downlink "10.44.0.1/24") ]) "a network with host bits is refused";
 assert lib.assertMsg (rejects [ (downlink "10.44.0.0/33") ]) "an impossible prefix is refused";

@@ -4,9 +4,8 @@
 # UsbDownlink feature owns that hop; while these exist they are a second
 # NAT, firewall and DHCP owner of it.
 #
-# Not a module: imported as a value by network/usb-downlink.nix, which runs
-# the program from activation only when the node declares UsbDownlink, and
-# by checks/usb-downlink, which runs it against a fixture root.
+# Not a module: imported as a value by the separately authorized migration and the
+# fixture check. No capability or ordinary system activation executes it.
 #
 # The program takes the root to clean as its one argument ("/" on a live
 # system). It is idempotent and removes nothing else: other drop-ins and

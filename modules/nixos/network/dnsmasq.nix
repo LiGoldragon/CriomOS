@@ -15,11 +15,15 @@ let
     match
     split
     ;
-  inherit (horizon) exNodes node;
+  inherit (horizon) node;
+  exNodes = horizon.exNodes or { };
   inherit (horizon.node) behavesAs;
 
-  lanBridgeInterface = "br-lan";
-  lanGateway = constants.network.lan.gateway;
+  declared = builtins.any (c: builtins.isAttrs c && (c.kind or null) == "usbDownlink") (
+    node.capabilities or [ ]
+  );
+  lanBridgeInterface = config.criomos.usbDownlink.bridge;
+  lanGateway = config.criomos.usbDownlink.gateway;
 
   headscaleEnabled = config.services.headscale.enable;
   tailnetBaseDomain = config.services.headscale.settings.dns.base_domain or null;
@@ -68,7 +72,7 @@ let
     entry:
     let
       yggAddress = sanitizeIp (
-        if entry.keys.yggdrasil == null then null else entry.keys.yggdrasil.address
+        if (entry.keys.yggdrasil or null) == null then null else entry.keys.yggdrasil.address
       );
       nodeIp = sanitizeIp (entry.network.nodeIp or null);
     in
@@ -78,7 +82,7 @@ let
     entry:
     let
       address = mkPrimaryAddress entry;
-      alias = entry.nixCacheDomain;
+      alias = entry.nixCacheDomain or null;
       internalAliasRecords =
         if alias == null || alias == "" || address == null then
           [ ]
@@ -121,12 +125,13 @@ let
 
   localAddressRecords = concatLists (map mkPrimaryRecords horizonNodes);
 in
-lib.mkIf behavesAs.router {
+lib.mkIf declared {
   services = {
     resolved.enable = false;
     unbound.enable = false;
     dnsmasq = {
       enable = true;
+      resolveLocalQueries = false;
       settings = {
         "bind-dynamic" = true;
         "bogus-priv" = true;

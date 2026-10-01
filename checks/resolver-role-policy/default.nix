@@ -53,11 +53,17 @@ let
   # not replace them: `//` is shallow and would drop network.wireguardPublicKey.
   routerNode = lib.recursiveUpdate baseNode {
     name = "router-test";
+    capabilities = [
+      {
+        kind = "usbDownlink";
+        ipv4Network = "10.18.0.0/24";
+      }
+    ];
     criomeDomainName = "router-test.goldragon.criome";
     enableNetworkManager = false;
     network.nodeIp = constants.network.lan.gateway;
     network.routerInterfaces = {
-      wan = "wan-test0";
+
       wlan = "wlan-test0";
       wlanBand = "2g";
       wlanChannel = 6;
@@ -74,6 +80,10 @@ let
 
   tailnetControllerRouterNode = routerNode // {
     capabilities = [
+      {
+        kind = "usbDownlink";
+        ipv4Network = "10.18.0.0/24";
+      }
       {
         kind = "tailnetClient";
         preauthKeyReference = "tailnetPreauthKeyRouterTest";

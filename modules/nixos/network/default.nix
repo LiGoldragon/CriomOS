@@ -77,7 +77,6 @@ in
     ./wireguard.nix
     ./resolver.nix
     ./usb-downlink.nix
-    ./usb-downlink-observer.nix
   ];
 
   networking = {

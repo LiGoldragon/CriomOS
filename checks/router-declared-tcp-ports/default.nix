@@ -8,8 +8,14 @@ let
     node = {
       name = "router-declared-tcp-ports-fixture";
       behavesAs.router = true;
+      capabilities = [
+        {
+          kind = "usbDownlink";
+          ipv4Network = "10.18.0.0/24";
+        }
+      ];
       network.routerInterfaces = {
-        wan = "eno1";
+
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
@@ -41,20 +47,17 @@ let
       }
     ];
   };
-  rules = router.config.networking.nftables.ruleset;
-  rulesFile = pkgs.writeText "router-declared-tcp-ports-ruleset" rules;
+  cfg = router.config;
+  rules = cfg.networking.nftables.tables.nixos-fw.content;
 in
-assert lib.assertMsg
-  (lib.hasInfix ''tcp dport 80 accept comment "Allow declared TCP service port 80"'' rules)
-  "router nftables must compose the declared Nix cache TCP port";
-assert lib.assertMsg
-  (lib.hasInfix ''tcp dport 7440 accept comment "Allow declared TCP service port 7440"'' rules)
-  "router nftables must compose every declared TCP service port";
-assert lib.assertMsg (lib.hasInfix ''iifname "eno1" counter drop'' rules)
-  "declared service ports must be admitted before the router WAN default drop";
-pkgs.runCommand "router-declared-tcp-ports-check" { } ''
-  declared_line=$(${pkgs.gnugrep}/bin/grep -nF 'tcp dport 80 accept comment "Allow declared TCP service port 80"' ${rulesFile} | ${pkgs.coreutils}/bin/cut -d: -f1)
-  drop_line=$(${pkgs.gnugrep}/bin/grep -nF 'iifname "eno1" counter drop' ${rulesFile} | ${pkgs.coreutils}/bin/cut -d: -f1)
-  test "$declared_line" -lt "$drop_line"
-  touch "$out"
-''
+assert lib.assertMsg (
+  cfg.networking.firewall.allowedTCPPorts == [
+    80
+    7440
+  ]
+) "every declared TCP service port reaches the common firewall";
+assert lib.assertMsg (lib.hasInfix "tcp dport { 80, 7440 } accept" rules)
+  "the generated nftables rules admit the declared services";
+assert lib.assertMsg (lib.hasInfix "policy drop" rules)
+  "other unsolicited upstream services remain closed";
+pkgs.runCommand "router-declared-tcp-ports-check" { } "touch $out"

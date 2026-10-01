@@ -17,9 +17,6 @@ let
     optionalAttrs
     ;
   inherit (horizon.node) behavesAs;
-  usbEthernet = import ../network/usb-ethernet-role.nix { inherit lib; };
-  # WiFi PKI paths — uncomment when EAP-TLS is deployed
-  # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
 
   routerInterfaces =
     horizon.node.network.routerInterfaces
@@ -45,9 +42,6 @@ let
   hostapdLogLevel = 1;
   wirelessNetworkName =
     routerInterfaces.ssid or routerInterfaces.wirelessNetworkName or "${horizon.cluster}.criome";
-  wanLeaseRecovery = pkgs.writeShellScript "router-wan-lease-recovery" (
-    builtins.readFile ./wan-lease-recovery.sh
-  );
 
   backupWireless = routerInterfaces.backupWireless or null;
   hasBackupWireless = backupWireless != null;
@@ -75,32 +69,28 @@ let
     .${backupWireless.band};
 
   lanBridgeInterface = "br-lan";
-  lanSubnetPrefix = constants.network.lan.subnetPrefix;
-  lanAddress = constants.network.lan.gateway;
-  lanFullAddress = "${lanAddress}/24";
   localInputInterfaces = [
     lanBridgeInterface
     routerInterfaces.wlan
     "yggTun"
   ]
   ++ optional hasBackupWireless backupWireless.interface;
-  localInputInterfaceSet = concatStringsSep ", " localInputInterfaces;
-  declaredTcpPortRules = concatMapStringsSep "\n" (
-    port:
-    ''tcp dport ${toString port} accept comment "Allow declared TCP service port ${toString port}"''
-  ) config.networking.firewall.allowedTCPPorts;
-
-  useNftables = true;
 
 in
 {
   imports = [
     ./wifi-pki.nix
-    ./yggdrasil.nix
+    ../network/usb-downlink.nix
   ];
 
   config = optionalAttrs behavesAs.router {
     assertions = [
+      {
+        assertion = builtins.any (c: builtins.isAttrs c && (c.kind or null) == "usbDownlink") (
+          horizon.node.capabilities or [ ]
+        );
+        message = "router: USB/LAN sharing requires its UsbDownlink capability";
+      }
       {
         assertion = routerWifiSopsFileExists;
         message = "router Wi-Fi secret ${routerWifiPasswordSecretName} is missing from inputs.secrets.sopsFiles";
@@ -146,75 +136,17 @@ in
     networking = {
       useNetworkd = true;
       useDHCP = false;
-      nat.enable = false;
-      firewall.enable = !useNftables;
-
-      nftables = {
-        enable = useNftables;
-        ruleset = ''
-          table inet filter {
-            chain input {
-              type filter hook input priority 0; policy drop;
-
-              ip6 saddr fe80::/64 ip6 daddr fe80::/64 udp dport 9001 accept
-              ip6 saddr fe80::/64 ip6 daddr fe80::/64 tcp dport 10001 accept
-
-              # Yggdrasil's link-local port rules are unreachable until the
-              # WAN neighbours can resolve each other.  Admit only IPv6
-              # neighbour solicitation/advertisement on the declared WAN;
-              # the default-drop policy still applies to every other
-              # unsolicited packet from that interface.
-              iifname "${routerInterfaces.wan}" ip6 saddr fe80::/64 ip6 daddr { fe80::/64, ff02::/16 } icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow link-local NDP for Yggdrasil discovery"
-
-              tcp dport ssh accept
-
-              # Router mode owns nftables directly and disables the NixOS
-              # firewall. Compose the ordinary service-port declarations into
-              # this input chain so a service such as nix-serve does not become
-              # unreachable merely because the host is also a router.
-              ${declaredTcpPortRules}
-
-              # test-VM guest taps (vmt*, emitted by test-vm-host.nix only when
-              # this host runs TestVm guests): admit the guests' ICMPv6 so the
-              # host answers their NDP for the fe80::1 gateway and they can ping
-              # the host. Scoped to vmt* — inert on a host with no guests.
-              iifname "vmt*" meta l4proto ipv6-icmp accept comment "Allow NDP/ICMPv6 from test-VM guests"
-              # Return traffic for connections the HOST initiates TO a guest
-              # (ssh into the guest, lojix deploy-into): the guest's replies
-              # arrive on its vmt* tap destined to the host, and without this the
-              # default-drop input policy silently drops the SYN-ACK (host->guest
-              # TCP times out). Scoped to vmt* + established/related — inert
-              # without guests, and never admits unsolicited guest-to-host flows.
-              iifname "vmt*" ct state { established, related } accept comment "Allow return traffic for host-initiated guest connections"
-
-              iifname { ${localInputInterfaceSet} } accept comment "Allow local network to access the router"
-              iifname "${routerInterfaces.wan}" ct state { established, related } accept comment "Allow established traffic"
-              iifname "${routerInterfaces.wan}" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
-              iifname "${routerInterfaces.wan}" counter drop comment "Drop all other unsolicited traffic from ${routerInterfaces.wan}"
-              iifname "lo" accept comment "Accept everything from loopback interface"
-            }
-
-            chain forward {
-              type filter hook forward priority filter; policy drop;
-
-              iifname { ${lanBridgeInterface} } oifname { "${routerInterfaces.wan}" } accept comment "Allow trusted LAN to WAN"
-              iifname { "${routerInterfaces.wan}" } oifname { ${lanBridgeInterface} } ct state { established, related } accept comment "Allow established back to LANs"
-
-              # Route between this host's own test-VM guest taps (vmt*, emitted
-              # by test-vm-host.nix): guest A -> host -> guest B. The guests sit
-              # on point-to-point taps, so peer traffic is FORWARDED (L3) through
-              # the host. Scoped to vmt*<->vmt* — inert on a host with no guests.
-              iifname "vmt*" oifname "vmt*" accept comment "Allow test-VM guest<->guest forwarding"
-            }
-          }
-
-          table ip nat {
-            chain postrouting {
-              type nat hook postrouting priority 100; policy accept;
-              oifname "${routerInterfaces.wan}" masquerade
-            }
-          }
+      firewall = {
+        trustedInterfaces = localInputInterfaces;
+        # The old router policy exposed declared TCP services, but UDP only
+        # for link-local Yggdrasil. Preserve that upstream boundary.
+        allowedUDPPorts = lib.mkForce [ ];
+        extraInputRules = ''
+          ip6 saddr fe80::/64 ip6 daddr fe80::/64 udp dport 9001 accept
+          ip6 saddr fe80::/64 ip6 daddr fe80::/64 tcp dport 10001 accept
+          iifname "vmt*" meta l4proto ipv6-icmp accept
         '';
+        extraForwardRules = ''iifname "vmt*" oifname "vmt*" accept'';
       };
     };
 
@@ -248,42 +180,6 @@ in
         };
       };
 
-      kea = {
-        dhcp4 = {
-          enable = true;
-          settings = {
-            valid-lifetime = 4000;
-            renew-timer = 1000;
-            rebind-timer = 2000;
-            interfaces-config = {
-              interfaces = [ lanBridgeInterface ];
-              dhcp-socket-type = "raw";
-            };
-            lease-database = {
-              type = "memfile";
-              persist = true;
-              name = "/var/lib/kea/dhcp4.leases";
-            };
-            subnet4 = [
-              {
-                id = 1;
-                subnet = lanFullAddress;
-                pools = [ { pool = "${lanSubnetPrefix}.100 - ${lanSubnetPrefix}.240"; } ];
-                option-data = [
-                  {
-                    name = "routers";
-                    data = lanAddress;
-                  }
-                  {
-                    name = "domain-name-servers";
-                    data = lanAddress;
-                  }
-                ];
-              }
-            ];
-          };
-        };
-      };
     }
     // optionalAttrs hasBackupWireless {
       udev.extraRules = ''
@@ -316,23 +212,6 @@ in
         stopIfChanged = false;
       };
 
-      # The LAN stays available while an upstream DHCP server comes up late.
-      # Retry only the WAN link when it has carrier but no IPv4 default route;
-      # never restart the AP, LAN DHCP, DNS, or networkd.
-      router-wan-lease-recovery = {
-        description = "Recover a late router WAN DHCP lease";
-        after = [ "systemd-networkd.service" ];
-        requires = [ "systemd-networkd.service" ];
-        path = [
-          pkgs.iproute2
-          pkgs.gnugrep
-          pkgs.systemd
-        ];
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = "${wanLeaseRecovery} ${lib.escapeShellArg routerInterfaces.wan}";
-        };
-      };
     }
     // optionalAttrs hasBackupWireless {
       hostapd-backup-wireless = {
@@ -418,67 +297,8 @@ in
       };
     };
 
-    systemd.timers.router-wan-lease-recovery = {
-      description = "Check for a missing router WAN DHCP lease";
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnBootSec = "2min";
-        OnUnitInactiveSec = "2min";
-        AccuracySec = "15s";
-      };
-    };
-
-    systemd.network = {
-      enable = true;
-      wait-online.anyInterface = true;
-
-      netdevs = {
-        "20-br-lan" = {
-          netdevConfig = {
-            Kind = "bridge";
-            Name = lanBridgeInterface;
-          };
-        };
-      };
-
-      networks = {
-        "10-wan" = {
-          matchConfig.Name = routerInterfaces.wan;
-          networkConfig = {
-            DHCP = "ipv4";
-            KeepConfiguration = "dynamic-on-stop";
-          };
-          dhcpV4Config = {
-            SendRelease = false;
-          };
-          linkConfig.RequiredForOnline = "routable";
-        };
-
-        # USB ethernet dongles are optional hotplug LAN ports: if absent,
-        # boot and router networking continue; if plugged later, networkd
-        # applies this match and joins the dongle to the bridge. The match is
-        # the shared USB bus role (network/usb-ethernet-role.nix), the same one
-        # the UsbDownlink feature uses; on a Router node this rule is that
-        # feature's downlink. This sorts before Ethernet catch-alls.
-        "05-usb-eth" = {
-          matchConfig = usbEthernet.networkdMatch { exclude = [ routerInterfaces.wan ]; };
-          networkConfig = {
-            Bridge = lanBridgeInterface;
-            ConfigureWithoutCarrier = true;
-          };
-          linkConfig.RequiredForOnline = "no";
-        };
-
-        "40-br-lan" = {
-          matchConfig.Name = lanBridgeInterface;
-          bridgeConfig = { };
-          address = [ lanFullAddress ];
-          networkConfig = {
-            ConfigureWithoutCarrier = true;
-          };
-        };
-      };
-    };
-
+    # Wired roles, bridge, address and DHCP are capability-owned. The
+    # common networkd DHCP client retries late upstreams without a timer
+    # that reconfigures an interface selected by its name.
   };
 }

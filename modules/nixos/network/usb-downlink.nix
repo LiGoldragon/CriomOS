@@ -1,30 +1,8 @@
-# USB downlink: the node propagates its Internet access to whatever is
-# plugged into its USB Ethernet NICs. The integrated NIC is the uplink and
-# every USB Ethernet NIC is a downlink, selected by udev bus role, never by
-# name or MAC, so it works however the cables are plugged.
-#
-# Horizon declares it as the capability
-#   { kind = "usbDownlink"; ipv4Network = "10.44.0.0/24"; }
-# The network's first host address is the gateway served on the downlinks.
-#
-# On a node without the Router feature this module owns the whole hop:
-#   - systemd-networkd enslaves every USB Ethernet link to one bridge and
-#     puts the gateway address on it (so any number of dongles share one
-#     subnet and one DHCP server);
-#   - Kea serves DHCP on the bridge (the router feature's DHCP server);
-#   - systemd-resolved answers DNS on the gateway address;
-#   - the NixOS NAT module masquerades what arrives on the bridge to
-#     whichever link carries the default route (the integrated uplink);
-#   - the NixOS firewall admits DHCP and DNS on the bridge only.
-#   On a NetworkManager node, NetworkManager is told by udev to leave USB
-#   Ethernet links alone, so each link has exactly one manager.
-#
-# On a node with the Router feature the router module already bridges
-# USB Ethernet into its LAN with the same bus-role match, serves Kea and DNS
-# there, and is the node's only NAT owner (its nftables table). This module
-# then adds nothing but the check that the declared downlink network is the
-# router LAN; a second bridge, DHCP server or masquerade would make two
-# owners of one hop.
+# One declared USB-sharing capability owns wired roles, downstream bridge,
+# address, DHCP, DNS integration and the NixOS nftables firewall/NAT policy.
+# NetworkManager retains Wi-Fi recovery: Field witnessed it live on Zeus
+# while wired carrier was absent. All Ethernet and the bridge are excluded
+# from NM. Replacing its radio/authentication behavior is a separate task.
 {
   config,
   lib,
@@ -110,24 +88,28 @@ let
   network = parsedNetwork;
   gateway = render (network.address + 1);
   gatewayWithPrefix = "${gateway}/${toString network.prefix}";
-  poolFirst = render (network.address + 10);
-  poolLast = render (network.address + network.size - 2);
+  poolFirst = render (network.address + (if isRouter then 100 else 10));
+  poolLast = render (network.address + (if isRouter then 240 else network.size - 2));
 
-  bridge = "br-downlink";
+  bridge = if isRouter then "br-lan" else "br-downlink";
 
   routerLan = constants.network.lan.subnet;
 
-  # Field's pre-declaration hotfix on ouranos, removed by the same
-  # generation that declares the downlink. It lives inside this capability:
-  # a node without the UsbDownlink declaration may still depend on it.
-  hotfixRemoval = import ./usb-downlink-hotfix.nix {
-    inherit pkgs;
-    systemd = config.systemd.package;
-    networkmanager =
-      if config.networking.networkmanager.enable then config.networking.networkmanager.package else null;
-  };
 in
 {
+  imports = [ ./dnsmasq.nix ];
+  options.criomos.usbDownlink = {
+    bridge = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      default = bridge;
+    };
+    gateway = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      default = if declared then gateway else "";
+    };
+  };
   config = mkIf declared (mkMerge [
     {
       # Evaluate the declaration eagerly so a malformed network fails the
@@ -139,13 +121,6 @@ in
         }
       ];
 
-      # Activation, not tmpfiles: switch-to-configuration runs activation
-      # before its daemon-reload and unit restarts, so firewall.service is
-      # reloaded in this same switch without the hotfix drop-in.
-      system.activationScripts.usbDownlinkLegacyHotfix = {
-        text = "${hotfixRemoval}/bin/usb-downlink-remove-hotfix /";
-        deps = [ ];
-      };
     }
 
     (mkIf isRouter {
@@ -157,13 +132,7 @@ in
       ];
     })
 
-    (mkIf (!isRouter) {
-      assertions = [
-        {
-          assertion = config.services.resolved.enable;
-          message = "usbDownlink: the downlink's DNS is served by systemd-resolved, which this node does not enable";
-        }
-      ];
+    {
 
       systemd.network = {
         enable = true;
@@ -177,6 +146,26 @@ in
         };
 
         networks = {
+          # Every integrated Ethernet NIC is an upstream candidate; USB,
+          # radio and virtual links never enter this match.
+          "10-upstream" = {
+            matchConfig = {
+              Type = "ether";
+              Property = "ID_BUS=pci";
+            };
+            networkConfig = {
+              DHCP = "ipv4";
+              IPv6AcceptRA = true;
+              KeepConfiguration = "dynamic-on-stop";
+            };
+            dhcpV4Config = {
+              SendRelease = false;
+              UseDNS = false;
+              RouteMetric = 100;
+              MaxAttempts = "infinity";
+            };
+            linkConfig.RequiredForOnline = "no";
+          };
           # Sorts before every Ethernet catch-all: networkd applies the
           # first matching file.
           "05-usb-downlink" = {
@@ -206,6 +195,7 @@ in
       # NetworkManager must not also claim the USB links or the bridge.
       services.udev.extraRules = mkIf config.networking.networkmanager.enable ''
         ${usbEthernet.udevMatch}, ENV{NM_UNMANAGED}="1"
+        SUBSYSTEM=="net", ENV{ID_BUS}=="pci", ATTR{type}=="1", ENV{DEVTYPE}!="wlan", ENV{DEVTYPE}!="wwan", ENV{NM_UNMANAGED}="1"
       '';
       networking.networkmanager.unmanaged = [ "interface-name:${bridge}" ];
 
@@ -247,8 +237,20 @@ in
       };
       systemd.services.kea-dhcp4-server.after = [ "systemd-networkd.service" ];
 
-      services.resolved.settings.Resolve.DNSStubListenerExtra = gateway;
+      # DNS is one system dnsmasq on loopback and the downstream bridge.
+      services.resolved.enable = lib.mkForce false;
+      networking.resolvconf.enable = lib.mkForce false;
+      networking.nameservers = lib.mkForce [
+        "127.0.0.1"
+        "::1"
+      ];
+      networking.networkmanager.dns = lib.mkForce "none";
 
+      networking.nftables.enable = true;
+      networking.firewall = {
+        enable = true;
+        filterForward = true;
+      };
       networking.nat = {
         enable = true;
         # No external interface: masquerade toward whichever link carries
@@ -263,6 +265,6 @@ in
         ];
         allowedTCPPorts = [ 53 ];
       };
-    })
+    }
   ]);
 }

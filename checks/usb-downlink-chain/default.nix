@@ -60,7 +60,6 @@ let
       capabilities = [ (downlink constants.network.lan.subnet) ];
       behavesAs.router = true;
       network.routerInterfaces = {
-        wan = "eth1";
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
@@ -160,7 +159,6 @@ pkgs.testers.runNixOSTest {
         imports = [
           (integratedNic 1)
           ../../modules/nixos/network/usb-downlink.nix
-          ../../modules/nixos/network/usb-downlink-observer.nix
           ../../modules/nixos/network/resolver.nix
         ];
         _module.args.horizon.node = {
@@ -172,6 +170,8 @@ pkgs.testers.runNixOSTest {
           };
         };
         networking.networkmanager.enable = true;
+        # Two integrated upstream candidates exercise the explicit policy.
+        virtualisation.interfaces.eth2.vlan = 1;
         virtualisation.qemu.options = usbNic {
           vlan = 2;
           mac = ouranosUsbMac;
@@ -270,20 +270,18 @@ pkgs.testers.runNixOSTest {
         assert bridge_of(ouranos, "eth1") == "", "the integrated NIC must never be a downlink"
         ouranos.succeed("ip -4 -o addr show dev br-downlink | grep -q ' 10.44.0.1/24 '")
         ouranos.succeed(f"nmcli -t -f DEVICE,STATE device | grep -qx '{ouranos_usb}:unmanaged'")
-        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'eth1:connected'")
+        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'eth1:unmanaged'")
         ouranos.wait_for_unit("kea-dhcp4-server.service")
-        ouranos.succeed("iptables -w -t nat -S nixos-nat-post | grep -q MASQUERADE")
-        ouranos.wait_for_unit("usb-downlink-observer.service")
-        # Public state is redacted and peer absence is never inferred from a
-        # carrier-only startup snapshot.
-        public = ouranos.succeed("cat /run/usb-downlink-observer/public.json")
-        assert "recognizerDisabled" in public
-        assert "10.44." not in public and "${ouranosUsbMac}" not in public
-        ouranos.succeed("test \"$(stat -c %a /run/usb-downlink-observer/root-diagnostics.json)\" = 600")
-        ouranos.succeed("systemctl show usb-downlink-observer -p RestrictAddressFamilies | grep -q AF_NETLINK")
-        ouranos.succeed("systemctl show usb-downlink-observer -p RestrictAddressFamilies | grep -q AF_UNIX")
-        ouranos.fail("systemctl show usb-downlink-observer -p RestrictAddressFamilies | grep -q AF_INET6")
-        ouranos.fail("systemctl show usb-downlink-observer -p CapabilityBoundingSet | grep -q CAP_NET")
+        assert ouranos.succeed("nft list table ip nixos-nat | grep -c masquerade").strip() == "1"
+        assert ouranos.succeed("systemctl show kea-dhcp4-server -p MainPID --value").strip() != "0"
+        ouranos.succeed("nft list table ip nixos-nat | grep -q masquerade")
+        ouranos.wait_for_unit("dnsmasq.service")
+        ouranos.fail("systemctl is-active systemd-resolved.service")
+        ouranos.fail("systemctl is-active usb-downlink-observer.service")
+        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'eth2:unmanaged'")
+        ouranos.wait_until_succeeds("networkctl status eth2 | grep -q configured", timeout=120)
+        assert bridge_of(ouranos, "eth2") == ""
+
 
     with subtest("hop B: prometheus takes a lease from ouranos on its integrated NIC"):
         prometheus.wait_until_succeeds("ip -4 route show default | grep -q 'via 10.44.0.1 dev eth1'", timeout=180)
@@ -293,13 +291,24 @@ pkgs.testers.runNixOSTest {
         assert dns == "1.1.1.1", f"DNS at the ouranos gateway returned {dns!r}"
         prometheus.succeed("curl -4 -sf --max-time 10 --interface eth1 http://1.1.1.1/ | grep -qx daisy-chain-ok")
 
+    with subtest("host resolver and late upstream DNS"):
+        for machine in [ouranos, prometheus]:
+            machine.succeed("grep -q 'nameserver 127.0.0.1' /etc/resolv.conf")
+            machine.wait_until_succeeds("getent ahostsv4 example.test | grep -q 1.1.1.1", timeout=60)
+            machine.fail("systemctl is-active systemd-resolved.service")
+            machine.succeed("test $(pgrep -xc dnsmasq) = 1")
+        upstream.succeed("systemctl stop dnsmasq")
+        ouranos.succeed("networkctl renew eth1 eth2")
+        upstream.succeed("systemctl start dnsmasq")
+        ouranos.wait_until_succeeds("getent ahostsv4 example.test | grep -q 1.1.1.1", timeout=120)
+
     with subtest("hop C: prometheus's router bridges its USB NIC into br-lan"):
         wait_bridged(prometheus, "br-lan")
         prometheus_usb = only_usb_nic(prometheus)
         assert bridge_of(prometheus, "eth1") == "", "the router WAN must never join the LAN bridge"
         prometheus.wait_for_unit("kea-dhcp4-server.service")
         prometheus.wait_for_unit("dnsmasq.service")
-        prometheus.fail("iptables -w -t nat -S 2>/dev/null | grep -q MASQUERADE")
+        prometheus.succeed("nft list table ip nixos-nat | grep -q masquerade")
         assert prometheus.succeed("nft list ruleset | grep -c masquerade").strip() == "1", "exactly one NAT owner on prometheus"
 
     with subtest("hop D: the client fetches through the chain over its wired NIC"):
@@ -308,21 +317,12 @@ pkgs.testers.runNixOSTest {
         dns = client.succeed("dig +short +time=3 +tries=2 @10.18.0.1 example.test").strip()
         assert dns == "1.1.1.1", f"DNS at the prometheus gateway returned {dns!r}"
         client.wait_until_succeeds("curl -4 -sf --max-time 10 --interface eth1 http://example.test/ | grep -qx daisy-chain-ok", timeout=60)
+        selected_source = ouranos.succeed("ip -4 route get 1.1.1.1 | sed -n 's/.* src \([^ ]*\).*/\1/p'").strip()
         seen = upstream.succeed("tail -n1 /var/log/nginx/access.log | cut -d' ' -f1").strip()
-        assert seen == ouranos_uplink, f"upstream saw {seen}, not ouranos's uplink {ouranos_uplink}"
+        assert seen == selected_source, f"upstream saw {seen}, not selected route source {selected_source}"
         upstream.fail("ip -4 route get 10.18.0.1 | grep -q ' via '")
 
     with subtest("hotplug: re-plugging each USB NIC converges to the same roles"):
-        networkd_pid = ouranos.succeed("systemctl show -p MainPID --value systemd-networkd.service").strip()
-        kea_pid = ouranos.succeed("systemctl show -p MainPID --value kea-dhcp4-server.service").strip()
-        # Restarting the passive consumer neither reconfigures either owner nor
-        # gives a stale startup snapshot witnessed-event freshness.
-        ouranos.succeed("systemctl restart usb-downlink-observer.service")
-        ouranos.wait_for_unit("usb-downlink-observer.service")
-        assert ouranos.succeed("systemctl show -p MainPID --value systemd-networkd.service").strip() == networkd_pid
-        assert ouranos.succeed("systemctl show -p MainPID --value kea-dhcp4-server.service").strip() == kea_pid
-        restarted = ouranos.succeed("cat /run/usb-downlink-observer/public.json")
-        assert "witnessed-source-event" not in restarted, restarted
         prometheus.send_monitor_command("device_del usbdownlink-nic")
         prometheus.wait_until_succeeds(f"! test -e /sys/class/net/{prometheus_usb}", timeout=60)
         prometheus.send_monitor_command(

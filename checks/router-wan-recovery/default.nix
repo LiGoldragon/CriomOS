@@ -8,8 +8,14 @@ let
     node = {
       name = "router-wan-recovery-fixture";
       behavesAs.router = true;
+      capabilities = [
+        {
+          kind = "usbDownlink";
+          ipv4Network = "10.18.0.0/24";
+        }
+      ];
       network.routerInterfaces = {
-        wan = "eno1";
+
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
@@ -35,65 +41,22 @@ let
       { nixpkgs.config.allowUnfree = true; }
     ];
   };
-  service = router.config.systemd.services.router-wan-lease-recovery;
-  timer = router.config.systemd.timers.router-wan-lease-recovery;
+  cfg = router.config;
+  upstream = cfg.systemd.network.networks."10-upstream";
 in
-assert lib.assertMsg (service.serviceConfig.Type == "oneshot")
-  "WAN recovery must be a bounded oneshot service";
-assert lib.assertMsg (lib.hasInfix "eno1" service.serviceConfig.ExecStart)
-  "WAN recovery must target the router's declared WAN interface";
-assert lib.assertMsg (timer.timerConfig.OnUnitInactiveSec == "2min")
-  "WAN recovery must recheck after a late upstream DHCP server appears";
-
-pkgs.runCommand "router-wan-recovery-check"
-  {
-    nativeBuildInputs = [
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gnugrep
-    ];
+assert lib.assertMsg (
+  upstream.matchConfig == {
+    Type = "ether";
+    Property = "ID_BUS=pci";
   }
-  ''
-    set -euo pipefail
-    mkdir -p mock
-    cat > mock/ip <<'EOF'
-    #!${pkgs.bash}/bin/bash
-    if [ "$1 $2 $3 $4 $5" = "-o link show dev eno1" ]; then
-      if [ "''${TEST_CARRIER:-0}" = 1 ]; then
-        echo '2: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500'
-      else
-        echo '2: eno1: <BROADCAST,MULTICAST,UP> mtu 1500'
-      fi
-    elif [ "$1 $2 $3 $4 $5 $6" = "-4 route show default dev eno1" ]; then
-      if [ "''${TEST_ROUTE:-0}" = 1 ]; then
-        echo 'default via 10.44.0.1 dev eno1'
-      fi
-    else
-      exit 2
-    fi
-    EOF
-    cat > mock/networkctl <<'EOF'
-    #!${pkgs.bash}/bin/bash
-    echo "$*" >> "$TEST_LOG"
-    if [ "''${TEST_FAIL:-0}" = 1 ]; then exit 1; fi
-    EOF
-    chmod +x mock/ip mock/networkctl
-    export PATH="$PWD/mock:$PATH"
-    export TEST_LOG="$PWD/networkctl.log"
-    : > "$TEST_LOG"
-
-    TEST_CARRIER=0 TEST_ROUTE=0 ${pkgs.bash}/bin/bash ${../../modules/nixos/router/wan-lease-recovery.sh} eno1
-    test ! -s "$TEST_LOG"
-
-    TEST_CARRIER=1 TEST_ROUTE=1 ${pkgs.bash}/bin/bash ${../../modules/nixos/router/wan-lease-recovery.sh} eno1
-    test ! -s "$TEST_LOG"
-
-    TEST_CARRIER=1 TEST_ROUTE=0 ${pkgs.bash}/bin/bash ${../../modules/nixos/router/wan-lease-recovery.sh} eno1
-    test "$(cat "$TEST_LOG")" = 'reconfigure eno1'
-
-    if TEST_CARRIER=1 TEST_ROUTE=0 TEST_FAIL=1 ${pkgs.bash}/bin/bash ${../../modules/nixos/router/wan-lease-recovery.sh} eno1; then
-      echo 'failed reconfigure was hidden' >&2
-      exit 1
-    fi
-    touch "$out"
-  ''
+) "late-upstream recovery uses the same hardware role as initial configuration";
+assert lib.assertMsg (
+  upstream.dhcpV4Config.MaxAttempts == "infinity"
+) "networkd keeps requesting DHCP while the upstream server is late";
+assert lib.assertMsg (
+  !(cfg.systemd.timers ? router-wan-lease-recovery)
+) "late DHCP recovery has no interface-reconfiguration polling timer";
+assert lib.assertMsg (
+  !cfg.systemd.services.systemd-networkd.restartIfChanged
+) "activation preserves the live AP recovery path";
+pkgs.runCommand "router-wan-recovery-check" { } "touch $out"

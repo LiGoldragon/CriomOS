@@ -8,8 +8,14 @@ let
     node = {
       name = "router-yggdrasil-ndp-fixture";
       behavesAs.router = true;
+      capabilities = [
+        {
+          kind = "usbDownlink";
+          ipv4Network = "10.18.0.0/24";
+        }
+      ];
       network.routerInterfaces = {
-        wan = "eno1";
+
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
@@ -35,17 +41,18 @@ let
       { nixpkgs.config.allowUnfree = true; }
     ];
   };
-  rules = router.config.networking.nftables.ruleset;
-  scopedNdp = ''iifname "eno1" ip6 saddr fe80::/64 ip6 daddr { fe80::/64, ff02::/16 } icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert } accept'';
+  cfg = router.config;
+  rules = cfg.networking.nftables.tables.nixos-fw.content;
 in
-assert lib.assertMsg (lib.hasInfix scopedNdp rules)
-  "router WAN must admit link-local neighbour discovery before Yggdrasil ports";
 assert lib.assertMsg (
-  !(lib.hasInfix ''iifname "eno1" meta l4proto ipv6-icmp accept'' rules)
-) "router WAN must not broadly admit every IPv6 ICMP packet";
-assert lib.assertMsg (lib.hasInfix ''iifname "eno1" counter drop'' rules)
-  "router WAN must retain its default-drop boundary";
-
-pkgs.runCommand "router-yggdrasil-ndp-check" { } ''
-  touch "$out"
-''
+  cfg.networking.firewall.enable && cfg.networking.firewall.backend == "nftables"
+) "overlay discovery uses the shared firewall";
+assert lib.assertMsg (
+  lib.hasInfix "nd-neighbor-solicit" rules && lib.hasInfix "nd-neighbor-advert" rules
+) "link-local neighbour discovery remains admitted";
+assert lib.assertMsg
+  (lib.hasInfix "ip6 saddr fe80::/64 ip6 daddr fe80::/64 udp dport 9001 accept" rules)
+  "Yggdrasil multicast retains its link-local scope";
+assert lib.assertMsg (lib.hasInfix "policy drop" rules)
+  "unsolicited upstream packets retain default-drop policy";
+pkgs.runCommand "router-yggdrasil-ndp-check" { } "touch $out"

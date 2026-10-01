@@ -7,7 +7,10 @@ let
   inherit (lib) mkForce mkIf;
   inherit (horizon.node) behavesAs enableNetworkManager;
 
-  networkManagerDesktop = enableNetworkManager && !behavesAs.router;
+  sharing = builtins.any (c: builtins.isAttrs c && (c.kind or null) == "usbDownlink") (
+    horizon.node.capabilities or [ ]
+  );
+  networkManagerDesktop = enableNetworkManager && !behavesAs.router && !sharing;
 in
 {
   config = mkIf networkManagerDesktop {
