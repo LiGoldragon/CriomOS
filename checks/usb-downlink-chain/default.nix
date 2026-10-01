@@ -400,6 +400,8 @@ pkgs.testers.runNixOSTest {
         client.wait_until_succeeds("curl -4 -sf --max-time 10 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=120)
         # The AP has no downstream route; NAT is required for the reply.
         ouranos.fail("ip netns exec wifi-upstream ip -4 route get 10.18.0.1 | grep -q ' via '")
+        ouranos.succeed("systemd-run --unit=recovery-inbound python3 -m http.server 8443 --bind 0.0.0.0")
+        ouranos.wait_until_succeeds("curl -4 -sf --max-time 3 http://127.0.0.1:8443/ >/dev/null", timeout=30)
         ouranos.fail("ip netns exec wifi-upstream curl -4 -sf --max-time 3 http://192.168.77.2:8443/")
         ouranos.succeed("nmcli connection down recovery")
 
