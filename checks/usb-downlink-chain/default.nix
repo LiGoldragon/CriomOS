@@ -12,7 +12,13 @@
 # DHCP on vlan 1, answers DNS as 1.1.1.1 (the address Prometheus's dnsmasq
 # forwards to) and serves HTTP, and it has no route to either downlink
 # network, so every packet that reaches it must have been masqueraded.
-{ inputs, pkgs, ... }:
+{
+  inputs,
+  pkgs,
+  moduleRoot ? ../..,
+  legacyWanFixture ? false,
+  ...
+}:
 let
   inherit (inputs.nixpkgs) lib;
   constants = inputs.criomos-lib.lib.constants;
@@ -59,7 +65,7 @@ let
       keys.yggdrasil = null;
       capabilities = [ (downlink constants.network.lan.subnet) ];
       behavesAs.router = true;
-      network.routerInterfaces = {
+      network.routerInterfaces = lib.optionalAttrs legacyWanFixture { wan = "eth1"; } // {
         wlan = "wlan0";
         wlanBand = "2g";
         wlanChannel = 6;
@@ -159,8 +165,8 @@ pkgs.testers.runNixOSTest {
       {
         imports = [
           (integratedNic 1)
-          ../../modules/nixos/network/usb-downlink.nix
-          ../../modules/nixos/network/resolver.nix
+          (moduleRoot + "/modules/nixos/network/usb-downlink.nix")
+          (moduleRoot + "/modules/nixos/network/resolver.nix")
         ];
         _module.args.horizon.node = {
           capabilities = [ (downlink "10.44.0.0/24") ];
@@ -198,9 +204,9 @@ pkgs.testers.runNixOSTest {
         imports = [
           (integratedNic 2)
           inputs.sops-nix.nixosModules.sops
-          (withHorizon prometheusHorizon ../../modules/nixos/router/default.nix)
-          ../../modules/nixos/network/dnsmasq.nix
-          ../../modules/nixos/network/usb-downlink.nix
+          (withHorizon prometheusHorizon (moduleRoot + "/modules/nixos/router/default.nix"))
+          (moduleRoot + "/modules/nixos/network/dnsmasq.nix")
+          (moduleRoot + "/modules/nixos/network/usb-downlink.nix")
         ];
         _module.args.horizon = prometheusHorizon;
         # The VM has no radio and no sops key: the access point is the
@@ -224,7 +230,7 @@ pkgs.testers.runNixOSTest {
       {
         imports = [
           (integratedNic 3)
-          ../../modules/nixos/network/usb-downlink.nix
+          (moduleRoot + "/modules/nixos/network/usb-downlink.nix")
         ];
         _module.args.horizon.node = {
           capabilities = [ (downlink "10.45.0.0/24") ];
