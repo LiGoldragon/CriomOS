@@ -6,9 +6,7 @@
 {
   config,
   lib,
-  pkgs,
   horizon,
-  constants,
   ...
 }:
 let
@@ -93,8 +91,6 @@ let
 
   bridge = if isRouter then "br-lan" else "br-downlink";
 
-  routerLan = constants.network.lan.subnet;
-
 in
 {
   imports = [ ./dnsmasq.nix ];
@@ -126,8 +122,8 @@ in
     (mkIf isRouter {
       assertions = [
         {
-          assertion = network.cidr == routerLan;
-          message = "usbDownlink: on a Router node the downlink network (${network.cidr}) must be the router LAN (${routerLan}); the shared capability owns the router USB downlink";
+          assertion = network.size > 240;
+          message = "usbDownlink: a router downlink must contain the declared DHCP pool offsets 100 through 240";
         }
       ];
     })

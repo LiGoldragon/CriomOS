@@ -1,6 +1,5 @@
 {
   config,
-  constants,
   lib,
   horizon,
   ...
@@ -17,7 +16,6 @@ let
     ;
   inherit (horizon) node;
   exNodes = horizon.exNodes or { };
-  inherit (horizon.node) behavesAs;
 
   declared = builtins.any (c: builtins.isAttrs c && (c.kind or null) == "usbDownlink") (
     node.capabilities or [ ]
@@ -28,8 +26,7 @@ let
   headscaleEnabled = config.services.headscale.enable;
   tailnetBaseDomain = config.services.headscale.settings.dns.base_domain or null;
 
-  # Router nodes listen on loopback for local system lookups and on
-  # br-lan's gateway address for WiFi/LAN clients.
+  # Sharing nodes listen on loopback and their declared gateway.
   listenAddresses = [
     "::1"
     "127.0.0.1"

@@ -105,7 +105,7 @@ let
   centerNode = (center [ (downlink "10.47.0.0/24") ]).config;
   plainCenter = (center [ ]).config;
   routerNode = (router [ (downlink constants.network.lan.subnet) ]).config;
-  foreignRouter = (router [ (downlink "10.44.0.0/24") ]).config;
+  foreignRouter = (router [ (downlink "10.44.0.0/28") ]).config;
 
   networks = gatewayNode.systemd.network.networks;
   usbRule = networks."05-usb-downlink";
@@ -222,9 +222,9 @@ assert lib.assertMsg (
       Property = "ID_BUS=usb";
     }
 ) "the router uses the common declared USB sharing owner";
-assert lib.assertMsg (builtins.any (lib.hasInfix "must be the router LAN") (
+assert lib.assertMsg (builtins.any (lib.hasInfix "DHCP pool offsets") (
   failedAssertions foreignRouter
-)) "a router's AP and sharing network must agree";
+)) "a router pool must fit in its sole declared capability network";
 # Malformed declarations fail.
 assert lib.assertMsg (rejects [ (downlink "10.44.0.1/24") ]) "a network with host bits is refused";
 assert lib.assertMsg (rejects [ (downlink "10.44.0.0/33") ]) "an impossible prefix is refused";

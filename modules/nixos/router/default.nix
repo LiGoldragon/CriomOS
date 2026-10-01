@@ -5,13 +5,10 @@
   pkgs,
   utils,
   horizon,
-  constants,
   ...
 }:
 let
   inherit (lib)
-    concatMapStringsSep
-    concatStringsSep
     mkIf
     optional
     optionalAttrs

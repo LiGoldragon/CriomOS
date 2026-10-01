@@ -113,6 +113,16 @@ pkgs.testers.runNixOSTest {
             prefixLength = 24;
           }
         ];
+        virtualisation.interfaces.eth2 = {
+          vlan = 4;
+          assignIP = false;
+        };
+        networking.interfaces.eth2.ipv4.addresses = [
+          {
+            address = "192.168.4.1";
+            prefixLength = 24;
+          }
+        ];
         networking.interfaces.lo.ipv4.addresses = [
           {
             address = "1.1.1.1";
@@ -127,10 +137,12 @@ pkgs.testers.runNixOSTest {
           after = [
             "network-addresses-lo.service"
             "network-addresses-eth1.service"
+            "network-addresses-eth2.service"
           ];
           requires = [
             "network-addresses-lo.service"
             "network-addresses-eth1.service"
+            "network-addresses-eth2.service"
           ];
         };
         services.dnsmasq = {
@@ -140,13 +152,18 @@ pkgs.testers.runNixOSTest {
             bind-interfaces = true;
             listen-address = [
               "192.168.1.1"
+              "192.168.4.1"
               "1.1.1.1"
             ];
             no-resolv = true;
             address = "/example.test/1.1.1.1";
-            dhcp-range = "192.168.1.50,192.168.1.99,1h";
+            dhcp-range = [
+              "set:uplink1,192.168.1.50,192.168.1.99,1h"
+              "set:uplink2,192.168.4.50,192.168.4.99,1h"
+            ];
             dhcp-option = [
-              "option:router,192.168.1.1"
+              "tag:uplink1,option:router,192.168.1.1"
+              "tag:uplink2,option:router,192.168.4.1"
               "option:dns-server,1.1.1.1"
             ];
           };
@@ -179,7 +196,7 @@ pkgs.testers.runNixOSTest {
         networking.networkmanager.enable = true;
         # Two integrated upstream candidates exercise the explicit policy.
         virtualisation.interfaces.eth2 = {
-          vlan = 1;
+          vlan = 4;
           assignIP = false;
         };
         virtualisation.qemu.options = usbNic {
@@ -401,7 +418,6 @@ pkgs.testers.runNixOSTest {
         ouranos.wait_until_succeeds("nmcli connection up recovery", timeout=120)
         ouranos.succeed("ip link set eth1 down; ip link set built_in_backup down")
         ouranos.wait_until_succeeds("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'", timeout=120)
-        ouranos.succeed("systemctl restart dnsmasq")
         ouranos.wait_until_succeeds("getent ahostsv4 recovery.test | grep -q 1.1.1.1", timeout=60)
         client.wait_until_succeeds("curl -4 -sf --max-time 10 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=120)
         # The AP has no downstream route; NAT is required for the reply.
