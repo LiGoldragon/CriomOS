@@ -259,6 +259,7 @@
             inherit inputs;
           };
           usb-downlink = pkgs.callPackage ./checks/usb-downlink { inherit inputs; };
+          usb-sharing-policy = pkgs.callPackage ./checks/usb-sharing-policy { inherit inputs; };
           usb-downlink-chain = pkgs.callPackage ./checks/usb-downlink-chain { inherit inputs; };
           usb-downlink-observer = pkgs.callPackage ./checks/usb-downlink-observer { };
           wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
