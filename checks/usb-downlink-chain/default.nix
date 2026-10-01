@@ -184,7 +184,12 @@ pkgs.testers.runNixOSTest {
           pkgs.iproute2
           pkgs.curl
           pkgs.procps
+          pkgs.iw
+          pkgs.hostapd
+          pkgs.dnsmasq
+          pkgs.python3
         ];
+        boot.kernelModules = [ "mac80211_hwsim" ];
       };
 
     prometheus =
@@ -273,7 +278,7 @@ pkgs.testers.runNixOSTest {
 
     with subtest("hop A: ouranos takes its uplink on the integrated NIC"):
         ouranos.wait_for_unit("NetworkManager.service")
-        ouranos.wait_until_succeeds("ip -4 route show default | grep -q 'via 192.168.1.1 dev eth1'", timeout=120)
+        ouranos.wait_until_succeeds("ip -4 route show default | grep -Eq 'via 192.168.1.1 dev eth[12]'", timeout=120)
         ouranos_uplink = ouranos.succeed("ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1").strip()
         assert re.fullmatch(r"192\.168\.1\.\d+", ouranos_uplink), ouranos_uplink
         ouranos.succeed("udevadm info -q property -p /sys/class/net/eth1 | grep -qx 'ID_BUS=pci'")
@@ -366,6 +371,37 @@ pkgs.testers.runNixOSTest {
         prometheus.succeed("networkctl renew eth1")
         client.succeed("networkctl renew eth1")
         client.wait_until_succeeds("curl -4 -sf --max-time 10 --interface eth1 http://example.test/ | grep -qx daisy-chain-ok", timeout=120)
+
+    with subtest("integrated upstream selection survives interface renaming"):
+        ouranos.succeed("ip link set eth2 down; ip link set eth2 name built_in_backup; ip link set built_in_backup up")
+        ouranos.succeed("udevadm trigger --action=add /sys/class/net/built_in_backup")
+        ouranos.wait_until_succeeds("networkctl status built_in_backup | grep -q configured", timeout=120)
+        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'built_in_backup:unmanaged'")
+        assert bridge_of(ouranos, "built_in_backup") == ""
+
+    with subtest("real Wi-Fi recovery carries downstream traffic with wired uplinks absent"):
+        # A simulated radio AP in its own network namespace is a separate
+        # upstream, not a route through the host's loopback or wired ports.
+        ouranos.wait_until_succeeds("test -e /sys/class/net/wlan0 && test -e /sys/class/net/wlan1")
+        ouranos.succeed("ip netns add wifi-upstream; iw phy phy0 set netns name wifi-upstream")
+        ouranos.succeed("ip netns exec wifi-upstream ip link set lo up; ip netns exec wifi-upstream ip addr add 1.1.1.1/32 dev lo")
+        ouranos.succeed("ip netns exec wifi-upstream ip addr add 192.168.77.1/24 dev wlan0")
+        ouranos.succeed("printf 'interface=wlan0\\ndriver=nl80211\\nssid=recovery-fixture\\nhw_mode=g\\nchannel=6\\n' > /tmp/recovery-hostapd.conf")
+        ouranos.succeed("ip netns exec wifi-upstream hostapd -B /tmp/recovery-hostapd.conf")
+        ouranos.succeed("mkdir /tmp/recovery-web; printf daisy-chain-ok > /tmp/recovery-web/index.html")
+        ouranos.succeed("systemd-run --unit=recovery-web ip netns exec wifi-upstream python3 -m http.server 80 --directory /tmp/recovery-web")
+        ouranos.succeed("ip netns exec wifi-upstream dnsmasq --no-resolv --bind-interfaces --listen-address=1.1.1.1 --address=/recovery.test/1.1.1.1 --pid-file=/tmp/recovery-dns.pid")
+        ouranos.succeed("nmcli connection add type wifi ifname wlan1 con-name recovery ssid recovery-fixture ipv4.method manual ipv4.addresses 192.168.77.2/24 ipv4.gateway 192.168.77.1 ipv4.ignore-auto-dns yes ipv6.method disabled")
+        ouranos.wait_until_succeeds("nmcli connection up recovery", timeout=120)
+        ouranos.succeed("ip link set eth1 down; ip link set built_in_backup down")
+        ouranos.wait_until_succeeds("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'", timeout=120)
+        ouranos.succeed("systemctl restart dnsmasq")
+        ouranos.wait_until_succeeds("getent ahostsv4 recovery.test | grep -q 1.1.1.1", timeout=60)
+        client.wait_until_succeeds("curl -4 -sf --max-time 10 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=120)
+        # The AP has no downstream route; NAT is required for the reply.
+        ouranos.fail("ip netns exec wifi-upstream ip -4 route get 10.18.0.1 | grep -q ' via '")
+        ouranos.fail("ip netns exec wifi-upstream curl -4 -sf --max-time 3 http://192.168.77.2:8443/")
+        ouranos.succeed("nmcli connection down recovery")
 
     with subtest("no upstream, no Internet: the leaf fails rather than passing"):
         upstream.succeed("ip link set eth1 down")
