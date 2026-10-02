@@ -98,15 +98,10 @@
     # Lojix Nexus — deployment authority. Its executable owns the default
     # state directory, store file and both socket paths; the NixOS module
     # restates them rather than setting them.
-    # 6.0.0, carrying exactly one revision of every contract crate —
-    # `signal-lojix` 5.0.0 (4271b5ce), `meta-signal-lojix` 6.0.0 (35deec4e),
-    # `horizon-lib` 0.10.1 (40d04d25) — so the duplicate `meta-signal-lojix`
-    # that made 23f09f28 uncompilable cannot recur. The Nexus announces
-    # `(LojixNexusReady <ordinary> <meta>)` once both listeners are bound, and
-    # its own startup test now waits for that announcement instead of polling a
-    # five-second deadline: 5.0.0's test failed reproducibly on a loaded remote
-    # builder while passing on an idle one.
-    lojix.url = "github:LiGoldragon/lojix/3fc95f0cf4eaf14ff62898c4783ebbc670fdf96b";
+    # The materializer and all client/tool contracts share the hardware-role
+    # Horizon schema. Runtime cutover requires preserved-state v5-to-v6
+    # migration and rollback qualification; this pin alone does not supply it.
+    lojix.url = "github:LiGoldragon/lojix/94d8b69a546560e9d3c8300c6114e8dac7df67ea";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
