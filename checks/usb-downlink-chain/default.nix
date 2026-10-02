@@ -199,6 +199,12 @@ pkgs.testers.runNixOSTest {
           };
         };
         networking.networkmanager.enable = true;
+        # qemu-vm disables wireless at mkVMOverride priority. This fixture
+        # exercises the real NM supplicant path, so enable it explicitly at
+        # higher priority; ordinary NM hosts enable the same DBus backend.
+        networking.wireless.enable = lib.mkOverride 0 true;
+        networking.wireless.autoDetectInterfaces = false;
+        networking.wireless.dbusControlled = true;
         virtualisation.interfaces.eth1.name = "uplink_a";
         # Two integrated upstream candidates exercise the explicit policy.
         virtualisation.interfaces.eth2 = {
@@ -428,6 +434,8 @@ pkgs.testers.runNixOSTest {
         ouranos.succeed("ip netns exec wifi-upstream dnsmasq --no-resolv --bind-interfaces --listen-address=1.1.1.1 --address=/recovery.test/1.1.1.1 --pid-file=/tmp/recovery-dns.pid")
         ouranos.succeed("nmcli connection add type wifi ifname wlan1 con-name recovery ssid recovery-fixture ipv4.method manual ipv4.addresses 192.168.77.2/24 ipv4.gateway 192.168.77.1 ipv4.ignore-auto-dns yes ipv6.method disabled")
         ouranos.wait_until_succeeds("nmcli connection up recovery", timeout=120)
+        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'wlan1:connected'")
+        ouranos.succeed("networkctl --no-pager status wlan1 | grep -q 'Network File: n/a'")
         ouranos.succeed("ip link set uplink_a down; ip link set built_in_backup down")
         ouranos.wait_until_succeeds("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'", timeout=120)
         ouranos.wait_until_succeeds("getent ahostsv4 recovery.test | grep -q 1.1.1.1", timeout=60)
