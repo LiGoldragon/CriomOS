@@ -55,7 +55,7 @@ print(json.dumps({"result": "DHCP_ACK", "address": socket.inet_ntoa(address)}))
     def local_services(label):
         prometheus.succeed("ping -c1 -W2 10.44.0.1")
         prometheus.succeed("dig +short +time=2 +tries=1 @10.44.0.1 example.test | grep -qx 1.1.1.1")
-        ouranos.succeed("test $(pgrep -xc kea-dhcp4) = 1; test $(pgrep -xc dnsmasq) = 1")
+        ouranos.succeed("systemctl is-active kea-dhcp4-server.service dnsmasq.service")
         lease = json.loads(ouranos.succeed("ip netns exec overlap-dhcp python3 -c " + shlex.quote(dhcp_probe)))
         assert lease["result"] == "DHCP_ACK", f"{label}: fresh DHCP exchange failed"
         assert fetch(client, "1.1.1.2"), f"{label}: disjoint uplink stopped forwarding"
