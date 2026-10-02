@@ -10,6 +10,9 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"probe0\0")
 s.bind(("0.0.0.0", 68))
+# Receive at Ethernet level before the addressless client's IP route checks.
+rx = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0800))
+rx.bind(("probe0", 0))
 base = struct.pack("!BBBBIHHIIII16s64s128s", 1, 1, 6, 0, xid, 0, 0x8000,
     0, 0, 0, 0, mac + bytes(10), bytes(64), bytes(128))
 def send(options):
@@ -18,8 +21,15 @@ def receive(kind):
     deadline = time.monotonic() + 10
     while True:
         assert time.monotonic() < deadline, "bounded DHCP exchange expired"
-        s.settimeout(max(0.001, deadline - time.monotonic()))
-        data, _ = s.recvfrom(4096)
+        rx.settimeout(max(0.001, deadline - time.monotonic()))
+        frame = rx.recv(4096)
+        if len(frame) < 42 or frame[12:14] != bytes.fromhex("0800") or frame[23] != 17:
+            continue
+        ihl = (frame[14] & 15) * 4
+        udp = 14 + ihl
+        if struct.unpack("!HH", frame[udp:udp+4]) != (67, 68):
+            continue
+        data = frame[udp+8:]
         if len(data) < 240 or data[0] != 2 or data[4:8] != struct.pack("!I", xid):
             continue
         assert data[28:34] == mac and data[236:240] == bytes.fromhex("63825363")
