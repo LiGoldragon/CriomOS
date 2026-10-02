@@ -156,7 +156,10 @@ pkgs.testers.runNixOSTest {
               "1.1.1.1"
             ];
             no-resolv = true;
-            address = "/example.test/1.1.1.1";
+            address = [
+              "/example.test/1.1.1.1"
+              "/late.test/1.1.1.1"
+            ];
             dhcp-range = [
               "set:uplink1,192.168.1.50,192.168.1.99,1h"
               "set:uplink2,192.168.4.50,192.168.4.99,1h"
@@ -343,7 +346,7 @@ pkgs.testers.runNixOSTest {
         upstream.succeed("systemctl stop dnsmasq")
         ouranos.succeed("networkctl renew eth1 eth2")
         upstream.succeed("systemctl start dnsmasq")
-        ouranos.wait_until_succeeds("getent ahostsv4 example.test | grep -q 1.1.1.1", timeout=120)
+        ouranos.wait_until_succeeds("getent ahostsv4 late.test | grep -q 1.1.1.1", timeout=120)
 
     with subtest("hop C: prometheus's router bridges its USB NIC into br-lan"):
         wait_bridged(prometheus, "br-lan")
