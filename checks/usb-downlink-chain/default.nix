@@ -2,7 +2,7 @@
 # UsbDownlink hops, each on a real (emulated) USB Ethernet NIC.
 #
 #   upstream  --vlan 1--  ouranos           (NetworkManager node, UsbDownlink)
-#                         ouranos USB NIC --vlan 2--  prometheus eth1 (WAN)
+#                         ouranos USB NIC --vlan 2--  prometheus uplink_a (WAN)
 #                                                     prometheus (Router + UsbDownlink)
 #                                                     prometheus USB NIC --vlan 3-- client eth1
 #
@@ -107,17 +107,19 @@ pkgs.testers.runNixOSTest {
       { ... }:
       {
         imports = [ (integratedNic 1) ];
-        networking.interfaces.eth1.ipv4.addresses = [
+        virtualisation.interfaces.eth1.name = "isp_primary";
+        networking.interfaces.isp_primary.ipv4.addresses = [
           {
             address = "192.168.1.1";
             prefixLength = 24;
           }
         ];
         virtualisation.interfaces.eth2 = {
+          name = "isp_backup";
           vlan = 4;
           assignIP = false;
         };
-        networking.interfaces.eth2.ipv4.addresses = [
+        networking.interfaces.isp_backup.ipv4.addresses = [
           {
             address = "192.168.4.1";
             prefixLength = 24;
@@ -136,13 +138,13 @@ pkgs.testers.runNixOSTest {
         systemd.services.dnsmasq = {
           after = [
             "network-addresses-lo.service"
-            "network-addresses-eth1.service"
-            "network-addresses-eth2.service"
+            "network-addresses-isp_primary.service"
+            "network-addresses-isp_backup.service"
           ];
           requires = [
             "network-addresses-lo.service"
-            "network-addresses-eth1.service"
-            "network-addresses-eth2.service"
+            "network-addresses-isp_primary.service"
+            "network-addresses-isp_backup.service"
           ];
         };
         services.dnsmasq = {
@@ -197,8 +199,10 @@ pkgs.testers.runNixOSTest {
           };
         };
         networking.networkmanager.enable = true;
+        virtualisation.interfaces.eth1.name = "uplink_a";
         # Two integrated upstream candidates exercise the explicit policy.
         virtualisation.interfaces.eth2 = {
+          name = "uplink_b";
           vlan = 4;
           assignIP = false;
         };
@@ -304,19 +308,19 @@ pkgs.testers.runNixOSTest {
 
     with subtest("hop A: ouranos takes its uplink on the integrated NIC"):
         ouranos.wait_for_unit("NetworkManager.service")
-        ouranos.wait_until_succeeds("ip -4 route show default | grep -Eq 'via 192.168.1.1 dev eth[12]'", timeout=120)
-        ouranos_uplink = ouranos.succeed("ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1").strip()
+        ouranos.wait_until_succeeds("ip -4 route show default | grep -Eq 'via 192.168.1.1 dev uplink_[ab]'", timeout=120)
+        ouranos_uplink = ouranos.succeed("ip -4 -o addr show dev uplink_a | awk '{print $4}' | cut -d/ -f1").strip()
         assert re.fullmatch(r"192\.168\.1\.\d+", ouranos_uplink), ouranos_uplink
-        ouranos.succeed("udevadm info -q property -p /sys/class/net/eth1 | grep -qx 'ID_BUS=pci'")
+        ouranos.succeed("udevadm info -q property -p /sys/class/net/uplink_a | grep -qx 'ID_BUS=pci'")
 
     with subtest("hop B: ouranos serves its USB downlink by bus role"):
         wait_bridged(ouranos, "br-downlink")
         ouranos_usb = only_usb_nic(ouranos)
-        assert ouranos_usb != "eth1"
-        assert bridge_of(ouranos, "eth1") == "", "the integrated NIC must never be a downlink"
+        assert ouranos_usb != "uplink_a"
+        assert bridge_of(ouranos, "uplink_a") == "", "the integrated NIC must never be a downlink"
         ouranos.succeed("ip -4 -o addr show dev br-downlink | grep -q ' 10.44.0.1/24 '")
         ouranos.succeed(f"nmcli -t -f DEVICE,STATE device | grep -qx '{ouranos_usb}:unmanaged'")
-        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'eth1:unmanaged'")
+        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'uplink_a:unmanaged'")
         ouranos.wait_for_unit("kea-dhcp4-server.service")
         assert ouranos.succeed("nft list table ip nixos-nat | grep -c masquerade").strip() == "1"
         assert ouranos.succeed("systemctl show kea-dhcp4-server -p MainPID --value").strip() != "0"
@@ -324,9 +328,9 @@ pkgs.testers.runNixOSTest {
         ouranos.wait_for_unit("dnsmasq.service")
         ouranos.fail("systemctl is-active systemd-resolved.service")
         ouranos.fail("systemctl is-active usb-downlink-observer.service")
-        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'eth2:unmanaged'")
-        ouranos.wait_until_succeeds("networkctl status eth2 | grep -q configured", timeout=120)
-        assert bridge_of(ouranos, "eth2") == ""
+        ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'uplink_b:unmanaged'")
+        ouranos.wait_until_succeeds("networkctl status uplink_b | grep -q configured", timeout=120)
+        assert bridge_of(ouranos, "uplink_b") == ""
 
 
     with subtest("hop B: prometheus takes a lease from ouranos on its integrated NIC"):
@@ -344,7 +348,7 @@ pkgs.testers.runNixOSTest {
             machine.fail("systemctl is-active systemd-resolved.service")
             machine.succeed("test $(pgrep -xc dnsmasq) = 1")
         upstream.succeed("systemctl stop dnsmasq")
-        ouranos.succeed("networkctl renew eth1 eth2")
+        ouranos.succeed("networkctl renew uplink_a uplink_b")
         upstream.succeed("systemctl start dnsmasq")
         ouranos.wait_until_succeeds("getent ahostsv4 late.test | grep -q 1.1.1.1", timeout=120)
 
@@ -399,7 +403,7 @@ pkgs.testers.runNixOSTest {
         client.wait_until_succeeds("curl -4 -sf --max-time 10 --interface eth1 http://example.test/ | grep -qx daisy-chain-ok", timeout=120)
 
     with subtest("integrated upstream selection survives interface renaming"):
-        ouranos.succeed("ip link set eth2 down; ip link set eth2 name built_in_backup; ip link set built_in_backup up")
+        ouranos.succeed("ip link set uplink_b down; ip link set uplink_b name built_in_backup; ip link set built_in_backup up")
         ouranos.succeed("udevadm trigger --action=add /sys/class/net/built_in_backup")
         ouranos.wait_until_succeeds("networkctl status built_in_backup | grep -q configured", timeout=120)
         ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'built_in_backup:unmanaged'")
@@ -419,7 +423,7 @@ pkgs.testers.runNixOSTest {
         ouranos.succeed("ip netns exec wifi-upstream dnsmasq --no-resolv --bind-interfaces --listen-address=1.1.1.1 --address=/recovery.test/1.1.1.1 --pid-file=/tmp/recovery-dns.pid")
         ouranos.succeed("nmcli connection add type wifi ifname wlan1 con-name recovery ssid recovery-fixture ipv4.method manual ipv4.addresses 192.168.77.2/24 ipv4.gateway 192.168.77.1 ipv4.ignore-auto-dns yes ipv6.method disabled")
         ouranos.wait_until_succeeds("nmcli connection up recovery", timeout=120)
-        ouranos.succeed("ip link set eth1 down; ip link set built_in_backup down")
+        ouranos.succeed("ip link set uplink_a down; ip link set built_in_backup down")
         ouranos.wait_until_succeeds("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'", timeout=120)
         ouranos.wait_until_succeeds("getent ahostsv4 recovery.test | grep -q 1.1.1.1", timeout=60)
         client.wait_until_succeeds("curl -4 -sf --max-time 10 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=120)
@@ -431,7 +435,7 @@ pkgs.testers.runNixOSTest {
         ouranos.succeed("nmcli connection down recovery")
 
     with subtest("no upstream, no Internet: the leaf fails rather than passing"):
-        upstream.succeed("ip link set eth1 down")
+        upstream.succeed("ip link set isp_primary down")
         client.fail("curl -4 -sf --max-time 8 --interface eth1 http://1.1.1.1/")
   '';
 }
