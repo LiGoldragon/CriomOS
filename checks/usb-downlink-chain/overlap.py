@@ -100,12 +100,17 @@ print(json.dumps({"result": "DHCP_ACK", "address": socket.inet_ntoa(address)}))
         label = f"Wi-Fi {address}"
         ouranos.succeed(f"nmcli connection modify recovery +ipv4.addresses {address}; nmcli device reapply wlan1")
         ouranos.wait_until_succeeds(f"ip -4 addr show wlan1 | grep -Fq '{address}'", timeout=60)
+        # NM reapply can remove a foreign route. Restore this test's chosen
+        # path, then prove the conflict is actually exercised on Wi-Fi.
+        ouranos.succeed("ip route replace 1.1.1.1/32 via 192.168.77.1 dev wlan1")
         ouranos.succeed("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'")
         assert fetch(ouranos, "1.1.1.1"), f"{label}: host recovery path must remain usable"
         local_services(label)
         if fetch(client, "1.1.1.1"):
             violations.append(label)
         ouranos.succeed(f"nmcli connection modify recovery -ipv4.addresses {address}; nmcli device reapply wlan1")
+        ouranos.succeed("ip route replace 1.1.1.1/32 via 192.168.77.1 dev wlan1")
+        ouranos.succeed("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'")
         client.wait_until_succeeds("curl -4 -sf --max-time 5 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=60)
 
     # Restore the preceding test's no-uplink state even on an expected red.
