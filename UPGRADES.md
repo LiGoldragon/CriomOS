@@ -1,5 +1,40 @@
 # Breaking upgrades
 
+## USB sharing and Lojix durable schema 5 to 6
+
+This review removes the interface-named WAN field and pins the coherent
+Horizon, signal and Lojix runtime schema. Use the separately packaged
+`lojix-migrate-v5-v6 OLD_STARTUP_ARCHIVE NEW_STARTUP_ARCHIVE DESTINATION_DIRECTORY`
+for this crossing. The legacy configuration-copy tool is not a schema migration;
+store reset and a fresh empty database do not preserve existing state.
+
+Field owns cutover. First qualify the immutable materialized host tuple,
+per-host subnet/overlap and firewall projections, legacy USB cleanup, and the
+matched old runtime/store/archive/sidecar recovery tuple. Ouranos activation
+remains held until its runtime, selected system profile/boot and Home recovery
+are reconciled. Source or isolated VM success alone does not release these gates.
+
+Drain jobs, containers, outbox and transition intents under the old runtime,
+stop only the identified service under an authorized cutover, and preserve a
+private immutable old store/archive/known-sidecar capture and matched binary.
+Regenerate the new typed startup archive from that configuration, preserving
+meta-owned values; change only the declared WAN layout and destination paths.
+Run the converter into a separate absent destination. Follow the converter's
+exact input/layout contract and Lojix UPGRADES.md; never replace the source.
+
+Accept only exit zero plus the durably committed receipt bound to the verified
+receipt. Independently compare all durable families, catalog, counters, engine
+history, configuration normalization and captured input bytes. Catalog-registered
+empty tables may be physically absent; receipt table deltas must explain any
+empty tables materialized on reopen. A partial or uncommitted destination is
+held for investigation, never an implicit retry or permission to activate.
+
+Only after final implementation audit and Field's migration/recovery acceptance
+may the coordinated runtime/store/archive tuple be activated. On failure, stop
+the exact new service and restore the matched old tuple; preserve failed output
+and receipts. Synthetic old-runtime startup/shutdown qualification is not proof
+that a live recovery capture exists. Preserve AP connectivity and Wi-Fi recovery.
+
 ## Horizon fixed location
 
 CriomOS reads the optional `horizon.node.fixedLocation` fact and configures
@@ -15,54 +50,12 @@ not carry this fact. Evaluate the materialized target first; after a successful
 activation, verify GeoClue's static source and the consumer's resulting state
 separately.
 
-## Lojix 0.21.1 to 6.0.0
+## Historical Lojix 0.21.1 to 6.0.0 crossing
 
-CriomOS pins one Lojix release for the Nexus, ordinary client, owner client,
-offline migration tool, and daemon-free bootstrap. A 6.0 client cannot drive a
-running 0.21.1 Nexus, so the crossing uses the bootstrap and migration tools
-before the 6.0 owner client performs the live activation.
-
-First run the pinned `lojix-bootstrap` with `BuildOnly`, an immutable CriomOS
-revision, `CompleteHost`, the externally composed regular
-`horizon-definition.datom`, and the target's configured remote builder. Keep
-its private journal, GC root, and terminal evidence. Continue only after the
-bootstrap returns `BootstrapTerminal.Succeeded`.
-
-The old service's startup archive selects its pre-Nexus v5 store. Preserve the
-archive and that source store, stop the old service, and make the 6.0 default
-store path absent while retaining any previous file at that path for rollback.
-Run `lojix-migrate-configuration <preserved-startup-archive> <default-store>`
-from the pinned 6.0 offline tools. It copies the archive-selected source store,
-adds the Nexus configuration to the copy, and validates the result; it never
-modifies the source. Do not use `lojix-reset-store` for this crossing.
-
-The 0.21.1 archive encoding may be unreadable by the 6.0 offline tool. If its
-decode is rejected, preserve that archive unchanged and reconstruct an archive
-with the pinned 6.0 `lojix-write-configuration`, using the exact public fields
-from the installed service's `ExecStartPre` request and the preserved v5 source
-store path. Migrate from that reconstructed archive. Do not guess a field or
-replace the v5 source.
-
-Start the pinned 6.0 `lojix-nexus` under the declared service identity and wait
-for its `LojixNexusReady` announcement. Use the matching owner client to submit
-the same immutable `CompleteHost` revision with `ActivateNow`, then use the
-matching ordinary client to query that deployment until it is terminal. A
-bootstrap `BootOnce` only installs and arms a boot generation; it does not make
-the candidate the live system and is not the no-reboot activation witness.
-
-When a temporary 6.0 Nexus bridges the first activation, the managed
-`lojix.service` can initially fail because the bridge still owns the store and
-sockets. Let the activation finish, stop only the known temporary bridge, and
-wait for the managed service's configured restart to acquire them. Once the
-managed service reports `LojixNexusReady`, repeat the identical immutable typed
-deployment to obtain a clean terminal receipt. Preserve the first deployment's
-failure receipt as evidence of the partial activation.
-
-After a successful terminal reply, verify that the persistent system profile
-and `/run/current-system` identify the produced closure, the declared
-`lojix.service` runs `lojix-nexus`, both sockets answer through matching 6.0
-clients, and the migrated default store is retained. Stop on any partial state
-or terminal failure. This crossing neither resets a store nor reboots.
+That crossing used a configuration-copy helper to add Nexus configuration
+under durable schema 5. It did not migrate schema 5 to 6. For the current
+review, use only the schema-migration path above and the matching Lojix upgrade
+contract; do not run the historical helper or reconstruct old archives by guess.
 
 ## ChatGPT Desktop vendor-boundary Home consumer
 

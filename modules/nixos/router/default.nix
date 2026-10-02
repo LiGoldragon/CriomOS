@@ -165,9 +165,13 @@ in
         allowedUDPPorts = lib.mkForce [ ];
         extraInputRules = ''
           ip6 saddr fe80::/64 ip6 daddr fe80::/64 udp dport 9001 accept
+          # Preserve link-local Yggdrasil TCP peering alongside its UDP listener.
           ip6 saddr fe80::/64 ip6 daddr fe80::/64 tcp dport 10001 accept
+          # Guest taps retain IPv6 control traffic inside the router's VM boundary.
           iifname "vmt*" meta l4proto ipv6-icmp accept
         '';
+        # The early boundary returns guest-to-guest traffic to the common
+        # firewall; this matching accept preserves forwarding between VM taps.
         extraForwardRules = ''iifname "vmt*" oifname "vmt*" accept'';
       };
     };

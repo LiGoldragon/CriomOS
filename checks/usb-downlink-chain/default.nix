@@ -17,6 +17,7 @@
   pkgs,
   moduleRoot ? ../..,
   legacyWanFixture ? false,
+  overlapContract ? false,
   ...
 }:
 let
@@ -92,7 +93,7 @@ let
   };
 in
 pkgs.testers.runNixOSTest {
-  name = "usb-downlink-chain";
+  name = if overlapContract then "usb-downlink-overlap-proposed" else "usb-downlink-chain";
   globalTimeout = 900;
 
   node.specialArgs = {
@@ -447,6 +448,8 @@ pkgs.testers.runNixOSTest {
         ouranos.wait_until_succeeds("curl -4 -sf --max-time 3 http://127.0.0.1:8443/ >/dev/null", timeout=30)
         ouranos.fail("ip netns exec wifi-upstream curl -4 -sf --max-time 3 http://192.168.77.2:8443/")
         ouranos.succeed("nmcli connection down recovery")
+
+    ${lib.optionalString overlapContract (builtins.readFile ./overlap.py)}
 
     with subtest("no upstream, no Internet: the leaf fails rather than passing"):
         upstream.succeed("ip link set isp_primary down")
