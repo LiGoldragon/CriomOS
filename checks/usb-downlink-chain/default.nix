@@ -273,6 +273,7 @@ pkgs.testers.runNixOSTest {
 
   testScript = ''
     import re
+    import json
 
     def usb_nics(machine):
         """The node's USB Ethernet NICs, found by udev bus role."""
@@ -373,7 +374,7 @@ pkgs.testers.runNixOSTest {
         dns = client.succeed("dig +short +time=3 +tries=2 @10.18.0.1 example.test").strip()
         assert dns == "1.1.1.1", f"DNS at the prometheus gateway returned {dns!r}"
         client.wait_until_succeeds("curl -4 -sf --max-time 10 --interface eth1 http://example.test/ | grep -qx daisy-chain-ok", timeout=60)
-        selected_source = ouranos.succeed("ip -4 route get 1.1.1.1 | sed -n 's/.* src \([^ ]*\).*/\1/p'").strip()
+        selected_source = json.loads(ouranos.succeed("ip -j -4 route get 1.1.1.1"))[0]["prefsrc"]
         seen = upstream.succeed("tail -n1 /var/log/nginx/access.log | cut -d' ' -f1").strip()
         assert seen == selected_source, f"upstream saw {seen}, not selected route source {selected_source}"
         upstream.fail("ip -4 route get 10.18.0.1 | grep -q ' via '")
