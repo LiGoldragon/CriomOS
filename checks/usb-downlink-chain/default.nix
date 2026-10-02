@@ -374,9 +374,13 @@ pkgs.testers.runNixOSTest {
         dns = client.succeed("dig +short +time=3 +tries=2 @10.18.0.1 example.test").strip()
         assert dns == "1.1.1.1", f"DNS at the prometheus gateway returned {dns!r}"
         client.wait_until_succeeds("curl -4 -sf --max-time 10 --interface eth1 http://example.test/ | grep -qx daisy-chain-ok", timeout=60)
-        selected_source = json.loads(ouranos.succeed("ip -j -4 route get 1.1.1.1"))[0]["prefsrc"]
+        # Forwarded flows and a host-only route lookup may select different
+        # equal-metric uplinks. The observed peer must be an address actually
+        # assigned to one of the integrated upstreams, never a LAN address.
+        uplinks = json.loads(ouranos.succeed("ip -j -4 address show"))
+        upstream_sources = {a["local"] for link in uplinks if link["ifname"] in ["uplink_a", "uplink_b"] for a in link["addr_info"]}
         seen = upstream.succeed("tail -n1 /var/log/nginx/access.log | cut -d' ' -f1").strip()
-        assert seen == selected_source, f"upstream saw {seen}, not selected route source {selected_source}"
+        assert seen in upstream_sources, f"upstream saw {seen}, outside upstream addresses {upstream_sources}"
         upstream.fail("ip -4 route get 10.18.0.1 | grep -q ' via '")
 
     with subtest("inbound services remain closed from upstream"):
