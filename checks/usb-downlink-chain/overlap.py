@@ -107,6 +107,6 @@ print(json.dumps({"result": "DHCP_ACK", "address": socket.inet_ntoa(address)}))
         client.wait_until_succeeds("curl -4 -sf --max-time 5 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=60)
 
     # Restore the preceding test's no-uplink state even on an expected red.
-    ouranos.succeed("nmcli connection down recovery; ip route del 1.1.1.1/32; ip route del 1.1.1.2/32; ip link set uplink_a down; ip link set built_in_backup down")
+    ouranos.succeed("nmcli connection down recovery; ip route flush 1.1.1.1/32; ip route flush 1.1.1.2/32; ip link set uplink_a down; ip link set built_in_backup down")
     ouranos.succeed("ip link del overlap-port; ip netns del overlap-dhcp")
     assert not violations, f"PROPOSED selective overlap block absent: {violations}"
