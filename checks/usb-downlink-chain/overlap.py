@@ -85,6 +85,7 @@ print(json.dumps({"result": "DHCP_ACK", "address": socket.inet_ntoa(address)}))
     for address in ["10.44.0.200/24", "10.44.200.200/16"]:
         label = f"Ethernet {address}"
         ouranos.succeed(f"ip addr add {address} dev uplink_a")
+        ouranos.succeed("ip -4 route get 1.1.1.1 | grep -q 'dev uplink_a'")
         assert fetch(ouranos, "1.1.1.1"), f"{label}: host recovery path must remain usable"
         local_services(label)
         if fetch(client, "1.1.1.1"):
@@ -99,6 +100,7 @@ print(json.dumps({"result": "DHCP_ACK", "address": socket.inet_ntoa(address)}))
         label = f"Wi-Fi {address}"
         ouranos.succeed(f"nmcli connection modify recovery +ipv4.addresses {address}; nmcli device reapply wlan1")
         ouranos.wait_until_succeeds(f"ip -4 addr show wlan1 | grep -Fq '{address}'", timeout=60)
+        ouranos.succeed("ip -4 route get 1.1.1.1 | grep -q 'dev wlan1'")
         assert fetch(ouranos, "1.1.1.1"), f"{label}: host recovery path must remain usable"
         local_services(label)
         if fetch(client, "1.1.1.1"):
