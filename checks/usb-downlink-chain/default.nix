@@ -433,7 +433,7 @@ pkgs.testers.runNixOSTest {
         ouranos.succeed("mkdir /tmp/recovery-web; printf daisy-chain-ok > /tmp/recovery-web/index.html")
         ouranos.succeed("systemd-run --unit=recovery-web ip netns exec wifi-upstream ${pkgs.python3}/bin/python3 -m http.server 80 --directory /tmp/recovery-web")
         ouranos.wait_until_succeeds("ip netns exec wifi-upstream curl -4 -sf --max-time 3 http://1.1.1.1/ | grep -qx daisy-chain-ok", timeout=30)
-        ouranos.succeed("ip netns exec wifi-upstream dnsmasq --no-resolv --bind-interfaces --listen-address=1.1.1.1 --address=/recovery.test/1.1.1.1 --pid-file=/tmp/recovery-dns.pid")
+        ouranos.succeed("ip netns exec wifi-upstream dnsmasq --no-resolv --bind-interfaces --listen-address=1.1.1.1 --address=/recovery.test/1.1.1.1 ${lib.optionalString overlapContract "--address=/example.test/1.1.1.1"} --pid-file=/tmp/recovery-dns.pid")
         ouranos.succeed("nmcli connection add type wifi ifname wlan1 con-name recovery ssid recovery-fixture ipv4.method manual ipv4.addresses 192.168.77.2/24 ipv4.gateway 192.168.77.1 ipv4.ignore-auto-dns yes ipv6.method disabled")
         ouranos.wait_until_succeeds("nmcli connection up recovery", timeout=120)
         ouranos.succeed("nmcli -t -f DEVICE,STATE device | grep -qx 'wlan1:connected'")
