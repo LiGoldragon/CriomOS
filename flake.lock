@@ -555,11 +555,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790438077,
-        "narHash": "sha256-+32wW0sv3yl0Z+oYOHGZ36X4NhpmGuSqN6HN9nSDcio=",
+        "lastModified": 1790375940,
+        "narHash": "sha256-XBSNgrdG4zjhzlgs/zPc1AHQADli3urskn5RKBe81V8=",
         "owner": "LiGoldragon",
         "repo": "clj-build",
-        "rev": "8cc9991fcb840636215bf829ca6ed9489e3071d7",
+        "rev": "9c1778b236544a3b6155d2c203b18cb4f70bff86",
         "type": "github"
       },
       "original": {
@@ -1568,19 +1568,15 @@
     "field-clj": {
       "inputs": {
         "clj-build": "clj-build",
-        "nixpkgs": [
-          "criomos-home",
-          "nixpkgs"
-        ]
+        "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1790438215,
-        "narHash": "sha256-qhk0pfTjv8MWchniGG9F83IqN5qmjqnBE0wKKwxt9OM=",
-        "ref": "refs/heads/main",
-        "rev": "3e5f4501e2017b97b51c7cfaff2b2e8d2a504e05",
-        "revCount": 13,
-        "type": "git",
-        "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
+        "lastModified": 1790375978,
+        "narHash": "sha256-osBpnj3+V2X3yqfBy5KLvk8vdScF8B4Lr3tiQwmiSB4=",
+        "owner": "LiGoldragon",
+        "repo": "field-clj",
+        "rev": "d12dc35ee05ef2b8c936fb1e7c2b82a11e0e24bc",
+        "type": "github"
       },
       "original": {
         "rev": "3e5f4501e2017b97b51c7cfaff2b2e8d2a504e05",
@@ -2115,7 +2111,7 @@
     },
     "herdr": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": "nixpkgs_2",
         "rust-overlay": "rust-overlay"
       },
       "locked": {
@@ -2619,16 +2615,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1779357205,
-        "narHash": "sha256-cCO8aTqss5x9Ky8GWkpY0Hy5fyTZEbtifSUV8QjSzic=",
+        "lastModified": 1790238896,
+        "narHash": "sha256-ym4BG18Pu2awiJIehla1Lo9xiB2QYRcCzW3SB74gEBY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f83fc3c307e74bc5fd5adb7eb6b8b13ffd2a36e1",
+        "rev": "34ca302a9572963c02e385c056be37c85ff51b77",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-unstable",
+        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -2651,6 +2647,22 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1779357205,
+        "narHash": "sha256-cCO8aTqss5x9Ky8GWkpY0Hy5fyTZEbtifSUV8QjSzic=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f83fc3c307e74bc5fd5adb7eb6b8b13ffd2a36e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1783776592,
         "narHash": "sha256-UgCQzxeWI75XM8G+hPrPh+MKzEPjG3SpAj7dtqSbksA=",
         "owner": "NixOS",
@@ -2665,7 +2677,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_3": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1786599213,
         "narHash": "sha256-yNJd40f11EzXBjSByCB7IPpeFFAdeoSKKM67dGkfFoU=",
@@ -2764,7 +2776,7 @@
     },
     "orca-ide": {
       "inputs": {
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1787381882,
@@ -3322,7 +3334,7 @@
         "lojix": "lojix",
         "microvm": "microvm",
         "mirror": "mirror",
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_4",
         "orchestrate": "orchestrate",
         "pkgs": "pkgs",
         "repository-ledger": "repository-ledger",
