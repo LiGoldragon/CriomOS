@@ -28,192 +28,6 @@
         "type": "github"
       }
     },
-    "agent-intercom-claude-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786398522,
-        "narHash": "sha256-9vi8GnsEVf34p4NvUE6CBRPvqxic41qaeWWbft/el7o=",
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-claude",
-        "rev": "d62b3c85547b8b83fdfe06afb38968646fe813b8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-claude",
-        "rev": "d62b3c85547b8b83fdfe06afb38968646fe813b8",
-        "type": "github"
-      }
-    },
-    "agent-intercom-codex-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785440157,
-        "narHash": "sha256-QguRN26/i5Stua+K6wiYAt6pH+wX6jO684Va5VHRUmA=",
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-codex",
-        "rev": "ea1c5b538c95b89af3fd36344396779e2eadbadb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-codex",
-        "rev": "ea1c5b538c95b89af3fd36344396779e2eadbadb",
-        "type": "github"
-      }
-    },
-    "agent-intercom-core-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785291110,
-        "narHash": "sha256-9418pR0tYDGPbf8GknIxAUyDfIN2RdfE3lBwelamLbA=",
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-core",
-        "rev": "8316cbab548f422ad11c78ed887fabeef94817c1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-core",
-        "rev": "8316cbab548f422ad11c78ed887fabeef94817c1",
-        "type": "github"
-      }
-    },
-    "agent-intercom-esbuild-linux-arm64-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-JN0XCEMkQ7aOve9wMBbI4tdHihKst6z7m1DSqBR45kc=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.25.0.tgz"
-      }
-    },
-    "agent-intercom-esbuild-linux-x64-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-E7jYAxlpkdsBMtDodAtHYvM8NLk2/2VsXcpNUkPnZe8=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.25.0.tgz"
-      }
-    },
-    "agent-intercom-esbuild-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-3qJWv2y1iC99w1fTdW00fC2GcQdUZf1wYGs8zLe7608=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.25.0.tgz"
-      }
-    },
-    "agent-intercom-get-tsconfig-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-UjZrrD+jeyxEBji+YVm0Ay51X/NXtsGuu0aoXLLPt7s=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/get-tsconfig/-/get-tsconfig-4.7.5.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/get-tsconfig/-/get-tsconfig-4.7.5.tgz"
-      }
-    },
-    "agent-intercom-opencode-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785441928,
-        "narHash": "sha256-jVVIJqJ5O9IuA8K6eU8oCRfBtV68NV47vTHesSktp0s=",
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-opencode",
-        "rev": "9d81100ea074f68f6466656c65536504209eb060",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-opencode",
-        "rev": "9d81100ea074f68f6466656c65536504209eb060",
-        "type": "github"
-      }
-    },
-    "agent-intercom-orchestrator-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786638697,
-        "narHash": "sha256-nmaAkcUcZ8RVZn1qJK37kEKVBs2w49s72pMXU7wi0SM=",
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-orchestrator",
-        "rev": "a7e16bd4386726002ab6880b35ebacdeef00fd0d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-orchestrator",
-        "rev": "a7e16bd4386726002ab6880b35ebacdeef00fd0d",
-        "type": "github"
-      }
-    },
-    "agent-intercom-pi-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786488836,
-        "narHash": "sha256-b1pif2LgGmcPJFkNKEu0ppjjdllEHLb6oa+6fLA/y/o=",
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-pi",
-        "rev": "b6f8f9d08c8c5ec7141a0258ce61cda59d327a20",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dataforxyz",
-        "repo": "agent-intercom-pi",
-        "rev": "b6f8f9d08c8c5ec7141a0258ce61cda59d327a20",
-        "type": "github"
-      }
-    },
-    "agent-intercom-resolve-pkg-maps-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-RaYiDs2GiN3/BZdLwoz69w4oOhb3RmtcU9kBUnpEfKQ=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz"
-      }
-    },
-    "agent-intercom-tsx-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-ouVzRxrh+WEZWE5UsQgTfkPLtZt91sJUd5gXqegaanQ=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/tsx/-/tsx-4.20.0.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/tsx/-/tsx-4.20.0.tgz"
-      }
-    },
-    "agent-intercom-typebox-src": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-rC5tVD5KCgApBcWKCOQlU2G/36vetIQGaU2JsUYUKQE=",
-        "type": "file",
-        "url": "https://registry.npmjs.org/typebox/-/typebox-1.1.38.tgz"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://registry.npmjs.org/typebox/-/typebox-1.1.38.tgz"
-      }
-    },
     "agent-source": {
       "flake": false,
       "locked": {
@@ -577,11 +391,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790372915,
-        "narHash": "sha256-5r/NvchgUrsMidcZpAEZ3cabwc7iIALwPn9q5Uv3S00=",
+        "lastModified": 1790438077,
+        "narHash": "sha256-+32wW0sv3yl0Z+oYOHGZ36X4NhpmGuSqN6HN9nSDcio=",
         "owner": "LiGoldragon",
         "repo": "clj-build",
-        "rev": "01126ad41b8f06ebd1469db30e89efc7dc74b649",
+        "rev": "8cc9991fcb840636215bf829ca6ed9489e3071d7",
         "type": "github"
       },
       "original": {
@@ -919,19 +733,6 @@
     "criomos-home": {
       "inputs": {
         "agent": "agent",
-        "agent-intercom-claude-src": "agent-intercom-claude-src",
-        "agent-intercom-codex-src": "agent-intercom-codex-src",
-        "agent-intercom-core-src": "agent-intercom-core-src",
-        "agent-intercom-esbuild-linux-arm64-src": "agent-intercom-esbuild-linux-arm64-src",
-        "agent-intercom-esbuild-linux-x64-src": "agent-intercom-esbuild-linux-x64-src",
-        "agent-intercom-esbuild-src": "agent-intercom-esbuild-src",
-        "agent-intercom-get-tsconfig-src": "agent-intercom-get-tsconfig-src",
-        "agent-intercom-opencode-src": "agent-intercom-opencode-src",
-        "agent-intercom-orchestrator-src": "agent-intercom-orchestrator-src",
-        "agent-intercom-pi-src": "agent-intercom-pi-src",
-        "agent-intercom-resolve-pkg-maps-src": "agent-intercom-resolve-pkg-maps-src",
-        "agent-intercom-tsx-src": "agent-intercom-tsx-src",
-        "agent-intercom-typebox-src": "agent-intercom-typebox-src",
         "aggregator": "aggregator",
         "annas-mcp": "annas-mcp",
         "blueprint": "blueprint_3",
@@ -1024,17 +825,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1790447323,
-        "narHash": "sha256-xuWhR8h+MUncU5/6uhavR5P90V0/GpdV8nG0IYVNcnI=",
+        "lastModified": 1791044495,
+        "narHash": "sha256-akKaDuBDylkSzgDcAKomgQdcJ+EmhwU+4syy2ODNHlw=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "fed500843629c828a91fa0e06b9946b69c167898",
+        "rev": "2ad35cb28e0012315726b283b402bf1ff58db3c5",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "657f4ba8167132a70357a4326532bcda2416b789",
+        "rev": "2ad35cb28e0012315726b283b402bf1ff58db3c5",
         "type": "github"
       }
     },
@@ -1994,17 +1795,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790403312,
-        "narHash": "sha256-csg03pZj0p/sSA9P460lM8/dOoOrozVQKSX6mV7cjFs=",
+        "lastModified": 1791015465,
+        "narHash": "sha256-rjGYawtT4pUBKz+6MPt672eUy0fZMHzzeW0dfY5T7so=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "9fcd625ac7a0d44be58b9d365a94064e91f09219",
+        "rev": "636214e515f7c09d32ae614033224aa40944423f",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "9fcd625ac7a0d44be58b9d365a94064e91f09219",
+        "rev": "636214e515f7c09d32ae614033224aa40944423f",
         "type": "github"
       }
     },
@@ -2018,17 +1819,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790445089,
-        "narHash": "sha256-usf0FW/QhIa0AkOnfNPMiCBpqWaFvniVBrX2p70oyuA=",
+        "lastModified": 1791015465,
+        "narHash": "sha256-rjGYawtT4pUBKz+6MPt672eUy0fZMHzzeW0dfY5T7so=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "ac216c899b8e43fa3401609e3ca2605d9856e7e4",
+        "rev": "636214e515f7c09d32ae614033224aa40944423f",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "ac216c899b8e43fa3401609e3ca2605d9856e7e4",
+        "rev": "636214e515f7c09d32ae614033224aa40944423f",
         "type": "github"
       }
     },
@@ -2305,17 +2106,17 @@
     "mentci-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786575526,
-        "narHash": "sha256-cq+0oZxqL0p0yAcx9/gljfZW89+U83g4b1dDZ7ilqvE=",
+        "lastModified": 1790627604,
+        "narHash": "sha256-kHgU1mxni6/Hcw2Jc4vb4LqA47NOvhbQXtaipZ1Dd5c=",
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "235b1b44ecd93857df60c36a2ca4fa16fab5984f",
+        "rev": "a1eb5e2bb1a3658df530d7eea4862f94f556fc61",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "mentci",
-        "rev": "235b1b44ecd93857df60c36a2ca4fa16fab5984f",
+        "rev": "a1eb5e2bb1a3658df530d7eea4862f94f556fc61",
         "type": "github"
       }
     },
@@ -2332,17 +2133,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790398209,
-        "narHash": "sha256-tZIlT0v4/SemEaxs6YSHvQsal7AynezEk4MGx9jtJR4=",
+        "lastModified": 1791013605,
+        "narHash": "sha256-88zQmZYTtXAvZJrsohhMRYV8XQ/kGgbWtu33Tcu3hTc=",
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "930c5169ffcf5fa3784b34b2751763009e926d1d",
+        "rev": "ce3eb6c65a0244672b34d8e91df2e840865d64e5",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "930c5169ffcf5fa3784b34b2751763009e926d1d",
+        "rev": "ce3eb6c65a0244672b34d8e91df2e840865d64e5",
         "type": "github"
       }
     },
@@ -2359,17 +2160,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790439332,
-        "narHash": "sha256-8zKRBjEch2DVOnsBQs7nr1gQ+3ZlLzE/WuaTSYQG25c=",
+        "lastModified": 1791013605,
+        "narHash": "sha256-88zQmZYTtXAvZJrsohhMRYV8XQ/kGgbWtu33Tcu3hTc=",
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "481b579fcf72797ffa9ccf8ce4e2283a58cdff97",
+        "rev": "ce3eb6c65a0244672b34d8e91df2e840865d64e5",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "481b579fcf72797ffa9ccf8ce4e2283a58cdff97",
+        "rev": "ce3eb6c65a0244672b34d8e91df2e840865d64e5",
         "type": "github"
       }
     },
@@ -2382,17 +2183,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790390181,
-        "narHash": "sha256-OllH6b3t/qJ3P045pfjp3KAANki8Qx4dmtqbZ3d4q9A=",
+        "lastModified": 1790701668,
+        "narHash": "sha256-MRBBipPVybXabQPLj0kuFzUGBMO20pk5NumyWE/KLkk=",
         "owner": "LiGoldragon",
         "repo": "messenger-clj",
-        "rev": "dfcf91f0ff8b4b8a5bb6edc18830fdc2d0323494",
+        "rev": "990a933368b3b1deed72a9745a9c93298c445523",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "messenger-clj",
-        "rev": "dfcf91f0ff8b4b8a5bb6edc18830fdc2d0323494",
+        "rev": "990a933368b3b1deed72a9745a9c93298c445523",
         "type": "github"
       }
     },
