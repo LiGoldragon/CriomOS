@@ -29,7 +29,7 @@
 
     # Orchestrate Nexus owns its per-user default Sema store and ordinary/meta
     # XDG sockets. CriomOS-home follows this shared immutable release.
-    orchestrate.url = "github:LiGoldragon/orchestrate/9070cbb8717813b127e448dd5a43a2095daf7d1b";
+    orchestrate.url = "github:LiGoldragon/orchestrate/c7c44cb39934b0727d724a6aa03a36a2a94cacf9";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
