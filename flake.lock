@@ -825,17 +825,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1791044495,
-        "narHash": "sha256-akKaDuBDylkSzgDcAKomgQdcJ+EmhwU+4syy2ODNHlw=",
+        "lastModified": 1791046628,
+        "narHash": "sha256-eVDI2jLWmX6W+tf6QoDS70sx/EQzixzqBzDQYoT7FBI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2ad35cb28e0012315726b283b402bf1ff58db3c5",
+        "rev": "4846e7b3283c1942d94f09dd79093c93b7082c32",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2ad35cb28e0012315726b283b402bf1ff58db3c5",
+        "rev": "4846e7b3283c1942d94f09dd79093c93b7082c32",
         "type": "github"
       }
     },
