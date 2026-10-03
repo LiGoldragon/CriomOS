@@ -1579,9 +1579,10 @@
         "type": "github"
       },
       "original": {
-        "rev": "3e5f4501e2017b97b51c7cfaff2b2e8d2a504e05",
-        "type": "git",
-        "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
+        "owner": "LiGoldragon",
+        "repo": "field-clj",
+        "rev": "d12dc35ee05ef2b8c936fb1e7c2b82a11e0e24bc",
+        "type": "github"
       }
     },
     "field-luna-research-source": {

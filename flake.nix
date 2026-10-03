@@ -38,6 +38,7 @@
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
     criomos-home.inputs.rust-overlay.follows = "rust-overlay";
+    criomos-home.inputs.field-clj.url = "github:LiGoldragon/field-clj/d12dc35ee05ef2b8c936fb1e7c2b82a11e0e24bc";
     criomos-home.inputs.horizon.follows = "horizon";
     criomos-home.inputs.system.follows = "system";
     criomos-home.inputs.pkgs.follows = "pkgs";
