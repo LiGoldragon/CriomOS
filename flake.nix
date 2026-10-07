@@ -106,7 +106,7 @@
     # its own startup test now waits for that announcement instead of polling a
     # five-second deadline: 5.0.0's test failed reproducibly on a loaded remote
     # builder while passing on an idle one.
-    lojix.url = "github:LiGoldragon/lojix/745bbe32609cd3afbf3529140bdfa3db90e3f4cb";
+    lojix.url = "github:LiGoldragon/lojix/3fc95f0cf4eaf14ff62898c4783ebbc670fdf96b";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
