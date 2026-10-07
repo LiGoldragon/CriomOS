@@ -33,7 +33,7 @@
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/96d288dc6aa4df4a9b50d0e0b62522683f27752c";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home/25cb7c166782545b79a28204779edd6b29d4dc3d";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -49,7 +49,7 @@
     # independently pinning any Spirit service component.
     criomos-home.inputs.spirit.follows = "spirit";
 
-    messenger-clj.url = "github:LiGoldragon/messenger-clj/990a933368b3b1deed72a9745a9c93298c445523";
+    messenger-clj.url = "github:LiGoldragon/messenger-clj/85e71b15a93360507cdcce8c2605f6479d650426";
     messenger-clj.inputs.nixpkgs.follows = "nixpkgs";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
