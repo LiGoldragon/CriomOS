@@ -18,6 +18,8 @@ let
     home.stateVersion = "26.05";
     # This target owns the authored skill roots and Primary workspace.
     criomosHome.curriculum.enable = horizon.node.name == "ouranos" && name == "li";
+    # No new server or authentication-copy activation on the Zeus cutover.
+    criomosHome.codexNextCandidate.enable = horizon.node.name != "zeus";
   };
 
   # Deploy a user's home ONLY on nodes where that user has a presence — i.e. a
