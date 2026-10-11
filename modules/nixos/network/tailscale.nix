@@ -81,6 +81,10 @@ in
       openFirewall = true;
     };
 
+    # Go caches its system CA pool in the daemon. Refresh that process when
+    # the declared cluster CA changes, before enrolling with the new trust.
+    systemd.services.tailscaled.restartTriggers = [ tailnet.certificateAuthorityFile ];
+
     systemd.services.tailnet-enroll = {
       description = "Enroll this node in the cluster tailnet";
       wantedBy = [ "multi-user.target" ];
