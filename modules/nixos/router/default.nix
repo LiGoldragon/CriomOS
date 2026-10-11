@@ -75,6 +75,7 @@ let
     .${backupWireless.band};
 
   lanBridgeInterface = "br-lan";
+  lanBridgeDeviceUnit = "sys-subsystem-net-devices-${utils.escapeSystemdPath lanBridgeInterface}.device";
   lanSubnetPrefix = constants.network.lan.subnetPrefix;
   lanAddress = constants.network.lan.gateway;
   lanFullAddress = "${lanAddress}/24";
@@ -311,7 +312,13 @@ in
       # current sops-nix — depending on it would prevent hostapd from
       # starting and break wifi.
       kea-dhcp4-server = {
-        after = [ "systemd-networkd.service" ];
+        # Kea raw sockets retain the bridge's kernel interface identity.
+        # A recreated bridge must start a fresh socket; an AP restart also
+        # restarts DHCP after hostapd has finished recreating its LAN links.
+        after = [ "systemd-networkd.service" "hostapd.service" lanBridgeDeviceUnit ];
+        bindsTo = [ lanBridgeDeviceUnit ];
+        partOf = [ "hostapd.service" ];
+        wantedBy = [ lanBridgeDeviceUnit "hostapd.service" ];
         restartIfChanged = false;
         stopIfChanged = false;
       };
