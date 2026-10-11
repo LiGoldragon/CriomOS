@@ -619,8 +619,9 @@ mkIf behavesAs.bareMetal {
     optionals behavesAs.center [
       "w /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference - - - - power"
     ]
-    # Disable XHCI wakeup at PCI level — belt-and-suspenders with the ACPI toggle.
-    ++ optionals (model == "ThinkPadT14Gen2Intel") [
+    # Disable XHCI wakeup at PCI level. Gen5 firmware shares GPE 0x6D with
+    # other devices: disable this observed wake source, not the shared GPE.
+    ++ optionals (builtins.elem model [ "ThinkPadT14Gen2Intel" "ThinkPadT14Gen5Intel" ]) [
       "w /sys/devices/pci0000:00/0000:00:14.0/power/wakeup - - - - disabled"
     ];
 
