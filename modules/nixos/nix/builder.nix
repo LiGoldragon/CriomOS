@@ -17,6 +17,8 @@ let
     isDispatcher
     ;
 
+  receivesBuilds = isRemoteNixBuilder && (horizon.node.behavesAs.center or false);
+
   nixSystemName =
     system:
     {
@@ -53,6 +55,12 @@ let
   };
 in
 {
+  assertions = [
+    {
+      assertion = !isRemoteNixBuilder || receivesBuilds;
+      message = "A Nix build receiver must be the designated center builder.";
+    }
+  ];
   nix = {
     settings = {
       # When this node dispatches a derivation to a remote builder,
@@ -63,7 +71,7 @@ in
 
     # Build receiver: this node serves builds over restricted SSH.
     sshServe = {
-      enable = isRemoteNixBuilder;
+      enable = receivesBuilds;
       protocol = "ssh-ng";
       write = true;
       trusted = true;

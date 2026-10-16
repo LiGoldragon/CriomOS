@@ -97,7 +97,14 @@ pkgs.runCommand "nix-role-policy" { } ''
   test ${lib.escapeShellArg (builtins.toJSON baseConfiguration.nix.buildMachines)} = '[]'
 
   test ${lib.escapeShellArg (toString edgeBuilderConfiguration.nix.settings.cores)} = 2
-  test ${lib.escapeShellArg (toString edgeBuilderConfiguration.nix.settings.max-jobs)} = 1
+  test ${lib.escapeShellArg (toString edgeBuilderConfiguration.nix.settings.max-jobs)} = 0
+
+  test ${lib.escapeShellArg (bool edgeBuilderConfiguration.nix.sshServe.enable)} = false
+  test ${
+    lib.escapeShellArg (
+      bool (builtins.any (entry: !entry.assertion) edgeBuilderConfiguration.assertions)
+    )
+  } = true
 
   test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.cores)} = 8
   test ${lib.escapeShellArg (toString serviceConfiguration.nix.settings.max-jobs)} = 4

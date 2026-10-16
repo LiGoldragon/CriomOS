@@ -14,22 +14,9 @@ let
 
   dedicatedNixBuilder = (node.isRemoteNixBuilder or false) && (node.behavesAs.center or false);
   localBuildCores = if dedicatedNixBuilder then (node.buildCores or 2) else 2;
-  # A node that is not any kind of Nix builder (goldragon, and every other
-  # ordinary client) has no legitimate reason to run a build slot of its own:
-  # `max-jobs = 0` makes local building impossible for every user on it,
-  # root included, matching the living's ruling that Prometheus is the only
-  # place a build ever runs. A node that IS a remote builder — dedicated
-  # (`dedicatedNixBuilder`, handled above) or an edge builder that still
-  # serves `sshServe` builds for a dispatcher without being the cluster
-  # center — keeps its prior single local slot so it can still service the
-  # builds routed to it; only a node with no builder role at all drops to 0.
-  localMaxJobs =
-    if dedicatedNixBuilder then
-      (node.maxJobs or 4)
-    else if (node.isRemoteNixBuilder or false) then
-      1
-    else
-      0;
+  # Compilation is served only by the projected center builder. Client and
+  # edge roles have no local fallback slot.
+  localMaxJobs = if dedicatedNixBuilder then (node.maxJobs or 4) else 0;
 
   # A locked github input's `sourceInfo` carries only outPath, rev, narHash
   # and lastModified, so the source identity (type, owner, repo) is read
