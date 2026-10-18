@@ -62,6 +62,14 @@ let
 
 in
 {
+  # Zeus profile installation was still doing metadata I/O at the upstream
+  # five-minute activation deadline. Keep the allowance bounded and local.
+  systemd.services = lib.mkIf (horizon.node.name == "zeus") (
+    lib.mapAttrs' (name: _: lib.nameValuePair "home-manager-${name}" {
+      serviceConfig.TimeoutStartSec = lib.mkForce "20min";
+    }) (lib.filterAttrs (name: _: builtins.elem name [ "bird" "li" ]) homeUsers)
+  );
+
   home-manager = {
     backupFileExtension = "backup";
     # `inputs` deliberately NOT in extraSpecialArgs — CriomOS-home's
