@@ -14,9 +14,9 @@ let
   zeusRecordedHomeAdoption = {
   bird = {
     predecessorGeneration = {
-      homeFiles = "/nix/store/pyygmax9va0111y51a9azrbbqy9iai88-home-manager-files";
-      herdrConfig = "/nix/store/awxpsb8p1jbakkmqq28z8nd6hr872vx2-herdr-config.toml";
-      herdrConfigSha256 = "edeb91e14cf1a01de87c2d8ee7230a2bb8058a2aba6f367ff6363cdea53b7848";
+      homeFiles = "/nix/store/gkk32mwcbr7sm41r1naqwzcr0hyxy6v8-home-manager-files";
+      herdrConfig = "/nix/store/38s7v7pirbbgg9vmlwi7mv4ffi2r4sip-herdr-config.toml";
+      herdrConfigSha256 = "ef01d6d652d02c8535fedb7be93c9a837d1f06e8da5da1a813fbd67e93f765cc";
     };
     kvantumDanglingLink = {
       literalTarget = "/nix/store/hm19bndn5aicvhmcr6a9m4x10i3871hl-home-manager-files/.config/Kvantum/Base16Kvantum";
@@ -24,9 +24,9 @@ let
   };
   li = {
     predecessorGeneration = {
-      homeFiles = "/nix/store/ql0n67j2w25sqwixcp0d7911qxzq56qs-home-manager-files";
-      herdrConfig = "/nix/store/c7fz4drhaf41bkhcqmzd9m5hg8v6rb6v-herdr-config.toml";
-      herdrConfigSha256 = "b18985fb3168fb582787c5099689e82278a403ca40456d5ef9d5f36b5cc610b5";
+      homeFiles = "/nix/store/xqqj07nc68jg6nja4gliklmmk6yccmfm-home-manager-files";
+      herdrConfig = "/nix/store/grj6d8lyx4z5wcfq9bh78mxs8hsz6p2i-herdr-config.toml";
+      herdrConfigSha256 = "d2e1b784f6112f14e737f88baf93e77db1e849dc05c8c0790f0128bc15ee1aa2";
     };
     kvantumDanglingLink = {
       literalTarget = "/nix/store/zg2dvqifak33jna83zv40qzy7v9sixib-home-manager-files/.config/Kvantum/Base16Kvantum";
