@@ -94,6 +94,12 @@ pkgs.runCommand "metal-suspend-policy" { } ''
   echo auto > "$root/sys/bus/pci/devices/0000:00:1f.6/power/control"
   ${policy.script} "$root"
   grep -qx auto "$root/sys/bus/pci/devices/0000:00:1f.6/power/control"
+  echo malformed > "$root/sys/bus/pci/devices/0000:00:1f.6/vendor"
+  if ${policy.script} "$root"; then
+    echo 'Malformed PCI identity was ignored' >&2; exit 1
+  fi
+  grep -qx auto "$root/sys/bus/pci/devices/0000:00:1f.6/power/control"
+  echo 0x8086 > "$root/sys/bus/pci/devices/0000:00:1f.6/vendor"
   rm "$root/sys/bus/pci/devices/0000:00:1f.6/power/wakeup"
   if ${policy.script} "$root"; then
     echo 'Missing model wake control was ignored' >&2; exit 1
