@@ -47,11 +47,21 @@ in
     set -euo pipefail
     # An alternate filesystem root is only used by the sandbox regression.
     root="''${1:-}"
+    test -r "$root/proc/acpi/wakeup"
+    for device in ${words policy.pci}; do
+      test -w "$root/sys/bus/pci/devices/$device/power/wakeup"
+    done
     for device in ${words policy.ethernet}; do
+      test -d "$root/sys/bus/pci/devices/$device/net"
+    done
+    for device in ${words policy.ethernet}; do
+      found=0
       for net in "$root/sys/bus/pci/devices/$device/net/"*; do
         test -e "$net" || continue
+        found=1
         ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d
       done
+      test "$found" = 1
     done
     for device in ${words policy.pci}; do
       wake="$root/sys/bus/pci/devices/$device/power/wakeup"
@@ -62,6 +72,9 @@ in
     for source in ${words policy.acpi}; do
       if ${pkgs.gawk}/bin/awk -v source="$source" '$1 == source && $3 == "*enabled" { found = 1 } END { exit !found }' "$root/proc/acpi/wakeup"; then
         printf '%s\n' "$source" > "$root/proc/acpi/wakeup"
+      else
+        status=$?
+        test "$status" = 1 || exit "$status"
       fi
     done
   '';

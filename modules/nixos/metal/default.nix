@@ -582,10 +582,8 @@ mkIf behavesAs.bareMetal {
   systemd.services.disable-spurious-wakeups = mkIf suspendWakePolicy.enabled {
     description = "Disable model-specific spurious suspend wake sources";
     before = [ "sleep.target" ];
-    wantedBy = [
-      "multi-user.target"
-      "sleep.target"
-    ];
+    wantedBy = [ "multi-user.target" ];
+    requiredBy = [ "sleep.target" ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = suspendWakePolicy.script;

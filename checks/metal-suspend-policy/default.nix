@@ -37,7 +37,7 @@ let
   };
 in
 assert gen5.systemd.services.disable-spurious-wakeups.before == [ "sleep.target" ];
-assert builtins.elem "sleep.target" gen5.systemd.services.disable-spurious-wakeups.wantedBy;
+assert gen5.systemd.services.disable-spurious-wakeups.requiredBy == [ "sleep.target" ];
 assert !(generic.systemd.services ? disable-spurious-wakeups);
 assert
   gen2.policy.acpi == [
@@ -84,5 +84,9 @@ pkgs.runCommand "metal-suspend-policy" { } ''
     echo 'Wake-on-LAN refusal was ignored' >&2; exit 1
   fi
   grep -qx enabled "$root/sys/bus/pci/devices/0000:00:1f.6/power/wakeup"
+  rm "$root/sys/bus/pci/devices/0000:00:1f.6/power/wakeup"
+  if ${policy.script} "$root"; then
+    echo 'Missing model wake control was ignored' >&2; exit 1
+  fi
   touch "$out"
 ''
