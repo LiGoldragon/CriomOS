@@ -17,7 +17,11 @@ let
       ];
       pci = [ ];
       ethernet = [ ];
+      runtimePmOn = [ ];
     };
+    # 8086:550b runtime autosuspend can storm GPE 6D and leave ULP unusable.
+    # Keep runtime PM on for this NIC; system-suspend callbacks still run.
+    # https://lists.openwall.net/linux-kernel/2024/08/19/167
     # Meteor Lake: Ethernet and USB wake share GPE 6D. Disable the devices'
     # wake requests, not the shared interrupt or unrelated wake sources.
     ThinkPadT14Gen5Intel = {
@@ -30,6 +34,13 @@ let
         "0000:00:14.0"
       ];
       ethernet = [ "0000:00:1f.6" ];
+      runtimePmOn = [
+        {
+          pci = "0000:00:1f.6";
+          vendor = "0x8086";
+          device = "0x550b";
+        }
+      ];
     };
   };
   policy =
@@ -37,6 +48,7 @@ let
       acpi = [ ];
       pci = [ ];
       ethernet = [ ];
+      runtimePmOn = [ ];
     };
   words = xs: lib.escapeShellArgs xs;
 in
@@ -53,7 +65,17 @@ in
     done
     for device in ${words policy.ethernet}; do
       test -d "$root/sys/bus/pci/devices/$device/net"
+      test -w "$root/sys/bus/pci/devices/$device/power/control"
     done
+    ${lib.concatMapStringsSep "\n" (device: ''
+      device="$root/sys/bus/pci/devices/${device.pci}"
+      vendor=$(cat "$device/vendor")
+      device_id=$(cat "$device/device")
+      if test "$vendor" = ${lib.escapeShellArg device.vendor} &&
+         test "$device_id" = ${lib.escapeShellArg device.device}; then
+        printf '%s\n' on > "$device/power/control"
+      fi
+    '') policy.runtimePmOn}
     for device in ${words policy.ethernet}; do
       found=0
       for net in "$root/sys/bus/pci/devices/$device/net/"*; do
