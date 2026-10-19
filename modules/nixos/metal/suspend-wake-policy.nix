@@ -1,0 +1,68 @@
+# Policy is selected from Horizon's projected hardware model, never node names.
+{
+  lib,
+  pkgs,
+  model,
+}:
+let
+  policies = {
+    ThinkPadT14Gen2Intel = {
+      acpi = [
+        "GLAN"
+        "TXHC"
+        "TDM0"
+        "TDM1"
+        "TRP0"
+        "TRP2"
+      ];
+      pci = [ ];
+      ethernet = [ ];
+    };
+    # Meteor Lake: Ethernet and USB wake share GPE 6D. Disable the devices'
+    # wake requests, not the shared interrupt or unrelated wake sources.
+    ThinkPadT14Gen5Intel = {
+      acpi = [
+        "GLAN"
+        "XHCI"
+      ];
+      pci = [
+        "0000:00:1f.6"
+        "0000:00:14.0"
+      ];
+      ethernet = [ "0000:00:1f.6" ];
+    };
+  };
+  policy =
+    policies.${model} or {
+      acpi = [ ];
+      pci = [ ];
+      ethernet = [ ];
+    };
+  words = xs: lib.escapeShellArgs xs;
+in
+{
+  inherit policy;
+  enabled = policy.acpi != [ ];
+  script = pkgs.writeShellScript "disable-model-spurious-wakeups" ''
+    set -euo pipefail
+    # An alternate filesystem root is only used by the sandbox regression.
+    root="''${1:-}"
+    for device in ${words policy.ethernet}; do
+      for net in "$root/sys/bus/pci/devices/$device/net/"*; do
+        test -e "$net" || continue
+        ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d
+      done
+    done
+    for device in ${words policy.pci}; do
+      wake="$root/sys/bus/pci/devices/$device/power/wakeup"
+      if test -e "$wake"; then
+        printf '%s\n' disabled > "$wake"
+      fi
+    done
+    for source in ${words policy.acpi}; do
+      if ${pkgs.gawk}/bin/awk -v source="$source" '$1 == source && $3 == "*enabled" { found = 1 } END { exit !found }' "$root/proc/acpi/wakeup"; then
+        printf '%s\n' "$source" > "$root/proc/acpi/wakeup"
+      fi
+    done
+  '';
+}

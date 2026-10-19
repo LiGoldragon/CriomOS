@@ -19,6 +19,7 @@ let
     optionalAttrs
     ;
   inherit (horizon.node.machine.hardware) model;
+  suspendWakePolicy = import ./suspend-wake-policy.nix { inherit lib pkgs model; };
   fixedLocation = horizon.node.fixedLocation or null;
   geoclueLocation =
     if fixedLocation == null then
@@ -576,23 +577,18 @@ mkIf behavesAs.bareMetal {
     };
   };
 
-  # T14 Gen2 Intel (Tiger Lake) — disable ACPI wakeup sources that cause
-  # spurious resume from s2idle. GLAN (e1000e with no cable), XHCI, and
-  # Thunderbolt controllers (TXHC/TDM/TRP) all trigger immediate wake.
-  systemd.services.disable-spurious-wakeups = mkIf (model == "ThinkPadT14Gen2Intel") {
-    description = "Disable ACPI wakeup sources that cause spurious resume";
-    after = [ "multi-user.target" ];
-    wantedBy = [ "multi-user.target" ];
+  # Reapply model-specific device wake policy at boot and before every sleep.
+  # Do not mask shared GPEs: Ethernet/USB wake requests are disabled at source.
+  systemd.services.disable-spurious-wakeups = mkIf suspendWakePolicy.enabled {
+    description = "Disable model-specific spurious suspend wake sources";
+    before = [ "sleep.target" ];
+    wantedBy = [
+      "multi-user.target"
+      "sleep.target"
+    ];
     serviceConfig = {
       Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "disable-wakeups" ''
-        for src in GLAN TXHC TDM0 TDM1 TRP0 TRP2; do
-          if ${pkgs.gnugrep}/bin/grep -q "$src.*enabled" /proc/acpi/wakeup; then
-            echo "$src" > /proc/acpi/wakeup
-          fi
-        done
-      '';
+      ExecStart = suspendWakePolicy.script;
     };
   };
 
@@ -621,9 +617,15 @@ mkIf behavesAs.bareMetal {
     ]
     # Disable XHCI wakeup at PCI level. Gen5 firmware shares GPE 0x6D with
     # other devices: disable this observed wake source, not the shared GPE.
-    ++ optionals (builtins.elem model [ "ThinkPadT14Gen2Intel" "ThinkPadT14Gen5Intel" ]) [
-      "w /sys/devices/pci0000:00/0000:00:14.0/power/wakeup - - - - disabled"
-    ];
+    ++
+      optionals
+        (builtins.elem model [
+          "ThinkPadT14Gen2Intel"
+          "ThinkPadT14Gen5Intel"
+        ])
+        [
+          "w /sys/devices/pci0000:00/0000:00:14.0/power/wakeup - - - - disabled"
+        ];
 
   powerManagement =
     let
