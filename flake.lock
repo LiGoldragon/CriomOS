@@ -810,17 +810,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1792470718,
-        "narHash": "sha256-nJ9TlAd+fJhdmhPdbUpv9i19pASp4CmXAsW1Dh6NjDo=",
+        "lastModified": 1792521624,
+        "narHash": "sha256-ZFU8rvd1Nzt9iEl7CMLE5d+uN1+/6uaGrAqOYq4xgpU=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "072279a077c294ca90f0e0336fa691f310949064",
+        "rev": "0565dc0f5a57d0b9461c8eaef2db4412f75ef9e2",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "072279a077c294ca90f0e0336fa691f310949064",
+        "rev": "0565dc0f5a57d0b9461c8eaef2db4412f75ef9e2",
         "type": "github"
       }
     },
@@ -3075,17 +3075,17 @@
     "psyche-context": {
       "flake": false,
       "locked": {
-        "lastModified": 1792455342,
-        "narHash": "sha256-unJy6m4n0JwUiWHZaI2vgMIFtC9xy+PzSmc5foGSr10=",
+        "lastModified": 1792521282,
+        "narHash": "sha256-eHeXzx3lvJX+L08V3eQy5FbEId4bBTFXzGd2lo0I6FY=",
         "owner": "LiGoldragon",
         "repo": "psyche-context",
-        "rev": "2d9fbb6d7dc45dfe60e1109607baf95bec28cfa1",
+        "rev": "51731e8f2fdbb956d597febffedee0ef1e4b1946",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "psyche-context",
-        "rev": "2d9fbb6d7dc45dfe60e1109607baf95bec28cfa1",
+        "rev": "51731e8f2fdbb956d597febffedee0ef1e4b1946",
         "type": "github"
       }
     },
