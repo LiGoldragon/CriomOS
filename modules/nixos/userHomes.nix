@@ -44,6 +44,15 @@ let
       zeusRecordedHomeAdoption.${name};
     # This target owns the authored skill roots and Primary workspace.
     criomosHome.curriculum.enable = horizon.node.name == "ouranos" && name == "li";
+    # The approval pipeline deploys each psyche-context landing here: the
+    # landing reaches Curriculum and the context skills through this user's
+    # Home, so its deploy is this Home's, from the CriomOS revision that
+    # pins it.
+    criomosHome.flow.landingDeployRequest =
+      if horizon.node.name == "ouranos" && name == "li" then
+        "Deploy.UserEnvironment.{ goldragon ouranos li /nix/store/dspiiriyy2zprxsxz4iiil2jlhk38qwz-horizon-definition/horizon-definition.datom SecretsDirectory./git/github.com/LiGoldragon/goldragon/secrets github:LiGoldragon/CriomOS?rev=@CRIOMOS_REVISION@ { ssh-ng://li@ouranos.goldragon.criome li@ouranos.goldragon.criome } Horizon { homeConfigurations.li.activationPackage } HomeManagerNixProfileV1 ActivateNow RequireImmutable Some.@/etc/nix/machines [] }"
+      else
+        null;
     # No new server or authentication-copy activation on the Zeus cutover.
     criomosHome.codexNextCandidate.enable = horizon.node.name != "zeus";
   };
