@@ -733,6 +733,7 @@
         "field-luna-research-source": "field-luna-research-source",
         "field-monitoring-source": "field-monitoring-source",
         "flow": "flow",
+        "flow-start-source": "flow-start-source",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
         "herdr": "herdr",
@@ -811,17 +812,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1792456180,
-        "narHash": "sha256-HrzvsMFGduDW8YF1PlhA7uaV2+T5WDg97i0JXE9zDd4=",
+        "lastModified": 1792456706,
+        "narHash": "sha256-iIFEGWQEOMTRDhCwHEfRHIpmSPPbYv2CEenlGNKoIXI=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2cb24dbeac7a7e06fec484fb1167aeea36749c68",
+        "rev": "fdbabe051ed4b4b20bbfaa41c8011f0bf33e4234",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2cb24dbeac7a7e06fec484fb1167aeea36749c68",
+        "rev": "fdbabe051ed4b4b20bbfaa41c8011f0bf33e4234",
         "type": "github"
       }
     },
@@ -1848,6 +1849,23 @@
         "owner": "LiGoldragon",
         "repo": "flow",
         "rev": "fb5251b0bee73b3e43eef63470b857fe5f4b6d29",
+        "type": "github"
+      }
+    },
+    "flow-start-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792456627,
+        "narHash": "sha256-NEtj+2F/uXsYN+14YG6+eUIwWyAA/Teb+JkPvucXKM0=",
+        "owner": "LiGoldragon",
+        "repo": "flow",
+        "rev": "2d4cf44f09a5d9b6ea2857d0f4b8470d997f7693",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "flow",
+        "rev": "2d4cf44f09a5d9b6ea2857d0f4b8470d997f7693",
         "type": "github"
       }
     },
