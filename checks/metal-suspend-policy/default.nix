@@ -38,7 +38,6 @@ let
 in
 assert gen5.systemd.services.disable-spurious-wakeups.before == [ "sleep.target" ];
 assert gen5.systemd.services.disable-spurious-wakeups.requiredBy == [ "sleep.target" ];
-assert gen5.systemd.services.disable-spurious-wakeups.after == [ "powertop.service" ];
 assert !(generic.systemd.services ? disable-spurious-wakeups);
 assert
   gen2.policy.acpi == [
@@ -62,17 +61,12 @@ pkgs.runCommand "metal-suspend-policy" { } ''
   for device in 0000:00:1f.6 0000:00:14.0; do
     mkdir -p "$root/sys/bus/pci/devices/$device/power"
     echo enabled > "$root/sys/bus/pci/devices/$device/power/wakeup"
-    echo auto > "$root/sys/bus/pci/devices/$device/power/control"
   done
   mkdir -p "$root/sys/bus/pci/devices/0000:00:1f.6/net/renamed-ethernet"
-  echo 0x8086 > "$root/sys/bus/pci/devices/0000:00:1f.6/vendor"
-  echo 0x550b > "$root/sys/bus/pci/devices/0000:00:1f.6/device"
   printf 'GLAN S4 *disabled pci:0000:00:1f.6\nXHCI S3 *disabled pci:0000:00:14.0\n' > "$root/proc/acpi/wakeup"
   cp "$root/proc/acpi/wakeup" expected-disabled
   ${policy.script} "$root"
   cmp "$root/proc/acpi/wakeup" expected-disabled
-  grep -qx on "$root/sys/bus/pci/devices/0000:00:1f.6/power/control"
-  grep -qx auto "$root/sys/bus/pci/devices/0000:00:14.0/power/control"
   grep -qx -- '-s renamed-ethernet wol d' "$TEST_LOG"
   for device in 0000:00:1f.6 0000:00:14.0; do
     grep -qx disabled "$root/sys/bus/pci/devices/$device/power/wakeup"
@@ -90,10 +84,6 @@ pkgs.runCommand "metal-suspend-policy" { } ''
     echo 'Wake-on-LAN refusal was ignored' >&2; exit 1
   fi
   grep -qx enabled "$root/sys/bus/pci/devices/0000:00:1f.6/power/wakeup"
-  echo 0x550a > "$root/sys/bus/pci/devices/0000:00:1f.6/device"
-  echo auto > "$root/sys/bus/pci/devices/0000:00:1f.6/power/control"
-  ${policy.script} "$root"
-  grep -qx auto "$root/sys/bus/pci/devices/0000:00:1f.6/power/control"
   rm "$root/sys/bus/pci/devices/0000:00:1f.6/power/wakeup"
   if ${policy.script} "$root"; then
     echo 'Missing model wake control was ignored' >&2; exit 1

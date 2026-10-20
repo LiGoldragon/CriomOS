@@ -581,7 +581,6 @@ mkIf behavesAs.bareMetal {
   # Do not mask shared GPEs: Ethernet/USB wake requests are disabled at source.
   systemd.services.disable-spurious-wakeups = mkIf suspendWakePolicy.enabled {
     description = "Disable model-specific spurious suspend wake sources";
-    after = optional (suspendWakePolicy.policy.runtimePmOn != [ ]) "powertop.service";
     before = [ "sleep.target" ];
     wantedBy = [ "multi-user.target" ];
     requiredBy = [ "sleep.target" ];
