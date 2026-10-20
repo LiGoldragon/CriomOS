@@ -71,8 +71,6 @@ in
       device="$root/sys/bus/pci/devices/${device.pci}"
       vendor=$(cat "$device/vendor")
       device_id=$(cat "$device/device")
-      [[ "$vendor" =~ ^0x[0-9a-f]{4}$ ]]
-      [[ "$device_id" =~ ^0x[0-9a-f]{4}$ ]]
       if test "$vendor" = ${lib.escapeShellArg device.vendor} &&
          test "$device_id" = ${lib.escapeShellArg device.device}; then
         printf '%s\n' on > "$device/power/control"
