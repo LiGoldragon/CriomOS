@@ -810,17 +810,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1792536082,
-        "narHash": "sha256-VDFkprW+4XrAJXTNt4PAGaT3WT+0SL70W3NDBDphp70=",
+        "lastModified": 1792536722,
+        "narHash": "sha256-x8ihfujA0CObAkfMg8cACtcFD3O8MRJBKGPCfZ9bWp8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "54bc80eff26cb2b805192351569ef60d8213c0af",
+        "rev": "befadc73d65778e830ba34bde4766807b6a63fe0",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "54bc80eff26cb2b805192351569ef60d8213c0af",
+        "rev": "befadc73d65778e830ba34bde4766807b6a63fe0",
         "type": "github"
       }
     },
@@ -1416,17 +1416,17 @@
     "field-context": {
       "flake": false,
       "locked": {
-        "lastModified": 1792535253,
-        "narHash": "sha256-9BSs3+BcenxN6eYxaFVfhtF4VTyQ0rMGOMlSEdYhf4c=",
+        "lastModified": 1792536402,
+        "narHash": "sha256-uhFqHf49vzcjuRxYmXXpz9O8J3XUDDlGkHHj/TAs5ew=",
         "owner": "LiGoldragon",
         "repo": "field-context",
-        "rev": "a70af01e9e6d1a293c33cd664b1f16e494f75331",
+        "rev": "6a5f380afb2c5828830644389dddc3dedafc9a30",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "field-context",
-        "rev": "a70af01e9e6d1a293c33cd664b1f16e494f75331",
+        "rev": "6a5f380afb2c5828830644389dddc3dedafc9a30",
         "type": "github"
       }
     },
@@ -1836,17 +1836,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1792535924,
-        "narHash": "sha256-x/8VImV7q4slTYhejSD6NxPdGxoUwfYRdbWdQ9Lqd9c=",
+        "lastModified": 1792536300,
+        "narHash": "sha256-rAA80QGaMEvT5sp9S+MwiIFu+qp6DezYqYOzjpHvL14=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "df21e411dfdd85e390164a9f88d00b0d206ea292",
+        "rev": "a38bc68ad057d37f9851aead0b79ebbe1d4c8b09",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "df21e411dfdd85e390164a9f88d00b0d206ea292",
+        "rev": "a38bc68ad057d37f9851aead0b79ebbe1d4c8b09",
         "type": "github"
       }
     },
@@ -2292,11 +2292,11 @@
     "mind-context": {
       "flake": false,
       "locked": {
-        "lastModified": 1792462710,
-        "narHash": "sha256-qSw2dutVgzFM3vSsvhe8YC5Z3ZCuDOMBSgjkI5JpQYg=",
+        "lastModified": 1792177849,
+        "narHash": "sha256-ggmD9nF3B5s6qrxylqoazQjC1JbI5Gr47LMBUF1rIYY=",
         "owner": "LiGoldragon",
         "repo": "mind-context",
-        "rev": "e847ae7afb0b4a40d5dad2e00e5462e9846454ac",
+        "rev": "e3fcd4f36d4f75e8c546e5e9596f5a48a5d8592b",
         "type": "github"
       },
       "original": {
@@ -3041,17 +3041,17 @@
         "tree-sitter-dotos": "tree-sitter-dotos"
       },
       "locked": {
-        "lastModified": 1792457617,
-        "narHash": "sha256-DrP/8uNwyXiIdA/DSR3DXWjAYe+Xt1WVikAI66igPV4=",
+        "lastModified": 1792536210,
+        "narHash": "sha256-bNjkbpD1XXmDHgAzBqnWnEiLkEyC/cNrZgDuQDVGh5Q=",
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "56058cd2243f7e9c23ae21b48ce04af0d37900d9",
+        "rev": "ed1abf536b7cf848c8651d912b43fb74cb85469c",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "56058cd2243f7e9c23ae21b48ce04af0d37900d9",
+        "rev": "ed1abf536b7cf848c8651d912b43fb74cb85469c",
         "type": "github"
       }
     },
