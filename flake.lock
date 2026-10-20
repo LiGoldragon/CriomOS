@@ -744,7 +744,6 @@
           "horizon"
         ],
         "listener": "listener",
-        "mentci-src": "mentci-src",
         "message": "message",
         "messenger-clj": [
           "messenger-clj"
@@ -811,17 +810,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1792468153,
-        "narHash": "sha256-rRSu+1ANkOdiZnqDFrt1PXIqUjJJ/GsLc8o6jzO9T9Y=",
+        "lastModified": 1792468919,
+        "narHash": "sha256-APakF8wB0qcyVMDsx0kUTMtJTY6M2ejG4iE0T6JkZ1c=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e24d82e23bf3c45c42db19968803c8901081c69c",
+        "rev": "f732d0465e08876808a4215f8a4a4d20532f3b2e",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "e24d82e23bf3c45c42db19968803c8901081c69c",
+        "rev": "f732d0465e08876808a4215f8a4a4d20532f3b2e",
         "type": "github"
       }
     },
@@ -2135,23 +2134,6 @@
         "owner": "LiGoldragon",
         "repo": "lojix",
         "rev": "3fc95f0cf4eaf14ff62898c4783ebbc670fdf96b",
-        "type": "github"
-      }
-    },
-    "mentci-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1790627604,
-        "narHash": "sha256-kHgU1mxni6/Hcw2Jc4vb4LqA47NOvhbQXtaipZ1Dd5c=",
-        "owner": "LiGoldragon",
-        "repo": "mentci",
-        "rev": "a1eb5e2bb1a3658df530d7eea4862f94f556fc61",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "mentci",
-        "rev": "a1eb5e2bb1a3658df530d7eea4862f94f556fc61",
         "type": "github"
       }
     },
