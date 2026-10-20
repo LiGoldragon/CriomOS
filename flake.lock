@@ -810,17 +810,17 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1792468919,
-        "narHash": "sha256-APakF8wB0qcyVMDsx0kUTMtJTY6M2ejG4iE0T6JkZ1c=",
+        "lastModified": 1792470718,
+        "narHash": "sha256-nJ9TlAd+fJhdmhPdbUpv9i19pASp4CmXAsW1Dh6NjDo=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "f732d0465e08876808a4215f8a4a4d20532f3b2e",
+        "rev": "072279a077c294ca90f0e0336fa691f310949064",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "f732d0465e08876808a4215f8a4a4d20532f3b2e",
+        "rev": "072279a077c294ca90f0e0336fa691f310949064",
         "type": "github"
       }
     },
@@ -1836,17 +1836,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1792466772,
-        "narHash": "sha256-618GWT//TNBN51ZdNxMwmvkhzjv7sibgpOUdmX6vqLM=",
+        "lastModified": 1792470325,
+        "narHash": "sha256-cFFzasN9j//dh6KhZssTH7WHZxUdGyzU9WmB1Bifq5g=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "805b6edf4c89365de5d58f03e3fafeae3c23842f",
+        "rev": "f93c803fb748123e1f8ad6486c09d1fbc5ac0f8b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "805b6edf4c89365de5d58f03e3fafeae3c23842f",
+        "rev": "f93c803fb748123e1f8ad6486c09d1fbc5ac0f8b",
         "type": "github"
       }
     },
