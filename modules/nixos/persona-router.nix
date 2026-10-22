@@ -32,7 +32,7 @@ let
   workingSocket = "${runtimeDirectory}/router.sock";
   metaSocket = "${runtimeDirectory}/meta.sock";
   supervisionSocket = "${runtimeDirectory}/supervision.sock";
-  storePath = "${stateDirectory}/router.sema";
+  storePath = "${stateDirectory}/router.memory";
   bootstrapPath = "${runtimeDirectory}/bootstrap.rkyv";
   daemonConfigurationPath = "${runtimeDirectory}/router-daemon.rkyv";
 

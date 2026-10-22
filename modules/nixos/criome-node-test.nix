@@ -11,7 +11,7 @@
 #      proving the daemon is live and self-registered (not merely that files
 #      exist);
 #   4. persists its master key at the store-derived path at 0600 (key custody);
-#   5. self-resumes across a restart: the same master key and SEMA store survive
+#   5. self-resumes across a restart: the same master key and MEMORY store survive
 #      (no re-mint, no wipe).
 #
 # Needs /dev/kvm to boot. The driver and node closures build and evaluate on any

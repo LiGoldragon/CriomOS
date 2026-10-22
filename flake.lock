@@ -3771,35 +3771,35 @@
       },
       "parent": []
     },
-    "sema-engine-source": {
+    "memory-engine-source": {
       "flake": false,
       "locked": {
         "lastModified": 1783442487,
         "narHash": "sha256-GHLzW7ns0W70sHPJGfUAhA9IuRPJkNXDJduCYjNHH4w=",
         "owner": "LiGoldragon",
-        "repo": "sema-engine",
+        "repo": "memory-engine",
         "rev": "b3b5fb714412f820f870c290a6cb7800acb9bdec",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "repo": "sema-engine",
+        "repo": "memory-engine",
         "type": "github"
       }
     },
-    "sema-source": {
+    "memory-source": {
       "flake": false,
       "locked": {
         "lastModified": 1783441691,
         "narHash": "sha256-4Q27W0MBAod2OPe0MkSk7tXR+r3VvxxWYggsocYEFXo=",
         "owner": "LiGoldragon",
-        "repo": "sema",
+        "repo": "memory",
         "rev": "51d7927c872f0df12791bad8d39a4db6433b01a1",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "repo": "sema",
+        "repo": "memory",
         "type": "github"
       }
     },
@@ -3981,19 +3981,19 @@
         "type": "github"
       }
     },
-    "signal-sema-source": {
+    "signal-memory-source": {
       "flake": false,
       "locked": {
         "lastModified": 1783441725,
         "narHash": "sha256-iDy86F3Y/n9hWBseFt6siOC2HOD395URPCRt726FhWE=",
         "owner": "LiGoldragon",
-        "repo": "signal-sema",
+        "repo": "signal-memory",
         "rev": "8d4a0223efe59b36ac79d154d15961084eef286b",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "repo": "signal-sema",
+        "repo": "signal-memory",
         "type": "github"
       }
     },
@@ -4106,8 +4106,8 @@
         "schema-language-source": "schema-language-source",
         "schema-rust-source": "schema-rust-source",
         "schema-source": "schema-source",
-        "sema-engine-source": "sema-engine-source",
-        "sema-source": "sema-source",
+        "memory-engine-source": "memory-engine-source",
+        "memory-source": "memory-source",
         "signal-agent-source": "signal-agent-source",
         "signal-criome-source": "signal-criome-source",
         "signal-domain-source": "signal-domain-source",
@@ -4119,7 +4119,7 @@
         "signal-mirror-source": "signal-mirror-source",
         "signal-persona-source": "signal-persona-source",
         "signal-router-source": "signal-router-source",
-        "signal-sema-source": "signal-sema-source",
+        "signal-memory-source": "signal-memory-source",
         "signal-spirit-judge-source": "signal-spirit-judge-source",
         "signal-spirit-source": "signal-spirit-source",
         "signal-standard-source": "signal-standard-source",

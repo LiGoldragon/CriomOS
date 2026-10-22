@@ -27,7 +27,7 @@
     # CriomOS and CriomOS-home.
     criomos-lib.url = "github:LiGoldragon/CriomOS-lib";
 
-    # Orchestrate Nexus owns its per-user default Sema store and ordinary/meta
+    # Orchestrate Nexus owns its per-user default Memory store and ordinary/meta
     # XDG sockets. CriomOS-home follows this shared immutable release.
     orchestrate.url = "github:LiGoldragon/orchestrate/c7c44cb39934b0727d724a6aa03a36a2a94cacf9";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
@@ -65,7 +65,7 @@
     repository-ledger.url = "github:LiGoldragon/repository-ledger";
     repository-ledger.inputs.nixpkgs.follows = "nixpkgs";
 
-    # SEMA version-control mirror daemon. Consumed by modules/nixos/mirror.nix
+    # MEMORY version-control mirror daemon. Consumed by modules/nixos/mirror.nix
     # on persona-development hosts that join the cluster tailnet.
     mirror.url = "github:LiGoldragon/mirror";
     mirror.inputs.nixpkgs.follows = "nixpkgs";

@@ -32,7 +32,7 @@ let
 
   workingSocket = "/run/mirror/working.sock";
   metaSocket = "/run/mirror/meta.sock";
-  storePath = "/var/lib/mirror/mirror.sema";
+  storePath = "/var/lib/mirror/mirror.memory";
   daemonConfigurationPath = "/run/mirror/mirror-daemon.rkyv";
   mirrorTcpPort = 7474;
   tcpListenAddress = "0.0.0.0:${toString mirrorTcpPort}";
@@ -55,14 +55,14 @@ in
     users.users.${daemonUser} = {
       isSystemUser = true;
       group = daemonGroup;
-      description = "SEMA version-control mirror daemon user";
+      description = "MEMORY version-control mirror daemon user";
       home = "/var/lib/mirror";
     };
 
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ mirrorTcpPort ];
 
     systemd.services.mirror = {
-      description = "SEMA version-control mirror daemon";
+      description = "MEMORY version-control mirror daemon";
       wantedBy = [ "multi-user.target" ];
       wants = [ "tailscaled.service" ];
       after = [ "tailscaled.service" ];

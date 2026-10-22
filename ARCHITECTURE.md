@@ -1,17 +1,17 @@
 # ARCHITECTURE — CriomOS
 
-The host OS for the sema ecosystem. NixOS-based. Boots into a
+The host OS for the memory ecosystem. NixOS-based. Boots into a
 pre-configured environment where criome, forge, and sundry
 nexus daemons run as the user-space layer.
 
 > **Scope: today, not eventually.** "criome" here is today's daemon
-> (sema-ecosystem records validator) — see the criome repository's
+> (memory-ecosystem records validator) — see the criome repository's
 > `ARCHITECTURE.md`. CriomOS is **named after**
-> the *eventual* Criome — the universal computing paradigm in Sema
+> the *eventual* Criome — the universal computing paradigm in Memory
 > — but CriomOS today is pre-duct-tape: a NixOS-targeted host that
 > uses transitional shims (ClaviFaber for key generation, Lojix for deploy,
 > etc.) where eventual Criome's substrate will later sit. Eventually the OS is
-> written in Sema; ClaviFaber-shaped shims
+> written in Memory; ClaviFaber-shaped shims
 > are obsoleted by Criome's quorum-signature multi-sig system at
 > that point. See the workspace architecture's "Workspace vision and intent"
 > section.
@@ -28,7 +28,7 @@ develop` / direnv entry refreshes the symlinks.
 
 ## Role
 
-A coherent platform target: the sema-ecosystem assumes a Unix
+A coherent platform target: the memory-ecosystem assumes a Unix
 filesystem, systemd, a working nix-store, blake3 in scope, etc.
 CriomOS provides those guarantees and folds in project-specific
 modules (criome service, nexus service, arca
@@ -304,8 +304,8 @@ projected through Horizon, and rendered here into NixOS swap / zram options.
 
 ## What this repo does not define
 
-- Sema, signal, or any application-layer record kind.
-- The criome daemon, forge daemon, or any sema-ecosystem
+- Memory, signal, or any application-layer record kind.
+- The criome daemon, forge daemon, or any memory-ecosystem
   binary.
 - The deploy orchestrator — that's `github:LiGoldragon/lojix`.
 

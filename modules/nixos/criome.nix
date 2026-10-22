@@ -24,7 +24,7 @@
 #
 # KEY CUSTODY (Spirit psc6 / key-custody q1le). criome's master signing key is
 # generated on first run and persisted at the store-derived path
-# (store `…/criome.sema` ⇒ key `…/criome.masterkey`) at mode 0600 by the daemon
+# (store `…/criome.memory` ⇒ key `…/criome.masterkey`) at mode 0600 by the daemon
 # itself. This module only provisions the owning state directory (0700) under
 # the dedicated `criome` user so the daemon can create the key there. The secret
 # never leaves criome and is never placed in the Nix store.
@@ -67,7 +67,7 @@ let
   stateDir = "/var/lib/criome";
   socketPath = "${runtimeDir}/${cfg.socketName}";
   metaSocketPath = "${socketPath}.meta";
-  storePath = "${stateDir}/criome.sema";
+  storePath = "${stateDir}/criome.memory";
   configRkyv = "${runtimeDir}/criome-config.rkyv";
 
   # The identity this criome signs attestations as. Null keeps the daemon's
@@ -218,7 +218,7 @@ in
     };
 
     systemd.tmpfiles.rules = [
-      # 0700 state dir: holds the durable SEMA store and the daemon's 0600
+      # 0700 state dir: holds the durable MEMORY store and the daemon's 0600
       # master key, preserved across restarts so the daemon self-resumes and,
       # once founded, re-verifies its persisted root (never re-founds).
       "d ${stateDir} 0700 ${cfg.user} ${cfg.group} -"

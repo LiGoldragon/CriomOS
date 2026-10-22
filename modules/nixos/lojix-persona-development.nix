@@ -39,7 +39,7 @@ lib.mkIf personaDevelopmentHost (
     (lib.mkIf hasExactlyOneLocalUser {
       # `users.nix` owns the projected account. Read its evaluated account name
       # and primary group instead of duplicating either identity decision here.
-      # The Nexus self-configures from its own Sema store; socket paths, socket
+      # The Nexus self-configures from its own Memory store; socket paths, socket
       # modes and the store file are the Nexus's own built-in choices, restated
       # read-only by the module. Only identity and the SSH-agent endpoint are
       # decided here.

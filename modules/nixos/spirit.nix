@@ -40,7 +40,7 @@
 # it is out of scope here (would be a distinct `package`/option pairing, not a
 # field on this module's ordinary config).
 #
-# STORE. The durable SEMA journal lives at `/var/lib/spirit/spirit.sema` (the
+# STORE. The durable MEMORY journal lives at `/var/lib/spirit/spirit.memory` (the
 # design's stated path). This module only provisions the owning 0700 state
 # directory under the dedicated `spirit` user; the daemon creates and grows
 # the store there itself and self-resumes across restarts (same store, same
@@ -67,7 +67,7 @@ let
   stateDir = "/var/lib/spirit";
   socketPath = "${runtimeDir}/${cfg.socketName}";
   metaSocketPath = "${socketPath}.meta";
-  storePath = "${stateDir}/spirit.sema";
+  storePath = "${stateDir}/spirit.memory";
   configRkyv = "${runtimeDir}/spirit-config.rkyv";
 
   guardianAgentModule = types.submodule {
@@ -202,7 +202,7 @@ in
         unit UMask (spirit's own Configuration overrides no socket_mode, and no
         signal-spirit socket-mode field exists), so UMask is the only lever.
         Enabling this sets the unit UMask to "0007": the working socket AND the
-        regenerated config rkyv become group-accessible, while the durable SEMA
+        regenerated config rkyv become group-accessible, while the durable MEMORY
         store stays owner-private behind the 0700 state directory (its directory
         bits gate access regardless of file umask, and spirit holds no signing
         key). Off keeps the hardened owner-only (umask 0077 → 0700) working
@@ -253,7 +253,7 @@ in
     };
 
     systemd.tmpfiles.rules = [
-      # 0700 state dir: holds the durable SEMA store, preserved across
+      # 0700 state dir: holds the durable MEMORY store, preserved across
       # restarts so the daemon self-resumes on the same content-addressed head.
       "d ${stateDir} 0700 ${cfg.user} ${cfg.group} -"
       # 0755 runtime dir: holds the regenerated config rkyv + the two sockets

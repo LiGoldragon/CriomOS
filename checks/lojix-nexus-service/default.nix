@@ -1,7 +1,7 @@
 { inputs, pkgs, ... }:
 
 # Build-time guard for the typed Lojix Nexus service. The Nexus starts with no
-# arguments and self-configures from its own Sema store, so this unit gets no
+# arguments and self-configures from its own Memory store, so this unit gets no
 # pre-start at all. Reset remains a separate manual service owning its own
 # generated archive, and must never become an implicit startup mutation.
 let

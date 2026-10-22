@@ -273,7 +273,7 @@ assert fixture.config.services.lojix.ordinarySocketMode == 432;
 assert fixture.config.services.lojix.ownerSocketPath == "/run/lojix/meta.sock";
 assert fixture.config.services.lojix.ownerSocketMode == 384;
 assert fixture.config.services.lojix.stateDirectoryPath == "/var/lib/lojix";
-assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix.sema";
+assert fixture.config.services.lojix.storePath == "/var/lib/lojix/lojix.memory";
 assert fixture.config.services.lojix.runtimeDirectoryPath == "/run/lojix";
 assert
   fixture.config.services.lojix.resetConfigurationPath == "/var/lib/lojix/reset-configuration.rkyv";

@@ -6,7 +6,7 @@
 
 ## What this skill is for
 
-Use this when changing NixOS-level behavior for the sema desktop and
+Use this when changing NixOS-level behavior for the memory desktop and
 cluster platform: users, groups, devices, modules, services, deploy
 surface, and the meta-repo symlink workspace.
 

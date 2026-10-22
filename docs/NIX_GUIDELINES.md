@@ -1,6 +1,6 @@
-# Sema Object Style — Unified Nix Architecture and Naming
+# Memory Object Style — Unified Nix Architecture and Naming
 
-This document adapts the Sema architectural, naming, and documentation rules for Nix-based projects. The rules are structural. Violations often indicate missing abstraction, semantic duplication, or category error.
+This document adapts the Memory architectural, naming, and documentation rules for Nix-based projects. The rules are structural. Violations often indicate missing abstraction, semantic duplication, or category error.
 
 ## Naming Is a Semantic Layer
 
@@ -139,7 +139,7 @@ final: prev: {
 }
 ```
 
-## Sema Object Rule — Single Attrset In, Single Attrset Out
+## Memory Object Rule — Single Attrset In, Single Attrset Out
 
 *All values that cross module or file boundaries should be attrsets.* Primitive types (strings, bools) are for internal logic only.
 

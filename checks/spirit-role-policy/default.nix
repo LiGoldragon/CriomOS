@@ -91,7 +91,7 @@ pkgs.runCommand "spirit-role-policy" { } ''
 
   printf '%s' ${lib.escapeShellArg encodeScriptText} | grep -F '/bin/spirit-write-configuration'
   printf '%s' ${lib.escapeShellArg encodeScriptText} | grep -F \
-    '(ConfigurationWriteRequest (/run/spirit/spirit.sock (Some /run/spirit/spirit.sock.meta) /var/lib/spirit/spirit.sema None Gating None /run/spirit/spirit-config.rkyv))'
+    '(ConfigurationWriteRequest (/run/spirit/spirit.sock (Some /run/spirit/spirit.sock.meta) /var/lib/spirit/spirit.memory None Gating None /run/spirit/spirit-config.rkyv))'
   ! printf '%s' ${lib.escapeShellArg encodeScriptText} | grep -F '""'
 
   printf '%s' ${lib.escapeShellArg guardianEncodeScriptText} | grep -F \

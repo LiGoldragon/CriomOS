@@ -2,7 +2,7 @@
 
 ## Repo role
 
-NixOS-based host OS for the sema ecosystem. Network-neutral system surface (`nixosConfigurations.target`) consumed by lojix-projected `horizon`, `system`, and `deployment` flake inputs.
+NixOS-based host OS for the memory ecosystem. Network-neutral system surface (`nixosConfigurations.target`) consumed by lojix-projected `horizon`, `system`, and `deployment` flake inputs.
 
 This repo doubles as the **CriomOS-cluster meta-repo** — `repos/` symlinks the cluster siblings (CriomOS-home, CriomOS-emacs, horizon-rs, lojix, …) and lore.
 

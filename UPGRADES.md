@@ -117,7 +117,7 @@ The 0.26 WireContract replacement is breaking for both sockets. Follow the
 Home upgrade record: stop the old Nexus only under approved activation
 authority, run the candidate preflight against the same state root, proceed
 only with zero legacy rows, and activate the matching clients and Nexus
-together. Its Sema schema/families are unchanged, so rollback is the preceding
+together. Its Memory schema/families are unchanged, so rollback is the preceding
 immutable Home generation with its matching 0.25 wrappers—not a store copy or
 a mixed-client restart.
 

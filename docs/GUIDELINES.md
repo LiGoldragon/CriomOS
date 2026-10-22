@@ -1,7 +1,7 @@
-# Sema Object Style — Unified Architecture and Naming Guide
+# Memory Object Style — Unified Architecture and Naming Guide
 
 This document defines the architectural, naming, and documentation rules for
-object‑oriented codebases that follow Sema principles and the Criome lineage.
+object‑oriented codebases that follow Memory principles and the Criome lineage.
 The rules are structural rather than stylistic. Violations indicate missing
 abstraction, semantic duplication, or category error.
 
@@ -163,9 +163,9 @@ let config: Config = "...".parse()?;
 let config = Config::from(string_value);
 ```
 
-## Sema Object Rule — Single Object In, Single Object Out
+## Memory Object Rule — Single Object In, Single Object Out
 
-*All values that cross object boundaries are Sema objects.* Primitive types are
+*All values that cross object boundaries are Memory objects.* Primitive types are
 internal representations only.
 
 Every method accepts at most one explicit object argument (excluding `self`) and
@@ -185,15 +185,15 @@ impl TransformationOutput {
 }
 ```
 
-## Schema Is Sema; Encoding Is Incidental
+## Schema Is Memory; Encoding Is Incidental
 
-All transmissible objects are defined in Sema schemas. *Cap’n Proto is a
+All transmissible objects are defined in Memory schemas. *Cap’n Proto is a
 temporary wire representation* and must not appear in domain APIs, naming, or
 documentation.
 
 ```rust
-// Domain code speaks Sema
-use sema::hello_world;
+// Domain code speaks Memory
+use memory::hello_world;
 
 let message = hello_world::Builder::new();
 ```
@@ -220,7 +220,7 @@ No first‑ or second‑person language. No humor or evaluative commentary. Beha
 is stated as fact. Non‑boilerplate behavior is documented. Boilerplate is not.
 
 ```rust
-/// Constructs a `Greeting` from a Sema `Text` value.
+/// Constructs a `Greeting` from a Memory `Text` value.
 ///
 /// Returns a fully initialized object.
 ```
