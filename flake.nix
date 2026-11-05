@@ -148,6 +148,8 @@
   outputs =
     inputs:
     let
+      inherit (inputs.nixpkgs) lib;
+
       # Host toplevels are deploy artefacts that Lojix evaluates, not checks.
       # Blueprint turns every nixosConfigurations entry into a nixos-* check and
       # must evaluate the host to list it, so it is not shown the host at all.
@@ -166,10 +168,10 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-      bootstrapPackages = inputs.nixpkgs.lib.genAttrs bootstrapSystems (bootstrapSystem: {
+      bootstrapPackages = lib.genAttrs bootstrapSystems (bootstrapSystem: {
         lojix-bootstrap = inputs.lojix.packages.${bootstrapSystem}.lojix-bootstrap;
       });
-      bootstrapApps = inputs.nixpkgs.lib.genAttrs bootstrapSystems (bootstrapSystem: {
+      bootstrapApps = lib.genAttrs bootstrapSystems (bootstrapSystem: {
         lojix-bootstrap = inputs.lojix.apps.${bootstrapSystem}.lojix-bootstrap;
       });
 
@@ -188,8 +190,8 @@
 
       criomos-lib = inputs.criomos-lib.lib;
       constants = criomos-lib.constants;
-      blueprintChecks = inputs.nixpkgs.lib.mapAttrs (
-        _: checks: inputs.nixpkgs.lib.filterAttrs (_: inputs.nixpkgs.lib.isDerivation) checks
+      blueprintChecks = lib.mapAttrs (
+        _: checks: lib.filterAttrs (_: lib.isDerivation) checks
       ) (blueprintOutputs.checks or { });
       # Project checks share one flake context; keep that wiring in one place.
       callCheck = path: pkgs.callPackage path { inherit inputs; };
@@ -246,7 +248,7 @@
         };
       };
 
-      target = inputs.nixpkgs.lib.nixosSystem {
+      target = lib.nixosSystem {
         # `system` is derived from `pkgs.stdenv.hostPlatform.system`
         # when `pkgs` is supplied; passing it explicitly would set
         # `nixpkgs.system`, which `readOnlyPkgs` has removed.
@@ -264,7 +266,7 @@
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
         ]
-        ++ inputs.nixpkgs.lib.optionals includeHome [
+        ++ lib.optionals includeHome [
           inputs.home-manager.nixosModules.home-manager
         ]
         ++ [
@@ -277,7 +279,7 @@
       # the conventional `homeConfigurations.<user>.activationPackage` shape
       # as a projection of that target rather than evaluating CriomOS-home a
       # second, differently configured way.
-      homeConfigurations = inputs.nixpkgs.lib.mapAttrs (_: userConfiguration: {
+      homeConfigurations = lib.mapAttrs (_: userConfiguration: {
         activationPackage = userConfiguration.home.activationPackage;
       }) target.config.home-manager.users;
 
@@ -294,9 +296,9 @@
       # Exact maintained bootstrap re-export.  This is a flake-owned app, not
       # a service wrapper: every authority-bearing bootstrap value stays in
       # the one inline Lojix request.
-      packages = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.packages or { }) bootstrapPackages;
+      packages = lib.recursiveUpdate (blueprintOutputs.packages or { }) bootstrapPackages;
 
-      apps = inputs.nixpkgs.lib.recursiveUpdate (blueprintOutputs.apps or { }) bootstrapApps;
+      apps = lib.recursiveUpdate (blueprintOutputs.apps or { }) bootstrapApps;
 
       inherit homeConfigurations;
       inherit independentHomeConfigurations;
