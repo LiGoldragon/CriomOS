@@ -191,78 +191,50 @@
       blueprintChecks = inputs.nixpkgs.lib.mapAttrs (
         _: checks: inputs.nixpkgs.lib.filterAttrs (_: inputs.nixpkgs.lib.isDerivation) checks
       ) (blueprintOutputs.checks or { });
+      # Project checks share one flake context; keep that wiring in one place.
+      callCheck = path: pkgs.callPackage path { inherit inputs; };
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
-          tailnet-declaration = pkgs.callPackage ./checks/tailnet-declaration {
-            inherit inputs;
-          };
-          tailnet-enrollment = pkgs.callPackage ./checks/tailnet-enrollment { inherit inputs; };
-          image-exchange-keys-scoped-to-co-hosts =
-            pkgs.callPackage ./checks/image-exchange-keys-scoped-to-co-hosts
-              {
-                inherit inputs;
-              };
-          bluetooth-resume-power-policy = pkgs.callPackage ./checks/bluetooth-resume-power-policy {
-            inherit inputs;
-          };
-          desktop-audio-policy = pkgs.callPackage ./checks/desktop-audio-policy { inherit inputs; };
-          clavifaber-publication-request = pkgs.callPackage ./checks/clavifaber-publication-request {
-            inherit inputs;
-          };
-          devshell-repository-layout = pkgs.callPackage ./checks/devshell-repository-layout { };
-          laptop-keyboard-keyd = pkgs.callPackage ./checks/laptop-keyboard-keyd { inherit inputs; };
-          legacy-chroma-runtime = pkgs.callPackage ./checks/legacy-chroma-runtime { };
-          metal-firmware-policy = pkgs.callPackage ./checks/metal-firmware-policy { inherit inputs; };
-          metal-model-classification = pkgs.callPackage ./checks/metal-model-classification {
-            inherit inputs;
-          };
-          fixed-location-policy = pkgs.callPackage ./checks/fixed-location-policy { inherit inputs; };
-          ms2130-uvc-aspect-quirk = pkgs.callPackage ./checks/ms2130-uvc-aspect-quirk {
-            inherit inputs;
-          };
-          nspawn-role-policy = pkgs.callPackage ./checks/nspawn-role-policy { inherit inputs; };
-          nix-role-policy = pkgs.callPackage ./checks/nix-role-policy { inherit inputs; };
-          flake-registry-shape = pkgs.callPackage ./checks/flake-registry-shape { inherit inputs; };
-          repository-receive-role-policy = pkgs.callPackage ./checks/repository-receive-role-policy {
-            inherit inputs;
-          };
-          mirror-role-policy = pkgs.callPackage ./checks/mirror-role-policy { inherit inputs; };
-          lojix-nexus-service = pkgs.callPackage ./checks/lojix-nexus-service {
-            inherit inputs;
-          };
-          lojix-nexus-start = pkgs.callPackage ./checks/lojix-nexus-start { inherit inputs; };
-          lojix-ownership = pkgs.callPackage ./checks/lojix-ownership { inherit inputs; };
+          tailnet-declaration = callCheck ./checks/tailnet-declaration;
+          tailnet-enrollment = callCheck ./checks/tailnet-enrollment;
+          image-exchange-keys-scoped-to-co-hosts = callCheck ./checks/image-exchange-keys-scoped-to-co-hosts;
+          bluetooth-resume-power-policy = callCheck ./checks/bluetooth-resume-power-policy;
+          desktop-audio-policy = callCheck ./checks/desktop-audio-policy;
+          clavifaber-publication-request = callCheck ./checks/clavifaber-publication-request;
+          devshell-repository-layout = callCheck ./checks/devshell-repository-layout;
+          laptop-keyboard-keyd = callCheck ./checks/laptop-keyboard-keyd;
+          legacy-chroma-runtime = callCheck ./checks/legacy-chroma-runtime;
+          metal-firmware-policy = callCheck ./checks/metal-firmware-policy;
+          metal-model-classification = callCheck ./checks/metal-model-classification;
+          fixed-location-policy = callCheck ./checks/fixed-location-policy;
+          ms2130-uvc-aspect-quirk = callCheck ./checks/ms2130-uvc-aspect-quirk;
+          nspawn-role-policy = callCheck ./checks/nspawn-role-policy;
+          nix-role-policy = callCheck ./checks/nix-role-policy;
+          flake-registry-shape = callCheck ./checks/flake-registry-shape;
+          repository-receive-role-policy = callCheck ./checks/repository-receive-role-policy;
+          mirror-role-policy = callCheck ./checks/mirror-role-policy;
+          lojix-nexus-service = callCheck ./checks/lojix-nexus-service;
+          lojix-nexus-start = callCheck ./checks/lojix-nexus-start;
+          lojix-ownership = callCheck ./checks/lojix-ownership;
           lojix-fresh-nexus-startup = inputs.lojix.checks.${system}.fresh-daemon-startup;
-          criome-daemon-config-roundtrip = pkgs.callPackage ./checks/criome-daemon-config-roundtrip {
-            inherit inputs;
-          };
-          spirit-role-policy = pkgs.callPackage ./checks/spirit-role-policy { inherit inputs; };
-          opencode-testing-policy = pkgs.callPackage ./checks/opencode-testing-policy {
-            inherit inputs;
-          };
-          persona-router-role-policy = pkgs.callPackage ./checks/persona-router-role-policy {
-            inherit inputs;
-          };
-          resolver-role-policy = pkgs.callPackage ./checks/resolver-role-policy { inherit inputs; };
-          vm-testing-prometheus-policy = pkgs.callPackage ./checks/vm-testing-prometheus-policy {
-            inherit inputs;
-          };
-          router-wifi-horizon-policy = pkgs.callPackage ./checks/router-wifi-horizon-policy { };
-          router-wifi-radio = pkgs.callPackage ./checks/router-wifi-radio { inherit inputs; };
-          router-non-router-lazy = pkgs.callPackage ./checks/router-non-router-lazy { inherit inputs; };
-          router-wifi-secret = pkgs.callPackage ./checks/router-wifi-secret { };
-          router-wan-recovery = pkgs.callPackage ./checks/router-wan-recovery { inherit inputs; };
-          router-yggdrasil-ndp = pkgs.callPackage ./checks/router-yggdrasil-ndp {
-            inherit inputs;
-          };
-          router-declared-tcp-ports = pkgs.callPackage ./checks/router-declared-tcp-ports {
-            inherit inputs;
-          };
-          usb-downlink = pkgs.callPackage ./checks/usb-downlink { inherit inputs; };
-          usb-downlink-chain = pkgs.callPackage ./checks/usb-downlink-chain { inherit inputs; };
-          usb-downlink-observer = pkgs.callPackage ./checks/usb-downlink-observer { };
-          wireguard-untrusted-proxy = pkgs.callPackage ./checks/wireguard-untrusted-proxy { inherit inputs; };
-          wispr-keyboard-uaccess = pkgs.callPackage ./checks/wispr-keyboard-uaccess { inherit inputs; };
+          criome-daemon-config-roundtrip = callCheck ./checks/criome-daemon-config-roundtrip;
+          spirit-role-policy = callCheck ./checks/spirit-role-policy;
+          opencode-testing-policy = callCheck ./checks/opencode-testing-policy;
+          persona-router-role-policy = callCheck ./checks/persona-router-role-policy;
+          resolver-role-policy = callCheck ./checks/resolver-role-policy;
+          vm-testing-prometheus-policy = callCheck ./checks/vm-testing-prometheus-policy;
+          router-wifi-horizon-policy = callCheck ./checks/router-wifi-horizon-policy;
+          router-wifi-radio = callCheck ./checks/router-wifi-radio;
+          router-non-router-lazy = callCheck ./checks/router-non-router-lazy;
+          router-wifi-secret = callCheck ./checks/router-wifi-secret;
+          router-wan-recovery = callCheck ./checks/router-wan-recovery;
+          router-yggdrasil-ndp = callCheck ./checks/router-yggdrasil-ndp;
+          router-declared-tcp-ports = callCheck ./checks/router-declared-tcp-ports;
+          usb-downlink = callCheck ./checks/usb-downlink;
+          usb-downlink-chain = callCheck ./checks/usb-downlink-chain;
+          usb-downlink-observer = callCheck ./checks/usb-downlink-observer;
+          wireguard-untrusted-proxy = callCheck ./checks/wireguard-untrusted-proxy;
+          wispr-keyboard-uaccess = callCheck ./checks/wispr-keyboard-uaccess;
           home-activation-equivalence = import ./home-activation-equivalence.nix {
             inherit
               pkgs
