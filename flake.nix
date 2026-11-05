@@ -265,6 +265,7 @@
         };
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
+          { system.configurationRevision = inputs.self.rev or null; }
         ]
         ++ lib.optionals includeHome [
           inputs.home-manager.nixosModules.home-manager
