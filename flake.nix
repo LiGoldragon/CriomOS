@@ -190,9 +190,9 @@
 
       criomos-lib = inputs.criomos-lib.lib;
       constants = criomos-lib.constants;
-      blueprintChecks = lib.mapAttrs (
-        _: checks: lib.filterAttrs (_: lib.isDerivation) checks
-      ) (blueprintOutputs.checks or { });
+      blueprintChecks = lib.mapAttrs (_: checks: lib.filterAttrs (_: lib.isDerivation) checks) (
+        blueprintOutputs.checks or { }
+      );
       # Project checks share one flake context; keep that wiring in one place.
       callCheck = path: pkgs.callPackage path { inherit inputs; };
       projectChecks = blueprintChecks // {
