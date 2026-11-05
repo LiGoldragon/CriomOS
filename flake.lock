@@ -820,7 +820,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "c4315d7bd6a36b9980b8a0f5718e688dccdb0aa4",
         "type": "github"
       }
     },
@@ -2133,7 +2132,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "3fc95f0cf4eaf14ff62898c4783ebbc670fdf96b",
         "type": "github"
       }
     },
@@ -2182,7 +2180,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "messenger-clj",
-        "rev": "cb0e384e5e091cf9cf1725311ad4490644c29e26",
         "type": "github"
       }
     },
@@ -2483,7 +2480,6 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "main",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -2607,7 +2603,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "orchestrate",
-        "rev": "c7c44cb39934b0727d724a6aa03a36a2a94cacf9",
         "type": "github"
       }
     },
@@ -4160,7 +4155,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "spirit",
-        "rev": "008d8ca0e4a309bdd922fae61681cdc97a484bac",
         "type": "github"
       }
     },

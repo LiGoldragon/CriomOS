@@ -2,7 +2,7 @@
   description = "CriomOS — NixOS platform consuming content-addressed flake inputs from lojix: `system` (the target tuple), `pkgs` (a stable wrapper flake that imports nixpkgs for that system), `horizon` (the per-deploy projected horizon JSON), and `deployment` (operation shape such as home-enabled vs home-off). Each axis caches independently in nix's flake-eval cache: pkgs eval is reused across deploys with the same system; horizon/deployment changes don't touch pkgs.";
 
   inputs = {
-    nixpkgs.url = "github:LiGoldragon/nixpkgs?ref=main";
+    nixpkgs.url = "github:LiGoldragon/nixpkgs";
 
     blueprint.url = "github:numtide/blueprint";
     blueprint.inputs.nixpkgs.follows = "nixpkgs";
@@ -29,11 +29,11 @@
 
     # Orchestrate Nexus owns its per-user default Sema store and ordinary/meta
     # XDG sockets. CriomOS-home follows this shared immutable release.
-    orchestrate.url = "github:LiGoldragon/orchestrate/c7c44cb39934b0727d724a6aa03a36a2a94cacf9";
+    orchestrate.url = "github:LiGoldragon/orchestrate";
     orchestrate.inputs.nixpkgs.follows = "nixpkgs";
 
     # Home profile — its own repo, own inputs (niri, noctalia, stylix, emacs…).
-    criomos-home.url = "github:LiGoldragon/CriomOS-home/c4315d7bd6a36b9980b8a0f5718e688dccdb0aa4";
+    criomos-home.url = "github:LiGoldragon/CriomOS-home";
     criomos-home.inputs.nixpkgs.follows = "nixpkgs";
     criomos-home.inputs.home-manager.follows = "home-manager";
     criomos-home.inputs.criomos-lib.follows = "criomos-lib";
@@ -49,7 +49,7 @@
     # independently pinning any Spirit service component.
     criomos-home.inputs.spirit.follows = "spirit";
 
-    messenger-clj.url = "github:LiGoldragon/messenger-clj/cb0e384e5e091cf9cf1725311ad4490644c29e26";
+    messenger-clj.url = "github:LiGoldragon/messenger-clj";
     messenger-clj.inputs.nixpkgs.follows = "nixpkgs";
 
     # Backlight + idle-dim daemon. Consumed in modules/nixos/metal/.
@@ -92,7 +92,7 @@
     # Maintained Spirit release — the single pin authority for the daemon,
     # judge, configuration, provider, contracts, and service artifacts.
     # Consumed directly by the NixOS module and followed by CriomOS-home.
-    spirit.url = "github:LiGoldragon/spirit/008d8ca0e4a309bdd922fae61681cdc97a484bac";
+    spirit.url = "github:LiGoldragon/spirit";
     spirit.inputs.nixpkgs.follows = "nixpkgs";
 
     # Lojix Nexus — deployment authority. Its executable owns the default
@@ -106,7 +106,7 @@
     # its own startup test now waits for that announcement instead of polling a
     # five-second deadline: 5.0.0's test failed reproducibly on a loaded remote
     # builder while passing on an idle one.
-    lojix.url = "github:LiGoldragon/lojix/3fc95f0cf4eaf14ff62898c4783ebbc670fdf96b";
+    lojix.url = "github:LiGoldragon/lojix";
     lojix.inputs.nixpkgs.follows = "nixpkgs";
 
     # GPG → X.509 cert tool for WiFi PKI + node identity complex.
