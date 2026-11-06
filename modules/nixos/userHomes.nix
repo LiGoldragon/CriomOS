@@ -34,11 +34,19 @@ let
   };
 };
 
-  mkUserConfig = name: user: {
+  mkUserConfig = name: user: { lib, osConfig, ... }: {
     _module.args = {
       inherit user;
     };
     home.stateVersion = "26.05";
+    # The deployed Home activation package runs directly, outside the NixOS
+    # home-manager service environment. Carry the consumer's backup policy
+    # into that activation DAG so collision handling remains managed.
+    home.activation = lib.optionalAttrs (osConfig.home-manager.backupFileExtension != null) {
+      exportBackupFileExtension = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+        export HOME_MANAGER_BACKUP_EXT=${lib.escapeShellArg osConfig.home-manager.backupFileExtension}
+      '';
+    };
     criomosHome.herdr = lib.optionalAttrs
       (horizon.node.name == "zeus" && builtins.hasAttr name zeusRecordedHomeAdoption)
       zeusRecordedHomeAdoption.${name};
