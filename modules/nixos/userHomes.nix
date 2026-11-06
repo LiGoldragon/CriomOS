@@ -70,13 +70,11 @@ let
 
 in
 {
-  # Zeus profile installation was still doing metadata I/O at the upstream
-  # five-minute activation deadline. Keep the allowance bounded and local.
-  systemd.services = lib.mkIf (horizon.node.name == "zeus") (
-    lib.mapAttrs' (name: _: lib.nameValuePair "home-manager-${name}" {
-      serviceConfig.TimeoutStartSec = lib.mkForce "20min";
-    }) (lib.filterAttrs (name: _: builtins.elem name [ "bird" "li" ]) homeUsers)
-  );
+  # A Home profile installation on a slow disk runs past the upstream
+  # five-minute activation deadline; the allowance is bounded.
+  systemd.services = lib.mapAttrs' (name: _: lib.nameValuePair "home-manager-${name}" {
+    serviceConfig.TimeoutStartSec = lib.mkForce "20min";
+  }) homeUsers;
 
   home-manager = {
     backupFileExtension = "backup";
