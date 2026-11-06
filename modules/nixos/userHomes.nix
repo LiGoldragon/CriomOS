@@ -24,10 +24,9 @@ let
         export HOME_MANAGER_BACKUP_EXT=${lib.escapeShellArg osConfig.home-manager.backupFileExtension}
       '';
     };
-    # This target owns the authored skill roots and Primary workspace.
-    criomosHome.curriculum.enable = horizon.node.name == "ouranos" && name == "li";
-    # No new server or authentication-copy activation on the Zeus cutover.
-    criomosHome.codexNextCandidate.enable = horizon.node.name != "zeus";
+    # What a user runs on this node is the capability vector of its key here.
+    criomosHome.curriculum.enable = builtins.elem "AgentStack" user.capabilities;
+    criomosHome.codexNextCandidate.enable = builtins.elem "CodexCandidate" user.capabilities;
   };
 
   # Deploy a user's home ONLY on nodes where that user has a presence — i.e. a
