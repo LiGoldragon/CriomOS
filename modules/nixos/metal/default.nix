@@ -542,6 +542,9 @@ mkIf behavesAs.bareMetal {
         "i8042.nomux=1"
         "acpi.ec_no_wakeup=1"
       ])
+      (optionals (model == "ThinkPadT14Gen5Intel") [
+        "acpi_mask_gpe=0x6D"
+      ])
     ];
 
   };
