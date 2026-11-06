@@ -20,7 +20,7 @@ let
   ];
 
   # The Nexus starts with no arguments and self-configures: it opens its own
-  # Sema store at the built-in location, persists the built-in configuration on
+  # Memory store at the built-in location, persists the built-in configuration on
   # a fresh store, and resumes the persisted configuration on a populated one.
   # Nothing on this side writes that configuration. The values below are the
   # Nexus's own built-in defaults restated so that CriomOS's environment
@@ -92,8 +92,8 @@ in
     storePath = mkOption {
       type = types.str;
       readOnly = true;
-      default = "${cfg.stateDirectoryPath}/lojix.sema";
-      description = "The exact Sema file the Nexus opens. Derived; the Nexus fixes the basename.";
+      default = "${cfg.stateDirectoryPath}/lojix.memory";
+      description = "The exact Memory file the Nexus opens. Derived; the Nexus fixes the basename.";
     };
 
     ordinarySocketPath = mkOption {
