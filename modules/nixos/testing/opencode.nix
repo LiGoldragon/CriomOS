@@ -11,6 +11,8 @@ let
   cfg = config.criomos.testing.opencode;
   nodeServices = import ../node-services.nix { inherit lib; };
   enabled = nodeServices.has horizon.node.capabilities "openCodeTesting";
+  # The user who runs the node's OpenCode server and owns its password.
+  owner = (nodeServices.payload horizon.node.capabilities "openCodeTesting").owner;
   secretName = "opencodeServerPassword";
   secretAvailable = inputs.secrets.sopsFiles ? ${secretName};
   yggdrasilAddress =
@@ -48,12 +50,13 @@ in
       sops.secrets.${secretName} = {
         format = "binary";
         sopsFile = inputs.secrets.sopsFiles.${secretName};
-        owner = "li";
+        inherit owner;
         mode = "0400";
       };
       systemd.user.services.opencode = {
         description = "OpenCode server";
         wantedBy = [ "default.target" ];
+        unitConfig.ConditionUser = owner;
         environment.OPENCODE_CONFIG_CONTENT = serverConfig;
         serviceConfig = {
           LoadCredential = [ "opencode-server-password:${config.sops.secrets.${secretName}.path}" ];
