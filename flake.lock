@@ -24,7 +24,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "agent",
-        "rev": "3a3534931be790e63d3db01bbd238ad044b2d35f",
         "type": "github"
       }
     },
@@ -68,7 +67,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "aggregator",
-        "rev": "f777eb2a6e92d26eb0ce7315586c939c071111a0",
         "type": "github"
       }
     },
@@ -84,7 +82,6 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "v0.0.5",
         "repo": "annas-mcp",
         "type": "github"
       }
@@ -288,7 +285,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "chroma",
-        "rev": "fc3a74ac5a0b5c92fc8f65d38cb8d6ba32d2bb37",
         "type": "github"
       }
     },
@@ -310,7 +306,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "chroma-emacs",
-        "rev": "119a231358cf69c16161812caf69fff4b726be5c",
         "type": "github"
       }
     },
@@ -416,7 +411,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "d3002f4bf9ae81852c3b7e5e65f4793afbc1e3da",
         "type": "github"
       }
     },
@@ -856,11 +850,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794008038,
-        "narHash": "sha256-Lt6h6uqSaYbrob9DNzVxvMIWl2z+O8kcv3ZObJ0FrCU=",
+        "lastModified": 1794009954,
+        "narHash": "sha256-O5/+KO7kUi5nlOxAlWQrl5ZagtpmheJSnWDO5IG8Ckc=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "4e4f2db49699841c9e11e5c12d03bf2558838b2f",
+        "rev": "6a08f9f7175c6ca0be9777423cca695b71653d0a",
         "type": "github"
       },
       "original": {
@@ -1607,7 +1601,6 @@
         "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
       },
       "original": {
-        "rev": "3e5f4501e2017b97b51c7cfaff2b2e8d2a504e05",
         "type": "git",
         "url": "ssh://git@github.com/LiGoldragon/field-clj.git"
       }
@@ -1625,7 +1618,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "field",
-        "rev": "34fe6c8899684de4f892142d4357a3ca3d67895b",
         "type": "github"
       }
     },
@@ -1642,7 +1634,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "1e8eee26974c68857a3caf9d95ceff4570146294",
         "type": "github"
       }
     },
@@ -2152,7 +2143,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "harness",
-        "rev": "5a5c37129f4782af075f90ae09ba7b58e73a327a",
         "type": "github"
       }
     },
@@ -2171,7 +2161,6 @@
       },
       "original": {
         "owner": "herdrdev",
-        "ref": "v0.8.2",
         "repo": "herdr",
         "type": "github"
       }
@@ -2367,7 +2356,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "message",
-        "rev": "d5ab3000ebe86719fbcc808d7383c525b8ee03d6",
         "type": "github"
       }
     },
@@ -2743,7 +2731,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "noctalia",
-        "rev": "9778437e8bd326d6d82340fff6b0400eee2caf6f",
         "type": "github"
       }
     },
@@ -2821,7 +2808,6 @@
       "original": {
         "owner": "Samuka007",
         "repo": "nix-orca",
-        "rev": "249a8d3c1bb2842ddec882ef2c1afd28c426b19e",
         "type": "github"
       }
     },
@@ -2889,7 +2875,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "pi-session-namer",
-        "rev": "76a145939d8fc52bda07117e7c04ad66f84f2114",
         "type": "github"
       }
     },
@@ -2905,7 +2890,6 @@
       },
       "original": {
         "owner": "earendil-works",
-        "ref": "v0.84.1",
         "repo": "pi",
         "type": "github"
       }
@@ -2923,7 +2907,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "pi-subagents-nicobailon",
-        "rev": "bfca4f8317551fa9e8e8ef82c2608a6216953216",
         "type": "github"
       }
     },
@@ -3256,7 +3239,6 @@
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "013912e008ff",
         "repo": "plannotator",
         "type": "github"
       }
@@ -3288,7 +3270,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "4fdd3888ebc4acf5705aa6d40bf9aad9cbcbd729",
         "type": "github"
       }
     },
@@ -3305,7 +3286,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "primary",
-        "rev": "9d144e3fde0ec5060c19088b20c3bee93c7eb115",
         "type": "github"
       }
     },
