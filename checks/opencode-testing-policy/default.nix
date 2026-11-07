@@ -49,7 +49,7 @@ let
   serviceFor = settings: (configurationFor settings).config.systemd.user.services.opencode;
   enabledSettings = {
     node = {
-      capabilities = [ { kind = "openCodeTesting"; } ];
+      capabilities = [ { kind = "openCodeTesting"; owner = "example-user"; } ];
       keys.yggdrasil.address = "201:6de1:5500:7cac:2db9:759e:42d2:fb1d";
     };
     sopsFiles.opencodeServerPassword = "/dev/null";
