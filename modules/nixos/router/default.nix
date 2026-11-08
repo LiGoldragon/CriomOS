@@ -425,16 +425,6 @@ in
       };
     };
 
-    systemd.timers.router-wan-lease-recovery = {
-      description = "Check for a missing router WAN DHCP lease";
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnBootSec = "2min";
-        OnUnitInactiveSec = "2min";
-        AccuracySec = "15s";
-      };
-    };
-
     systemd.network = {
       enable = true;
       wait-online.anyInterface = true;

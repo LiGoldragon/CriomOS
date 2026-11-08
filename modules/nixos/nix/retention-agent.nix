@@ -20,13 +20,15 @@ let
 in
 {
   nix = {
+    # Nix performs this work as store paths are written.  It is event work,
+    # distinct from the scheduled optimiser below.
     settings.auto-optimise-store = true;
 
     gc = {
-      automatic = true;
-      dates = "daily";
-      options = "--delete-old";
+      automatic = false;
     };
+
+    optimise.automatic = false;
 
     # Lowest priorities.
     daemonCPUSchedPolicy = "idle";

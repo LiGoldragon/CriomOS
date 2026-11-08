@@ -30,6 +30,7 @@ in
     ./lojix.nix
     ./lojix-persona-development.nix
     ./nix
+    ./no-periodic-work.nix
     ./complex.nix
     ./nspawn.nix
     ./llm.nix

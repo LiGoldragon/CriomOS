@@ -36,14 +36,13 @@ let
     ];
   };
   service = router.config.systemd.services.router-wan-lease-recovery;
-  timer = router.config.systemd.timers.router-wan-lease-recovery;
 in
 assert lib.assertMsg (service.serviceConfig.Type == "oneshot")
   "WAN recovery must be a bounded oneshot service";
 assert lib.assertMsg (lib.hasInfix "eno1" service.serviceConfig.ExecStart)
   "WAN recovery must target the router's declared WAN interface";
-assert lib.assertMsg (timer.timerConfig.OnUnitInactiveSec == "2min")
-  "WAN recovery must recheck after a late upstream DHCP server appears";
+assert lib.assertMsg (!(router.config.systemd.timers ? router-wan-lease-recovery))
+  "WAN recovery must remain on demand until a network event owns it";
 
 pkgs.runCommand "router-wan-recovery-check"
   {
