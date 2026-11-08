@@ -24,12 +24,6 @@ in
     # distinct from the scheduled optimiser below.
     settings.auto-optimise-store = true;
 
-    gc = {
-      automatic = false;
-    };
-
-    optimise.automatic = false;
-
     # Lowest priorities.
     daemonCPUSchedPolicy = "idle";
     daemonIOSchedPriority = 7;
