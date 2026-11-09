@@ -104,7 +104,7 @@ let
 
     ${concatMapStringsSep "\n" userNamespace keyedUsers}
 
-    repo ..*
+    repo [a-zA-Z0-9].*
         C   = @administrators @servers
         RW+ = @administrators @servers
         R   = @all
