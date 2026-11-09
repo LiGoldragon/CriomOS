@@ -355,6 +355,27 @@ let
     if ip == null then acc else acc // { "${ip}" = [ (guestDomain entry) ]; }
   ) { } indexed;
 
+  # The TestVm guests other nodes host: their addresses live on the host's
+  # point-to-point taps, so this node reaches each through its VM host.
+  guestsHostedElsewhere = filter (
+    entry:
+    (entry.behavesAs.testVm or false)
+    && (entry.machine.host or null) != null
+    && entry.machine.host != thisNode
+  ) (attrValues exNodes);
+  domainOfNode =
+    name:
+    let
+      entry = findFirst (candidate: candidate.name == name) null allNodes;
+    in
+    if entry == null then null else entry.criomeDomainName;
+  guestJumps = filter (jump: jump.through != null) (
+    map (entry: {
+      guest = entry.criomeDomainName;
+      through = domainOfNode entry.machine.host;
+    }) guestsHostedElsewhere
+  );
+
   hasGuests = hostedTestVms != [ ];
   hasCoHostedGuests = coHostedTestVirtualMachines != [ ];
 in
@@ -386,6 +407,14 @@ mkMerge [
   # trust set is computed from all co-hosted TestVm guests (primary OR
   # additional host-set membership), excludes this host's own key, and never
   # admits keyed cluster nodes outside the declared host-set.
+  # A TestVm guest of another host is reached by SSH through that host.
+  (mkIf (guestJumps != [ ]) {
+    programs.ssh.extraConfig = lib.concatMapStrings (jump: ''
+      Host ${jump.guest}
+        ProxyJump ${jump.through}
+    '') guestJumps;
+  })
+
   (mkIf (hasCoHostedGuests && kvmAvailable) {
     nix.settings.extra-trusted-public-keys = imageExchangePublicKeys;
   })
