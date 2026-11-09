@@ -62,7 +62,11 @@ let
     lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inherit inputs;
+        # A cache node's signing key comes from the cluster secrets; the
+        # check gives it a placeholder sops file, never decrypted here.
+        inputs = inputs // {
+          secrets.sopsFiles.nixCacheSigningKey = builtins.toFile "nixCacheSigningKey.sops" "";
+        };
         horizon = {
           trustedBuildPublicKeys = [ "cache.example:CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC" ];
           inherit node;
@@ -70,6 +74,7 @@ let
       };
       modules = [
         ../../modules/nixos/nix/default.nix
+        inputs.sops-nix.nixosModules.sops
         { system.stateVersion = "26.05"; }
       ];
     };
@@ -88,12 +93,10 @@ pkgs.runCommand "nix-role-policy" { } ''
   test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.cores)} = 2
   test ${lib.escapeShellArg (toString baseConfiguration.nix.settings.max-jobs)} = 0
   test ${lib.escapeShellArg (bool baseConfiguration.nix.settings.auto-optimise-store)} = true
-  test ${lib.escapeShellArg (bool baseConfiguration.nix.gc.automatic)} = true
-  test ${lib.escapeShellArg baseConfiguration.nix.gc.dates} = daily
-  test ${lib.escapeShellArg baseConfiguration.nix.gc.options} = --delete-old
+  test ${lib.escapeShellArg (bool baseConfiguration.nix.gc.automatic)} = false
   test ${lib.escapeShellArg (bool baseConfiguration.nix.sshServe.enable)} = false
   test ${lib.escapeShellArg (bool baseConfiguration.nix.distributedBuilds)} = false
-  test ${lib.escapeShellArg (bool baseConfiguration.services.nix-serve.enable)} = false
+  test ${lib.escapeShellArg (bool baseConfiguration.services.harmonia.cache.enable)} = false
   test ${lib.escapeShellArg (builtins.toJSON baseConfiguration.nix.buildMachines)} = '[]'
 
   test ${lib.escapeShellArg (toString edgeBuilderConfiguration.nix.settings.cores)} = 2
@@ -129,7 +132,11 @@ pkgs.runCommand "nix-role-policy" { } ''
     )
   }
   test ${lib.escapeShellArg (bool (builtins.hasAttr "builder.example" serviceConfiguration.programs.ssh.knownHosts))} = true
-  test ${lib.escapeShellArg (bool serviceConfiguration.services.nix-serve.enable)} = true
+  test ${lib.escapeShellArg (bool serviceConfiguration.services.harmonia.cache.enable)} = true
+  test ${lib.escapeShellArg serviceConfiguration.services.harmonia.cache.settings.bind} = '[::]:80'
+  test ${lib.escapeShellArg (toString serviceConfiguration.services.harmonia.cache.settings.priority)} = 30
+  test ${lib.escapeShellArg (builtins.toJSON serviceConfiguration.services.harmonia.cache.signKeyPaths)} = '["/run/secrets/nixCacheSigningKey"]'
+  test ${lib.escapeShellArg (bool (builtins.elem "harmonia" serviceConfiguration.nix.settings.allowed-users))} = true
   test ${lib.escapeShellArg (bool (builtins.elem 80 serviceConfiguration.networking.firewall.allowedTCPPorts))} = true
 
   printf '%s' ${lib.escapeShellArg baseExtraOptions} | grep -F 'flake-registry ='

@@ -72,7 +72,7 @@ in
 
       allowed-users = [
         "@users"
-        "nix-serve"
+        "harmonia"
       ];
 
       cores = localBuildCores;
