@@ -83,35 +83,27 @@ let
     }) servers
   );
 
-  # Each user creates and writes the repositories of his own namespace,
-  # named by the user rather than by whoever created the repository;
-  # administrators create and write any repository; the servers create and
-  # write any repository, to carry each other's pushes; everyone reads.
-  # Nobody writes gitolite-admin, so the declaration stays the only
-  # configuration.
+  # Every repository has an owner, a user of the cluster data, and lives
+  # under his namespace; the root holds nothing. The owner creates and writes
+  # his repositories; administrators create and write in every namespace; the
+  # servers do too, to carry each other's pushes; everyone reads. Nobody
+  # reaches gitolite-admin, so the declaration stays the only configuration.
   userNamespace = user: ''
     repo ${user.name}/..*
-        C   = ${user.name}
-        RW+ = ${user.name}
+        C   = ${user.name} @administrators @servers
+        RW+ = ${user.name} @administrators @servers
+        R   = @all
   '';
   gitoliteConfiguration = pkgs.writeText "gitolite.conf" ''
     @administrators = ${concatMapStringsSep " " (user: user.name) administrators}
     @servers = ${concatStringsSep " " serverIdentities}
 
     repo gitolite-admin
-        R   = @administrators
         -   = @all
 
     ${concatMapStringsSep "\n" userNamespace keyedUsers}
-
-    repo [a-zA-Z0-9].*
-        C   = @administrators @servers
-        RW+ = @administrators @servers
-        R   = @all
   '';
 
-  # A shell function every hook and command opens with: whether the
-  # gitolite user is one of the cluster's Git servers.
   isServerIdentity = ''
     is_server() {
       case " ${concatStringsSep " " serverIdentities} " in
