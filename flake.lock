@@ -899,7 +899,7 @@
         "flow-0511": "flow-0511",
         "flow-0530": "flow-0530",
         "flow-0531": "flow-0531",
-        "flow-0534": "flow-0534",
+        "flow-0535": "flow-0535",
         "goldragon": "goldragon",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
@@ -978,11 +978,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794261547,
-        "narHash": "sha256-JRK+F9+ZMEYTV6u/7gXvplxfU8ozpsv3br7fEkPF0hg=",
+        "lastModified": 1794264048,
+        "narHash": "sha256-UsoNvHomutRFSpNflrQOWWkRoax6v3ZeWCwdgBT6Qgs=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "2b3354328e0b190d87b51001b2cc48b7bec6ed21",
+        "rev": "dbfe1ad0a4b23b523584585027a0a7e9031940a6",
         "type": "github"
       },
       "original": {
@@ -1410,7 +1410,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0534",
+          "flow-0535",
           "base",
           "nixpkgs"
         ],
@@ -1434,7 +1434,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0534",
+          "flow-0535",
           "message",
           "nixpkgs"
         ],
@@ -1458,7 +1458,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0534",
+          "flow-0535",
           "migration-predecessor",
           "nixpkgs"
         ],
@@ -1482,7 +1482,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0534",
+          "flow-0535",
           "migration-predecessor",
           "unconfigured-flow",
           "nixpkgs"
@@ -1507,7 +1507,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0534",
+          "flow-0535",
           "unconfigured-flow",
           "nixpkgs"
         ],
@@ -2569,7 +2569,7 @@
         "type": "github"
       }
     },
-    "flow-0534": {
+    "flow-0535": {
       "inputs": {
         "base": "base",
         "curriculum": "curriculum_7",
@@ -2578,11 +2578,11 @@
         "unconfigured-flow": "unconfigured-flow_5"
       },
       "locked": {
-        "lastModified": 1794261107,
-        "narHash": "sha256-LFPjCpy+uK12z1V5qbRzEFVo5EEm+XydtbUBhD01uVI=",
+        "lastModified": 1794263739,
+        "narHash": "sha256-1NSHm9puvGcEPIpo/5P6ZVe8Kp/tCCWZ9VjGzc5KiqU=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "4db2e68c596bb7da7252c55ec991d7f898673bee",
+        "rev": "2404487990def8698f77b4217c5c9cc5d7f98a2d",
         "type": "github"
       },
       "original": {
