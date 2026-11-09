@@ -110,11 +110,15 @@ let
         R   = @all
   '';
 
+  # A shell function every hook and command opens with: whether the
+  # gitolite user is one of the cluster's Git servers.
   isServerIdentity = ''
-    case " ${concatStringsSep " " serverIdentities} " in
-      *" $GL_USER "*) true ;;
-      *) false ;;
-    esac
+    is_server() {
+      case " ${concatStringsSep " " serverIdentities} " in
+        *" $GL_USER "*) return 0 ;;
+        *) return 1 ;;
+      esac
+    }
   '';
 
   # A write reaches the primary, which takes it; a server's push reaches a
@@ -122,7 +126,8 @@ let
   # reaching a standby means the primary was unreachable for that user: the
   # write is refused and the event starts the promotion timer.
   preReceive = pkgs.writeShellScript "pre-receive" ''
-    if ${isServerIdentity}; then
+    ${isServerIdentity}
+    if is_server; then
       date > ${eventsDir}/peer-alive
       exit 0
     fi
@@ -137,7 +142,8 @@ let
   # The primary queues every repository it receives a push to; the mirror
   # service carries it to the other servers.
   postReceive = pkgs.writeShellScript "post-receive" ''
-    if [ "$(cat ${roleFile})" = primary ] && ! ${isServerIdentity}; then
+    ${isServerIdentity}
+    if [ "$(cat ${roleFile})" = primary ] && ! is_server; then
       printf '%s\n' "$GL_REPO" > "${mirrorQueue}/$(printf '%s' "$GL_REPO" | ${pkgs.coreutils}/bin/tr / %)"
     fi
     exit 0
@@ -149,7 +155,8 @@ let
   # repositories so the returning one fetches what landed while it was gone.
   announceCommand = pkgs.writeShellScript "git-server-announce" ''
     set -eu
-    if ! ${isServerIdentity}; then
+    ${isServerIdentity}
+    if ! is_server; then
       echo "only a Git server of the cluster announces itself" >&2
       exit 1
     fi
