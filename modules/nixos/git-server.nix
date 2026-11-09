@@ -340,7 +340,12 @@ in
         '';
       };
 
+      # gitolite's own module makes its directories only at its default
+      # path, so the server's home is declared here, owned by the git user.
       systemd.tmpfiles.rules = [
+        "d ${dataDir} 0750 ${serverUser} ${serverUser} -"
+        "d ${dataDir}/.gitolite 0750 ${serverUser} ${serverUser} -"
+        "d ${dataDir}/.gitolite/logs 0750 ${serverUser} ${serverUser} -"
         "d ${stateDir} 0755 ${serverUser} ${serverUser} -"
         "d ${eventsDir} 0755 ${serverUser} ${serverUser} -"
         "d ${mirrorQueue} 0755 ${serverUser} ${serverUser} -"
