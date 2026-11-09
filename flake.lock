@@ -900,6 +900,7 @@
         "flow-0530": "flow-0530",
         "flow-0531": "flow-0531",
         "flow-0533": "flow-0533",
+        "goldragon": "goldragon",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
         "herdr": "herdr",
@@ -977,11 +978,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794259885,
-        "narHash": "sha256-2KGVt1pXihVBKZV2gsa2ddOK5RAjZ2Nkn5wQCZYIGq4=",
+        "lastModified": 1794261185,
+        "narHash": "sha256-/7XiLncSymhhfl4sL+S2ruy4q4ylkjjb/t8oIpbXSxY=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "3e8f5387571a08c234caebd1d82c5abc9c63b2fe",
+        "rev": "6867ca77a6f51070fb651c50559f4c5117d6b6c0",
         "type": "github"
       },
       "original": {
@@ -2623,6 +2624,22 @@
         "ref": "50.1",
         "repo": "gnome-shell",
         "type": "gitlab"
+      }
+    },
+    "goldragon": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794261152,
+        "narHash": "sha256-9/BxkWwyI/WFL33GqCqdqz3W5vI2Pewh2KYI6Qxrc7Q=",
+        "owner": "LiGoldragon",
+        "repo": "goldragon",
+        "rev": "aaf3c43799de5c3e750fc25c10764176c3bb32d2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "goldragon",
+        "type": "github"
       }
     },
     "google-workspace-cli": {
