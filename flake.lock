@@ -2367,17 +2367,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794026283,
-        "narHash": "sha256-ERqDHx0zbvDtYIDolLQaFJn7qI2Vwt5h0BEbscwS6jI=",
+        "lastModified": 1794255502,
+        "narHash": "sha256-HvQAtWAtKXCcwmQFWX+Irtppqnb/LEGoTg6T6SiOpQQ=",
         "owner": "LiGoldragon",
         "repo": "horizon-rs",
-        "rev": "bd52627b24bf553de45eb639571c1127e44e7f1d",
+        "rev": "187b028a1c1ec6c8926a618a3ca435440d077ae7",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
         "repo": "horizon-rs",
-        "rev": "bd52627b24bf553de45eb639571c1127e44e7f1d",
+        "rev": "187b028a1c1ec6c8926a618a3ca435440d077ae7",
         "type": "github"
       }
     },
@@ -2457,11 +2457,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794081942,
-        "narHash": "sha256-8BH2Kul3gROY/9TbxeTSecIKnkv42+o4me1Z9FAbBXE=",
+        "lastModified": 1794256170,
+        "narHash": "sha256-EivNEUCjtDhvdhUI53ZHIzG1YhtL/sIbpbVs74AXDU0=",
         "owner": "LiGoldragon",
         "repo": "lojix",
-        "rev": "8fd924a921efeb1fe90ca4230b9bdd5f571d7720",
+        "rev": "97e968a933113f5c91842663f1af65c396117225",
         "type": "github"
       },
       "original": {
