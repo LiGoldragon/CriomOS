@@ -397,13 +397,20 @@ in
       # git-server.socket takes this server out of the cluster; starting it
       # first runs the return.
       systemd.sockets.git-server = {
+        # It listens only after the return, which waits for the network, so
+        # it stays out of sockets.target and its early ordering.
         description = "The cluster's Git over SSH";
-        wantedBy = [ "sockets.target" ];
+        wantedBy = [ "multi-user.target" ];
+        unitConfig.DefaultDependencies = false;
+        requires = [ "sysinit.target" ];
         wants = [ "git-server-return.service" ];
         after = [
+          "sysinit.target"
           "git-server-return.service"
           "git-server-configure.service"
         ];
+        before = [ "shutdown.target" ];
+        conflicts = [ "shutdown.target" ];
         socketConfig = {
           ListenStream = cfg.port;
           Accept = true;
