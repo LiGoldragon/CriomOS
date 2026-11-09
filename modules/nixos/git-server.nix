@@ -320,6 +320,11 @@ in
       default = 2222;
       description = "The port each Git server listens on for Git over SSH, apart from the host's own SSH.";
     };
+    defaultBranch = mkOption {
+      type = types.str;
+      default = "main";
+      description = "The branch a repository's HEAD names on the cluster's Git servers.";
+    };
     promotionDelay = mkOption {
       type = types.str;
       default = "2min";
@@ -387,6 +392,16 @@ in
             ${pkgs.coreutils}/bin/rm -rf "$base/keydir"
             ${pkgs.coreutils}/bin/cp -rL ${keydir} "$base/keydir"
             ${pkgs.coreutils}/bin/chmod -R u+w "$base/keydir"
+            # A repository's HEAD names the default branch, so a clone or a
+            # bare flake input finds it; a repository whose HEAD names a branch
+            # it lacks while it holds the default branch is pointed at it.
+            ${pkgs.git}/bin/git config --global init.defaultBranch ${cfg.defaultBranch}
+            for repository in $(${pkgs.findutils}/bin/find ${repositories} -name '*.git' -type d -prune); do
+              if ! ${pkgs.git}/bin/git -C "$repository" rev-parse --quiet --verify HEAD >/dev/null \
+                && ${pkgs.git}/bin/git -C "$repository" rev-parse --quiet --verify refs/heads/${cfg.defaultBranch} >/dev/null; then
+                ${pkgs.git}/bin/git -C "$repository" symbolic-ref HEAD refs/heads/${cfg.defaultBranch}
+              fi
+            done
             ${pkgs.gitolite}/bin/gitolite setup --hooks-only
             ${pkgs.gitolite}/bin/gitolite compile
             ${pkgs.gitolite}/bin/gitolite trigger POST_COMPILE
