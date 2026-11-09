@@ -275,6 +275,7 @@ let
 
   sshdConfiguration = pkgs.writeText "git-server-sshd.conf" ''
     HostKey ${hostKey}
+    UsePAM yes
     AuthorizedKeysFile ${dataDir}/.ssh/authorized_keys
     AllowUsers ${serverUser}
     PasswordAuthentication no
@@ -418,6 +419,9 @@ in
       };
       systemd.services."git-server@" = {
         description = "Git over SSH, one connection";
+        # A connection that ends before it authenticates, as a client's probe
+        # does, leaves no failed unit behind.
+        unitConfig.CollectMode = "inactive-or-failed";
         serviceConfig = {
           ExecStart = "${config.services.openssh.package}/bin/sshd -i -f ${sshdConfiguration}";
           StandardInput = "socket";
