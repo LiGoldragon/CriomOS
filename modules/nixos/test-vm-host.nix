@@ -217,6 +217,22 @@ let
   # afterwards. The current projection has no standing guest class.
   guestAutostart = _entry: false;
 
+  # A guest the cluster data makes a Git server runs the Git server module in
+  # its own system, which this host declares: the module reads the guest's
+  # view of the cluster, the guest as its node and this host among the others,
+  # and the guest names this host by its Yggdrasil address, the one it reaches
+  # through the tap.
+  guestIsGitServer = entry: entry.guest.isGitServer or false;
+  guestHorizon = entry: {
+    node = entry.guest;
+    exNodes = (lib.filterAttrs (name: _: name != guestName entry) exNodes) // {
+      "${thisNode}" = horizon.node;
+    };
+    inherit (horizon) users cluster;
+  };
+  hostYggdrasilAddress =
+    if (horizon.node.keys.yggdrasil or null) == null then null else horizon.node.keys.yggdrasil.address;
+
   # (a) + (d): the microvm.vms.<guest> declarations.
   vmDeclarations = listToAttrs (
     map (entry: {
@@ -224,7 +240,12 @@ let
       value = {
         # (d) NON-autostart for the projected on-demand TestVm role.
         autostart = guestAutostart entry;
+        specialArgs = lib.optionalAttrs (guestIsGitServer entry) { horizon = guestHorizon entry; };
         config = {
+          imports = lib.optional (guestIsGitServer entry) ./git-server.nix;
+          networking.hosts = lib.mkIf (guestIsGitServer entry && hostYggdrasilAddress != null) {
+            "${hostYggdrasilAddress}" = [ horizon.node.criomeDomainName ];
+          };
           microvm = {
             hypervisor = "qemu"; # real KVM-accelerated VM, own kernel.
             vcpu = guestCores entry;
