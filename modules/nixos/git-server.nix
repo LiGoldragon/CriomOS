@@ -297,6 +297,13 @@ let
     exit 1
   '';
 
+  # gitolite forks ssh-keygen for the keys and perl for its triggers.
+  gitolitePath = [
+    pkgs.git
+    pkgs.gitolite
+    pkgs.openssh
+    pkgs.perl
+  ];
   serviceEnvironment = {
     HOME = dataDir;
   };
@@ -367,10 +374,7 @@ in
           localCode
         ];
         environment = serviceEnvironment;
-        path = [
-          pkgs.git
-          pkgs.gitolite
-        ];
+        path = gitolitePath;
         serviceConfig = asServer // {
           Type = "oneshot";
           RemainAfterExit = true;
@@ -424,7 +428,7 @@ in
         wants = [ "network-online.target" ];
         requires = [ "git-server-configure.service" ];
         environment = serviceEnvironment;
-        path = [ pkgs.git ];
+        path = gitolitePath;
         serviceConfig = asServer // {
           Type = "oneshot";
           LoadCredential = "host-key:${hostKey}";
