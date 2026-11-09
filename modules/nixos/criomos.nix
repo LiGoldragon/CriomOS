@@ -18,6 +18,7 @@ in
     ./normalize.nix
     ./secrets.nix
     ./repository-receive.nix
+    ./git-server.nix
     ./mirror.nix
     ./persona-router.nix
     # criome + spirit node modules (persistent-Spirit-mirror pieces 6/8). Both

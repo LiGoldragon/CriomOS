@@ -38,7 +38,11 @@ let
       nixCacheAliases = optionals (isNixCache && nixCacheDomain != null && nixCacheDomain != "") [
         nixCacheDomain
       ];
-      primaryAliases = [ criomeDomainName ] ++ nixCacheAliases;
+      gitServerDomain = entryNode.gitServerDomain or null;
+      gitServerAliases = optionals ((entryNode.isGitServer or false) && gitServerDomain != null) [
+        gitServerDomain
+      ];
+      primaryAliases = [ criomeDomainName ] ++ nixCacheAliases ++ gitServerAliases;
 
       mkPreNodeHost = linkLocalIP: [ ("wg." + criomeDomainName) ];
 
