@@ -43,7 +43,9 @@ in
     }:
     {
       Type = "ether";
-      Property = [
+      # Transition stage: the downlink rules keep the bus-only match while
+      # the role rule is installed and every present link classified.
+      Property = if role == "downlink" then "ID_BUS=usb" else [
         "ID_BUS=usb"
         "${roleProperty}=${role}"
       ];
