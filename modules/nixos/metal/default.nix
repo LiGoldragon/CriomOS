@@ -94,6 +94,9 @@ let
       isThinkpad = true;
       chipIsIntel = true;
       isRpi3b = false;
+      # Its s2idle stops short of the deepest substate, so a suspend on
+      # battery hibernates after a while instead of draining it.
+      hibernatesOnBattery = true;
     };
     ThinkPadX230 = {
       isThinkpad = true;
@@ -140,8 +143,15 @@ let
   # f1a5eca reads only center/lowPower/edge, all three of which the current
   # projection still carries, and its outputs are logind.conf strings.  So it
   # is reproduced verbatim here, where logind lives.
+  # A model whose s2idle drains the battery suspends then hibernates on
+  # battery: the image goes to the swap file, its place kept by systemd in
+  # the HibernateLocation EFI variable that the systemd initrd resumes from,
+  # so no resume offset is declared. On mains, suspend-then-hibernate does
+  # not hibernate, and the external-power lid policy below stays as it is.
+  hibernatesOnBattery = modelFacts.hibernatesOnBattery or false;
+  suspendOnBattery = if hibernatesOnBattery then "suspend-then-hibernate" else "suspend";
   lidSwitch = {
-    onBattery = if behavesAs.center then "ignore" else "suspend";
+    onBattery = if behavesAs.center then "ignore" else suspendOnBattery;
     onExternalPower =
       if behavesAs.center then
         "ignore"
@@ -444,6 +454,10 @@ let
 
 in
 mkIf behavesAs.bareMetal {
+  systemd.sleep.settings.Sleep = mkIf hibernatesOnBattery {
+    HibernateDelaySec = config.criomos.sleep.hibernateDelay;
+  };
+
   assertions = optional isThinkpad {
     assertion = !(builtins.any (level: builtins.elem "level auto" level) thinkpadFanLevels);
     message = "ThinkPad fan policy must keep user-space fan control at high temperatures; do not use `level auto`.";
@@ -723,6 +737,7 @@ mkIf behavesAs.bareMetal {
     };
 
     logind.settings.Login = {
+      HandleSuspendKey = suspendOnBattery;
       HandleLidSwitch = lidSwitch.onBattery;
       HandleLidSwitchExternalPower = lidSwitch.onExternalPower;
       HandleLidSwitchDocked = lidSwitch.docked;
