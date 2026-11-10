@@ -30,6 +30,7 @@ in
     ./spirit.nix
     ./lojix.nix
     ./lojix-persona-development.nix
+    ./harness-update.nix
     ./nix
     ./no-periodic-work.nix
     ./complex.nix
