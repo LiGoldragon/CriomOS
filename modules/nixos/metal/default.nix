@@ -97,6 +97,12 @@ let
       # Its s2idle stops short of the deepest substate, so a suspend on
       # battery hibernates after a while instead of draining it.
       hibernatesOnBattery = true;
+      # Where the hibernation image starts inside the swap file on the root
+      # disk: the first physical block of /swapfile, read with
+      # `filefrag -v /swapfile` (row 0, physical_offset, in 4 KiB blocks).
+      # It is the placement of one file on one disk, so it belongs with the
+      # swap device in the cluster data; it is here until Horizon carries it.
+      swapFileResumeOffset = 139919360;
     };
     ThinkPadX230 = {
       isThinkpad = true;
@@ -144,11 +150,13 @@ let
   # projection still carries, and its outputs are logind.conf strings.  So it
   # is reproduced verbatim here, where logind lives.
   # A model whose s2idle drains the battery suspends then hibernates on
-  # battery: the image goes to the swap file, its place kept by systemd in
-  # the HibernateLocation EFI variable that the systemd initrd resumes from,
-  # so no resume offset is declared. On mains, suspend-then-hibernate does
+  # battery: the image goes to the swap file on the root disk, whose device
+  # and offset are declared below. On mains, suspend-then-hibernate does
   # not hibernate, and the external-power lid policy below stays as it is.
   hibernatesOnBattery = modelFacts.hibernatesOnBattery or false;
+  # The hibernation image is resumed from the swap file on the root disk,
+  # declared here: the root file system's device and the file's offset.
+  rootDisk = lib.findFirst (disk: disk.mount == "/") null (horizon.node.installation.disks or [ ]);
   suspendOnBattery = if hibernatesOnBattery then "suspend-then-hibernate" else "suspend";
   lidSwitch = {
     onBattery = if behavesAs.center then "ignore" else suspendOnBattery;
@@ -457,6 +465,7 @@ mkIf behavesAs.bareMetal {
   systemd.sleep.settings.Sleep = mkIf hibernatesOnBattery {
     HibernateDelaySec = config.criomos.sleep.hibernateDelay;
   };
+  boot.resumeDevice = mkIf (hibernatesOnBattery && rootDisk != null) rootDisk.device;
 
   assertions = optional isThinkpad {
     assertion = !(builtins.any (level: builtins.elem "level auto" level) thinkpadFanLevels);
@@ -558,6 +567,9 @@ mkIf behavesAs.bareMetal {
       ])
       (optionals (model == "ThinkPadT14Gen5Intel") [
         "acpi_mask_gpe=0x6D"
+      ])
+      (optionals (hibernatesOnBattery && modelFacts ? swapFileResumeOffset) [
+        "resume_offset=${toString modelFacts.swapFileResumeOffset}"
       ])
     ];
 
