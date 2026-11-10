@@ -95,16 +95,47 @@ let
 
       proposal="$(nix build --no-link --print-out-paths "$work/cluster#horizon-definition")/horizon-definition.datom"
 
-      # The update stops at the submission: knowing when a deployment ends
-      # needs a Lojix watch the client can hold open, which it cannot yet.
-      # The result names each deployment for the one who carries it on.
+      # Each deployment is waited on by its event: a watch on the node is
+      # opened first, the request submitted, and the watch read line by line
+      # until this deployment's phase event carries its terminal.
+      deploy() {
+        coproc WATCH { exec lojix "WatchDeployments.{ None Some.${horizon.cluster} Some.$2 }"; }
+        read -r opened <&"''${WATCH[0]}"
+        case "$opened" in Watching.*) ;; *) say "$2 $1: the watch did not open ($opened)"; return 1 ;; esac
+        request="Deploy.UserEnvironment.{ ${horizon.cluster} $2 ${lojix.user} $proposal SecretsDirectory.$work/cluster/secrets github:${cfg.systemFlake}?rev=$system { ssh-ng://${lojix.user}@$3 ${lojix.user}@$3 } Horizon { homeConfigurations.${lojix.user}.activationPackage } HomeManagerNixProfileV1 $1 RequireImmutable Some.@/etc/nix/machines [] }"
+        identifier="$(lojix-meta "$request" | grep -oE 'DeployAccepted\.\{ [0-9]+' | grep -oE '[0-9]+$')" || {
+          say "$2 $1 refused"
+          kill "$WATCH_PID"
+          return 1
+        }
+        outcome=""
+        while read -r event <&"''${WATCH[0]}"; do
+          case "$event" in
+            "DeploymentPhaseObserved.{ $identifier "*Some.Succeeded*) outcome=succeeded; break ;;
+            "DeploymentPhaseObserved.{ $identifier "*Some.Failed*) outcome=failed; break ;;
+            "DeploymentPhaseObserved.{ $identifier "*Some.Rejected*) outcome=rejected; break ;;
+          esac
+        done
+        kill "$WATCH_PID" 2>/dev/null || true
+        say "$2 $1 $identifier ''${outcome:-ended without its terminal}"
+        [ "$outcome" = succeeded ]
+      }
+
+      realized=""
       for target in ${targets}; do
-        node="''${target%%=*}"
-        domain="''${target#*=}"
-        request="Deploy.UserEnvironment.{ ${horizon.cluster} $node ${lojix.user} $proposal SecretsDirectory.$work/cluster/secrets github:${cfg.systemFlake}?rev=$system { ssh-ng://${lojix.user}@$domain ${lojix.user}@$domain } Horizon { homeConfigurations.${lojix.user}.activationPackage } HomeManagerNixProfileV1 Realize RequireImmutable Some.@/etc/nix/machines [] }"
-        say "$node Realize: $(lojix-meta "$request" || echo refused)."
+        if deploy Realize "''${target%%=*}" "''${target#*=}"; then realized="$realized $target"; fi
       done
-      say "CriomOS-home ''${home:0:8} and CriomOS ''${system:0:8} are on branch ${cfg.branch}; no main moved, nothing activated."
+      if [ -z "$realized" ]; then
+        say "no Home realized; mains left as they were, the work is on branch ${cfg.branch}."
+        notify
+        exit 1
+      fi
+      git -C "$work/home" push -q origin ${cfg.branch}:main
+      git -C "$work/system" push -q origin ${cfg.branch}:main
+      say "CriomOS-home ''${home:0:8} and CriomOS ''${system:0:8} are on main."
+      for target in $realized; do
+        deploy ActivateNow "''${target%%=*}" "''${target#*=}" || true
+      done
       notify
     '';
   };
@@ -153,8 +184,8 @@ in
     };
     notifyCommand = mkOption {
       type = types.str;
-      default = "flow-nexus-0.53.5";
-      description = "The Flow client the result is sent with, given one Send datom: the flow-nexus CLI of the running Flow version.";
+      default = "${config.users.users.${lojix.user}.home}/.local/bin/flow-nexus";
+      description = "The Flow client the result is sent with, given one Send datom: the flow-nexus wrapper Home provides, which follows every Flow version.";
     };
     notifyAddress = mkOption {
       type = types.str;
@@ -173,7 +204,7 @@ in
       };
     };
     systemd.services.harness-update = {
-      description = "Update the harnesses and submit their Lojix Realize";
+      description = "Update the harnesses, build them through Lojix and deploy them";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       environment = {
