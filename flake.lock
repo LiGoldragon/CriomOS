@@ -417,6 +417,22 @@
         "type": "github"
       }
     },
+    "complex": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794268832,
+        "narHash": "sha256-2x5oRsJcOpuM6G3UAR4VsCO7GwciI9CzTGD/p8EM9GQ=",
+        "owner": "LiGoldragon",
+        "repo": "goldragon-persona",
+        "rev": "e0b24c51d6f7240f796d0d9a7bea582c7dce64af",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LiGoldragon",
+        "repo": "goldragon-persona",
+        "type": "github"
+      }
+    },
     "core-checkup-source": {
       "flake": false,
       "locked": {
@@ -886,6 +902,7 @@
         "chroma": "chroma",
         "chroma-emacs": "chroma-emacs",
         "claude-answers": "claude-answers",
+        "complex": "complex",
         "core-checkup-source": "core-checkup-source",
         "crane": "crane_5",
         "criomos-lib": [
@@ -900,7 +917,6 @@
         "flow-0530": "flow-0530",
         "flow-0531": "flow-0531",
         "flow-0535": "flow-0535",
-        "goldragon": "goldragon",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
         "herdr": "herdr",
@@ -978,11 +994,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794268959,
-        "narHash": "sha256-pPs1QmWEFIgDc4QsX97Vr93GCoSqlKqhdjVPZaf88wY=",
+        "lastModified": 1794269330,
+        "narHash": "sha256-DPbMU0qfXx/v4Ekqa16HByRN6TnV3TkXhPREysj7YG8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "394e3128214591d6db7fa6ceaa4d18cd7ad766b1",
+        "rev": "83240b389f6c337cfc65428c8bbab6280256f416",
         "type": "github"
       },
       "original": {
@@ -2624,22 +2640,6 @@
         "ref": "50.1",
         "repo": "gnome-shell",
         "type": "gitlab"
-      }
-    },
-    "goldragon": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1794261152,
-        "narHash": "sha256-9/BxkWwyI/WFL33GqCqdqz3W5vI2Pewh2KYI6Qxrc7Q=",
-        "owner": "LiGoldragon",
-        "repo": "goldragon",
-        "rev": "aaf3c43799de5c3e750fc25c10764176c3bb32d2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "goldragon",
-        "type": "github"
       }
     },
     "google-workspace-cli": {
