@@ -233,6 +233,7 @@
           router-yggdrasil-ndp = callCheck ./checks/router-yggdrasil-ndp;
           router-declared-tcp-ports = callCheck ./checks/router-declared-tcp-ports;
           usb-downlink = callCheck ./checks/usb-downlink;
+          usb-uplink = callCheck ./checks/usb-uplink;
           usb-downlink-chain = callCheck ./checks/usb-downlink-chain;
           usb-downlink-observer = callCheck ./checks/usb-downlink-observer;
           wireguard-untrusted-proxy = callCheck ./checks/wireguard-untrusted-proxy;
