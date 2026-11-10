@@ -18,9 +18,9 @@ let
   lojix = config.services.lojix;
 
   # The harnesses are updated where Lojix runs: its owner holds the keys that
-  # push and deploy, and every build goes to the cluster's builder as any
-  # Lojix deployment does. The owner's Homes are the targets: one on every
-  # node his key is on.
+  # push and submit deployments, and every build goes to the cluster's
+  # builder as any Lojix deployment does. The owner's Homes are the targets:
+  # one on every node his key is on.
   owner = lib.findFirst (user: user.name == lojix.user) null horizon.users;
   allNodes = [ horizon.node ] ++ lib.attrValues (horizon.exNodes or { });
   domainOf =
@@ -95,45 +95,16 @@ let
 
       proposal="$(nix build --no-link --print-out-paths "$work/cluster#horizon-definition")/horizon-definition.datom"
 
-      # Lojix answers once and exits, so a deployment's end is read by
-      # asking again until its record holds a terminal.
-      deploy() {
-        request="Deploy.UserEnvironment.{ ${horizon.cluster} $2 ${lojix.user} $proposal SecretsDirectory.$work/cluster/secrets github:${cfg.systemFlake}?rev=$system { ssh-ng://${lojix.user}@$3 ${lojix.user}@$3 } Horizon { homeConfigurations.${lojix.user}.activationPackage } HomeManagerNixProfileV1 $1 RequireImmutable Some.@/etc/nix/machines [] }"
-        identifier="$(lojix-meta "$request" | grep -oE 'DeployAccepted\.\{ [0-9]+' | grep -oE '[0-9]+$')" || {
-          say "$2 $1 refused"
-          return 1
-        }
-        deadline=$(( $(date +%s) + ${toString cfg.deploymentTimeoutSeconds} ))
-        while [ "$(date +%s)" -lt "$deadline" ]; do
-          record="$(lojix "Query.ByDeployment.{ $identifier }")"
-          case "$record" in
-            *Some.Succeeded*) say "$2 $1 $identifier succeeded"; return 0 ;;
-            *Some.Failed*|*Some.Rejected*) say "$2 $1 $identifier failed"; return 1 ;;
-          esac
-          sleep ${toString cfg.deploymentQuerySeconds}
-        done
-        say "$2 $1 $identifier did not end in time"
-        return 1
-      }
-
-      realized=""
+      # The update stops at the submission: knowing when a deployment ends
+      # needs a Lojix watch the client can hold open, which it cannot yet.
+      # The result names each deployment for the one who carries it on.
       for target in ${targets}; do
         node="''${target%%=*}"
         domain="''${target#*=}"
-        if deploy Realize "$node" "$domain"; then realized="$realized $target"; fi
+        request="Deploy.UserEnvironment.{ ${horizon.cluster} $node ${lojix.user} $proposal SecretsDirectory.$work/cluster/secrets github:${cfg.systemFlake}?rev=$system { ssh-ng://${lojix.user}@$domain ${lojix.user}@$domain } Horizon { homeConfigurations.${lojix.user}.activationPackage } HomeManagerNixProfileV1 Realize RequireImmutable Some.@/etc/nix/machines [] }"
+        say "$node Realize: $(lojix-meta "$request" || echo refused)."
       done
-      if [ -z "$realized" ]; then
-        say "no Home realized; mains left as they were, the work is on branch ${cfg.branch}."
-        notify
-        exit 1
-      fi
-
-      git -C "$work/home" push -q origin ${cfg.branch}:main
-      git -C "$work/system" push -q origin ${cfg.branch}:main
-      say "CriomOS-home ''${home:0:8} and CriomOS ''${system:0:8} are on main."
-      for target in $realized; do
-        deploy ActivateNow "''${target%%=*}" "''${target#*=}" || true
-      done
+      say "CriomOS-home ''${home:0:8} and CriomOS ''${system:0:8} are on branch ${cfg.branch}; no main moved, nothing activated."
       notify
     '';
   };
@@ -182,23 +153,13 @@ in
     };
     notifyCommand = mkOption {
       type = types.str;
-      default = "flow";
-      description = "The Flow client the result is sent with, given one Send datom.";
+      default = "flow-nexus-0.53.5";
+      description = "The Flow client the result is sent with, given one Send datom: the flow-nexus CLI of the running Flow version.";
     };
     notifyAddress = mkOption {
       type = types.str;
       default = "{ Psyche core Opus }";
       description = "The address the result is sent to.";
-    };
-    deploymentTimeoutSeconds = mkOption {
-      type = types.ints.positive;
-      default = 10800;
-      description = "How long one Lojix deployment may take before the update gives up on it.";
-    };
-    deploymentQuerySeconds = mkOption {
-      type = types.ints.positive;
-      default = 30;
-      description = "How often a running Lojix deployment's record is read again.";
     };
   };
 
@@ -212,7 +173,7 @@ in
       };
     };
     systemd.services.harness-update = {
-      description = "Update the harnesses, build them on the builder and deploy them through Lojix";
+      description = "Update the harnesses and submit their Lojix Realize";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       environment = {
