@@ -113,8 +113,11 @@ let
   kea = gatewayNode.services.kea.dhcp4.settings;
   subnet = builtins.head kea.subnet4;
   option = name: (lib.findFirst (item: item.name == name) null subnet.option-data).data;
+  # A link matches when it is Ethernet and carries every property the rule names.
   matches =
-    link: link.Type == usbRule.matchConfig.Type && link.Property == usbRule.matchConfig.Property;
+    link:
+    link.Type == usbRule.matchConfig.Type
+    && lib.all (property: builtins.elem property link.Property) usbRule.matchConfig.Property;
   routerUsb = routerNode.systemd.network.networks."05-usb-eth";
   # The same program the gateway node's activation runs, built from that
   # node's own package set and settings.
@@ -127,21 +130,36 @@ in
 assert lib.assertMsg (failedAssertions gatewayNode == [ ]) (
   "gateway fixture has failed assertions: " + toString (failedAssertions gatewayNode)
 );
-# Selection is by bus role only.
+# Selection is by the USB bus and the downlink role only.
 assert lib.assertMsg (
   usbRule.matchConfig == {
     Type = "ether";
-    Property = "ID_BUS=usb";
+    Property = [
+      "ID_BUS=usb"
+      "CRIOMOS_USB_ETHERNET_ROLE=downlink"
+    ];
   }
-) "the downlink rule must select USB Ethernet by bus role, with no name or MAC";
+) "the downlink rule must select USB Ethernet of the downlink role, with no name or MAC";
 assert lib.assertMsg (matches {
   Type = "ether";
-  Property = "ID_BUS=usb";
-}) "a USB Ethernet NIC is a downlink";
+  Property = [
+    "ID_BUS=usb"
+    "CRIOMOS_USB_ETHERNET_ROLE=downlink"
+  ];
+}) "a USB Ethernet dongle is a downlink";
 assert lib.assertMsg (
   !matches {
     Type = "ether";
-    Property = "ID_BUS=pci";
+    Property = [
+      "ID_BUS=usb"
+      "CRIOMOS_USB_ETHERNET_ROLE=uplink"
+    ];
+  }
+) "a phone's tether is never a downlink";
+assert lib.assertMsg (
+  !matches {
+    Type = "ether";
+    Property = [ "ID_BUS=pci" ];
   }
 ) "the integrated PCI NIC is never a downlink";
 assert lib.assertMsg (
@@ -180,9 +198,9 @@ assert lib.assertMsg (
   ]
 ) "the firewall admits DHCP and DNS on the bridge";
 assert lib.assertMsg (
-  lib.hasInfix ''ENV{ID_BUS}=="usb"'' gatewayNode.services.udev.extraRules
-  && lib.hasInfix ''ENV{NM_UNMANAGED}="1"'' gatewayNode.services.udev.extraRules
-) "NetworkManager leaves USB Ethernet to networkd";
+  lib.hasInfix ''ENV{CRIOMOS_USB_ETHERNET_ROLE}=="downlink", ENV{NM_UNMANAGED}="1"'' gatewayNode.services.udev.extraRules
+  && !(lib.hasInfix ''=="uplink", ENV{NM_UNMANAGED}'' gatewayNode.services.udev.extraRules)
+) "NetworkManager leaves the downlinks to networkd and keeps a tether";
 assert lib.assertMsg
   (builtins.elem "interface-name:br-downlink" gatewayNode.networking.networkmanager.unmanaged)
   "NetworkManager leaves the bridge alone";
@@ -226,10 +244,13 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   routerUsb.matchConfig == {
     Type = "ether";
-    Property = "ID_BUS=usb";
+    Property = [
+      "ID_BUS=usb"
+      "CRIOMOS_USB_ETHERNET_ROLE=downlink"
+    ];
     Name = "!eno1";
   }
-) "the router's USB LAN rule is the shared bus-role match minus its WAN";
+) "the router's USB LAN rule is the shared downlink-role match minus its WAN";
 assert lib.assertMsg (builtins.any (lib.hasInfix "must be the router LAN") (
   failedAssertions foreignRouter
 )) "a Router node refuses a downlink network other than its LAN";

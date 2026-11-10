@@ -1,7 +1,9 @@
 # USB downlink: the node propagates its Internet access to whatever is
 # plugged into its USB Ethernet NICs. The integrated NIC is the uplink and
-# every USB Ethernet NIC is a downlink, selected by udev bus role, never by
-# name or MAC, so it works however the cables are plugged.
+# every USB Ethernet NIC of the downlink role is a downlink, selected by the
+# udev role (usb-ethernet-role.nix), never by name, so it works however the
+# cables are plugged; a phone's tether has the uplink role and is never
+# bridged.
 #
 # Horizon declares it as the capability
 #   { kind = "usbDownlink"; ipv4Network = "10.44.0.0/24"; }
@@ -16,8 +18,9 @@
 #   - the NixOS NAT module masquerades what arrives on the bridge to
 #     whichever link carries the default route (the integrated uplink);
 #   - the NixOS firewall admits DHCP and DNS on the bridge only.
-#   On a NetworkManager node, NetworkManager is told by udev to leave USB
-#   Ethernet links alone, so each link has exactly one manager.
+#   On a NetworkManager node, NetworkManager is told by udev to leave the
+#   downlinks alone, so each link has exactly one manager; a tether stays
+#   NetworkManager's.
 #
 # On a node with the Router feature the router module already bridges
 # USB Ethernet into its LAN with the same bus-role match, serves Kea and DNS
@@ -126,43 +129,8 @@ let
     networkmanager =
       if config.networking.networkmanager.enable then config.networking.networkmanager.package else null;
   };
-  # A USB Ethernet device whose vendor is listed is an uplink, not a
-  # downlink: a phone sharing its connection over USB (a Pixel's tether
-  # is cdc_ncm, vendor Google 18d1). Its networkd file sorts before the
-  # downlink rule, so it asks the phone for an address instead of joining
-  # the bridge, and its routes sit below Wi-Fi's so the tether carries the
-  # traffic while it is plugged in.
-  uplinkVendors = config.criomos.network.usbUplinkVendors;
-  uplinkRouteMetric = 100;
-  uplinkNetworks = lib.listToAttrs (
-    map (vendor: {
-      name = "01-usb-uplink-${vendor}";
-      value = {
-        matchConfig = {
-          Type = "ether";
-          Property = [
-            "ID_BUS=usb"
-            "ID_VENDOR_ID=${vendor}"
-          ];
-        };
-        networkConfig.DHCP = "yes";
-        dhcpV4Config.RouteMetric = uplinkRouteMetric;
-        ipv6AcceptRAConfig.RouteMetric = uplinkRouteMetric;
-        linkConfig.RequiredForOnline = "no";
-      };
-    }) uplinkVendors
-  );
 in
 {
-  # Short-term compromise: which USB vendors are uplinks is a fact of the
-  # host and belongs in its Horizon data; it is an option here until
-  # Horizon carries it beside UsbDownlink.
-  options.criomos.network.usbUplinkVendors = lib.mkOption {
-    type = lib.types.listOf (lib.types.strMatching "[0-9a-f]{4}");
-    default = [ "18d1" ];
-    description = "USB vendor ids whose Ethernet devices are uplinks (a phone's USB tether) rather than downlinks.";
-  };
-
   config = mkIf declared (mkMerge [
     {
       # Evaluate the declaration eagerly so a malformed network fails the
@@ -211,7 +179,7 @@ in
           Name = bridge;
         };
 
-        networks = uplinkNetworks // {
+        networks = {
           # Sorts before every Ethernet catch-all: networkd applies the
           # first matching file.
           "05-usb-downlink" = {
@@ -238,9 +206,10 @@ in
         };
       };
 
-      # NetworkManager must not also claim the USB links or the bridge.
+      # NetworkManager must not also claim the downlinks or the bridge; an
+      # uplink (a tether) stays NetworkManager's.
       services.udev.extraRules = mkIf config.networking.networkmanager.enable ''
-        ${usbEthernet.udevMatch}, ENV{NM_UNMANAGED}="1"
+        ${usbEthernet.udevMatch { }}, ENV{NM_UNMANAGED}="1"
       '';
       networking.networkmanager.unmanaged = [ "interface-name:${bridge}" ];
 

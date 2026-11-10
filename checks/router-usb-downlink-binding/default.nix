@@ -32,6 +32,7 @@ let
     modules = [
       inputs.sops-nix.nixosModules.sops
       ../../modules/nixos/router/default.nix
+      ../../modules/nixos/network/usb-ethernet-role-rule.nix
       { nixpkgs.config.allowUnfree = true; }
     ];
   };
@@ -52,39 +53,59 @@ let
   usbAdapter = {
     Name = "enp199s0f0u1";
     Type = "ether";
-    Property = "ID_BUS=usb";
+    Property = [
+      "ID_BUS=usb"
+      "CRIOMOS_USB_ETHERNET_ROLE=downlink"
+    ];
+  };
+  tether = {
+    Name = "enp199s0f0u2";
+    Type = "ether";
+    Property = [
+      "ID_BUS=usb"
+      "CRIOMOS_USB_ETHERNET_ROLE=uplink"
+    ];
   };
   internalWan = {
     Name = "eno1";
     Type = "ether";
-    Property = "ID_BUS=pci";
+    Property = [ "ID_BUS=pci" ];
   };
   matchesUsbRule = link:
     link.Type == usb.matchConfig.Type
-    && link.Property == usb.matchConfig.Property
+    && lib.all (property: builtins.elem property link.Property) usb.matchConfig.Property
     && link.Name != "eno1";
   centerUsbRuleName = "05-usb-eth";
   centerMainRuleName = "10-main-eth";
   centerUsb = center.config.systemd.network.networks.${centerUsbRuleName};
 in
-assert lib.assertMsg (usb.matchConfig.Property == "ID_BUS=usb")
-  "the USB LAN rule must select the stable USB udev bus role";
+assert lib.assertMsg (usb.matchConfig.Property == [ "ID_BUS=usb" "CRIOMOS_USB_ETHERNET_ROLE=downlink" ])
+  "the USB LAN rule must select the USB bus and the downlink role";
 assert lib.assertMsg (usb.matchConfig.Name == "!eno1")
   "USB LAN binding must explicitly exclude the declared WAN without selecting a USB name";
 assert lib.assertMsg (!(usb.matchConfig ? Driver))
   "USB LAN binding must not require ID_NET_DRIVER during rename";
 assert lib.assertMsg (matchesUsbRule usbAdapter)
   "a USB Ethernet adapter must match the LAN bridge rule";
+assert lib.assertMsg (!matchesUsbRule tether)
+  "a phone's tether must not join the LAN bridge";
 assert lib.assertMsg (!matchesUsbRule internalWan)
   "an internal PCI Ethernet WAN NIC must not match the USB LAN bridge rule";
+assert lib.assertMsg (
+  (router.config.systemd.network.networks."04-usb-uplink".matchConfig.Property or [ ]) == [
+    "ID_BUS=usb"
+    "CRIOMOS_USB_ETHERNET_ROLE=uplink"
+  ]
+  && "04-usb-uplink" < usbRuleName
+) "a router gives a tether its DHCP uplink file, before the LAN rule";
 assert lib.assertMsg (usbRuleName < wanRuleName)
   "the USB role rule must sort before the Ethernet WAN/catch-all rule";
 assert lib.assertMsg (usb.networkConfig.Bridge == "br-lan")
   "the selected USB LAN interface must remain a bridge port";
 assert lib.assertMsg (usb.networkConfig.ConfigureWithoutCarrier)
   "the bridge binding must survive hotplug before carrier";
-assert lib.assertMsg (centerUsb.matchConfig.Property == "ID_BUS=usb")
-  "the generic center USB rule must use the stable USB udev bus role";
+assert lib.assertMsg (centerUsb.matchConfig.Property == [ "ID_BUS=usb" "CRIOMOS_USB_ETHERNET_ROLE=downlink" ])
+  "the generic center USB rule must select the USB bus and the downlink role";
 assert lib.assertMsg (!(centerUsb.matchConfig ? Driver))
   "the generic center USB rule must not require ID_NET_DRIVER";
 assert lib.assertMsg (centerUsbRuleName < centerMainRuleName)
