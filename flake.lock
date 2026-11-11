@@ -3402,11 +3402,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794379467,
-        "narHash": "sha256-giCWAArpv4DHZXxT0PZtan48eVfJTGC96mpvj916nwI=",
+        "lastModified": 1794380645,
+        "narHash": "sha256-xc1fu2V/NdapG7uNKmnPeRaHpnkKFBSymRRxdtkqEH4=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-pkgs",
-        "rev": "2f668923a92c994b123402e0dbd40d11699ada05",
+        "rev": "a7e505ae1e51daa9835bcb886e5d41432cdf705b",
         "type": "github"
       },
       "original": {
