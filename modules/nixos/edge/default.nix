@@ -188,7 +188,16 @@ mkIf behavesAs.edge {
 
   security.polkit.enable = true;
   security.pam.services.swaylock = { };
-  security.pam.services.noctalia = { };
+  # Noctalia runs PAM in its own long-lived process; it calls only
+  # pam_authenticate and pam_acct_mgmt.  Bare module names resolve against
+  # the module directory of the libpam that process is linked with, so a
+  # locker started before a switch still loads modules built on its own
+  # glibc; the shadow check runs in the current system's unix_chkpwd.
+  security.pam.services.noctalia.text = ''
+    account required pam_unix.so
+    auth sufficient pam_unix.so likeauth try_first_pass
+    auth required pam_deny.so
+  '';
   hardware.graphics.enable = lib.mkDefault true;
 
   # `powerOnBoot` is BlueZ's startup and hotplug policy.  A controller that
