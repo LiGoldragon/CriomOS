@@ -90,7 +90,7 @@ let
   globalPreset = concatStringsSep "\n" [
     "[*]"
     "n-gpu-layers = ${toString (presetDefaults."n-gpu-layers" or 99)}"
-    "no-mmap = ${if presetDefaults."no-mmap" or true then "true" else "false"}"
+    "load-mode = ${presetDefaults."load-mode" or "none"}"
     "no-warmup = ${if presetDefaults."no-warmup" or true then "true" else "false"}"
     "fit = ${presetDefaults.fit or "off"}"
     "parallel = ${toString (presetDefaults.parallel or 1)}"
