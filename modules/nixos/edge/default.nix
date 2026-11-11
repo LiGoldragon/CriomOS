@@ -243,7 +243,7 @@ mkIf behavesAs.edge {
     power-profiles-daemon.enable = false;
     upower.enable = size.min;
 
-    dbus.packages = mkIf size.min [ pkgs.gcr ];
+    dbus.packages = mkIf size.min [ pkgs.gcr_4 ];
 
     gvfs.enable = size.min;
 
