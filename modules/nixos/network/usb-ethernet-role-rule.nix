@@ -5,9 +5,11 @@
 # 75-net-description.rules imported the USB properties and before any rule
 # in 99-local.rules that reads the role.
 #
-# Where NetworkManager runs it manages an uplink as any wired connection:
-# nothing here marks a tether unmanaged. Where it does not, networkd gives
-# the uplink one DHCP client file, sorted before every USB rule.
+# networkd owns every uplink on every node, matched by the role itself: a
+# DHCP client whose routes carry the uplink route metric, on a link in the
+# uplink group, which a router's firewall names. Where NetworkManager also
+# runs, it leaves the uplinks alone, and decides by itself when the node is
+# online.
 {
   config,
   lib,
@@ -15,17 +17,52 @@
   ...
 }:
 let
+  inherit (lib) mkDefault mkIf mkOption types;
   usbEthernet = import ./usb-ethernet-role.nix { inherit lib; };
   rules = pkgs.writeTextDir "lib/udev/rules.d/76-criomos-usb-ethernet-role.rules" usbEthernet.classificationRules;
+  uplink = config.criomos.usbEthernet.uplink;
+  networkManager = config.networking.networkmanager.enable;
 in
 {
-  services.udev.packages = [ rules ];
+  options.criomos.usbEthernet.uplink = {
+    routeMetric = mkOption {
+      type = types.ints.unsigned;
+      default = 50;
+      description = ''
+        Metric of the routes a USB uplink (a tether) brings, IPv4 and IPv6.
+        Below every other wired or wireless default route, so a plugged-in
+        phone carries the node's traffic; a router raises it above its WAN,
+        so the tether is the backup.
+      '';
+    };
+    linkGroup = mkOption {
+      type = types.ints.between 1 2147483647;
+      default = 64;
+      description = "Kernel link group of every USB uplink, by which a firewall names the uplinks.";
+    };
+  };
 
-  systemd.network.networks."04-usb-uplink" =
-    lib.mkIf (config.systemd.network.enable && !config.networking.networkmanager.enable)
-      {
+  config = {
+    services.udev.packages = [ rules ];
+
+    services.udev.extraRules = mkIf networkManager ''
+      ${usbEthernet.udevMatch { role = "uplink"; }}, ENV{NM_UNMANAGED}="1"
+    '';
+
+    systemd.network = {
+      enable = true;
+      wait-online.enable = mkIf (networkManager && !config.networking.useNetworkd) (mkDefault false);
+
+      networks."04-usb-uplink" = {
         matchConfig = usbEthernet.networkdMatch { role = "uplink"; };
         networkConfig.DHCP = "yes";
-        linkConfig.RequiredForOnline = "no";
+        dhcpV4Config.RouteMetric = uplink.routeMetric;
+        ipv6AcceptRAConfig.RouteMetric = uplink.routeMetric;
+        linkConfig = {
+          Group = uplink.linkGroup;
+          RequiredForOnline = "no";
+        };
       };
+    };
+  };
 }

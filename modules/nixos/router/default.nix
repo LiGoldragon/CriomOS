@@ -18,6 +18,7 @@ let
     ;
   inherit (horizon.node) behavesAs;
   usbEthernet = import ../network/usb-ethernet-role.nix { inherit lib; };
+  uplinkGroup = toString config.criomos.usbEthernet.uplink.linkGroup;
   # WiFi PKI paths — uncomment when EAP-TLS is deployed
   # inherit (constants.fileSystem.wifiPki) caCertFile serverCertFile serverKeyFile;
 
@@ -192,6 +193,9 @@ in
               iifname "${routerInterfaces.wan}" ct state { established, related } accept comment "Allow established traffic"
               iifname "${routerInterfaces.wan}" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
               iifname "${routerInterfaces.wan}" counter drop comment "Drop all other unsolicited traffic from ${routerInterfaces.wan}"
+              iifgroup ${uplinkGroup} ct state { established, related } accept comment "Allow established traffic on a USB uplink"
+              iifgroup ${uplinkGroup} icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP on a USB uplink"
+              iifgroup ${uplinkGroup} counter drop comment "Drop all other unsolicited traffic from a USB uplink"
               iifname "lo" accept comment "Accept everything from loopback interface"
             }
 
@@ -200,6 +204,8 @@ in
 
               iifname { ${lanBridgeInterface} } oifname { "${routerInterfaces.wan}" } accept comment "Allow trusted LAN to WAN"
               iifname { "${routerInterfaces.wan}" } oifname { ${lanBridgeInterface} } ct state { established, related } accept comment "Allow established back to LANs"
+              iifname { ${lanBridgeInterface} } oifgroup ${uplinkGroup} accept comment "Allow trusted LAN to a USB uplink, the backup WAN"
+              iifgroup ${uplinkGroup} oifname { ${lanBridgeInterface} } ct state { established, related } accept comment "Allow established back from a USB uplink"
 
               # Route between this host's own test-VM guest taps (vmt*, emitted
               # by test-vm-host.nix): guest A -> host -> guest B. The guests sit
@@ -213,6 +219,7 @@ in
             chain postrouting {
               type nat hook postrouting priority 100; policy accept;
               oifname "${routerInterfaces.wan}" masquerade
+              oifgroup ${uplinkGroup} masquerade
             }
           }
         '';
@@ -424,6 +431,11 @@ in
         };
       };
     };
+
+    # A tether is the backup WAN: its routes sit behind the WAN's DHCP
+    # default route (networkd's 1024), so it carries traffic only when the
+    # WAN has none.
+    criomos.usbEthernet.uplink.routeMetric = lib.mkDefault 2048;
 
     systemd.network = {
       enable = true;

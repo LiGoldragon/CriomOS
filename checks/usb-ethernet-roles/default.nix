@@ -1,7 +1,8 @@
 # The USB Ethernet roles (network/usb-ethernet-role.nix): the classification
 # rule is valid udev and tells a tether from a dongle by the kernel's own
-# test; a networkd node gives an uplink its DHCP file before the downlink
-# rule; a NetworkManager node leaves the uplink to NetworkManager.
+# test; every node gives an uplink its networkd DHCP file before the downlink
+# rule, with the uplink route metric and link group; a NetworkManager node
+# leaves the uplink unmanaged.
 { inputs, pkgs, ... }:
 let
   inherit (inputs.nixpkgs) lib;
@@ -25,6 +26,7 @@ let
   networkdNode = node { networkManager = false; };
   networkManagerNode = node { networkManager = true; };
   uplink = networkdNode.systemd.network.networks."04-usb-uplink";
+  networkManagerUplink = networkManagerNode.systemd.network.networks."04-usb-uplink";
   rulesFile = pkgs.writeText "76-criomos-usb-ethernet-role.rules" usbEthernet.classificationRules;
 in
 assert lib.assertMsg (
@@ -48,8 +50,25 @@ assert lib.assertMsg (
   ]
 ) "the center node's USB rule takes downlinks only";
 assert lib.assertMsg (
-  !(networkManagerNode.systemd.network.networks ? "04-usb-uplink")
-) "a NetworkManager node leaves the uplink to NetworkManager, with no networkd file";
+  uplink.dhcpV4Config.RouteMetric == networkdNode.criomos.usbEthernet.uplink.routeMetric
+  && uplink.ipv6AcceptRAConfig.RouteMetric == networkdNode.criomos.usbEthernet.uplink.routeMetric
+) "the tether's routes carry the uplink route metric";
+assert lib.assertMsg (
+  uplink.linkConfig.Group == networkdNode.criomos.usbEthernet.uplink.linkGroup
+) "the tether joins the uplink link group";
+assert lib.assertMsg (
+  networkManagerNode.systemd.network.enable
+  && networkManagerUplink.matchConfig == uplink.matchConfig
+  && networkManagerUplink.networkConfig.DHCP == "yes"
+  && networkManagerUplink.dhcpV4Config.RouteMetric == uplink.dhcpV4Config.RouteMetric
+  && networkManagerUplink.linkConfig.Group == uplink.linkConfig.Group
+) "a NetworkManager node gives the uplink to networkd too";
+assert lib.assertMsg (
+  lib.hasInfix ''ENV{CRIOMOS_USB_ETHERNET_ROLE}=="uplink", ENV{NM_UNMANAGED}="1"'' networkManagerNode.services.udev.extraRules
+) "NetworkManager leaves the uplink alone";
+assert lib.assertMsg (
+  !networkManagerNode.systemd.network.wait-online.enable
+) "networkd does not decide when a NetworkManager node is online";
 assert lib.assertMsg (
   builtins.any (package: lib.hasInfix "usb-ethernet-role" (toString package)) networkManagerNode.services.udev.packages
 ) "the classification rule is installed on every node";

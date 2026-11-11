@@ -207,7 +207,7 @@ in
       };
 
       # NetworkManager must not also claim the downlinks or the bridge; an
-      # uplink (a tether) stays NetworkManager's.
+      # uplink is networkd's too (usb-ethernet-role-rule.nix).
       services.udev.extraRules = mkIf config.networking.networkmanager.enable ''
         ${usbEthernet.udevMatch { }}, ENV{NM_UNMANAGED}="1"
       '';
