@@ -88,7 +88,9 @@ let
       home="$(git rev-parse HEAD)"
 
       cd "$work/system"
-      nix flake update criomos-home
+      # The lock pins the Home commit on the update branch; main does not
+      # hold it until the Realize below has succeeded.
+      nix flake lock --override-input criomos-home "github:${cfg.homeFlake}/$home"
       git commit -q -am "Pin Home with the harnesses updated (CriomOS-home ''${home:0:8})"
       git push -q -f origin ${cfg.branch}
       system="$(git rev-parse HEAD)"
@@ -167,6 +169,11 @@ in
       default = "git@github.com:LiGoldragon/CriomOS.git";
       description = "The CriomOS repository whose lock pins the updated Home.";
     };
+    homeFlake = mkOption {
+      type = types.str;
+      default = "LiGoldragon/CriomOS-home";
+      description = "The CriomOS-home flake the update branch's commit is pinned from, as a GitHub owner and repository.";
+    };
     systemFlake = mkOption {
       type = types.str;
       default = "LiGoldragon/CriomOS";
@@ -222,7 +229,8 @@ in
         Group = lojix.group;
         StateDirectory = "harness-update";
         ExecStart = pkgs.writeShellScript "harness-update-with-agent" ''
-          export SSH_AUTH_SOCK="/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh"
+          export XDG_RUNTIME_DIR="/run/user/$(${pkgs.coreutils}/bin/id -u)"
+          export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gnupg/S.gpg-agent.ssh"
           exec ${update}/bin/harness-update
         '';
       };
