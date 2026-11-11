@@ -34,16 +34,12 @@ let
 
   publicClusterDomains = horizon.domainConfiguration.publicClusterDomains or [ ];
 
-  upstreamServers = [
-    "1.1.1.1"
-    "1.0.0.1"
-    "2606:4700:4700::1111"
-    "2606:4700:4700::1001"
-    "9.9.9.9"
-    "149.112.112.112"
-    "2620:fe::fe"
-    "2620:fe::9"
-  ];
+  # The router takes its upstream DNS from its current uplinks, as each
+  # uplink's DHCP gives it: networkd hands each link's servers to resolved,
+  # which sends a query to every link holding a default route and keeps the
+  # first answer, so a dead uplink's resolver is passed over.  dnsmasq
+  # serves the LAN and forwards to resolved's stub.
+  resolvedStub = "127.0.0.53";
 
   mkAddressRecord =
     {
@@ -123,7 +119,16 @@ let
 in
 lib.mkIf behavesAs.router {
   services = {
-    resolved.enable = false;
+    resolved = {
+      enable = true;
+      settings.Resolve = {
+        DNS = lib.mkForce [ ];
+        FallbackDNS = lib.mkForce [ ];
+        DNSStubListener = "yes";
+        LLMNR = "no";
+        MulticastDNS = "no";
+      };
+    };
     unbound.enable = false;
     dnsmasq = {
       enable = true;
@@ -143,10 +148,22 @@ lib.mkIf behavesAs.router {
           (lib.optionals (headscaleEnabled && tailnetBaseDomain != null) [
             "/${tailnetBaseDomain}/100.100.100.100"
           ])
-          ++ upstreamServers;
+          ++ [ resolvedStub ];
       };
     };
   };
 
-  systemd.services.dnsmasq.after = [ "systemd-networkd.service" ];
+  # Local lookups go through dnsmasq too, for the cluster's address records.
+  environment.etc."resolv.conf" = lib.mkForce {
+    text = ''
+      nameserver 127.0.0.1
+      nameserver ::1
+      options edns0
+    '';
+  };
+
+  systemd.services.dnsmasq.after = [
+    "systemd-networkd.service"
+    "systemd-resolved.service"
+  ];
 }
