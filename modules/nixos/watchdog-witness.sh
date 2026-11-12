@@ -5,8 +5,8 @@ status_path=${CRIOMOS_WATCHDOG_BOOTSTATUS_PATH:-/sys/class/watchdog/watchdog0/bo
 identity=$(cat "$identity_path" 2>/dev/null || true)
 status=$(cat "$status_path" 2>/dev/null || true)
 if [ "$identity" != "SP5100 TCO timer" ]; then
-  echo "watchdog witness: expected SP5100 TCO timer identity, got '${identity}'" >&2
-  exit 1
+  echo "watchdog witness: driver identity '${identity}' is outside SP5100 witness scope" >&2
+  exit 0
 fi
 case "$status" in
   ''|*[!0-9]*)

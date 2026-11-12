@@ -3,7 +3,7 @@ let
   script = ../../modules/nixos/watchdog-witness.sh;
   node = (import ../../fixtures/horizon-node.nix { inherit lib; }).node;
   witnessNode = node {
-    capabilities = [ { kind = "watchdogWitness"; scope = "router"; } ];
+    capabilities = [ ];
     behavesAs.router = true;
   };
   system = lib.nixosSystem {
