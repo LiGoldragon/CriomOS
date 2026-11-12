@@ -42,7 +42,9 @@ CAT
     check 'SP5100 TCO timer' 4294967296 failure
     d_missing="$fixture/missing"; mkdir -p "$d_missing"; printf 'SP5100 TCO timer\n' > "$d_missing/identity"
     if PATH="$fakebin:$PATH" CRIOMOS_WATCHDOG_IDENTITY_PATH="$d_missing/identity" CRIOMOS_WATCHDOG_BOOTSTATUS_PATH="$d_missing/status" ${pkgs.bash}/bin/bash ${script}; then exit 1; fi
-    check 'Other watchdog' 32 failure
+    d_other="$fixture/other"; mkdir -p "$d_other"; printf 'Other watchdog\n' > "$d_other/identity"; printf '32\n' > "$d_other/bootstatus"
+    PATH="$fakebin:$PATH" CRIOMOS_WATCHDOG_IDENTITY_PATH="$d_other/identity" CRIOMOS_WATCHDOG_BOOTSTATUS_PATH="$d_other/bootstatus" ${pkgs.bash}/bin/bash ${script} >"$d_other/out" 2>"$d_other/err"
+    test ! -s "$d_other/out"; grep -F 'outside SP5100 witness scope' "$d_other/err" >/dev/null
   '';
 in
 assert lib.assertMsg (system.config.systemd.services.criomos-watchdog-witness.wantedBy == [ "dev-watchdog0.device" ]) "watchdog witness is boot-target triggered";
