@@ -39,11 +39,14 @@ CAT
     check 'SP5100 TCO timer' 96 watchdog-fired
     check 'SP5100 TCO timer' malformed failure
     check 'SP5100 TCO timer' 0x20 failure
+    check 'SP5100 TCO timer' 4294967296 failure
+    d_missing="$fixture/missing"; mkdir -p "$d_missing"; printf 'SP5100 TCO timer\n' > "$d_missing/identity"
+    if PATH="$fakebin:$PATH" CRIOMOS_WATCHDOG_IDENTITY_PATH="$d_missing/identity" CRIOMOS_WATCHDOG_BOOTSTATUS_PATH="$d_missing/status" ${pkgs.bash}/bin/bash ${script}; then exit 1; fi
     check 'Other watchdog' 32 failure
   '';
 in
-assert lib.assertMsg (system.config.systemd.services.criomos-watchdog-witness.wantedBy == [ "multi-user.target" ]) "watchdog witness is boot-target triggered";
-assert lib.assertMsg (system.config.systemd.services.criomos-watchdog-witness.after == [ "systemd-modules-load.service" "dev-watchdog0.device" ]) "watchdog witness follows the device event";
+assert lib.assertMsg (system.config.systemd.services.criomos-watchdog-witness.wantedBy == [ "dev-watchdog0.device" ]) "watchdog witness is boot-target triggered";
+assert lib.assertMsg (system.config.systemd.services.criomos-watchdog-witness.after == [ "dev-watchdog0.device" ]) "watchdog witness follows the device event";
 assert lib.assertMsg (system.config.systemd.services.criomos-watchdog-witness.serviceConfig.PrivateDevices) "watchdog witness cannot open the watchdog device";
 pkgs.runCommand "watchdog-witness-check" { } ''
   ${run}

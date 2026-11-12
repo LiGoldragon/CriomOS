@@ -14,12 +14,11 @@ in
 
   systemd.services.criomos-watchdog-witness = lib.mkIf (enabled && routerScoped) {
     description = "Record the SP5100 watchdog boot witness";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "systemd-modules-load.service" "dev-watchdog0.device" ];
-    unitConfig = {
-      ConditionPathExists = "/sys/class/watchdog/watchdog0/identity";
-      ConditionPathExists = "/sys/class/watchdog/watchdog0/bootstatus";
-    };
+    # The device unit is the boot event: this service is pulled in only when
+    # watchdog0 exists, and the read happens after that event.
+    wantedBy = [ "dev-watchdog0.device" ];
+    after = [ "dev-watchdog0.device" ];
+    bindsTo = [ "dev-watchdog0.device" ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.bash}/bin/bash ${./watchdog-witness.sh}";
