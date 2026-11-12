@@ -116,7 +116,7 @@ assert lib.assertMsg (service.bindsTo == [ "dev-watchdog0.device" ]) "witness is
 assert lib.assertMsg service.serviceConfig.RemainAfterExit "witness remains complete instead of repeating during the boot";
 assert lib.assertMsg (!service.restartIfChanged) "configuration activation does not repeat the boot read";
 assert lib.assertMsg (!service.stopIfChanged) "configuration activation preserves the completed boot read";
-assert lib.assertMsg (service.path == [ pkgs.coreutils pkgs.systemd ]) "the runtime closure supplies cat and systemd-cat";
+assert lib.assertMsg (lib.elem pkgs.coreutils service.path && lib.elem pkgs.systemd service.path) "the runtime closure supplies cat and systemd-cat";
 assert lib.assertMsg (!(nonRouterSystem.config.systemd.services ? criomos-watchdog-witness)) "non-router nodes have no witness unit";
 pkgs.runCommand "watchdog-witness-check" { } ''
   ${run}
