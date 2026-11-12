@@ -52,6 +52,7 @@ in
   ++ [
     ./metal/default.nix
     ./router/default.nix
+    ./watchdog-witness.nix
     ./vm-testing/default.nix
     # Lean-guest gate for a TestVm-species node — suppresses the home/doc
     # weight a test guest never wants while leaving it a real deploy target

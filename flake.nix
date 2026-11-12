@@ -231,6 +231,7 @@
           router-wifi-secret = callCheck ./checks/router-wifi-secret;
           router-wan-recovery = callCheck ./checks/router-wan-recovery;
           router-yggdrasil-ndp = callCheck ./checks/router-yggdrasil-ndp;
+          watchdog-witness = callCheck ./checks/watchdog-witness;
           router-declared-tcp-ports = callCheck ./checks/router-declared-tcp-ports;
           usb-downlink = callCheck ./checks/usb-downlink;
           usb-ethernet-roles = callCheck ./checks/usb-ethernet-roles;
