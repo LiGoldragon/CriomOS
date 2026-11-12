@@ -110,7 +110,7 @@ CAT
     grep -F 'no SP5100 status was read' "$other/err" >/dev/null
   '';
 in
-assert lib.assertMsg (service.wantedBy == [ "dev-watchdog0.device" ]) "witness has one static device-event activation";
+assert lib.assertMsg (service.wantedBy == [ "dev-watchdog0.device" ]) "witness has only the static device-event activation, not a blocking boot target";
 assert lib.assertMsg (service.after == [ "dev-watchdog0.device" ]) "witness reads after the device event";
 assert lib.assertMsg (service.bindsTo == [ "dev-watchdog0.device" ]) "witness is bound to the device lifecycle";
 assert lib.assertMsg service.serviceConfig.RemainAfterExit "witness remains complete instead of repeating during the boot";

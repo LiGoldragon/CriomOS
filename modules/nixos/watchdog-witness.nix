@@ -6,8 +6,9 @@ in
   systemd.services.criomos-watchdog-witness = lib.mkIf enabled {
     description = "Record the SP5100 watchdog boot witness";
     # The device unit is the event.  Its static wants link covers ordinary boot
-    # and a driver which appears late; switch-to-configuration also starts a
-    # newly installed dependency of an already-active device unit.
+    # and a driver which appears late.  A first switch-to-configuration while
+    # the device is already active installs the link without inventing a new
+    # device event; the witness then runs at the next boot/device appearance.
     wantedBy = [ "dev-watchdog0.device" ];
     after = [ "dev-watchdog0.device" ];
     bindsTo = [ "dev-watchdog0.device" ];
