@@ -83,6 +83,7 @@ in
     ./usb-ethernet-role-rule.nix
     ./usb-downlink.nix
     ./usb-downlink-observer.nix
+    ./zoekt-index-events.nix
   ];
 
   networking = {
