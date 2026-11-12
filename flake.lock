@@ -905,7 +905,6 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "__final": true,
         "lastModified": 1794510058,
         "narHash": "sha256-zfXip9zC/cFzuAzqj0RGhgYD8bODjgsaUGtEw31Lj8E=",
         "owner": "LiGoldragon",
