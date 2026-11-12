@@ -23,8 +23,8 @@ let
 in
 {
   config = lib.mkIf (localUsers != [ ]) {
-    # Wi-Fi is owned by NetworkManager on edge nodes. Its dispatcher announces
-    # link and route acquisition without adding a timer or connectivity probe.
+    # Built-in Wi-Fi and Ethernet are owned by NetworkManager on ouranos. Its
+    # dispatcher announces link and route acquisition without a connectivity probe.
     networking.networkmanager.dispatcherScripts = lib.mkIf config.networking.networkmanager.enable [
       {
         source = networkManagerDispatcher;
@@ -32,7 +32,7 @@ in
       }
     ];
 
-    # USB Ethernet remains owned by networkd even on NetworkManager nodes.
+    # NM-unmanaged USB uplinks, including the phone, are owned by networkd.
     # Routable is networkd's event that a usable route has appeared.
     services.networkd-dispatcher = lib.mkIf config.systemd.network.enable {
       enable = true;
