@@ -71,7 +71,7 @@ CAT
     run_case combined-bits 'SP5100 TCO timer' 96 success watchdog-fired
     run_case max-u32 'SP5100 TCO timer' 4294967295 success watchdog-fired
     run_case leading-zero 'SP5100 TCO timer' 00032 success watchdog-fired
-    run_case empty-status 'SP5100 TCO timer' '' failure unused
+    run_case empty-status 'SP5100 TCO timer' "" failure unused
     run_case malformed-hex 'SP5100 TCO timer' 0x20 failure unused
     run_case overflow 'SP5100 TCO timer' 999999999999999999999999 failure unused
 
