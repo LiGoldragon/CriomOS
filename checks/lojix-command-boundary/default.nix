@@ -20,10 +20,10 @@ let
       ''
       + lib.concatStringsSep "\n" (
         map (command: ''
-          cat > "$out/bin/${command}" <<'EOF'
+          cat > "$out/bin/${command}" <<'SCRIPT'
           #!${pkgs.runtimeShell}
           printf '%s\n' '${generation}:${command}'
-          EOF
+          SCRIPT
           chmod +x "$out/bin/${command}"
         '') commands
       )
@@ -43,12 +43,26 @@ let
   generationA = packages "a";
   generationB = packages "b";
   selectedPackagePaths = builtins.attrValues generationA ++ builtins.attrValues generationB;
+  lojixConfiguration = selected: {
+    services.lojix = {
+      enable = true;
+      daemonPackage = selected.daemon;
+      ordinaryClientPackage = selected.ordinary;
+      metaClientPackage = selected.meta;
+      offlineToolsPackage = selected.offline;
+      bootstrapPackage = selected.bootstrap;
+      user = "lojix";
+      group = "lojix";
+      nexusHost = "lojix-command-boundary";
+    };
+  };
   configuration =
     selected: commandDirectoryPath:
     lib.nixosSystem {
       inherit system;
       modules = [
         ../../modules/nixos/lojix.nix
+        (lojixConfiguration selected)
         {
           system.stateVersion = "26.05";
           users.groups.lojix = { };
@@ -56,18 +70,7 @@ let
             isSystemUser = true;
             group = "lojix";
           };
-          services.lojix = {
-            enable = true;
-            daemonPackage = selected.daemon;
-            ordinaryClientPackage = selected.ordinary;
-            metaClientPackage = selected.meta;
-            offlineToolsPackage = selected.offline;
-            bootstrapPackage = selected.bootstrap;
-            inherit commandDirectoryPath;
-            user = "lojix";
-            group = "lojix";
-            nexusHost = "lojix-command-boundary";
-          };
+          services.lojix = { inherit commandDirectoryPath; };
         }
       ];
     };
@@ -118,41 +121,94 @@ assert
 assert
   configurationB.config.systemd.services.lojix-reset-store.serviceConfig.ExecStart
   == "${generationB.offline}/bin/lojix-reset-store ResetStore";
-pkgs.runCommand "lojix-command-boundary"
-  {
-    inherit customLauncher defaultLauncher;
-    commandSourceA = defaultCommandSource configurationA;
-    commandSourceB = defaultCommandSource configurationB;
-    customCommandSourceA = customCommandSource customConfigurationA;
-  }
-  ''
-    set -eu
+pkgs.testers.nixosTest {
+  name = "lojix-command-boundary";
+  nodes.machine =
+    { lib, ... }:
+    {
+      imports = [ ../../modules/nixos/lojix.nix ];
+      system.stateVersion = "26.05";
+      networking.hostName = "lojix-command-boundary";
+      users.groups.lojix = { };
+      users.users.lojix = {
+        isSystemUser = true;
+        group = "lojix";
+      };
+      services.lojix = (lojixConfiguration generationA).services.lojix;
 
-    for command in ${lib.concatMapStringsSep " " lib.escapeShellArg commandNames}; do
-      test -x "$defaultLauncher/bin/$command"
-      grep -F "/etc/lojix/commands/$command" "$defaultLauncher/bin/$command"
-      grep -F "/etc/lojix-selected/commands/$command" "$customLauncher/bin/$command"
-      test "$("$commandSourceA/$command")" = "a:$command"
-      test "$("$commandSourceB/$command")" = "b:$command"
-      test "$("$customCommandSourceA/$command")" = "a:$command"
-      if grep -F -e "$commandSourceA" -e "$commandSourceB" "$defaultLauncher/bin/$command"; then
-        echo "launcher embeds a selected command directory" >&2
-        exit 1
-      fi
-      for selectedPackage in ${
-        lib.concatMapStringsSep " " (package: lib.escapeShellArg "${package}") selectedPackagePaths
-      }; do
-        if grep -F "$selectedPackage" "$defaultLauncher/bin/$command"; then
-          echo "launcher embeds a selected package" >&2
-          exit 1
-        fi
-      done
-      test "$(readlink "$commandSourceA/$command")" != "$(readlink "$commandSourceB/$command")"
-    done
+      # The fixture executes the daemon launcher directly with the other seven.
+      # Keeping the synthetic daemon out of the boot target avoids assigning it
+      # a second service-lifecycle behavior solely for this proof.
+      systemd.services.lojix.wantedBy = lib.mkForce [ ];
 
-    test "$(readlink "$commandSourceA/lojix")" = ${lib.escapeShellArg "${generationA.ordinary}/bin/lojix"}
-    test "$(readlink "$commandSourceA/lojix-meta")" = ${lib.escapeShellArg "${generationA.meta}/bin/lojix-meta"}
-    test "$(readlink "$commandSourceB/lojix")" = ${lib.escapeShellArg "${generationB.ordinary}/bin/lojix"}
-    test "$(readlink "$commandSourceB/lojix-meta")" = ${lib.escapeShellArg "${generationB.meta}/bin/lojix-meta"}
-    touch "$out"
-  ''
+      specialisation."generation-b".configuration = {
+        services.lojix = {
+          daemonPackage = lib.mkForce generationB.daemon;
+          ordinaryClientPackage = lib.mkForce generationB.ordinary;
+          metaClientPackage = lib.mkForce generationB.meta;
+          offlineToolsPackage = lib.mkForce generationB.offline;
+          bootstrapPackage = lib.mkForce generationB.bootstrap;
+        };
+      };
+    };
+  testScript = ''
+    start_all()
+    machine.wait_for_unit("multi-user.target")
+
+    commands = ${builtins.toJSON commandNames}
+    selected_packages = ${builtins.toJSON (map toString selectedPackagePaths)}
+    default_launcher = "${defaultLauncher}"
+    custom_launcher = "${customLauncher}"
+    custom_command_source = "${customCommandSource customConfigurationA}"
+
+    for command in commands:
+        machine.succeed(
+            f"grep -F /etc/lojix/commands/{command} {default_launcher}/bin/{command}"
+        )
+        machine.succeed(
+            f"grep -F /etc/lojix-selected/commands/{command} {custom_launcher}/bin/{command}"
+        )
+        assert machine.succeed(f"{custom_command_source}/{command}").strip() == f"a:{command}"
+        for selected_package in selected_packages:
+            machine.fail(f"grep -F {selected_package} {default_launcher}/bin/{command}")
+
+    def observe(expected):
+        command_directory = machine.succeed("readlink -f /etc/lojix/commands").strip()
+        targets = {}
+        outputs = {}
+        for command in commands:
+            launcher = machine.succeed(f"command -v {command}").strip()
+            assert launcher == f"/run/current-system/sw/bin/{command}", (
+                f"{command} resolved outside the active system PATH: {launcher!r}"
+            )
+            targets[command] = machine.succeed(
+                f"readlink -f /etc/lojix/commands/{command}"
+            ).strip()
+            outputs[command] = machine.succeed(command).strip()
+            assert outputs[command] == f"{expected}:{command}", (
+                f"{command} executed the wrong generation: {outputs[command]!r}"
+            )
+        assert outputs["lojix"] == f"{expected}:lojix"
+        assert outputs["lojix-meta"] == f"{expected}:lojix-meta"
+        return command_directory, targets
+
+    base_system = machine.succeed("readlink -f /run/current-system").strip()
+    a_directory, a_targets = observe("a")
+
+    generation_b = machine.succeed(
+        "readlink -f /run/current-system/specialisation/generation-b"
+    ).strip()
+    machine.succeed(f"{generation_b}/bin/switch-to-configuration test")
+    b_directory, b_targets = observe("b")
+    assert b_directory != a_directory, "the real /etc command-directory link did not switch A to B"
+    for command in commands:
+        assert b_targets[command] != a_targets[command], (
+            f"the real /etc target for {command} did not switch A to B"
+        )
+
+    machine.succeed(f"{base_system}/bin/switch-to-configuration test")
+    rollback_directory, rollback_targets = observe("a")
+    assert rollback_directory == a_directory, "the real /etc command-directory link did not roll back to A"
+    assert rollback_targets == a_targets, "the eight real /etc targets did not roll back together"
+  '';
+}
