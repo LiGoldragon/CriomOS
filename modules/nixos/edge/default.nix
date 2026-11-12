@@ -142,18 +142,6 @@ mkIf behavesAs.edge {
     # a prompt: NetworkManager asks the most recently started agent first.
     # Untested; removable on its own if it does not help.
     nm-applet.enable = config.networking.networkmanager.enable;
-
-    regreet = {
-      enable = size.min;
-      settings = {
-        GTK = {
-          application_prefer_dark_theme = true;
-          cursor_theme_name = "Adwaita";
-          icon_theme_name = lib.mkForce "Papirus-Dark";
-          theme_name = "Adwaita";
-        };
-      };
-    };
   };
 
   xdg.portal = {
@@ -246,7 +234,18 @@ mkIf behavesAs.edge {
   };
 
   services = {
-    displayManager.sessionPackages = [ pkgs.niri ];
+    displayManager = {
+      sessionPackages = [ pkgs.niri ];
+      regreet = {
+        enable = size.min;
+        settings.GTK = {
+          application_prefer_dark_theme = true;
+          cursor_theme_name = "Adwaita";
+          icon_theme_name = lib.mkForce "Papirus-Dark";
+          theme_name = "Adwaita";
+        };
+      };
+    };
     avahi.enable = size.min;
 
     power-profiles-daemon.enable = false;
