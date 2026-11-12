@@ -92,6 +92,11 @@ in
 
     kernelPackages = pkgs.linuxPackages_latest;
 
+    # /tmp lives on the root disk, so a build that outgrows memory still
+    # fits; it is emptied at every boot, so what an interrupted run leaves
+    # there does not outlive the boot it was made in.
+    tmp.cleanOnBoot = true;
+
     supportedFilesystems = mkOverride 50 (
       [
         "xfs"
