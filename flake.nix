@@ -197,6 +197,7 @@
       callCheck = path: pkgs.callPackage path { inherit inputs; };
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
+          home-manager-unit-lifetime = callCheck ./checks/home-manager-unit-lifetime;
           tailnet-declaration = callCheck ./checks/tailnet-declaration;
           tailnet-enrollment = callCheck ./checks/tailnet-enrollment;
           image-exchange-keys-scoped-to-co-hosts = callCheck ./checks/image-exchange-keys-scoped-to-co-hosts;
