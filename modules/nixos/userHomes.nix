@@ -44,9 +44,14 @@ let
 in
 {
   # A Home profile installation on a slow disk runs past the upstream
-  # five-minute activation deadline; the allowance is bounded.
+  # five-minute activation deadline; the allowance is bounded.  Its own /tmp
+  # holds the profile tree `nix profile` builds and leaves behind there, about
+  # a million entries for a full Home, and goes when the service ends.
   systemd.services = lib.mapAttrs' (name: _: lib.nameValuePair "home-manager-${name}" {
-    serviceConfig.TimeoutStartSec = lib.mkForce "20min";
+    serviceConfig = {
+      TimeoutStartSec = lib.mkForce "20min";
+      PrivateTmp = true;
+    };
   }) homeUsers;
 
   home-manager = {
