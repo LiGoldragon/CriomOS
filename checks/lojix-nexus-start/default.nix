@@ -9,7 +9,7 @@
 # no argument-passing unit can reach a bound socket.
 let
   inherit (pkgs.stdenv.hostPlatform) system;
-  lojixPackage = inputs.lojix.packages.${system}.default;
+  lojixPackages = inputs.lojix.packages.${system};
 in
 pkgs.testers.nixosTest {
   name = "lojix-nexus-start";
@@ -27,7 +27,11 @@ pkgs.testers.nixosTest {
       };
       services.lojix = {
         enable = true;
-        package = lojixPackage;
+        daemonPackage = lojixPackages.lojix-nexus;
+        ordinaryClientPackage = lojixPackages.lojix;
+        metaClientPackage = lojixPackages.lojix-meta;
+        offlineToolsPackage = lojixPackages.offline-tools;
+        bootstrapPackage = lojixPackages.lojix-bootstrap;
         user = "lojix";
         group = "lojix";
         nexusHost = "lojix-nexus-start";
@@ -40,14 +44,14 @@ pkgs.testers.nixosTest {
 
     # The unit runs the pinned package's Nexus with no argument at all.
     machine.succeed(
-        "systemctl show lojix.service --property=ExecStart --value | grep -F 'argv[]=${lojixPackage}/bin/lojix-nexus ;'"
+        "systemctl show lojix.service --property=ExecStart --value | grep -F 'argv[]=${lojixPackages.lojix-nexus}/bin/lojix-nexus ;'"
     )
 
     # One ordinary Query, over the ordinary socket, answered by the typed
     # vocabulary. A fresh store knows no node, so the reply is a typed
     # `Queried` carrying nothing — an answer, not a client or frame failure.
     reply = machine.succeed(
-        "LOJIX_ORDINARY_SOCKET=/run/lojix/ordinary.sock ${lojixPackage}/bin/lojix 'Query.ByNode.{ fixture-cluster fixture-node None }'"
+        "LOJIX_ORDINARY_SOCKET=/run/lojix/ordinary.sock ${lojixPackages.lojix}/bin/lojix 'Query.ByNode.{ fixture-cluster fixture-node None }'"
     )
     machine.log(reply)
     assert reply.startswith("Queried"), f"ordinary Query did not return a typed Queried reply: {reply!r}"

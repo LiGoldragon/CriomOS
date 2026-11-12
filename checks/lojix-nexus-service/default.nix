@@ -8,7 +8,7 @@ let
   inherit (inputs.nixpkgs) lib;
   inherit (pkgs.stdenv.hostPlatform) system;
 
-  lojixPackage = inputs.lojix.packages.${system}.default;
+  lojixPackages = inputs.lojix.packages.${system};
   configuration = lib.nixosSystem {
     inherit system;
     specialArgs = {
@@ -29,7 +29,11 @@ let
         };
         services.lojix = {
           enable = true;
-          package = lojixPackage;
+          daemonPackage = lojixPackages.lojix-nexus;
+          ordinaryClientPackage = lojixPackages.lojix;
+          metaClientPackage = lojixPackages.lojix-meta;
+          offlineToolsPackage = lojixPackages.offline-tools;
+          bootstrapPackage = lojixPackages.lojix-bootstrap;
           user = "lojix-fixture";
           group = "lojix-fixture";
           stateDirectoryPath = "/var/lib/lojix-fixture";
@@ -61,7 +65,7 @@ assert lib.all (
 assert !(builtins.hasAttr "effectTimeoutSeconds" settings);
 # The Nexus takes no argument and no pre-start. Both are asserted at evaluation
 # so a reintroduced argument cannot reach a build.
-assert lojixService.serviceConfig.ExecStart == "${lojixPackage}/bin/lojix-nexus";
+assert lojixService.serviceConfig.ExecStart == "${lojixPackages.lojix-nexus}/bin/lojix-nexus";
 assert (lojixService.serviceConfig.ExecStartPre or [ ]) == [ ];
 pkgs.runCommand "lojix-nexus-service" { } ''
   set -eu
@@ -70,17 +74,17 @@ pkgs.runCommand "lojix-nexus-service" { } ''
   test ${toString (builtins.length resetService.conflicts)} = 1
   test ${lib.escapeShellArg (builtins.elemAt resetService.conflicts 0)} = lojix.service
   test ${lib.escapeShellArg resetService.serviceConfig.ExecStart} = \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-reset-store ResetStore"}
+    ${lib.escapeShellArg "${lojixPackages.offline-tools}/bin/lojix-reset-store ResetStore"}
   test ${lib.escapeShellArg resetService.environment.LOJIX_CONFIGURATION} = \
     ${lib.escapeShellArg settings.resetConfigurationPath}
   test ${lib.escapeShellArg resetWriterCommand} = \
-    ${lib.escapeShellArg "${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg resetConfigurationRequest}"}
+    ${lib.escapeShellArg "${lojixPackages.offline-tools}/bin/lojix-write-configuration ${lib.escapeShellArg resetConfigurationRequest}"}
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_ORDINARY_SOCKET} = \
     ${lib.escapeShellArg settings.ordinarySocketPath}
   test ${lib.escapeShellArg configuration.config.environment.variables.LOJIX_OWNER_SOCKET} = \
     ${lib.escapeShellArg settings.ownerSocketPath}
 
-  ${lojixPackage}/bin/lojix-write-configuration ${lib.escapeShellArg roundtripRequest} \
+  ${lojixPackages.offline-tools}/bin/lojix-write-configuration ${lib.escapeShellArg roundtripRequest} \
     | grep -F 'ConfigurationWritten.{'
   test -s reset-configuration.rkyv
 

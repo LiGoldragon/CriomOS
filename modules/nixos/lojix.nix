@@ -10,6 +10,7 @@ let
     mkIf
     mkOption
     optionalAttrs
+    removePrefix
     types
     ;
   cfg = config.services.lojix;
@@ -26,7 +27,7 @@ let
   # Nexus's own built-in defaults restated so that CriomOS's environment
   # variables, tmpfiles ownership and reset unit name exactly what the Nexus
   # opens; `checks/lojix-nexus-start` witnesses the agreement at runtime.
-  nexusCommand = "${cfg.package}/bin/lojix-nexus";
+  nexusCommand = "${cfg.daemonPackage}/bin/lojix-nexus";
   serviceUserGpgAgentSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
   serviceUserGpgAgentWrapper = pkgs.writeShellScript "lojix-nexus-service-user-gpg-agent" ''
     export SSH_AUTH_SOCK=${serviceUserGpgAgentSocket}
@@ -43,14 +44,81 @@ let
   # unit's own private input, written immediately before the reset and never
   # read by the Nexus.
   resetConfigurationRequest = "ConfigurationWriteRequest.{${cfg.ordinarySocketPath} ${toString cfg.ordinarySocketMode} ${cfg.ownerSocketPath} ${toString cfg.ownerSocketMode} ${cfg.stateDirectoryPath} ${cfg.storePath} ${cfg.nexusHost} NoTestDefaults ${cfg.resetConfigurationPath}}";
+  # These eight names are maintained entrypoints. The generation selects all
+  # of them together even where no in-tree service currently calls one.
+  commandPackages = {
+    lojix = cfg.ordinaryClientPackage;
+    lojix-meta = cfg.metaClientPackage;
+    lojix-nexus = cfg.daemonPackage;
+    lojix-bootstrap = cfg.bootstrapPackage;
+    lojix-write-configuration = cfg.offlineToolsPackage;
+    lojix-inspect-store = cfg.offlineToolsPackage;
+    lojix-reset-store = cfg.offlineToolsPackage;
+    lojix-migrate-configuration = cfg.offlineToolsPackage;
+  };
+  commandNames = builtins.attrNames commandPackages;
+  selectedCommands = pkgs.linkFarm "lojix-selected-commands" (
+    lib.mapAttrsToList (name: package: {
+      inherit name;
+      path = "${package}/bin/${name}";
+    }) commandPackages
+  );
+  commandLaunchers = pkgs.runCommand "lojix-command-launchers" { } (
+    ''
+      mkdir -p "$out/bin"
+    ''
+    + lib.concatStringsSep "\n" (
+      map (name: ''
+        cat > "$out/bin/${name}" <<'EOF'
+        #!${pkgs.runtimeShell}
+        exec ${lib.escapeShellArg "${cfg.commandDirectoryPath}/${name}"} "$@"
+        EOF
+        chmod +x "$out/bin/${name}"
+      '') commandNames
+    )
+  );
+  commandDirectoryEtcName = removePrefix "/etc/" cfg.commandDirectoryPath;
+  commandDirectoryComponents = lib.drop 2 (lib.splitString "/" cfg.commandDirectoryPath);
+  commandDirectoryIsCanonical =
+    lib.hasPrefix "/etc/" cfg.commandDirectoryPath
+    && commandDirectoryComponents != [ ]
+    && lib.all (
+      component: component != "" && component != "." && component != ".."
+    ) commandDirectoryComponents;
 in
 {
   options.services.lojix = {
     enable = mkEnableOption "the Lojix Nexus";
 
-    package = mkOption {
+    daemonPackage = mkOption {
       type = types.package;
-      description = "The versioned Lojix package providing the Nexus, clients, writer, and reset primitive.";
+      description = "The package providing the Lojix Nexus daemon.";
+    };
+
+    ordinaryClientPackage = mkOption {
+      type = types.package;
+      description = "The package providing the ordinary Lojix client.";
+    };
+
+    metaClientPackage = mkOption {
+      type = types.package;
+      description = "The package providing the Lojix owner client.";
+    };
+
+    offlineToolsPackage = mkOption {
+      type = types.package;
+      description = "The package providing Lojix configuration and store maintenance tools.";
+    };
+
+    bootstrapPackage = mkOption {
+      type = types.package;
+      description = "The package providing the Lojix bootstrap command.";
+    };
+
+    commandDirectoryPath = mkOption {
+      type = types.str;
+      default = "/etc/lojix/commands";
+      description = "Generation-owned directory containing the selected executable for every maintained Lojix command.";
     };
 
     user = mkOption {
@@ -170,6 +238,10 @@ in
         message = "services.lojix state and runtime directories must be absolute";
       }
       {
+        assertion = commandDirectoryIsCanonical;
+        message = "services.lojix.commandDirectoryPath must name a canonical directory beneath /etc";
+      }
+      {
         assertion =
           cfg.sshAuthSocket == null
           || (cfg.sshAuthSocket.mode == "service-user-gpg-agent" && cfg.sshAuthSocket.path == null)
@@ -192,6 +264,7 @@ in
             cfg.stateDirectoryPath
             cfg.storePath
             cfg.resetConfigurationPath
+            cfg.commandDirectoryPath
             cfg.nexusHost
           ]
           && (
@@ -203,7 +276,8 @@ in
       }
     ];
 
-    environment.systemPackages = [ cfg.package ];
+    environment.systemPackages = [ commandLaunchers ];
+    environment.etc.${commandDirectoryEtcName}.source = selectedCommands;
     environment.variables = {
       LOJIX_ORDINARY_SOCKET = cfg.ordinarySocketPath;
       LOJIX_OWNER_SOCKET = cfg.ownerSocketPath;
@@ -262,9 +336,9 @@ in
         Group = cfg.group;
         WorkingDirectory = cfg.stateDirectoryPath;
         ExecStartPre = [
-          "${cfg.package}/bin/lojix-write-configuration ${lib.escapeShellArg resetConfigurationRequest}"
+          "${cfg.offlineToolsPackage}/bin/lojix-write-configuration ${lib.escapeShellArg resetConfigurationRequest}"
         ];
-        ExecStart = "${cfg.package}/bin/lojix-reset-store ResetStore";
+        ExecStart = "${cfg.offlineToolsPackage}/bin/lojix-reset-store ResetStore";
         NoNewPrivileges = true;
         PrivateTmp = true;
       };

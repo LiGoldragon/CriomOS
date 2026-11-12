@@ -46,7 +46,8 @@ let
       pkgs.nix
       pkgs.openssh
       pkgs.python3
-      lojix.package
+      lojix.ordinaryClientPackage
+      lojix.metaClientPackage
     ];
     text = ''
       work="$STATE_DIRECTORY"

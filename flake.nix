@@ -219,6 +219,7 @@
           lojix-nexus-service = callCheck ./checks/lojix-nexus-service;
           lojix-nexus-start = callCheck ./checks/lojix-nexus-start;
           lojix-ownership = callCheck ./checks/lojix-ownership;
+          lojix-command-boundary = callCheck ./checks/lojix-command-boundary;
           lojix-fresh-nexus-startup = inputs.lojix.checks.${system}.fresh-daemon-startup;
           criome-daemon-config-roundtrip = callCheck ./checks/criome-daemon-config-roundtrip;
           spirit-role-policy = callCheck ./checks/spirit-role-policy;

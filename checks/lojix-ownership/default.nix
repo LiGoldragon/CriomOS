@@ -11,7 +11,7 @@ let
   rootLocked = lockedInput rootLock;
   homeLocked = lockedInput homeLock;
   sourceIdentity = locked: "${locked.type}:${locked.owner}/${locked.repo}";
-  lojix = inputs.lojix.packages.${system}.default;
+  lojixPackages = inputs.lojix.packages.${system};
   homePackages = inputs.criomos-home.packages.${system} or { };
   homeApps = inputs.criomos-home.apps.${system} or { };
   homeChecks = inputs.criomos-home.checks.${system} or { };
@@ -135,7 +135,7 @@ let
   localUserName = fixture.config.services.lojix.user;
   localUserUid = fixture.config.users.users.${localUserName}.uid;
   expectedRuntimeSshAuthSocket = "/run/user/$(${pkgs.coreutils}/bin/id -u)/gnupg/S.gpg-agent.ssh";
-  expectedNexusCommand = "${lojix}/bin/lojix-nexus";
+  expectedNexusCommand = "${lojixPackages.lojix-nexus}/bin/lojix-nexus";
   explicitSshAuthSocket = "/run/user/explicit/gnupg/S.gpg-agent.ssh";
   explicitSocketFixture = lib.nixosSystem {
     inherit system;
@@ -150,7 +150,11 @@ let
         };
         services.lojix = {
           enable = true;
-          package = lojix;
+          daemonPackage = lojixPackages.lojix-nexus;
+          ordinaryClientPackage = lojixPackages.lojix;
+          metaClientPackage = lojixPackages.lojix-meta;
+          offlineToolsPackage = lojixPackages.offline-tools;
+          bootstrapPackage = lojixPackages.lojix-bootstrap;
           user = "lojix-explicit";
           group = "lojix-explicit";
           stateDirectoryPath = "/var/lib/lojix-explicit";
@@ -198,16 +202,26 @@ let
 in
 assert sourceIdentity (rootLocked "lojix") == "github:LiGoldragon/lojix";
 assert (rootLocked "lojix").rev == inputs.lojix.rev;
-assert lib.getName lojix == "lojix";
+assert lib.getName lojixPackages.lojix == "lojix";
 assert sourceIdentity (rootLocked "criomos-home") == "github:LiGoldragon/CriomOS-home";
-assert !(builtins.hasAttr "lojix" (rootLock.nodes.${rootLock.nodes.${rootLock.root}.inputs."criomos-home"}.inputs or { }));
+assert
+  !(builtins.hasAttr "lojix" (
+    rootLock.nodes.${rootLock.nodes.${rootLock.root}.inputs."criomos-home"}.inputs or { }
+  ));
 assert !(builtins.hasAttr "lojix" homeLock.nodes);
 assert sourceIdentity (rootLocked "orchestrate") == sourceIdentity (homeLocked "orchestrate");
 assert (rootLocked "orchestrate").rev == (homeLocked "orchestrate").rev;
 # schema-rust-source is a transitive node (not a root input) in both locks.
-assert sourceIdentity rootLock.nodes."schema-rust-source".locked == sourceIdentity homeLock.nodes."schema-rust-source".locked;
-assert rootLock.nodes."schema-rust-source".locked.rev == homeLock.nodes."schema-rust-source".locked.rev;
-assert fixture.config.services.lojix.package == lojix;
+assert
+  sourceIdentity rootLock.nodes."schema-rust-source".locked
+  == sourceIdentity homeLock.nodes."schema-rust-source".locked;
+assert
+  rootLock.nodes."schema-rust-source".locked.rev == homeLock.nodes."schema-rust-source".locked.rev;
+assert fixture.config.services.lojix.daemonPackage == lojixPackages.lojix-nexus;
+assert fixture.config.services.lojix.ordinaryClientPackage == lojixPackages.lojix;
+assert fixture.config.services.lojix.metaClientPackage == lojixPackages.lojix-meta;
+assert fixture.config.services.lojix.offlineToolsPackage == lojixPackages.offline-tools;
+assert fixture.config.services.lojix.bootstrapPackage == lojixPackages.lojix-bootstrap;
 assert !(builtins.hasAttr "lojix" homePackages);
 assert !(builtins.hasAttr "lojix-client" homePackages);
 assert !(builtins.hasAttr "lojix-bootstrap" homePackages);
@@ -252,7 +266,8 @@ assert
   };
 # An explicit SSH-agent path needs no wrapper, so this one starts the Nexus
 # directly - still with no argument.
-assert explicitSocketNexus.serviceConfig.ExecStart == "${lojix}/bin/lojix-nexus";
+assert
+  explicitSocketNexus.serviceConfig.ExecStart == "${lojixPackages.lojix-nexus}/bin/lojix-nexus";
 assert builtins.attrNames fixture.config."home-manager".users == [ "li" ];
 assert builtins.any (
   assertion:
@@ -285,15 +300,16 @@ assert
 pkgs.runCommand "lojix-ownership"
   {
     inherit
-      lojix
       homeProjectionBoundary
       liHomeActivation
       ;
+    ordinaryClient = lojixPackages.lojix;
+    metaClient = lojixPackages.lojix-meta;
     nexusWrapper = nexus.serviceConfig.ExecStart;
   }
   ''
-    test -x "$lojix/bin/lojix"
-    test -x "$lojix/bin/lojix-meta"
+    test -x "$ordinaryClient/bin/lojix"
+    test -x "$metaClient/bin/lojix-meta"
     test -e "$homeProjectionBoundary"
     test -e "$liHomeActivation"
     test -x "$nexusWrapper"

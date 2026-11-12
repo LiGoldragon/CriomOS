@@ -45,7 +45,11 @@ lib.mkIf personaDevelopmentHost (
       # decided here.
       services.lojix = {
         enable = true;
-        package = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+        daemonPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.lojix-nexus;
+        ordinaryClientPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.lojix;
+        metaClientPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.lojix-meta;
+        offlineToolsPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.offline-tools;
+        bootstrapPackage = inputs.lojix.packages.${pkgs.stdenv.hostPlatform.system}.lojix-bootstrap;
         user = config.users.users.${localUser}.name;
         group = config.users.users.${localUser}.group;
         nexusHost = config.networking.hostName;
