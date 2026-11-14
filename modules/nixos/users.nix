@@ -58,7 +58,7 @@ let
 
   mkUserUsers = mapAttrs mkUser users;
 
-  rootUserAkses = {
+  rootUserAccess = {
     root = {
       openssh.authorizedKeys.keys = adminSshPublicKeys;
     };
@@ -69,6 +69,6 @@ in
   users = {
     # Edge owns graphical input capability. Headless nodes add no uinput group.
     groups = optionalAttrs needsUinputGroup { uinput = { }; };
-    users = mkUserUsers // rootUserAkses;
+    users = mkUserUsers // rootUserAccess;
   };
 }
