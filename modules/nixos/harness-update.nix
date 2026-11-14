@@ -191,8 +191,8 @@ in
     };
     notifyCommand = mkOption {
       type = types.str;
-      default = "${config.users.users.${lojix.user}.home}/.local/bin/flow-nexus";
-      description = "The Flow client the result is sent with, given one Send datom: the flow-nexus wrapper Home provides, which follows every Flow version.";
+      default = "${config.users.users.${lojix.user}.home}/.local/bin/flow";
+      description = "The Flow client the result is sent with, given one Send datom: the flow wrapper Home provides, which follows every Flow version.";
     };
     notifyAddress = mkOption {
       type = types.str;
