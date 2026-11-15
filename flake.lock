@@ -893,11 +893,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794766367,
-        "narHash": "sha256-xFVXLvalNkUhb+x5kjOKr6CQmgiTxLSstEMrd/e51vM=",
+        "lastModified": 1794768059,
+        "narHash": "sha256-XKpxfKpAjYZtoVz757f5p2etR11HV3R/htYdx1/Eo/s=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "4465255ec1391ea7e489f2b21eee34a11a90436c",
+        "rev": "ee30872b9cd916018e5378b75c189f4bec1ad1e6",
         "type": "github"
       },
       "original": {
@@ -2621,11 +2621,11 @@
     "mind-belief": {
       "flake": false,
       "locked": {
-        "lastModified": 1794762902,
-        "narHash": "sha256-3jTkJKEMtwmU/AbJP3HPYAwedTHPRsvAlGGmP8qIxUc=",
+        "lastModified": 1794767914,
+        "narHash": "sha256-CktV4ixd8+5cnALgqTvaD562IBtR8CG9/n+Oq3jozFs=",
         "owner": "LiGoldragon",
         "repo": "mind-belief",
-        "rev": "5ba0ccd0feb6bc29492a08bf3a9c13fcb4e6fde2",
+        "rev": "a27a6a3633caaf2c172e03e6b2e72a86c9112d5c",
         "type": "github"
       },
       "original": {
@@ -3506,11 +3506,11 @@
     "psyche-belief": {
       "flake": false,
       "locked": {
-        "lastModified": 1794765722,
-        "narHash": "sha256-bqe85RHvV2xGobBGXaE2abY1KKnVcgwdwlwMDdHOQdw=",
+        "lastModified": 1794767909,
+        "narHash": "sha256-juPDCDyUfA21DHGqUHAgM11a94A45s6FscBQ87MDFu8=",
         "owner": "LiGoldragon",
         "repo": "psyche-belief",
-        "rev": "7560e0a8e9f8e379e3d1a350210bfeb2fa32a3d6",
+        "rev": "faf30d66c36f919242f1cbf9aaf4c5195271b5f7",
         "type": "github"
       },
       "original": {
