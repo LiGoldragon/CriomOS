@@ -2,6 +2,10 @@
   description = "CriomOS — NixOS platform consuming content-addressed flake inputs from lojix: `system` (the target tuple), `pkgs` (a stable wrapper flake that imports nixpkgs for that system), `horizon` (the per-deploy projected horizon JSON), and `deployment` (operation shape such as home-enabled vs home-off). Each axis caches independently in nix's flake-eval cache: pkgs eval is reused across deploys with the same system; horizon/deployment changes don't touch pkgs.";
 
   inputs = {
+    # The immutable source for the bounded semantic-navigation trial. Its
+    # pin lives in flake.lock; packages/repository-analysis asserts the trial.
+    repository-analysis-flow.url = "github:LiGoldragon/flow";
+
     nixpkgs.url = "github:LiGoldragon/nixpkgs";
 
     blueprint.url = "github:numtide/blueprint";

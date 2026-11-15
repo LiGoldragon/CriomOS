@@ -1,0 +1,14 @@
+{
+  "revision": "37980e10bcb8325d9a68c580e0d22c73061bb267",
+  "threads": 2,
+  "excludeVendoredLibraries": true,
+  "analysis": {
+    "checkOnSave": false,
+    "cargo": {
+      "allTargets": true,
+      "extraArgs": ["--locked", "--offline"],
+      "buildScripts": { "enable": false }
+    },
+    "procMacro": { "enable": false }
+  }
+}
