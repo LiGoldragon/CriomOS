@@ -35,7 +35,7 @@ assert lib.assertMsg (source.rev == trial.revision)
   "repository-analysis: the locked source must match trial.json's revision";
 pkgs.runCommand "flow-semantic-index-${source.shortRev}"
   {
-    nativeBuildInputs = [ toolchain pkgs.rust-analyzer pkgs.scip pkgs.time ];
+    nativeBuildInputs = [ toolchain pkgs.rust-analyzer-unwrapped pkgs.scip pkgs.time ];
     CARGO_NET_OFFLINE = "true";
     passthru = {
       inherit source vendor configuration;
@@ -51,10 +51,41 @@ pkgs.runCommand "flow-semantic-index-${source.shortRev}"
     cp -r ${source} "$NIX_BUILD_TOP/source"
     chmod -R u+w "$NIX_BUILD_TOP/source"
     cd "$NIX_BUILD_TOP/source"
+    export CARGO_TARGET_DIR="$NIX_BUILD_TOP/compilation-refused"
+    export RUST_SRC_PATH="${toolchain}/lib/rustlib/src/rust/library"
+    # Compiler observation is permitted; code generation is not. Log every
+    # invocation, including Cargo's version/print probes, and fail closed on
+    # any invocation without a print-only or version request. Both RUSTC and
+    # PATH point here so the metadata loader cannot bypass this evidence.
+    mkdir "$NIX_BUILD_TOP/observed-toolchain"
+    cat > "$NIX_BUILD_TOP/observed-toolchain/rustc" <<'GUARD'
+    #!${pkgs.runtimeShell}
+    printf '%q ' "$@" >> "$out/compiler-invocations.txt"
+    printf '\n' >> "$out/compiler-invocations.txt"
+    observation=false
+    for argument in "$@"; do
+      case "$argument" in
+        --emit*|-o|--out-dir*) echo "Compilation refused" >&2; exit 1 ;;
+        --print*|-vV|--version) observation=true ;;
+      esac
+    done
+    if [ "$observation" != true ]; then
+      echo "Compilation refused" >&2
+      exit 1
+    fi
+    exec ${toolchain}/bin/rustc "$@"
+    GUARD
+    chmod +x "$NIX_BUILD_TOP/observed-toolchain/rustc"
+    export out RUSTC="$NIX_BUILD_TOP/observed-toolchain/rustc"
+    export PATH="$NIX_BUILD_TOP/observed-toolchain:$PATH"
     cp ${configuration} "$out/analysis.json"
     cp ${./trial.json} "$out/trial.json"
     rust-analyzer --version > "$out/analyzer-version.txt"
     rustc --version > "$out/toolchain-version.txt"
+    cargo metadata --locked --offline --format-version 1 > "$out/metadata.json"
+    printf '%s\n' "$CARGO_TARGET_DIR" > "$out/target-directory.txt"
+    printf '%s\n' 'Build-script cfg/env/OUT_DIR and procedural-macro expansions are omitted.' \
+      > "$out/coverage-limitations.txt"
     ${lib.getExe' pkgs.time "time"} -v -o "$out/index-time.txt" \
       rust-analyzer scip . --config-path ${configuration} \
       --num-threads ${toString trial.threads} --output "$out/index.scip" \
@@ -65,4 +96,5 @@ pkgs.runCommand "flow-semantic-index-${source.shortRev}"
     # No source edit, lock rewrite or compilation is part of this derivation.
     cmp Cargo.lock ${source}/Cargo.lock
     test ! -d target
+    test ! -d "$CARGO_TARGET_DIR"
   ''
