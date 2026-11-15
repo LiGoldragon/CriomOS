@@ -45,7 +45,8 @@ pkgs.runCommand "flow-semantic-index-${source.shortRev}"
   ''
     export HOME="$NIX_BUILD_TOP/home" CARGO_HOME="$NIX_BUILD_TOP/cargo-home"
     mkdir -p "$HOME" "$CARGO_HOME" "$out"
-    cp ${vendor}/.cargo/config.toml "$CARGO_HOME/config.toml"
+    substitute ${vendor}/.cargo/config.toml "$CARGO_HOME/config.toml" \
+      --replace-fail 'directory = "cargo-vendor-dir"' 'directory = "${vendor}"'
     # The original checkout is immutable. Cargo reads a private writable
     # copy while all source and dependency identities remain declared inputs.
     cp -r ${source} "$NIX_BUILD_TOP/source"
