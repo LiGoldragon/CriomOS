@@ -893,11 +893,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794768059,
-        "narHash": "sha256-XKpxfKpAjYZtoVz757f5p2etR11HV3R/htYdx1/Eo/s=",
+        "lastModified": 1794775757,
+        "narHash": "sha256-fOrBSZGmelN+mdLVaJedBeurYt8fgET6gL/yUatnAFA=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "ee30872b9cd916018e5378b75c189f4bec1ad1e6",
+        "rev": "5893612e7032314ba605cea1e36ce953898902e5",
         "type": "github"
       },
       "original": {
@@ -924,12 +924,12 @@
     "curriculum": {
       "flake": false,
       "locked": {
-        "lastModified": 1794704753,
-        "narHash": "sha256-Dq+CNCm41KNRjCg1HdryDSYxyB+n91HG4IYpZHLSmtM=",
+        "lastModified": 1794774415,
         "owner": "LiGoldragon",
         "repo": "Curriculum",
-        "rev": "60609c55f90432782625275294636a4e396d9497",
-        "type": "github"
+        "rev": "0f848baaeb33289b144a7481270d887dbf918755",
+        "type": "github",
+        "narHash": "sha256-5Dw81U5uHkAQBH0xIA5Vg+vBod/GpsQCgAaxACH6+VE="
       },
       "original": {
         "owner": "LiGoldragon",
@@ -942,12 +942,12 @@
         "base": "base"
       },
       "locked": {
-        "lastModified": 1794704753,
-        "narHash": "sha256-Dq+CNCm41KNRjCg1HdryDSYxyB+n91HG4IYpZHLSmtM=",
+        "lastModified": 1794774415,
         "owner": "LiGoldragon",
         "repo": "Curriculum",
-        "rev": "60609c55f90432782625275294636a4e396d9497",
-        "type": "github"
+        "rev": "0f848baaeb33289b144a7481270d887dbf918755",
+        "type": "github",
+        "narHash": "sha256-5Dw81U5uHkAQBH0xIA5Vg+vBod/GpsQCgAaxACH6+VE="
       },
       "original": {
         "owner": "LiGoldragon",
@@ -1701,12 +1701,12 @@
     "field-belief": {
       "flake": false,
       "locked": {
-        "lastModified": 1794762902,
-        "narHash": "sha256-QMVj8g88zcg6TAizoY4pbDchR0RzCHoUqj6Z8jGh9Jg=",
+        "lastModified": 1794774630,
         "owner": "LiGoldragon",
         "repo": "field-belief",
-        "rev": "7eba46a2d1e70e10dead070d6aa6ab33beaa5d5c",
-        "type": "github"
+        "rev": "4589b80bfa1643bc7320cd8111676ca9279c6d5a",
+        "type": "github",
+        "narHash": "sha256-QMVj8g88zcg6TAizoY4pbDchR0RzCHoUqj6Z8jGh9Jg="
       },
       "original": {
         "owner": "LiGoldragon",
@@ -2621,12 +2621,12 @@
     "mind-belief": {
       "flake": false,
       "locked": {
-        "lastModified": 1794767914,
-        "narHash": "sha256-CktV4ixd8+5cnALgqTvaD562IBtR8CG9/n+Oq3jozFs=",
+        "lastModified": 1794774630,
         "owner": "LiGoldragon",
         "repo": "mind-belief",
-        "rev": "a27a6a3633caaf2c172e03e6b2e72a86c9112d5c",
-        "type": "github"
+        "rev": "4b350ce8c7ef7bc281871b419e75542afc3e687f",
+        "type": "github",
+        "narHash": "sha256-CktV4ixd8+5cnALgqTvaD562IBtR8CG9/n+Oq3jozFs="
       },
       "original": {
         "owner": "LiGoldragon",
@@ -3506,12 +3506,12 @@
     "psyche-belief": {
       "flake": false,
       "locked": {
-        "lastModified": 1794767909,
-        "narHash": "sha256-juPDCDyUfA21DHGqUHAgM11a94A45s6FscBQ87MDFu8=",
+        "lastModified": 1794774630,
         "owner": "LiGoldragon",
         "repo": "psyche-belief",
-        "rev": "faf30d66c36f919242f1cbf9aaf4c5195271b5f7",
-        "type": "github"
+        "rev": "72108fe2e4401d7a175f288e6c97c238b31f4218",
+        "type": "github",
+        "narHash": "sha256-juPDCDyUfA21DHGqUHAgM11a94A45s6FscBQ87MDFu8="
       },
       "original": {
         "owner": "LiGoldragon",
