@@ -179,11 +179,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1794702544,
-        "narHash": "sha256-1g8R0nPaUa5KXNhB5QvOkgcR3SnMEoQWOz3PO+3LYb8=",
+        "lastModified": 1794882800,
+        "narHash": "sha256-6xB6nQDDv+8pAQK/3bMiUzTCKd4ZHzoMYkTfZpx4zPY=",
         "owner": "LiGoldragon",
         "repo": "build-base",
-        "rev": "4ea69d1fc87c95e7c1f54d02b21166ffb3285edd",
+        "rev": "b192e96a97b22b81f5edc09b8ddb439d05c4a4a3",
         "type": "github"
       },
       "original": {
@@ -893,11 +893,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1794941684,
-        "narHash": "sha256-lx1+4R8u2+f4KcaWQYiKJpkKr072tbzKlJdwYs61vK0=",
+        "lastModified": 1794943145,
+        "narHash": "sha256-cCO+3ptUolkHZGuMyqIyAP9CBzWX8zpl7XV6F+7LllE=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "86f31dfb599c03ca63d490af6815b02f4ff415ee",
+        "rev": "902e682537ccbdcd8b1dcaed405b5629aa52d07f",
         "type": "github"
       },
       "original": {
@@ -924,12 +924,12 @@
     "curriculum": {
       "flake": false,
       "locked": {
-        "lastModified": 1794774415,
+        "lastModified": 1794704753,
+        "narHash": "sha256-Dq+CNCm41KNRjCg1HdryDSYxyB+n91HG4IYpZHLSmtM=",
         "owner": "LiGoldragon",
         "repo": "Curriculum",
-        "rev": "0f848baaeb33289b144a7481270d887dbf918755",
-        "type": "github",
-        "narHash": "sha256-5Dw81U5uHkAQBH0xIA5Vg+vBod/GpsQCgAaxACH6+VE="
+        "rev": "60609c55f90432782625275294636a4e396d9497",
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
@@ -943,11 +943,11 @@
       },
       "locked": {
         "lastModified": 1794774415,
+        "narHash": "sha256-5Dw81U5uHkAQBH0xIA5Vg+vBod/GpsQCgAaxACH6+VE=",
         "owner": "LiGoldragon",
         "repo": "Curriculum",
         "rev": "0f848baaeb33289b144a7481270d887dbf918755",
-        "type": "github",
-        "narHash": "sha256-5Dw81U5uHkAQBH0xIA5Vg+vBod/GpsQCgAaxACH6+VE="
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
@@ -1702,11 +1702,11 @@
       "flake": false,
       "locked": {
         "lastModified": 1794774630,
+        "narHash": "sha256-QMVj8g88zcg6TAizoY4pbDchR0RzCHoUqj6Z8jGh9Jg=",
         "owner": "LiGoldragon",
         "repo": "field-belief",
         "rev": "4589b80bfa1643bc7320cd8111676ca9279c6d5a",
-        "type": "github",
-        "narHash": "sha256-QMVj8g88zcg6TAizoY4pbDchR0RzCHoUqj6Z8jGh9Jg="
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
@@ -2174,11 +2174,11 @@
         "translator": "translator"
       },
       "locked": {
-        "lastModified": 1794891331,
-        "narHash": "sha256-8Rl5SeNBGQBv5bFQKqpDpvCJwJXDEQabbeJnvvWOHVU=",
+        "lastModified": 1794942457,
+        "narHash": "sha256-WzPCQiFwiYv/xOfRM6bvXqHY1rU29DeDaNhCvfxhA2A=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "fc7ecd9e1ec60caa4499c7db7676dc3bfe7d9828",
+        "rev": "c0d51dc9765d5c9c6a69f63df56e1ea8f78bb280",
         "type": "github"
       },
       "original": {
@@ -2622,11 +2622,11 @@
       "flake": false,
       "locked": {
         "lastModified": 1794774630,
+        "narHash": "sha256-CktV4ixd8+5cnALgqTvaD562IBtR8CG9/n+Oq3jozFs=",
         "owner": "LiGoldragon",
         "repo": "mind-belief",
         "rev": "4b350ce8c7ef7bc281871b419e75542afc3e687f",
-        "type": "github",
-        "narHash": "sha256-CktV4ixd8+5cnALgqTvaD562IBtR8CG9/n+Oq3jozFs="
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
@@ -3507,11 +3507,11 @@
       "flake": false,
       "locked": {
         "lastModified": 1794774630,
+        "narHash": "sha256-juPDCDyUfA21DHGqUHAgM11a94A45s6FscBQ87MDFu8=",
         "owner": "LiGoldragon",
         "repo": "psyche-belief",
         "rev": "72108fe2e4401d7a175f288e6c97c238b31f4218",
-        "type": "github",
-        "narHash": "sha256-juPDCDyUfA21DHGqUHAgM11a94A45s6FscBQ87MDFu8="
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
