@@ -88,6 +88,19 @@ let
       (mkProjectedUser "remote" true)
     ];
   };
+  singleNoctaliaDeclarationFixture = {
+    home-manager.sharedModules = [
+      ({ options, ... }: {
+        disabledModules = [ (inputs.home-manager + "/modules/programs/noctalia") ];
+        assertions = [
+          {
+            assertion = builtins.length options.programs.noctalia.enable.declarations == 1;
+            message = "Lojix ownership fixture must have one Noctalia enable declaration";
+          }
+        ];
+      })
+    ];
+  };
   multiUserHomeFixture = lib.nixosSystem {
     inherit system;
     specialArgs = {
@@ -97,6 +110,7 @@ let
     };
     modules = [
       inputs.home-manager.nixosModules.home-manager
+      singleNoctaliaDeclarationFixture
       ../../modules/nixos/users.nix
       ../../modules/nixos/userHomes.nix
       {
@@ -114,6 +128,7 @@ let
     };
     modules = [
       inputs.home-manager.nixosModules.home-manager
+      singleNoctaliaDeclarationFixture
       ../../modules/nixos/lojix.nix
       ../../modules/nixos/lojix-persona-development.nix
       ../../modules/nixos/users.nix
