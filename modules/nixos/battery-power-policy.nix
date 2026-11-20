@@ -1,4 +1,4 @@
-{ lib, horizon, ... }:
+{ config, lib, horizon, ... }:
 let
   policy = horizon.node.batteryPowerPolicy or null;
 in
@@ -9,6 +9,7 @@ in
         && policy.low > policy.critical && policy.critical > policy.action;
       message = "Battery power policy requires 0 <= action < critical < low <= 100.";
     } ];
+    systemd.services.upower.restartTriggers = [ config.environment.etc."UPower/UPower.conf".source ];
     services.upower = {
       enable = true;
       usePercentageForPolicy = true;
