@@ -205,6 +205,9 @@ let
       local cur_start cur_end
       cur_start=$(cat "$bat/charge_control_start_threshold")
       cur_end=$(cat "$bat/charge_control_end_threshold")
+      if [ "$cur_start" = "$1" ] && [ "$cur_end" = "$2" ]; then
+        return 0
+      fi
       if [ "$1" -ge "$cur_start" ]; then
         echo "$2" > "$bat/charge_control_end_threshold"
         echo "$1" > "$bat/charge_control_start_threshold"
@@ -212,14 +215,16 @@ let
         echo "$1" > "$bat/charge_control_start_threshold"
         echo "$2" > "$bat/charge_control_end_threshold"
       fi
+      [ "$(cat "$bat/charge_control_start_threshold")" = "$1" ] &&
+        [ "$(cat "$bat/charge_control_end_threshold")" = "$2" ]
     }
     case "''${1:-status}" in
       care)
-        set_thresholds 75 80
+        set_thresholds 75 80 || exit 1
         echo "battery care: 75–80%"
         ;;
       full)
-        set_thresholds 90 95
+        set_thresholds 90 95 || exit 1
         echo "full charge: 90–95%"
         ;;
       status)
@@ -575,21 +580,10 @@ mkIf behavesAs.bareMetal {
 
   };
 
-  # Battery charge thresholds — default to care mode (75–80%).
-  # Runs at boot and after resume; ThinkPad EC persists values across reboots
-  # but re-applying after suspend is belt-and-suspenders.
+  # Boot applies care; post-resume and power-supply events reapply it.
   systemd.services.battery-charge-default = mkIf isThinkpad {
     description = "Set battery charge thresholds to care mode";
-    after = [
-      "multi-user.target"
-      "suspend.target"
-      "hibernate.target"
-    ];
-    wantedBy = [
-      "multi-user.target"
-      "suspend.target"
-      "hibernate.target"
-    ];
+    wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${batteryCtl}/bin/battery-ctl care";
@@ -658,6 +652,7 @@ mkIf behavesAs.bareMetal {
     let
       pmBase = {
         powertop.enable = true;
+        resumeCommands = optionalString isThinkpad "${batteryCtl}/bin/battery-ctl care";
       };
     in
     pmBase // (optionalAttrs hasModelSpecificPowerTweaks modelSpecificPowerTweaks."${model}");
@@ -720,6 +715,11 @@ mkIf behavesAs.bareMetal {
       extraRules = ''
         # Battery charge threshold — grant group write so unprivileged users can toggle
         SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
+        # Power-supply events answer charger connection and battery reappearance.
+        ${optionalString isThinkpad ''
+          ACTION=="add|change", SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="${batteryCtl}/bin/battery-ctl care"
+          ACTION=="add", SUBSYSTEM=="power_supply", ATTR{type}=="Battery", RUN+="${batteryCtl}/bin/battery-ctl care"
+        ''}
         # whisrs virtual-keyboard injection
         KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
         KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"
