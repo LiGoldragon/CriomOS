@@ -31,6 +31,7 @@ in
     ./lojix.nix
     ./lojix-persona-development.nix
     ./harness-update.nix
+    ./battery-power-policy.nix
     ./sleep-options.nix
     ./nix
     ./no-periodic-work.nix
