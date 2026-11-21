@@ -61,6 +61,10 @@ let
     (connectedService configuration role).serviceConfig.ExecStart);
   networkSettings = role: lib.last (lib.splitString " "
     enabled.systemd.services."git-publication-${role}-network".serviceConfig.ExecStart);
+  overlayCommandHas = configuration: level:
+    lib.hasInfix
+      (builtins.unsafeDiscardStringContext "${patchedOverlay}/bin/yggdrasil -loglevel ${level}")
+      configuration.systemd.services.yggdrasil.serviceConfig.ExecStart;
   keys = user: builtins.head enabled.users.users.${user}.openssh.authorizedKeys.keys;
 in
 assert disabled.criomos.gitPublication.enqueueCommand == null;
@@ -72,8 +76,8 @@ assert (connectedService enabled "sender").serviceConfig.Type == "notify";
 assert (connectedService enabled "receiver").serviceConfig.User == "git-publication-receiver";
 assert (connectedService custom "sender").before == [ "fixture-overlay.service" ];
 assert (connectedService custom "receiver").before == [ "fixture-overlay.service" ];
-assert lib.hasInfix "${patchedOverlay}/bin/yggdrasil -loglevel info" enabled.systemd.services.yggdrasil.serviceConfig.ExecStart;
-assert lib.hasInfix "${patchedOverlay}/bin/yggdrasil -loglevel debug" custom.systemd.services.yggdrasil.serviceConfig.ExecStart;
+assert overlayCommandHas enabled "info";
+assert overlayCommandHas custom "debug";
 assert enabled.systemd.services.git-publication-sender-network.wantedBy == [ "multi-user.target" ];
 assert enabled.systemd.paths.git-publication-deliver.wantedBy == [ "multi-user.target" ];
 assert enabled.systemd.services.git-publication-deliver.wantedBy == [];
