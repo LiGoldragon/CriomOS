@@ -108,6 +108,21 @@ let
         ExecStart = "${pkgs.python3}/bin/python3 -B ${./git-publication}/network.py ${settings}";
       };
     };
+  watchConnected = role: marker: user:
+    let
+      python = pkgs.python3.withPackages (packages: [ packages.systemd-python ]);
+      settings = configuration "${role}-connected" (cfg.overlayJournal // { wake = marker; });
+    in {
+      wantedBy = [ "multi-user.target" ];
+      before = [ cfg.overlayJournal.unit ];
+      after = [ "systemd-journald.service" "systemd-tmpfiles-setup.service" ];
+      serviceConfig = {
+        Type = "notify";
+        User = user;
+        SupplementaryGroups = [ "systemd-journal" ];
+        ExecStart = "${python}/bin/python3 -B ${./git-publication}/connected.py ${settings}";
+      };
+    };
   listenForReturn = endpoint: command: user: {
     wantedBy = endpoint.reconnectTargets;
     partOf = endpoint.reconnectTargets;
@@ -126,6 +141,18 @@ let
 in
 {
   options.criomos.gitPublication = {
+    overlayJournal = {
+      unit = mkOption {
+        type = types.strMatching "[a-zA-Z0-9_.@-]+[.]service";
+        default = "yggdrasil.service";
+        description = "System service whose journal announces overlay peer connections.";
+      };
+      messagePattern = mkOption {
+        type = types.str;
+        default = "^[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} Connected (inbound|outbound): ";
+        description = "Regular expression selecting a new direct-peer Connected journal message.";
+      };
+    };
     repositories = mkOption {
       type = types.listOf (types.strMatching "[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+");
       default = [];
@@ -187,6 +214,7 @@ in
       ];
       systemd.services.git-publication-sender-network =
         watchNetwork "sender" wake cfg.sender "git" { inherit outbox; };
+      systemd.services.git-publication-sender-connected = watchConnected "sender" wake "git";
       systemd.services.git-publication-sender-return = listenForReturn cfg.sender kick "git";
       systemd.paths.git-publication-deliver = {
         wantedBy = [ "multi-user.target" ];
@@ -220,6 +248,8 @@ in
       systemd.tmpfiles.rules = [ "d ${receiverWakeDirectory} 0770 ${receiverName} ${receiverName} -" ];
       systemd.services.git-publication-receiver-network =
         watchNetwork "receiver" receiverWake cfg.receiver receiverName {};
+      systemd.services.git-publication-receiver-connected =
+        watchConnected "receiver" receiverWake receiverName;
       systemd.services.git-publication-receiver-return =
         listenForReturn cfg.receiver receiverKick receiverName;
       systemd.services.sshd.postStart = lib.mkAfter ''${receiverKick} </dev/null'';

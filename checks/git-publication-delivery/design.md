@@ -24,7 +24,9 @@ flowchart LR
     a --> b["Publication outbox: retain exact update"]
     ss["Sender observer starts with a queued publication"] --> dr["Drain pending publications"]
     sn["Sender network announces a configured return"] --> dr
+    sc["Sender overlay journals a direct peer Connected"] --> dr
     rn["Receiver network or SSH announces readiness"] --> w["Authenticated sender wake"]
+    rc["Receiver overlay journals a direct peer Connected"] --> w
     cr["Curriculum binds its admission socket"] --> w
     b --> dr
     dr --> s["Restricted SSH receive command"]
@@ -37,6 +39,6 @@ flowchart LR
 
 The outbox and Curriculum admission cover the handoff’s two durable states. The receive command forwards the publication and returns the consumer’s admission; it holds no third copy. A refusal, unreachable consumer or lost reply leaves the sender's record for replay. The wake command marks pending delivery and returns through its exit status.
 
-Deployment supplies the receiver host, stream selectors and outbox directory. The landed transport accepts a configurable receiver and repository list and still fixes the ref and outbox path; the route configuration is a separate change. The sender observer wakes the drain once on start if a publication is queued. Both network observers then act on Linux link and route notifications for the configured peer path. The receiver also wakes when its SSH service announces readiness or its Curriculum listener binds. A network owner can announce additional returns by starting a configured target, including a recovery invisible to the local route. No host wiring is part of this release.
+Deployment supplies the receiver host, stream selectors and outbox directory. The landed transport accepts a configurable receiver and repository list and still fixes the ref and outbox path; the route configuration is a separate change. The sender observer wakes the drain once on start if a publication is queued. Both network observers then act on Linux link and route notifications for the configured peer path. The receiver also wakes when its SSH service announces readiness or its Curriculum listener binds. A network owner can announce additional returns by starting a configured target, including a recovery invisible to the local route. The Connected observers follow new entries from the configured journal unit and message pattern; Yggdrasil's log level is also configured. Each role marks its existing one-attempt service; the configured SSH command budget covers path formation. A return strictly between peers of neither endpoint has no Connected at either end; the record waits for the next wake. The patched Yggdrasil package is shared by every host; this release does not switch them.
 
 **Proof:** The targeted Nix check exercises Git admission, transport failures and replay on sender startup; `ssh_witness.py` exercises authenticated storage and wake across a loopback listener; `curriculum_witness.py` exercises the real Curriculum binary’s refusal, durable admission and deduplication.

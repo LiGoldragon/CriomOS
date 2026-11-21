@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   horizon,
@@ -55,61 +56,69 @@ let
 
 in
 {
-  environment.systemPackages = [ package ];
-
-  networking.firewall = {
-    allowedUDPPorts = [ ports.multicast ];
-    allowedTCPPorts = [ ports.linkLocalTCP ];
-    trustedInterfaces = [ interfaceName ];
+  options.criomos.yggdrasil.logLevel = lib.mkOption {
+    type = lib.types.enum [ "error" "warn" "info" "debug" "trace" ];
+    default = "info";
+    description = "Yggdrasil log level. Publication Connected wakes require info, debug or trace.";
   };
 
-  systemd = {
-    services = {
-      yggdrasil = {
-        description = "Yggdrasil Network Service";
-        bindsTo = [ "network-online.target" ];
-        after = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
+  config = {
+    environment.systemPackages = [ package ];
 
-        preStart = ''
-          ${optionalString seedYggdrasil seedYggdrasilScript} 
-          ${pkgs.jq}/bin/jq --slurp add ${preCriadJson} ${configFile} > ${combinedConfigJson}
-        '';
-
-        postStart = optionalString seedYggdrasil "${yggCtlExec} -json getself > ${pubKeyJson}";
-
-        serviceConfig = {
-          ExecStart = ''
-            ${yggExec} -useconffile ${combinedConfigJson}
-          '';
-
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-          Restart = "always";
-
-          StateDirectory = subDirName;
-          RuntimeDirectory = subDirName;
-          RuntimeDirectoryMode = "0750";
-
-          AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
-          CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
-          SecureBits = "keep-caps";
-          DynamicUser = true;
-          MemoryDenyWriteExecute = true;
-          ProtectControlGroups = true;
-          ProtectHome = "tmpfs";
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          SystemCallArchitectures = "native";
-          SystemCallFilter = [
-            "@system-service"
-            "~@privileged @keyring"
-          ];
-        };
-      };
+    networking.firewall = {
+      allowedUDPPorts = [ ports.multicast ];
+      allowedTCPPorts = [ ports.linkLocalTCP ];
+      trustedInterfaces = [ interfaceName ];
     };
 
+    systemd = {
+      services = {
+        yggdrasil = {
+          description = "Yggdrasil Network Service";
+          bindsTo = [ "network-online.target" ];
+          after = [ "network-online.target" ];
+          wantedBy = [ "multi-user.target" ];
+
+          preStart = ''
+            ${optionalString seedYggdrasil seedYggdrasilScript}
+            ${pkgs.jq}/bin/jq --slurp add ${preCriadJson} ${configFile} > ${combinedConfigJson}
+          '';
+
+          postStart = optionalString seedYggdrasil "${yggCtlExec} -json getself > ${pubKeyJson}";
+
+          serviceConfig = {
+            ExecStart = ''
+              ${yggExec} -loglevel ${config.criomos.yggdrasil.logLevel} -useconffile ${combinedConfigJson}
+            '';
+
+            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+            Restart = "always";
+
+            StateDirectory = subDirName;
+            RuntimeDirectory = subDirName;
+            RuntimeDirectoryMode = "0750";
+
+            AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
+            CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
+            SecureBits = "keep-caps";
+            DynamicUser = true;
+            MemoryDenyWriteExecute = true;
+            ProtectControlGroups = true;
+            ProtectHome = "tmpfs";
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            SystemCallArchitectures = "native";
+            SystemCallFilter = [
+              "@system-service"
+              "~@privileged @keyring"
+            ];
+          };
+        };
+      };
+
+    };
   };
 }

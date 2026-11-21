@@ -5,6 +5,22 @@ let
     inherit (pkgs.stdenv.hostPlatform) system;
     modules = [
       ../../modules/nixos/git-publication.nix
+      ../../modules/nixos/network/yggdrasil.nix
+      {
+        _module.args = {
+          horizon.node.keys.yggdrasil = { };
+          constants = {
+            fileSystem.yggdrasil = {
+              preCriadJson = "/var/lib/yggdrasil/fixture.json";
+              subDirName = "yggdrasil";
+              pubKeyJson = "/var/lib/yggdrasil/public.json";
+              interfaceName = "ygg-fixture";
+              combinedConfigJson = "/var/lib/yggdrasil/combined.json";
+            };
+            network.yggdrasil.ports = { linkLocalTCP = 10001; multicast = 9001; };
+          };
+        };
+      }
       { system.stateVersion = "26.05"; }
       extra
     ];
@@ -18,11 +34,13 @@ let
     identityFile = "/run/credentials/publication";
     authorizedKeys = [ "ssh-ed25519 AAAA" ];
   };
-  enabled = configFor {
+  enabledFor = overlay: configFor {
     services.openssh.enable = true;
     users.groups.git = {};
     users.users.git = { isSystemUser = true; group = "git"; };
+    criomos.yggdrasil.logLevel = overlay.logLevel;
     criomos.gitPublication = {
+      inherit (overlay) overlayJournal;
       repositories = [ "sample/psyche" "sample/mind" "sample/field" ];
       sender = endpoint;
       receiver = endpoint // {
@@ -31,7 +49,16 @@ let
       };
     };
   };
+  enabled = enabledFor { overlayJournal = { }; logLevel = "info"; };
+  custom = enabledFor {
+    overlayJournal = { unit = "fixture-overlay.service"; messagePattern = "^Fixture peer up: "; };
+    logLevel = "debug";
+  };
   value = lib.escapeShellArg;
+  patchedOverlay = pkgs.callPackage ../../packages/yggdrasil-overlay { };
+  connectedService = configuration: role: configuration.systemd.services."git-publication-${role}-connected";
+  connectedSettings = configuration: role: lib.last (lib.splitString " "
+    (connectedService configuration role).serviceConfig.ExecStart);
   networkSettings = role: lib.last (lib.splitString " "
     enabled.systemd.services."git-publication-${role}-network".serviceConfig.ExecStart);
   keys = user: builtins.head enabled.users.users.${user}.openssh.authorizedKeys.keys;
@@ -39,6 +66,14 @@ in
 assert disabled.criomos.gitPublication.enqueueCommand == null;
 assert !(disabled.systemd.paths ? git-publication-deliver);
 assert enabled.criomos.gitPublication.enqueueCommand != null;
+assert !(disabled.systemd.services ? git-publication-sender-connected);
+assert !(disabled.systemd.services ? git-publication-receiver-connected);
+assert (connectedService enabled "sender").serviceConfig.Type == "notify";
+assert (connectedService enabled "receiver").serviceConfig.User == "git-publication-receiver";
+assert (connectedService custom "sender").before == [ "fixture-overlay.service" ];
+assert (connectedService custom "receiver").before == [ "fixture-overlay.service" ];
+assert lib.hasInfix "${patchedOverlay}/bin/yggdrasil -loglevel info" enabled.systemd.services.yggdrasil.serviceConfig.ExecStart;
+assert lib.hasInfix "${patchedOverlay}/bin/yggdrasil -loglevel debug" custom.systemd.services.yggdrasil.serviceConfig.ExecStart;
 assert enabled.systemd.services.git-publication-sender-network.wantedBy == [ "multi-user.target" ];
 assert enabled.systemd.paths.git-publication-deliver.wantedBy == [ "multi-user.target" ];
 assert enabled.systemd.services.git-publication-deliver.wantedBy == [];
@@ -61,8 +96,21 @@ pkgs.runCommand "git-publication-delivery" { nativeBuildInputs = [ pkgs.git pkgs
   assert sender["wake"] == "${enabled.systemd.paths.git-publication-deliver.pathConfig.PathExists}"
   assert "outbox" not in receiver
   PYTHON
+  python3 -B - ${value (connectedSettings enabled "sender")} ${value (connectedSettings enabled "receiver")} <<'PYTHON'
+  import json
+  from pathlib import Path
+  import sys
+
+  sender, receiver = (json.loads(Path(path).read_bytes()) for path in sys.argv[1:])
+  assert sender["wake"] == "${enabled.systemd.paths.git-publication-deliver.pathConfig.PathExists}"
+  assert receiver["wake"] == "${enabled.systemd.paths.git-publication-reconnect.pathConfig.PathExists}"
+  assert sender["unit"] == receiver["unit"] == "yggdrasil.service"
+  PYTHON
+  "${patchedOverlay}/bin/yggdrasil" -version
   {
     python3 -B ${./.}/contract.py ${../../modules/nixos/git-publication/delivery.py}
     python3 -B ${./.}/network_witness.py ${../../modules/nixos/git-publication}
+    python3 -B ${./.}/journal_witness.py ${../../modules/nixos/git-publication} \
+      ${value (connectedSettings enabled "sender")} ${value (connectedSettings custom "receiver")}
   } | tee "$out"
 ''
