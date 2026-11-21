@@ -835,7 +835,7 @@
         "field-clj": "field-clj",
         "field-luna-research-source": "field-luna-research-source",
         "field-monitoring-source": "field-monitoring-source",
-        "flow-0550": "flow-0550",
+        "flow-0603": "flow-0603",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
         "herdr": "herdr",
@@ -913,11 +913,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1795237509,
-        "narHash": "sha256-XbTZLihQY4/8eDPJaZGICuGNQlxQNRCPTL7AxWuXIW8=",
+        "lastModified": 1795237793,
+        "narHash": "sha256-qKIb9n27dR1tZtx2r2thnuF3JvfMuEi0BjzcDh8vcF8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "9b26a75eadfed2098b1e9ea279d72dfe99495100",
+        "rev": "cf89d0da029a72d69270e323a1b9b377d3629e35",
         "type": "github"
       },
       "original": {
@@ -1143,7 +1143,7 @@
       "inputs": {
         "base": [
           "criomos-home",
-          "flow-0550",
+          "flow-0603",
           "translator",
           "base"
         ],
@@ -1190,7 +1190,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0550",
+          "flow-0603",
           "base",
           "nixpkgs"
         ],
@@ -1214,7 +1214,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0550",
+          "flow-0603",
           "migration-predecessor",
           "nixpkgs"
         ],
@@ -1238,7 +1238,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0550",
+          "flow-0603",
           "migration-predecessor",
           "unconfigured-flow",
           "nixpkgs"
@@ -2209,7 +2209,7 @@
         "type": "github"
       }
     },
-    "flow-0550": {
+    "flow-0603": {
       "inputs": {
         "base": "base_3",
         "curriculum": "curriculum",
@@ -3504,7 +3504,7 @@
         "field-belief": "field-belief",
         "flow": [
           "criomos-home",
-          "flow-0550"
+          "flow-0603"
         ],
         "mind-belief": "mind-belief",
         "nixpkgs": [
@@ -5323,7 +5323,7 @@
       "inputs": {
         "base": [
           "criomos-home",
-          "flow-0550",
+          "flow-0603",
           "base"
         ],
         "ethos-zero": "ethos-zero"
