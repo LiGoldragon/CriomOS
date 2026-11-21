@@ -1,4 +1,8 @@
-{ yggdrasil }:
+{ pkgs, ... }:
+
+let
+  inherit (pkgs) yggdrasil;
+in
 
 # Remove this override in the same change that takes a Yggdrasil release
 # carrying the Ironwood repair for a retransmitted authenticated session init.
