@@ -1,4 +1,4 @@
-{ pkgs }:
+{ pkgs, ... }:
 let
   inherit (pkgs) lib;
   synchronization = { master = "master"; replica = "replica"; tree = "Code"; };
