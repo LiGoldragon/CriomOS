@@ -152,6 +152,7 @@ def deliver(configuration):
 
 
 def reconnect(configuration):
+    Path(configuration["wake"]).unlink(missing_ok=True)
     if call(configuration, b"") != b"":
         raise ValueError("wake returned unexpected output")
 

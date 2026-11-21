@@ -5,6 +5,8 @@ let
   protocol = ./git-publication/delivery.py;
   senderName = "git-publication-wake";
   receiverName = "git-publication-receiver";
+  receiverWakeDirectory = "/run/git-publication-reconnect";
+  receiverWake = "${receiverWakeDirectory}/ready";
   wakeDirectory = "/var/lib/git-publication-wake";
   outbox = "/var/lib/git-publication-outbox";
   wake = "${wakeDirectory}/ready";
@@ -29,6 +31,22 @@ let
     authorizedKeys = mkOption {
       type = types.nonEmptyListOf (types.strMatching "ssh-ed25519 [a-zA-Z0-9+/=]+");
       description = "Peer public keys authorized for this role's single forced command.";
+    };
+    network = {
+      peerAddress = mkOption {
+        type = types.strMatching "[0-9a-fA-F:.]+";
+        description = "Numeric peer address whose local route the observer watches.";
+      };
+      links = mkOption {
+        type = types.listOf (types.strMatching "[a-zA-Z0-9_.:-]+");
+        default = [];
+        description = "Local links whose return calls for replay while the peer route is usable.";
+      };
+    };
+    reconnectTargets = mkOption {
+      type = types.listOf (types.strMatching "[a-zA-Z0-9_.@-]+[.]target");
+      default = [];
+      description = "Targets started by the configured network owner on an additional return event.";
     };
     timeout = mkOption {
       type = types.ints.positive;
@@ -70,9 +88,37 @@ let
     inherit (cfg.receiver) curriculumEndpoint admissionTimeout;
   }) "receive";
   reconnect = commandFor (configuration "receiver" {
+    wake = receiverWake;
     inherit (cfg.receiver) timeout;
     peerCommand = peer senderName cfg.receiver;
   }) "reconnect";
+  receiverKick = commandFor (configuration "ready" { wake = receiverWake; }) "wake";
+  watchNetwork = role: marker: endpoint: user:
+    let
+      settings = configuration "${role}-network" {
+        wake = marker;
+        inherit (endpoint) network;
+        ip = "${pkgs.iproute2}/bin/ip";
+      };
+    in {
+      wantedBy = [ "multi-user.target" ];
+      after = [ "systemd-tmpfiles-setup.service" ];
+      serviceConfig = {
+        User = user;
+        ExecStart = "${pkgs.python3}/bin/python3 -B ${./git-publication}/network.py ${settings}";
+      };
+    };
+  listenForReturn = endpoint: command: user: {
+    wantedBy = endpoint.reconnectTargets;
+    partOf = endpoint.reconnectTargets;
+    after = [ "systemd-tmpfiles-setup.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = user;
+      ExecStart = command;
+    };
+  };
   credentials = endpoint: {
     LoadCredential = "publication-key:${endpoint.identityFile}";
   };
@@ -103,10 +149,11 @@ in
         default = 10;
         description = "Maximum seconds to wait for Curriculum's local admission.";
       };
-      reconnectTargets = mkOption {
-        type = types.listOf (types.strMatching "[a-zA-Z0-9_.@-]+[.]target");
-        default = [];
-        description = "Targets started by the deployment when the receiver can reach the sender again.";
+      readinessMarker = mkOption {
+        type = types.str;
+        default = receiverWake;
+        readOnly = true;
+        description = "Marker that the configured Curriculum listener announces after binding.";
       };
     };
   };
@@ -138,6 +185,8 @@ in
         "d ${outbox} 0700 git git -"
         "d ${wakeDirectory} 2770 ${senderName} ${senderName} -"
       ];
+      systemd.services.git-publication-sender-network = watchNetwork "sender" wake cfg.sender "git";
+      systemd.services.git-publication-sender-return = listenForReturn cfg.sender kick "git";
       systemd.paths.git-publication-deliver = {
         wantedBy = [ "multi-user.target" ];
         pathConfig.PathExists = wake;
@@ -155,6 +204,12 @@ in
       };
     })
     (mkIf cfg.receiver.enable {
+      assertions = [{
+        assertion = builtins.elem (config.systemd.services.sshd.serviceConfig.Type or "") [
+          "notify" "notify-reload"
+        ];
+        message = "Git publication expects the OpenSSH readiness notification before its post-start wake.";
+      }];
       users.groups.${receiverName} = {};
       users.users.${receiverName} = {
         isSystemUser = true;
@@ -162,14 +217,20 @@ in
         shell = pkgs.bashInteractive;
         openssh.authorizedKeys.keys = authenticated receive cfg.receiver.authorizedKeys;
       };
+      systemd.tmpfiles.rules = [ "d ${receiverWakeDirectory} 0770 ${receiverName} ${receiverName} -" ];
+      systemd.services.git-publication-receiver-network =
+        watchNetwork "receiver" receiverWake cfg.receiver receiverName;
+      systemd.services.git-publication-receiver-return =
+        listenForReturn cfg.receiver receiverKick receiverName;
+      systemd.services.sshd.postStart = lib.mkAfter ''${receiverKick} </dev/null'';
+      systemd.paths.git-publication-reconnect = {
+        wantedBy = [ "multi-user.target" ];
+        pathConfig.PathExists = receiverWake;
+      };
       systemd.services.git-publication-reconnect = {
-        wantedBy = [ "multi-user.target" ] ++ cfg.receiver.reconnectTargets;
-        wants = [ "network-online.target" ];
-        after = [ "sshd.service" "network-online.target" "systemd-tmpfiles-setup.service" ];
-        partOf = [ "sshd.service" ] ++ cfg.receiver.reconnectTargets;
+        after = [ "sshd.service" "systemd-tmpfiles-setup.service" ];
         serviceConfig = credentials cfg.receiver // {
           Type = "oneshot";
-          RemainAfterExit = true;
           User = receiverName;
           ExecStart = reconnect;
         };

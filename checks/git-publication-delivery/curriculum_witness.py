@@ -13,13 +13,13 @@ import tempfile
 
 
 @contextmanager
-def listener(binary, socket, admissions, uid):
+def listener(binary, socket, admissions, uid, ready_marker):
     libc = ctypes.CDLL(None, use_errno=True)
     descriptor = libc.inotify_init1(os.O_CLOEXEC)
     assert descriptor >= 0
-    assert libc.inotify_add_watch(descriptor, os.fsencode(socket.parent), 0x100) >= 0
+    assert libc.inotify_add_watch(descriptor, os.fsencode(ready_marker.parent), 0x100) >= 0
     process = subprocess.Popen(
-        [binary, f"{{ {socket} {admissions} {uid} 2000 }}"], stderr=subprocess.PIPE
+        [binary, f"{{ {socket} {admissions} {uid} 2000 Some.{ready_marker} }}"], stderr=subprocess.PIPE
     )
     pidfd = os.pidfd_open(process.pid)
     try:
@@ -28,7 +28,7 @@ def listener(binary, socket, admissions, uid):
             process.stderr.read().decode() if pidfd in ready else "socket readiness timed out"
         )
         os.read(descriptor, 65536)
-        assert socket.is_socket()
+        assert socket.is_socket() and ready_marker.is_file()
         yield
     finally:
         process.terminate()
@@ -36,6 +36,7 @@ def listener(binary, socket, admissions, uid):
         os.close(pidfd)
         os.close(descriptor)
         socket.unlink(missing_ok=True)
+        ready_marker.unlink(missing_ok=True)
 
 
 receiver, binary = map(lambda path: Path(path).resolve(), sys.argv[1:])
@@ -46,6 +47,9 @@ with tempfile.TemporaryDirectory(prefix="admit-proof-") as temporary:
         directory.mkdir()
     socket = runtime / "admit.sock"
     marker = root / "ready"
+    readiness = root / "consumer-ready"
+    readiness.mkdir()
+    ready_marker = readiness / "marker"
     config = root / "delivery.json"
     invoke = [sys.executable, str(receiver), str(config)]
     config.write_text(json.dumps(dict(
@@ -68,23 +72,30 @@ with tempfile.TemporaryDirectory(prefix="admit-proof-") as temporary:
     assert run("receive", data=flat).stdout == b"Refused.Unavailable\n"
     assert (outbox / name).read_bytes() == flat
     assert not list(admissions.iterdir())
-    with listener(binary, socket, admissions, os.getuid() + 1):
+    with listener(binary, socket, admissions, os.getuid() + 1, ready_marker):
         denied = run("deliver")
         assert denied.returncode and b"Refused.Untrusted" in denied.stderr
         assert run("receive", data=flat).stdout == b"Refused.Untrusted\n"
         assert (outbox / name).exists() and not list(admissions.iterdir())
     admitted = admissions / name
-    with listener(binary, socket, admissions, os.getuid()):
+    with listener(binary, socket, admissions, os.getuid(), ready_marker):
         # The receiver admits, but the sender does not see this reply.
         forgotten_reply = run("receive", data=flat)
         assert forgotten_reply.stdout == f"Accepted.{identity}\n".encode()
         assert (outbox / name).read_bytes() == flat
         original = admitted.read_bytes()
         assert b"{ test/belief refs/heads/main }" in original
-    with listener(binary, socket, admissions, os.getuid()):
+    with listener(binary, socket, admissions, os.getuid(), ready_marker):
+        receiver_configuration = root / "reconnect.json"
+        receiver_configuration.write_text(json.dumps(dict(
+            wake=str(ready_marker), timeout=5, peerCommand=invoke + ["wake"],
+        )))
+        wake_reply = subprocess.run([sys.executable, str(receiver), str(receiver_configuration), "reconnect"],
+                                    capture_output=True, timeout=8, check=True)
+        assert not wake_reply.stdout and not ready_marker.exists() and marker.exists()
         replay = run("deliver")
         assert replay.returncode == 0, replay.stderr
         assert not list(outbox.iterdir())
         assert admitted.read_bytes() == original
         assert len(list(admissions.iterdir())) == 1
-    print("Real Curriculum: refusals retained the outbox; a lost admission reply survived consumer restart; replay retired the sender record and kept one admission.")
+    print("Real Curriculum: refusals retained the outbox; a lost admission reply survived consumer restart; its readiness woke replay, retired the sender record and kept one admission.")
