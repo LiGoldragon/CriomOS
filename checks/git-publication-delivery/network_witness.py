@@ -1,8 +1,12 @@
 """Run with unshare -Urn for a real link/route delivery witness."""
 
+from contextlib import contextmanager
+import ctypes
 import ipaddress
 import json
+import os
 from pathlib import Path
+import select
 import shutil
 import subprocess
 import sys
@@ -32,6 +36,32 @@ def state_machine_contract():
     assert len(observed) == 2
     assert returned((True, {"tunnel"}), (True, {"tunnel", "underlay"}))
     assert not returned((False, set()), (False, {"underlay"}))
+
+
+@contextmanager
+def running_sender_observer(configuration, marker):
+    libc = ctypes.CDLL(None, use_errno=True)
+    descriptor = libc.inotify_init1(os.O_CLOEXEC)
+    assert descriptor >= 0
+    try:
+        assert libc.inotify_add_watch(descriptor, os.fsencode(marker.parent), 0x100) >= 0
+        process = subprocess.Popen(
+            [sys.executable, "-B", str(source / "network.py"), str(configuration)],
+            stderr=subprocess.PIPE,
+        )
+        try:
+            with os.fdopen(os.pidfd_open(process.pid), "rb") as exited:
+                ready, _, _ = select.select([descriptor, exited], [], [], 5)
+                assert ready and exited not in ready, (
+                    process.stderr.read().decode() if exited in ready else "sender start wake timed out"
+                )
+                assert os.read(descriptor, 65536) and marker.is_file()
+                yield process
+        finally:
+            process.terminate()
+            process.communicate(timeout=5)
+    finally:
+        os.close(descriptor)
 
 
 def sender_start_contract():
@@ -65,18 +95,33 @@ def sender_start_contract():
 
         start_observer(dict(wake=str(marker)))
         assert not marker.exists()
-        start_observer(configuration)
-        assert marker.exists()
-        subprocess.run(sender + ["deliver"], check=True)
-        assert not marker.exists() and not list(outbox.iterdir())
-        assert len(consumer.observed) == 1
+        observer_config = root / "network.json"
+        observer_config.write_text(json.dumps(dict(
+            configuration, ip=ip, network=dict(peerAddress="127.0.0.1", links=[]),
+        )))
+        queued, = outbox.iterdir()
+        original = queued.read_bytes()
+        consumer.refuse = True
+        with running_sender_observer(observer_config, marker) as original_observer:
+            denied = subprocess.run(sender + ["deliver"], capture_output=True)
+            assert denied.returncode != 0 and b"Refused.Unavailable" in denied.stderr
+            assert not marker.exists() and queued.read_bytes() == original
+        assert original_observer.poll() is not None
+
+        consumer.refuse = False
+        with running_sender_observer(observer_config, marker) as restarted_observer:
+            assert restarted_observer.pid != original_observer.pid
+            subprocess.run(sender + ["deliver"], check=True)
+            assert not marker.exists() and not list(outbox.iterdir())
+        first, second = consumer.observed
+        assert first == second
 
 
 state_machine_contract()
 sender_start_contract()
 if len(sys.argv) == 2:
     print("Network event contract: unrelated states are quiet; route and configured link returns wake once.")
-    print("Sender start: a queued publication drained without a push or network event; empty and receiver startup stayed quiet.")
+    print("Sender-only restart: the same queued publication was admitted and retired without a push or network event; empty and receiver startup stayed quiet.")
     sys.exit(0)
 
 command("link", "set", "lo", "up")
