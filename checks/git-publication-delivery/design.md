@@ -1,8 +1,8 @@
 # Git publication delivery
 
-An accepted update to a configured main stream is one Git event with two receivers. The mirror reconciles a repository to its latest refs: repeated pushes can share one repository-keyed work item, because mirroring reads the current refs when it runs. Curriculum consumes the exact repository, ref, old and new from each update and acknowledges durable storage by event digest. The mirror work queue and the publication outbox stay separate because they retain different things: pending reconciliation and exact events, respectively. Giving mirror jobs the publication outbox’s per-event retirement rule would change the mirror’s contract.
+One accepted Git update serves two receivers. The mirror queues a repository to reconcile its current refs. The publication outbox holds exact updates and retires each one only when Curriculum accepts its own digest. The two queues retain different things.
 
-```ethos
+```ethos sketch
 Types
 [ RepositoryName.String
   ReferenceName.String
@@ -10,27 +10,29 @@ Types
   ReceiverHost.String
   OutboxDirectory.String
   PublicationRoute.{ ReceiverHost Vector<PublicationStream> OutboxDirectory }
-  OldObjectId.String
-  NewObjectId.String
-  Publication.{ RepositoryName ReferenceName OldObjectId NewObjectId }
+  ObjectId.String
+  Publication.{ PublicationStream Old.ObjectId New.ObjectId }
   PublicationDigest.String
-  Reply.[ Stored.PublicationDigest Ready ] ]
+  Announcement.[ PublicationReceived.Publication ]
+  Refusal.[ Untrusted Invalid Unavailable ]
+  Admission.[ Accepted.PublicationDigest Refused.Refusal ] ]
 ```
 
 ```mermaid
 flowchart LR
-    a["Git accepts one configured main update"] --> m["Mirror: queue repository reconciliation"]
-    m --> n["Reconcile latest refs to Git peers"]
-    a --> b["Curriculum: store exact event in configured outbox"]
-    b --> c["Enqueue wakes delivery"]
-    r["Receiver activation or configured reconnect"] --> w["Authenticated wake of sender"]
-    w --> c
-    c --> s["Restricted SSH command at configured receiver"]
-    s --> i["Receiver stores once and syncs"]
-    i --> k["Stored acknowledgement"]
-    k --> x["Sender retires its outbox record"]
+    a["Git accepts one main update"] --> m["Mirror work queue: reconcile latest refs"]
+    a --> b["Publication outbox: retain exact update"]
+    r["Receiver activation or configured reconnect"] --> w["Authenticated sender wake"]
+    b --> s["Restricted SSH receive command"]
+    w --> s
+    s --> c["Announce Publication to configured Curriculum"]
+    c --> i["Compute digest and admit durably once"]
+    i --> k["Return Admission through receive command"]
+    k --> x["Sender retires only on matching Accepted"]
 ```
 
-Deployment supplies the receiver host, the repository/ref streams and the outbox directory. The event’s canonical Datom determines its digest. Failure or a lost acknowledgement leaves the event in the outbox; replay returns the same receipt. Receiver activation, SSH service restart and a configured reconnect target wake delivery. The receipt attests storage; Curriculum separately validates ancestry and publishes a coherent skill-and-role generation.
+The outbox and Curriculum admission cover the handoff’s two durable states. The receive command forwards the publication and returns the consumer’s admission; it holds no third copy. A refusal, unreachable consumer or lost reply leaves the sender's record for replay. The wake command signals delivery through its exit status and carries no reply payload.
 
-**Proof and remaining work:** The isolated prototype proves a real Git fast-forward, filtering, durable storage, lost-acknowledgement recovery and reconnect replay in `checks.x86_64-linux.git-publication-delivery`. The OpenSSH loopback witness in `ssh_witness.py` proves restricted storage and wake using throwaway keys. The prototype takes a configurable receiver and repository list; it still fixes the ref and the outbox path. Expose both through `PublicationRoute` configuration before activation.
+Deployment supplies the receiver host, stream selectors and outbox directory. The landed transport accepts a configurable receiver and repository list and still fixes the ref and outbox path; the route configuration and the sender’s network-return event are separate changes. No host wiring is part of this release.
+
+**Proof:** The targeted Nix check exercises Git admission, transport failures and replay; `ssh_witness.py` exercises authenticated storage and wake across a loopback listener; `curriculum_witness.py` exercises the real Curriculum binary’s refusal, durable admission and deduplication.

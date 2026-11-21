@@ -7,7 +7,6 @@ let
   receiverName = "git-publication-receiver";
   wakeDirectory = "/var/lib/git-publication-wake";
   outbox = "/var/lib/git-publication-outbox";
-  inbox = "/var/lib/git-publication-inbox";
   wake = "${wakeDirectory}/ready";
   sshOptions = {
     peer = mkOption {
@@ -66,9 +65,9 @@ let
     peerCommand = peer receiverName cfg.sender;
   }) "deliver";
   kick = commandFor (configuration "wake" { inherit wake; }) "wake";
-  receive = commandFor (configuration "inbox" {
+  receive = commandFor (configuration "receive" {
     inherit (cfg) repositories;
-    inherit inbox;
+    inherit (cfg.receiver) curriculumEndpoint admissionTimeout;
   }) "receive";
   reconnect = commandFor (configuration "receiver" {
     inherit (cfg.receiver) timeout;
@@ -95,6 +94,15 @@ in
     sender = sshOptions // { enable = mkEnableOption "the Git publication outbox and replay endpoint"; };
     receiver = sshOptions // {
       enable = mkEnableOption "the Git publication receiver and reconnect signal";
+      curriculumEndpoint = mkOption {
+        type = types.strMatching "/.+";
+        description = "Absolute socket path of the local Curriculum publication admission endpoint.";
+      };
+      admissionTimeout = mkOption {
+        type = types.ints.positive;
+        default = 10;
+        description = "Maximum seconds to wait for Curriculum's local admission.";
+      };
       reconnectTargets = mkOption {
         type = types.listOf (types.strMatching "[a-zA-Z0-9_.@-]+[.]target");
         default = [];
@@ -154,7 +162,6 @@ in
         shell = pkgs.bashInteractive;
         openssh.authorizedKeys.keys = authenticated receive cfg.receiver.authorizedKeys;
       };
-      systemd.tmpfiles.rules = [ "d ${inbox} 0700 ${receiverName} ${receiverName} -" ];
       systemd.services.git-publication-reconnect = {
         wantedBy = [ "multi-user.target" ] ++ cfg.receiver.reconnectTargets;
         wants = [ "network-online.target" ];
