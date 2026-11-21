@@ -1,0 +1,23 @@
+{ { [] { criome [] } }
+  { fixture
+    [ { online Installation.{ Uefi [] [] } Max Max
+        Metal.{ X86_64 { 4 None None None None None } }
+        { Qwerty None } { [] None None [] None } { «ssh-ed25519 AAAAfixture» None None }
+        Some.True [] None }
+      { offline Installation.{ Uefi [] [] } Max Max
+        Metal.{ X86_64 { 4 None None None None None } }
+        { Qwerty None } { [] None None [] None } { «ssh-ed25519 AAAAfixture» None None }
+        Some.False [] None }
+      { unspecified Installation.{ Uefi [] [] } Max Max
+        VirtualMachine.{ External.{ provider X86_64 } { 4 None None None None None } None }
+        { Qwerty None } { [] None None [] None } { «ssh-ed25519 AAAAfixture» None None }
+        None [] None }
+      { installer Live.{} Max Max
+        Metal.{ X86_64 { 4 None None None None None } }
+        { Qwerty None } { [] None None [] None } { «ssh-ed25519 AAAAfixture» None None }
+        Some.True [] None }
+      { test-image Installation.{ Uefi [] [] } Max Max
+        VirtualMachine.{ External.{ provider X86_64 } { 4 None None None None None } None }
+        { Qwerty None } { [] None None [] None } { «ssh-ed25519 AAAAfixture» None None }
+        Some.True [ TestVm.{} ] None } ]
+    [] [] [] { Max [] [] [] } } }

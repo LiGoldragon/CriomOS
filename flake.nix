@@ -222,6 +222,9 @@
           lojix-nexus-service = callCheck ./checks/lojix-nexus-service;
           lojix-nexus-start = callCheck ./checks/lojix-nexus-start;
           lojix-ownership = callCheck ./checks/lojix-ownership;
+          host-release-plan = pkgs.callPackage ./checks/host-release-plan {
+            hostReleasePlan = blueprintOutputs.packages.${system}.host-release-plan;
+          };
           lojix-fresh-nexus-startup = inputs.lojix.checks.${system}.fresh-daemon-startup;
           criome-daemon-config-roundtrip = callCheck ./checks/criome-daemon-config-roundtrip;
           spirit-role-policy = callCheck ./checks/spirit-role-policy;

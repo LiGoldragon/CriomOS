@@ -45,6 +45,27 @@ daemon never derives a target attribute, Nix-store URI, SSH destination, or
 builder specification from CriomOS cluster/node names. An explicitly requested
 `root@…` destination is valid, but it is never a default.
 
+## Select hosts for a release
+
+Run this gate before submitting any per-host Evaluate or Deploy requests for
+the rollout. Use the checked, immutable proposal for both the plan and each
+request. The viewpoint is any declared node; it only gives Horizon a place
+from which to project the cluster.
+
+```sh
+nix run "github:LiGoldragon/CriomOS?rev=$revision#host-release-plan" -- "$proposal" "$viewpoint" All
+nix run "github:LiGoldragon/CriomOS?rev=$revision#host-release-plan" -- "$proposal" "$viewpoint" Explicit "$node"
+```
+
+Keep the JSON plan as the roster for both stages. In `All`, persistent
+nodes appear as `Ready` unless Horizon marks them offline, in which case
+they appear as `SkippedOffline`. Installer images and test VMs are reached
+through `Explicit`. `Explicit` emits `Ready` for every named, declared node,
+including an offline one. Each host row carries its projected internal
+hostname. Submit named Lojix requests only for the `Ready` rows, with the
+verified transport pair for each logical node; retain the `SkippedOffline`
+rows in the release result.
+
 ## Network-neutral by construction
 
 CriomOS does NOT enumerate hosts. Cluster + node identity live in the
