@@ -215,6 +215,7 @@
           nix-role-policy = callCheck ./checks/nix-role-policy;
           flake-registry-shape = callCheck ./checks/flake-registry-shape;
           repository-receive-role-policy = callCheck ./checks/repository-receive-role-policy;
+          git-publication-delivery = callCheck ./checks/git-publication-delivery;
           mirror-role-policy = callCheck ./checks/mirror-role-policy;
           lojix-nexus-service = callCheck ./checks/lojix-nexus-service;
           lojix-nexus-start = callCheck ./checks/lojix-nexus-start;
