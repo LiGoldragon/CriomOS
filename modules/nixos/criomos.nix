@@ -31,6 +31,7 @@ in
     ./lojix.nix
     ./lojix-persona-development.nix
     ./harness-update.nix
+    ./battery-power-policy.nix
     ./sleep-options.nix
     ./nix
     ./no-periodic-work.nix
@@ -39,6 +40,7 @@ in
     ./llm.nix
     ./testing/opencode.nix
     ./users.nix
+    ./unison.nix
     ./hardware-adjustments
     ./network
     # aggregator — pulls in dnsmasq, yggdrasil, tailscale,

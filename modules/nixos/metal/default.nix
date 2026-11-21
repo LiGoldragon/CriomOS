@@ -196,8 +196,11 @@ let
   };
 
   batteryCtl = pkgs.writeShellScriptBin "battery-ctl" ''
-    usage() { echo "usage: battery-ctl care | full | status"; exit 1; }
+    set -eu
+    usage() { echo "usage: battery-ctl care | full | restore | status"; exit 1; }
     bat=/sys/class/power_supply/BAT0
+    mode_file=/run/battery-charge-mode
+    lock_file=/run/battery-charge-mode.lock
     [ -d "$bat" ] || { echo "no battery found"; exit 1; }
     set_thresholds() {
       # thinkpad_acpi requires start < end at all times.
@@ -205,6 +208,9 @@ let
       local cur_start cur_end
       cur_start=$(cat "$bat/charge_control_start_threshold")
       cur_end=$(cat "$bat/charge_control_end_threshold")
+      if [ "$cur_start" = "$1" ] && [ "$cur_end" = "$2" ]; then
+        return 0
+      fi
       if [ "$1" -ge "$cur_start" ]; then
         echo "$2" > "$bat/charge_control_end_threshold"
         echo "$1" > "$bat/charge_control_start_threshold"
@@ -212,15 +218,24 @@ let
         echo "$1" > "$bat/charge_control_start_threshold"
         echo "$2" > "$bat/charge_control_end_threshold"
       fi
+      [ "$(cat "$bat/charge_control_start_threshold")" = "$1" ] &&
+        [ "$(cat "$bat/charge_control_end_threshold")" = "$2" ]
     }
     case "''${1:-status}" in
-      care)
-        set_thresholds 75 80
-        echo "battery care: 75–80%"
-        ;;
-      full)
-        set_thresholds 90 95
-        echo "full charge: 90–95%"
+      care|full|restore)
+        exec 9<>"$lock_file"
+        ${pkgs.util-linux}/bin/flock -x 9
+        mode="$1"
+        if [ "$mode" = restore ]; then
+          if [ -r "$mode_file" ]; then mode=$(cat "$mode_file"); else mode=care; fi
+        else
+          printf '%s\n' "$mode" > "$mode_file"
+        fi
+        case "$mode" in
+          care) set_thresholds 75 80; echo "battery care: 75–80%" ;;
+          full) set_thresholds 90 95; echo "full charge: 90–95%" ;;
+          *) echo "invalid recorded battery mode" >&2; exit 1 ;;
+        esac
         ;;
       status)
         echo "start: $(cat "$bat/charge_control_start_threshold")%"
@@ -575,21 +590,10 @@ mkIf behavesAs.bareMetal {
 
   };
 
-  # Battery charge thresholds — default to care mode (75–80%).
-  # Runs at boot and after resume; ThinkPad EC persists values across reboots
-  # but re-applying after suspend is belt-and-suspenders.
+  # Boot applies care; post-resume and power-supply events reapply it.
   systemd.services.battery-charge-default = mkIf isThinkpad {
     description = "Set battery charge thresholds to care mode";
-    after = [
-      "multi-user.target"
-      "suspend.target"
-      "hibernate.target"
-    ];
-    wantedBy = [
-      "multi-user.target"
-      "suspend.target"
-      "hibernate.target"
-    ];
+    wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${batteryCtl}/bin/battery-ctl care";
@@ -642,6 +646,10 @@ mkIf behavesAs.bareMetal {
     optionals behavesAs.center [
       "w /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference - - - - power"
     ]
+    ++ optionals isThinkpad [
+      "f /run/battery-charge-mode 0660 root power - care"
+      "f /run/battery-charge-mode.lock 0660 root power -"
+    ]
     # Disable XHCI wakeup at PCI level. Gen5 firmware shares GPE 0x6D with
     # other devices: disable this observed wake source, not the shared GPE.
     ++
@@ -658,6 +666,7 @@ mkIf behavesAs.bareMetal {
     let
       pmBase = {
         powertop.enable = true;
+        resumeCommands = optionalString isThinkpad "${batteryCtl}/bin/battery-ctl restore";
       };
     in
     pmBase // (optionalAttrs hasModelSpecificPowerTweaks modelSpecificPowerTweaks."${model}");
@@ -720,6 +729,11 @@ mkIf behavesAs.bareMetal {
       extraRules = ''
         # Battery charge threshold — grant group write so unprivileged users can toggle
         SUBSYSTEM=="power_supply", KERNEL=="BAT*", RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chgrp power /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null; ${pkgs.coreutils}/bin/chmod g+w /sys%p/charge_control_start_threshold /sys%p/charge_control_end_threshold 2>/dev/null'"
+        # Power-supply events answer charger connection and battery reappearance.
+        ${optionalString isThinkpad ''
+          ACTION=="add|change", SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="${batteryCtl}/bin/battery-ctl restore"
+          ACTION=="add", SUBSYSTEM=="power_supply", ATTR{type}=="Battery", RUN+="${batteryCtl}/bin/battery-ctl restore"
+        ''}
         # whisrs virtual-keyboard injection
         KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput", TAG+="uaccess"
         KERNEL=="uinput", SUBSYSTEM=="misc", RUN+="${pkgs.acl}/bin/setfacl -m g:uinput:rw /dev/$name"

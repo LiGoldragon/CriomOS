@@ -138,10 +138,7 @@ mkIf behavesAs.edge {
     # evolution.enable: Max-tier per Li (heavy ~250MB email client).
     evolution.enable = size.max;
 
-    # A NetworkManager secret agent, so asking for a Wi-Fi password reaches
-    # a prompt: NetworkManager asks the most recently started agent first.
-    # Untested; removable on its own if it does not help.
-    nm-applet.enable = config.networking.networkmanager.enable;
+    nm-applet.enable = false;
   };
 
   xdg.portal = {

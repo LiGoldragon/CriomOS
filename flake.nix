@@ -197,6 +197,7 @@
       callCheck = path: pkgs.callPackage path { inherit inputs; };
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
+          unison-replica = callCheck ./checks/unison-replica;
           home-manager-unit-lifetime = callCheck ./checks/home-manager-unit-lifetime;
           tailnet-declaration = callCheck ./checks/tailnet-declaration;
           tailnet-enrollment = callCheck ./checks/tailnet-enrollment;
@@ -213,6 +214,7 @@
           ms2130-uvc-aspect-quirk = callCheck ./checks/ms2130-uvc-aspect-quirk;
           nspawn-role-policy = callCheck ./checks/nspawn-role-policy;
           nix-role-policy = callCheck ./checks/nix-role-policy;
+          rust-iteration-role-policy = callCheck ./checks/rust-iteration-role-policy;
           flake-registry-shape = callCheck ./checks/flake-registry-shape;
           repository-receive-role-policy = callCheck ./checks/repository-receive-role-policy;
           mirror-role-policy = callCheck ./checks/mirror-role-policy;
