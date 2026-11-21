@@ -198,11 +198,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1795232760,
-        "narHash": "sha256-Md4IXPqKu9UB1MojkguWeAK8oJPC6RfTCW27Vjbg8QI=",
+        "lastModified": 1795270529,
+        "narHash": "sha256-WZmMcScyt0nZvESnjZ8hhnqCr8TXP/mDhB+ZNVMnQUQ=",
         "owner": "LiGoldragon",
         "repo": "build-base",
-        "rev": "5c77a13bd94886c2aba7d5c351d0208575dc73ee",
+        "rev": "b559472dad95494d48d580e6974d1b3eb59f146a",
         "type": "github"
       },
       "original": {
@@ -835,7 +835,7 @@
         "field-clj": "field-clj",
         "field-luna-research-source": "field-luna-research-source",
         "field-monitoring-source": "field-monitoring-source",
-        "flow-0604": "flow-0604",
+        "flow-0605": "flow-0605",
         "google-workspace-cli": "google-workspace-cli",
         "harness": "harness",
         "herdr": "herdr",
@@ -913,11 +913,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1795278486,
-        "narHash": "sha256-5D8vquoXCHGiFkdxc0sKF0qiaLSekydQoGSbupPtvms=",
+        "lastModified": 1795279760,
+        "narHash": "sha256-ipOG1qsm4Ox3r3WwixsBphaoLEM/8cE9ZT01DiEdRN8=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "ffac41182376963b9a1bfc4b623ad3da7b5a332f",
+        "rev": "a09ee19de430f61dce1556b117d7b85ac126a9f1",
         "type": "github"
       },
       "original": {
@@ -1143,7 +1143,7 @@
       "inputs": {
         "base": [
           "criomos-home",
-          "flow-0604",
+          "flow-0605",
           "translator",
           "base"
         ],
@@ -1190,7 +1190,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0604",
+          "flow-0605",
           "base",
           "nixpkgs"
         ],
@@ -1214,7 +1214,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0604",
+          "flow-0605",
           "migration-predecessor",
           "nixpkgs"
         ],
@@ -1238,7 +1238,7 @@
       "inputs": {
         "nixpkgs": [
           "criomos-home",
-          "flow-0604",
+          "flow-0605",
           "migration-predecessor",
           "unconfigured-flow",
           "nixpkgs"
@@ -2209,7 +2209,7 @@
         "type": "github"
       }
     },
-    "flow-0604": {
+    "flow-0605": {
       "inputs": {
         "base": "base_3",
         "curriculum": "curriculum",
@@ -2217,11 +2217,11 @@
         "translator": "translator"
       },
       "locked": {
-        "lastModified": 1795270011,
-        "narHash": "sha256-KLrq0WD84UmdjQoLxo9LiNdRRvqNtRX9FfM9sHPpPzM=",
+        "lastModified": 1795278196,
+        "narHash": "sha256-oql1wZfm1v8Jm/Rsg/8SJJ9LvypsfrS+uFNICHA3+4I=",
         "owner": "LiGoldragon",
         "repo": "flow",
-        "rev": "fad498e52b0eb5f6d9ab7a5afea2bbfbdac279d3",
+        "rev": "5c23695a576f24150b830283e1d5edd3cd2b4108",
         "type": "github"
       },
       "original": {
@@ -3504,7 +3504,7 @@
         "field-belief": "field-belief",
         "flow": [
           "criomos-home",
-          "flow-0604"
+          "flow-0605"
         ],
         "mind-belief": "mind-belief",
         "nixpkgs": [
@@ -5323,7 +5323,7 @@
       "inputs": {
         "base": [
           "criomos-home",
-          "flow-0604",
+          "flow-0605",
           "base"
         ],
         "ethos-zero": "ethos-zero"
