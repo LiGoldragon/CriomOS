@@ -1,17 +1,22 @@
-# Cargo for iteration (Fable ruling bwv8): the host that receives the
-# cluster's builds carries build-base's real Cargo with its target directory;
-# every other host keeps the remote-only wrapper.
 { inputs, pkgs, ... }:
 let
   inherit (inputs.nixpkgs) lib;
   inherit (pkgs.stdenv.hostPlatform) system;
 
-  enabledFor =
-    node:
-    (lib.evalModules {
-      specialArgs.horizon = { inherit node; };
-      modules = [ ../../modules/nixos/rust-iteration.nix ];
-    }).config.criomos.rustIteration.enable;
+  systemFor =
+    node: extraModules:
+    (lib.nixosSystem {
+      inherit system;
+      specialArgs = {
+        inherit inputs;
+        horizon = { inherit node; };
+      };
+      modules = [
+        ../../modules/nixos/rust-iteration.nix
+        { system.stateVersion = "26.05"; }
+      ]
+      ++ extraModules;
+    }).config;
 
   builderNode = {
     isRemoteNixBuilder = true;
@@ -44,22 +49,35 @@ let
       ];
     }).config;
 
+  builder = systemFor builderNode [ ];
+  disabledBuilder = systemFor builderNode [ { criomos.rustIteration.enable = false; } ];
+  edgeBuilder = systemFor edgeBuilderNode [ ];
+  laptop = systemFor laptopNode [ ];
   carrying = homeFor true;
   wrapped = homeFor false;
   baseToolchain = inputs.criomos-home.inputs.base.packages.${system}.toolchain;
   wrapper = inputs.criomos-home.packages.${system}.rust-toolchain;
 in
-assert enabledFor builderNode;
-assert !(enabledFor edgeBuilderNode);
-assert !(enabledFor laptopNode);
-assert carrying.criomosHome.rustIteration.toolchain == baseToolchain;
+assert builder.criomos.rustIteration.enable;
+assert builtins.elem baseToolchain builder.environment.systemPackages;
+assert builtins.all
+  (
+    host:
+    !host.criomos.rustIteration.enable && !(builtins.elem baseToolchain host.environment.systemPackages)
+  )
+  [
+    disabledBuilder
+    edgeBuilder
+    laptop
+  ];
+assert carrying.criomosHome.rustIteration.toolchain == null;
 assert wrapped.criomosHome.rustIteration.toolchain == wrapper;
 assert lib.hasInfix ''target-dir = "/home/example/.cache/cargo-iteration"''
   carrying.home.file.".cargo/config.toml".text;
 assert !(wrapped.home.file ? ".cargo/config.toml");
 pkgs.runCommand "rust-iteration-role-policy" { } ''
-  ${carrying.criomosHome.rustIteration.toolchain}/bin/cargo --version
-  ${carrying.criomosHome.rustIteration.toolchain}/bin/rustc --version
+  ${builder.system.path}/bin/cargo --version
+  ${builder.system.path}/bin/rustc --version
   status=0
   ${wrapped.criomosHome.rustIteration.toolchain}/bin/cargo --version 2>reply || status=$?
   test "$status" -eq 126

@@ -34,6 +34,7 @@ in
     ./battery-power-policy.nix
     ./sleep-options.nix
     ./nix
+    ./rust-iteration.nix
     ./no-periodic-work.nix
     ./complex.nix
     ./nspawn.nix

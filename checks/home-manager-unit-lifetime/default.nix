@@ -39,6 +39,7 @@ let
     modules = [
       inputs.home-manager.nixosModules.home-manager
       ../../modules/nixos/userHomes.nix
+      ../../modules/nixos/rust-iteration.nix
       {
         system.stateVersion = "26.05";
         users.users.first = {
