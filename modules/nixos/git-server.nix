@@ -137,6 +137,12 @@ let
     ${isServerIdentity}
     if [ "$(cat ${roleFile})" = primary ] && ! is_server; then
       printf '%s\n' "$GL_REPO" > "${mirrorQueue}/$(printf '%s' "$GL_REPO" | ${pkgs.coreutils}/bin/tr / %)"
+      ${lib.optionalString (config.criomos.gitPublication.enqueueCommand != null) ''
+        ${config.criomos.gitPublication.enqueueCommand} "$GL_REPO" || {
+          echo "Git accepted the ref update; publication could not be queued." >&2
+          ${pkgs.util-linux}/bin/logger -t git-publication "could not queue accepted update for $GL_REPO"
+        }
+      ''}
     fi
     exit 0
   '';
@@ -306,6 +312,8 @@ let
   };
 in
 {
+  imports = [ ./git-publication.nix ];
+
   options.criomos.gitServer = {
     port = mkOption {
       type = types.port;
