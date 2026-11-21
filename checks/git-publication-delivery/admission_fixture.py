@@ -1,5 +1,6 @@
 """A controllable local consumer for transport-only checks."""
 
+import hashlib
 from pathlib import Path
 import re
 import socket
@@ -7,9 +8,8 @@ from threading import Thread
 
 
 class AdmissionFixture:
-    def __init__(self, root, inbox):
+    def __init__(self, root):
         self.address = Path(root) / "admit.sock"
-        self.inbox = Path(inbox)
         self.refuse = False
         self.observed = []
         self.listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -23,18 +23,14 @@ class AdmissionFixture:
             with request, request.makefile("rb") as stream:
                 text = stream.read(4096)
                 match = re.fullmatch(
-                    rb"PublicationStored\.\{ ([0-9a-f]{64}) \{ \{ (\S+) (\S+) \} (\S+) (\S+) \} \}\n",
+                    rb"PublicationReceived\.\{ \{ (\S+) (\S+) \} (\S+) (\S+) \}\n",
                     text,
                 )
                 if match is None:
                     request.sendall(b"Refused.Invalid\n")
                     continue
-                identity, repository, reference, old, new = match.groups()
-                canonical = b"{ " + b" ".join((repository, reference, old, new)) + b" }\n"
-                durable_record = self.inbox / (identity.decode("ascii") + ".datom")
-                if not durable_record.exists() or durable_record.read_bytes() != canonical:
-                    request.sendall(b"Refused.Unavailable\n")
-                    continue
+                canonical = b"{ " + b" ".join(match.groups()) + b" }\n"
+                identity = hashlib.sha256(canonical).hexdigest().encode("ascii")
                 self.observed.append(identity)
                 if self.refuse:
                     request.sendall(b"Refused.Unavailable\n")

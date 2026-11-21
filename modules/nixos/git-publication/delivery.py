@@ -52,11 +52,19 @@ def event(configuration, repository, reference, old, new):
     return data
 
 
-def checked_event(configuration, data):
+def publication_parts(configuration, data):
     begin, repository, reference, old, new, end = data.decode("ascii").split()
     if begin != "{" or end != "}" or event(configuration, repository, reference, old, new) != data:
         raise ValueError("publication must use canonical Datom")
+    return repository, reference, old, new
+
+
+def checked_event(configuration, data):
+    publication_parts(configuration, data)
     return hashlib.sha256(data).hexdigest()
+
+
+REFUSALS = (b"Refused.Untrusted\n", b"Refused.Invalid\n", b"Refused.Unavailable\n")
 
 
 def wake(configuration):
@@ -84,28 +92,37 @@ def enqueue(configuration, repository):
 
 
 def receive(configuration):
-    data = sys.stdin.buffer.read(257)
-    if len(data) > 256:
-        raise ValueError("publication exceeds its wire budget")
-    identity = checked_event(configuration, data)
-    store(Path(configuration["inbox"]), identity + ".datom", data)
-    announce(configuration, identity, data)
-    print(f"Stored.{identity}", flush=True)
+    try:
+        data = sys.stdin.buffer.read(257)
+        if len(data) > 256:
+            raise ValueError("publication exceeds its wire budget")
+        publication = publication_parts(configuration, data)
+    except ValueError:
+        reply = b"Refused.Invalid\n"
+    else:
+        reply = announce(configuration, publication)
+    sys.stdout.buffer.write(reply)
+    sys.stdout.buffer.flush()
 
 
-def announce(configuration, identity, data):
-    _, repository, reference, old, new, _ = data.decode("ascii").split()
+def announce(configuration, publication):
+    repository, reference, old, new = publication
     announcement = (
-        f"PublicationStored.{{ {identity} {{ {{ {repository} {reference} }} {old} {new} }} }}\n"
+        f"PublicationReceived.{{ {{ {repository} {reference} }} {old} {new} }}\n"
     ).encode("ascii")
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as consumer:
-        consumer.settimeout(configuration["admissionTimeout"])
-        consumer.connect(configuration["curriculumEndpoint"])
-        consumer.sendall(announcement)
-        consumer.shutdown(socket.SHUT_WR)
-        with consumer.makefile("rb") as reply:
-            if reply.read(128) != f"Accepted.{identity}\n".encode("ascii"):
-                raise ValueError("Curriculum gave no matching durable admission")
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as consumer:
+            consumer.settimeout(configuration["admissionTimeout"])
+            consumer.connect(configuration["curriculumEndpoint"])
+            consumer.sendall(announcement)
+            consumer.shutdown(socket.SHUT_WR)
+            with consumer.makefile("rb") as reply_stream:
+                reply = reply_stream.readline(128)
+    except OSError:
+        return b"Refused.Unavailable\n"
+    if reply in REFUSALS or re.fullmatch(rb"Accepted\.[0-9a-f]{64}\n", reply):
+        return reply
+    return b"Refused.Unavailable\n"
 
 
 def call(configuration, data):
@@ -125,15 +142,18 @@ def deliver(configuration):
         identity = checked_event(configuration, data)
         if record.name != identity + ".datom":
             raise ValueError("outbox name does not match publication")
-        if call(configuration, data) != f"Stored.{identity}\n".encode("ascii"):
-            raise ValueError("receiver gave no matching durable acknowledgement")
+        reply = call(configuration, data)
+        if reply in REFUSALS:
+            raise ValueError(reply.decode("ascii").strip())
+        if reply != f"Accepted.{identity}\n".encode("ascii"):
+            raise ValueError("Curriculum gave no matching durable admission")
         record.unlink()
         sync_directory(outbox)
 
 
 def reconnect(configuration):
-    if call(configuration, b"") != b"Ready\n":
-        raise ValueError("sender did not acknowledge reconnect")
+    if call(configuration, b"") != b"":
+        raise ValueError("wake returned unexpected output")
 
 
 def main():
@@ -151,7 +171,6 @@ def main():
             if sys.stdin.buffer.read(1):
                 raise ValueError("wake takes an empty request")
             wake(configuration)
-            print("Ready", flush=True)
         case _:
             raise ValueError("invalid publication operation")
 

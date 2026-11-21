@@ -26,11 +26,10 @@ with tempfile.TemporaryDirectory(prefix="publication-ssh-") as temporary:
         subprocess.run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(root / name)], check=True)
     known = root / "known"
     known.write_text(f"[127.0.0.1]:{port} " + (root / "host.pub").read_text())
-    outbox, inbox = (root / name for name in ("outbox", "inbox"))
+    outbox = root / "outbox"
     outbox.mkdir()
-    inbox.mkdir()
     marker = root / "ready"
-    consumer = AdmissionFixture(root, inbox)
+    consumer = AdmissionFixture(root)
 
     def client(key):
         return [
@@ -43,7 +42,7 @@ with tempfile.TemporaryDirectory(prefix="publication-ssh-") as temporary:
     def endpoint(role, key):
         config = root / f"{role}.json"
         config.write_text(json.dumps(dict(
-            repositories=["test/belief"], outbox=str(outbox), inbox=str(inbox),
+            repositories=["test/belief"], outbox=str(outbox),
             wake=str(marker), timeout=5, peerCommand=client(key),
             admissionTimeout=5, curriculumEndpoint=str(consumer.address),
         )))
@@ -81,17 +80,17 @@ PidFile {root / 'sshd.pid'}
         identity = hashlib.sha256(data).hexdigest()
         subprocess.run(sender + ["enqueue", "test/belief"], input=update, check=True)
         denied = subprocess.run(client("untrusted"), input=data, capture_output=True, timeout=5)
-        assert denied.returncode and not list(inbox.iterdir())
+        assert denied.returncode and not consumer.observed
         marker.unlink()
         subprocess.run(receiver + ["reconnect"], check=True)
         assert marker.exists()
         subprocess.run(sender + ["deliver"], check=True)
         assert not list(outbox.iterdir())
-        assert (inbox / f"{identity}.datom").read_bytes() == data
+        assert consumer.observed == [identity.encode("ascii")]
         # The key's fixed receiver command takes precedence over a client's command.
         forced = subprocess.run(client("sender") + ["printf unrelated"], input=data, capture_output=True, check=True)
-        assert forced.stdout == f"Stored.{identity}\n".encode()
-        assert len(list(inbox.iterdir())) == 1
+        assert forced.stdout == f"Accepted.{identity}\n".encode()
+        assert consumer.observed == [identity.encode("ascii")] * 2
         print("OpenSSH loopback: untrusted key refused; pinned peers stored, acknowledged, and woke replay via restricted commands.")
     finally:
         daemon.terminate()

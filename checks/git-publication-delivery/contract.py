@@ -14,15 +14,15 @@ from admission_fixture import AdmissionFixture
 protocol = Path(sys.argv[1])
 python = sys.executable
 root = Path.cwd()
-outbox, inbox, signal = (root / name for name in ("outbox", "inbox", "signal"))
-for directory in (outbox, inbox, signal):
+outbox, signal = (root / name for name in ("outbox", "signal"))
+for directory in (outbox, signal):
     directory.mkdir()
 marker = signal / "ready"
-consumer = AdmissionFixture(root, inbox)
+consumer = AdmissionFixture(root)
 repositories = ["sample/psyche", "sample/mind", "sample/field"]
 configuration = root / "route.json"
 configuration.write_text(json.dumps(dict(
-    repositories=repositories, wake=str(marker), outbox=str(outbox), inbox=str(inbox),
+    repositories=repositories, wake=str(marker), outbox=str(outbox),
     admissionTimeout=5, curriculumEndpoint=str(consumer.address),
     timeout=5, peerCommand=[python, str(root / "peer.py")],
 )))
@@ -38,7 +38,7 @@ data = sys.stdin.buffer.read()
 if mode == "offline":
     sys.exit(1)
 if mode == "wrong":
-    print("Stored.wrong")
+    print("Accepted." + "f" * 64)
     sys.exit(0)
 command = {route!r} + ["receive" if data else "wake"]
 result = subprocess.run(command, input=data, capture_output=True, check=True)
@@ -92,7 +92,6 @@ for failure in ("offline", "wrong", "drop"):
     run("deliver", ok=False)
     assert (outbox / name).read_bytes() == data
     assert not marker.exists()
-assert (inbox / name).read_bytes() == data
 mode.write_text("ready")
 consumer.refuse = True
 run("deliver", ok=False)
@@ -103,11 +102,11 @@ run("reconnect")
 assert marker.exists()
 run("deliver")
 assert not list(outbox.iterdir()) and not marker.exists()
-assert (inbox / name).read_bytes() == data
-assert run("receive", data=data) == f"Stored.{identity}\n".encode()
-assert len(list(inbox.iterdir())) == 2
-assert not run("receive", data=data.replace(b"sample/psyche", b"sample/unconfigured"), ok=False)
-assert not run("receive", data=b"invalid", ok=False)
+assert run("receive", data=data) == f"Accepted.{identity}\n".encode()
+assert run("receive", data=data.replace(b"sample/psyche", b"sample/unconfigured")) == b"Refused.Invalid\n"
+assert run("receive", data=b"invalid") == b"Refused.Invalid\n"
 assert not run("wake", data=b"invalid", ok=False)
+assert run("wake") == b""
+marker.unlink()
 assert not marker.exists()
 print("Git main fast-forward, filtering, retained outbox, lost acknowledgement, reconnect and deduplication passed.")

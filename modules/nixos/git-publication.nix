@@ -7,7 +7,6 @@ let
   receiverName = "git-publication-receiver";
   wakeDirectory = "/var/lib/git-publication-wake";
   outbox = "/var/lib/git-publication-outbox";
-  inbox = "/var/lib/git-publication-inbox";
   wake = "${wakeDirectory}/ready";
   sshOptions = {
     peer = mkOption {
@@ -66,9 +65,8 @@ let
     peerCommand = peer receiverName cfg.sender;
   }) "deliver";
   kick = commandFor (configuration "wake" { inherit wake; }) "wake";
-  receive = commandFor (configuration "inbox" {
+  receive = commandFor (configuration "receive" {
     inherit (cfg) repositories;
-    inherit inbox;
     inherit (cfg.receiver) curriculumEndpoint admissionTimeout;
   }) "receive";
   reconnect = commandFor (configuration "receiver" {
@@ -164,7 +162,6 @@ in
         shell = pkgs.bashInteractive;
         openssh.authorizedKeys.keys = authenticated receive cfg.receiver.authorizedKeys;
       };
-      systemd.tmpfiles.rules = [ "d ${inbox} 0700 ${receiverName} ${receiverName} -" ];
       systemd.services.git-publication-reconnect = {
         wantedBy = [ "multi-user.target" ] ++ cfg.receiver.reconnectTargets;
         wants = [ "network-online.target" ];
