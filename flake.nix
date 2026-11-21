@@ -243,10 +243,6 @@
           usb-downlink-observer = callCheck ./checks/usb-downlink-observer;
           wireguard-untrusted-proxy = callCheck ./checks/wireguard-untrusted-proxy;
           wispr-keyboard-uaccess = callCheck ./checks/wispr-keyboard-uaccess;
-          # With Lojix's inputs, require the real host to evaluate without building its closure.
-          host-target-evaluation =
-            builtins.seq target.config.system.build.toplevel.drvPath
-              (pkgs.runCommand "host-target-evaluation" { } "touch $out");
           home-activation-equivalence = import ./home-activation-equivalence.nix {
             inherit
               pkgs
@@ -276,6 +272,12 @@
         modules = [
           inputs.nixpkgs.nixosModules.readOnlyPkgs
           { system.configurationRevision = inputs.self.rev or null; }
+          ({ config, pkgs, ... }: {
+            # Lojix can gate this materialized host without realizing its closure.
+            system.build.hostTargetEvaluation =
+              builtins.seq config.system.build.toplevel.drvPath
+                (pkgs.runCommand "host-target-evaluation" { } "touch $out");
+          })
         ]
         ++ lib.optionals includeHome [
           inputs.home-manager.nixosModules.home-manager
