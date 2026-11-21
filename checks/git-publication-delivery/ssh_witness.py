@@ -12,6 +12,8 @@ import subprocess
 import sys
 import tempfile
 
+from admission_fixture import AdmissionFixture
+
 
 protocol = Path(sys.argv[1]).resolve()
 user = getpass.getuser()
@@ -28,6 +30,7 @@ with tempfile.TemporaryDirectory(prefix="publication-ssh-") as temporary:
     outbox.mkdir()
     inbox.mkdir()
     marker = root / "ready"
+    consumer = AdmissionFixture(root, inbox)
 
     def client(key):
         return [
@@ -42,6 +45,7 @@ with tempfile.TemporaryDirectory(prefix="publication-ssh-") as temporary:
         config.write_text(json.dumps(dict(
             repositories=["test/belief"], outbox=str(outbox), inbox=str(inbox),
             wake=str(marker), timeout=5, peerCommand=client(key),
+            admissionTimeout=5, curriculumEndpoint=str(consumer.address),
         )))
         return [sys.executable, str(protocol), str(config)]
 

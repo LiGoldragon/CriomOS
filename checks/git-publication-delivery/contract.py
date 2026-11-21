@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import sys
 
+from admission_fixture import AdmissionFixture
+
 
 protocol = Path(sys.argv[1])
 python = sys.executable
@@ -16,10 +18,12 @@ outbox, inbox, signal = (root / name for name in ("outbox", "inbox", "signal"))
 for directory in (outbox, inbox, signal):
     directory.mkdir()
 marker = signal / "ready"
+consumer = AdmissionFixture(root, inbox)
 repositories = ["sample/psyche", "sample/mind", "sample/field"]
 configuration = root / "route.json"
 configuration.write_text(json.dumps(dict(
     repositories=repositories, wake=str(marker), outbox=str(outbox), inbox=str(inbox),
+    admissionTimeout=5, curriculumEndpoint=str(consumer.address),
     timeout=5, peerCommand=[python, str(root / "peer.py")],
 )))
 route = [python, str(protocol), str(configuration)]
@@ -90,6 +94,11 @@ for failure in ("offline", "wrong", "drop"):
     assert not marker.exists()
 assert (inbox / name).read_bytes() == data
 mode.write_text("ready")
+consumer.refuse = True
+run("deliver", ok=False)
+assert (outbox / name).read_bytes() == data
+assert consumer.observed[-1] == identity.encode()
+consumer.refuse = False
 run("reconnect")
 assert marker.exists()
 run("deliver")

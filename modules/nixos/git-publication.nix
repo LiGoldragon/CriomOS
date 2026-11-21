@@ -69,6 +69,7 @@ let
   receive = commandFor (configuration "inbox" {
     inherit (cfg) repositories;
     inherit inbox;
+    inherit (cfg.receiver) curriculumEndpoint admissionTimeout;
   }) "receive";
   reconnect = commandFor (configuration "receiver" {
     inherit (cfg.receiver) timeout;
@@ -95,6 +96,15 @@ in
     sender = sshOptions // { enable = mkEnableOption "the Git publication outbox and replay endpoint"; };
     receiver = sshOptions // {
       enable = mkEnableOption "the Git publication receiver and reconnect signal";
+      curriculumEndpoint = mkOption {
+        type = types.strMatching "/.+";
+        description = "Absolute socket path of the local Curriculum publication admission endpoint.";
+      };
+      admissionTimeout = mkOption {
+        type = types.ints.positive;
+        default = 10;
+        description = "Maximum seconds to wait for Curriculum's local admission.";
+      };
       reconnectTargets = mkOption {
         type = types.listOf (types.strMatching "[a-zA-Z0-9_.@-]+[.]target");
         default = [];

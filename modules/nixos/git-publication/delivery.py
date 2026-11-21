@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import socket
 import subprocess
 import sys
 import tempfile
@@ -88,7 +89,23 @@ def receive(configuration):
         raise ValueError("publication exceeds its wire budget")
     identity = checked_event(configuration, data)
     store(Path(configuration["inbox"]), identity + ".datom", data)
+    announce(configuration, identity, data)
     print(f"Stored.{identity}", flush=True)
+
+
+def announce(configuration, identity, data):
+    _, repository, reference, old, new, _ = data.decode("ascii").split()
+    announcement = (
+        f"PublicationStored.{{ {identity} {{ {{ {repository} {reference} }} {old} {new} }} }}\n"
+    ).encode("ascii")
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as consumer:
+        consumer.settimeout(configuration["admissionTimeout"])
+        consumer.connect(configuration["curriculumEndpoint"])
+        consumer.sendall(announcement)
+        consumer.shutdown(socket.SHUT_WR)
+        with consumer.makefile("rb") as reply:
+            if reply.read(128) != f"Accepted.{identity}\n".encode("ascii"):
+                raise ValueError("Curriculum gave no matching durable admission")
 
 
 def call(configuration, data):

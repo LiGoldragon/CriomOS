@@ -24,7 +24,10 @@ let
     criomos.gitPublication = {
       repositories = [ "sample/psyche" "sample/mind" "sample/field" ];
       sender = endpoint;
-      receiver = endpoint // { reconnectTargets = [ "fixture-reconnected.target" ]; };
+      receiver = endpoint // {
+        curriculumEndpoint = "/run/fixture/curriculum-publication.sock";
+        reconnectTargets = [ "fixture-reconnected.target" ];
+      };
     };
   };
   value = lib.escapeShellArg;
@@ -39,5 +42,5 @@ pkgs.runCommand "git-publication-delivery" { nativeBuildInputs = [ pkgs.git pkgs
   test ${value enabled.systemd.paths.git-publication-deliver.pathConfig.PathExists} = /var/lib/git-publication-wake/ready
   printf '%s\n' ${value (keys "git-publication-wake")} | grep -E '^restrict,command="[^"]+git-publication-wake" ssh-ed25519 '
   printf '%s\n' ${value (keys "git-publication-receiver")} | grep -E '^restrict,command="[^"]+git-publication-receive" ssh-ed25519 '
-  python3 ${./contract.py} ${../../modules/nixos/git-publication/delivery.py} | tee "$out"
+  python3 ${./.}/contract.py ${../../modules/nixos/git-publication/delivery.py} | tee "$out"
 ''
