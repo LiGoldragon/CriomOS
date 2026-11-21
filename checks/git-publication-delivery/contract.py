@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import shlex
+import shutil
 import subprocess
 import sys
 
@@ -58,7 +59,7 @@ for directory in (sender, remote):
 git(sender, "init", "-b", "main")
 git(remote, "init", "--bare")
 hook = remote / "hooks" / "post-receive"
-hook.write_text("#!/bin/sh\nexec " + shlex.join(route + ["enqueue", repositories[0]]) + "\n")
+hook.write_text("#!" + shutil.which("sh") + "\nexec " + shlex.join(route + ["enqueue", repositories[0]]) + "\n")
 hook.chmod(0o700)
 git(sender, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
     "commit", "--allow-empty", "-m", "previous main")

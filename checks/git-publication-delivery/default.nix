@@ -24,7 +24,7 @@ let
     criomos.gitPublication = {
       repositories = [ "sample/psyche" "sample/mind" "sample/field" ];
       sender = endpoint;
-      receiver = endpoint;
+      receiver = endpoint // { reconnectTargets = [ "fixture-reconnected.target" ]; };
     };
   };
   value = lib.escapeShellArg;
@@ -33,7 +33,9 @@ in
 assert disabled.criomos.gitPublication.enqueueCommand == null;
 assert !(disabled.systemd.paths ? git-publication-deliver);
 assert enabled.criomos.gitPublication.enqueueCommand != null;
+assert builtins.elem "fixture-reconnected.target" enabled.systemd.services.git-publication-reconnect.wantedBy;
 pkgs.runCommand "git-publication-delivery" { nativeBuildInputs = [ pkgs.git pkgs.python3 ]; } ''
+  set -euo pipefail
   test ${value enabled.systemd.paths.git-publication-deliver.pathConfig.PathExists} = /var/lib/git-publication-wake/ready
   printf '%s\n' ${value (keys "git-publication-wake")} | grep -E '^restrict,command="[^"]+git-publication-wake" ssh-ed25519 '
   printf '%s\n' ${value (keys "git-publication-receiver")} | grep -E '^restrict,command="[^"]+git-publication-receive" ssh-ed25519 '

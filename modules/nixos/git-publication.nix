@@ -93,7 +93,14 @@ in
       description = "Sender command invoked by the primary Git post-receive hook.";
     };
     sender = sshOptions // { enable = mkEnableOption "the Git publication outbox and replay endpoint"; };
-    receiver = sshOptions // { enable = mkEnableOption "the Git publication receiver and reconnect signal"; };
+    receiver = sshOptions // {
+      enable = mkEnableOption "the Git publication receiver and reconnect signal";
+      reconnectTargets = mkOption {
+        type = types.listOf (types.strMatching "[a-zA-Z0-9_.@-]+[.]target");
+        default = [];
+        description = "Targets started by the deployment when the receiver can reach the sender again.";
+      };
+    };
   };
 
   config = mkMerge [
@@ -149,10 +156,10 @@ in
       };
       systemd.tmpfiles.rules = [ "d ${inbox} 0700 ${receiverName} ${receiverName} -" ];
       systemd.services.git-publication-reconnect = {
-        wantedBy = [ "multi-user.target" ];
+        wantedBy = [ "multi-user.target" ] ++ cfg.receiver.reconnectTargets;
         wants = [ "network-online.target" ];
         after = [ "sshd.service" "network-online.target" "systemd-tmpfiles-setup.service" ];
-        partOf = [ "sshd.service" ];
+        partOf = [ "sshd.service" ] ++ cfg.receiver.reconnectTargets;
         serviceConfig = credentials cfg.receiver // {
           Type = "oneshot";
           RemainAfterExit = true;
