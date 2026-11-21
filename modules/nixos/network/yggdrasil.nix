@@ -17,7 +17,7 @@ let
     ;
   inherit (constants.network.yggdrasil) ports;
 
-  package = pkgs.yggdrasil;
+  package = pkgs.callPackage ../../../packages/yggdrasil-overlay { };
   yggExec = "${package}/bin/yggdrasil";
   yggCtlExec = "${package}/bin/yggdrasilctl";
 

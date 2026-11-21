@@ -1,0 +1,29 @@
+--- a/encrypted/session.go
++++ b/encrypted/session.go
+@@ -263,10 +263,14 @@
+ func (info *sessionInfo) handleInit(from phony.Actor, init *sessionInit) {
+ 	info.Act(from, func() {
+ 		if init.seq <= info.seq {
++			if init.seq == info.seq && init.keySeq == info.remoteKeySeq &&
++				init.current == info.current && init.next == info.next &&
++				info.ack != nil && info.ack.keySeq == info.localKeySeq {
++				info.mgr.sendAck(&info.ed, info.ack)
++			}
+ 			return
+ 		}
+ 		info._handleUpdate(init)
+-		// Send a sessionAck
+ 		info._sendAck()
+ 	})
+ }
+@@ -456,8 +460,8 @@
+ 
+ func (info *sessionInfo) _sendAck() {
+ 	init := newSessionInit(&info.sendPub, &info.nextPub, info.localKeySeq)
+-	ack := sessionAck{init}
+-	info.mgr.sendAck(&info.ed, &ack)
++	info.ack = &sessionAck{init}
++	info.mgr.sendAck(&info.ed, info.ack)
+ }
+ 
+ /***************

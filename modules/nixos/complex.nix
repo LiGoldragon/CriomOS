@@ -60,7 +60,7 @@ lib.mkIf includeComplex {
     # `yggdrasil` lives on PATH for the (currently unused) yggdrasil
     # keypair setup; harmless when the request doesn't reach the
     # YggdrasilKey actor.
-    path = [ pkgs.yggdrasil ];
+    path = [ (pkgs.callPackage ../../packages/yggdrasil-overlay { }) ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
