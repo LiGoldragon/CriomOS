@@ -1,11 +1,15 @@
 # Git publication delivery
 
-A configured primary Git server sends accepted main updates for the three authored repositories to one configured receiver. For ev4y, that receiver is Ouranos. CriomOS contains no host or belief repository names. A store acknowledgement attests delivery only; Curriculum will separately validate ancestry and publish a coherent skill-and-role generation.
+An accepted update to a configured main stream is one Git event with two receivers. The mirror reconciles a repository to its latest refs: repeated pushes can share one repository-keyed work item, because mirroring reads the current refs when it runs. Curriculum consumes the exact repository, ref, old and new from each update and acknowledges durable storage by event digest. The mirror work queue and the publication outbox stay separate because they retain different things: pending reconciliation and exact events, respectively. Giving mirror jobs the publication outbox’s per-event retirement rule would change the mirror’s contract.
 
 ```ethos
 Types
 [ RepositoryName.String
   ReferenceName.String
+  PublicationStream.{ RepositoryName ReferenceName }
+  ReceiverHost.String
+  OutboxDirectory.String
+  PublicationRoute.{ ReceiverHost Vector<PublicationStream> OutboxDirectory }
   OldObjectId.String
   NewObjectId.String
   Publication.{ RepositoryName ReferenceName OldObjectId NewObjectId }
@@ -15,16 +19,18 @@ Types
 
 ```mermaid
 flowchart LR
-    a["Git accepts configured main"] --> b["Primary stores publication in its outbox"]
+    a["Git accepts one configured main update"] --> m["Mirror: queue repository reconciliation"]
+    m --> n["Reconcile latest refs to Git peers"]
+    a --> b["Curriculum: store exact event in configured outbox"]
     b --> c["Enqueue wakes delivery"]
     r["Receiver activation or configured reconnect"] --> w["Authenticated wake of sender"]
     w --> c
-    c --> s["Restricted SSH receive command"]
-    s --> i["Inbox stores once and syncs"]
+    c --> s["Restricted SSH command at configured receiver"]
+    s --> i["Receiver stores once and syncs"]
     i --> k["Stored acknowledgement"]
     k --> x["Sender retires its outbox record"]
 ```
 
-Publication identity is a digest of the canonical Datom. A failed call or lost acknowledgement leaves the record queued; receiver replay returns the same receipt. The mirror queue remains separate. A receiver that returns after a network-only outage needs an explicit reconnect event through the configured reconnect targets; receiver activation and SSH service restart already issue the wake. Both roles are opt-in; no credential or host configuration is included.
+Deployment supplies the receiver host, the repository/ref streams and the outbox directory. The event’s canonical Datom determines its digest. Failure or a lost acknowledgement leaves the event in the outbox; replay returns the same receipt. Receiver activation, SSH service restart and a configured reconnect target wake delivery. The receipt attests storage; Curriculum separately validates ancestry and publishes a coherent skill-and-role generation.
 
-**Proof:** `checks.x86_64-linux.git-publication-delivery` evaluates the inactive and configured module, checks both forced-command key declarations, and exercises a real scratch Git fast-forward, filtering, durable inbox, lost acknowledgement, and reconnect-driven replay. The peer simulator controls disconnect and acknowledgement loss. The separate loopback witness, `python3 ssh_witness.py ../../modules/nixos/git-publication/delivery.py`, uses throwaway keys and a temporary OpenSSH listener to prove forced-command storage and wake. Neither proof is a host deployment.
+**Proof and remaining work:** The isolated prototype proves a real Git fast-forward, filtering, durable storage, lost-acknowledgement recovery and reconnect replay in `checks.x86_64-linux.git-publication-delivery`. The OpenSSH loopback witness in `ssh_witness.py` proves restricted storage and wake using throwaway keys. The prototype takes a configurable receiver and repository list; it still fixes the ref and the outbox path. Expose both through `PublicationRoute` configuration before activation.
