@@ -45,6 +45,9 @@ let
 
 in
 {
+  # Whether this host's Homes carry a real Cargo for iteration.
+  imports = [ ./rust-iteration.nix ];
+
   # A Home profile installation on a slow disk runs past the upstream
   # five-minute activation deadline; the allowance is bounded.  Its own /tmp
   # holds the profile tree `nix profile` builds and leaves behind there, about

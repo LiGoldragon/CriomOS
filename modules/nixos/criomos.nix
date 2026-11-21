@@ -50,7 +50,6 @@ in
   ]
   ++ lib.optionals includeHome [
     ./userHomes.nix
-    ./rust-iteration.nix
   ]
   ++ [
     ./metal/default.nix
