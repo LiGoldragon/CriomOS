@@ -1,4 +1,4 @@
-"""The journal follower starts at the tail and marks only new matched entries."""
+"""The journal follower starts at the observer startup time and marks only new matched entries."""
 
 import json
 from pathlib import Path
@@ -14,9 +14,8 @@ class EndOfFixture(Exception):
 
 
 class JournalFixture:
-    def __init__(self, entries, history, actions):
+    def __init__(self, entries, actions):
         self.batches = iter(entries)
-        self.history = history
         self.actions = actions
 
     def this_boot(self):
@@ -25,12 +24,8 @@ class JournalFixture:
     def add_match(self, **matches):
         self.actions.append(matches)
 
-    def seek_tail(self):
-        self.actions.append("tail")
-
-    def get_previous(self):
-        self.actions.append("positioned")
-        return {"MESSAGE": self.history}
+    def seek_monotonic(self, timestamp):
+        self.actions.append(("from", timestamp))
 
     def __iter__(self):
         return next(self.batches)
@@ -54,16 +49,15 @@ for config, selected, not_selected in (
                    if config is default else "Fixture peer down: fixture"},
                   {"MESSAGE": selected}, {"MESSAGE": selected}]),
         ],
-        selected,
         actions,
     )
     try:
-        follow(entries, config["unit"], re.compile(config["messagePattern"]),
+        follow(entries, config["unit"], re.compile(config["messagePattern"]), 12.5,
                lambda: actions.append("ready"), lambda: actions.append("wake"))
     except EndOfFixture:
         pass
     assert actions == [
-        "boot", {"_SYSTEMD_UNIT": config["unit"]}, "tail", "positioned", "ready",
+        "boot", {"_SYSTEMD_UNIT": config["unit"]}, ("from", 12.5), "ready",
         "wait", "wake", "wake", "wait",
     ], actions
-print("Connected contract: current boot and configured unit; tail is quiet; each new matching record marks once.")
+print("Connected contract: current boot and configured unit; history is quiet; each new matching record marks once.")

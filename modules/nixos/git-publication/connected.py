@@ -4,15 +4,15 @@ import json
 from pathlib import Path
 import re
 import sys
+from time import monotonic
 
 from delivery import wake
 
 
-def follow(journal, unit, pattern, notify_ready, mark):
+def follow(journal, unit, pattern, starting_at, notify_ready, mark):
     journal.this_boot()
     journal.add_match(_SYSTEMD_UNIT=unit)
-    journal.seek_tail()
-    journal.get_previous()
+    journal.seek_monotonic(starting_at)
     notify_ready()
     while True:
         for record in journal:
@@ -28,6 +28,6 @@ if __name__ == "__main__":
     configuration = json.loads(Path(sys.argv[1]).read_bytes())
     with journal.Reader(flags=journal.LOCAL_ONLY) as entries:
         follow(
-            entries, configuration["unit"], re.compile(configuration["messagePattern"]),
+            entries, configuration["unit"], re.compile(configuration["messagePattern"]), monotonic(),
             lambda: daemon.notify("READY=1"), lambda: wake(configuration),
         )
