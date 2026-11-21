@@ -42,7 +42,7 @@ with tempfile.TemporaryDirectory(prefix="publication-ssh-") as temporary:
     def endpoint(role, key):
         config = root / f"{role}.json"
         config.write_text(json.dumps(dict(
-            repositories=["test/belief"], outbox=str(outbox),
+            streams=[dict(repositoryName="test/belief", referenceName="refs/heads/main")], outbox=str(outbox),
             wake=str(marker), timeout=5, peerCommand=client(key),
             admissionTimeout=5, curriculumEndpoint=str(consumer.address),
         )))

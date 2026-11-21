@@ -1,5 +1,6 @@
 """Durable publication delivery on an authenticated SSH command boundary."""
 
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -34,34 +35,69 @@ def store(directory, name, data):
         sync_directory(directory)
 
 
-def event(configuration, repository, reference, old, new):
-    if repository not in configuration["repositories"] or reference != "refs/heads/main":
-        raise ValueError("repository or ref is not configured")
-    if re.fullmatch(r"[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+", repository) is None:
-        raise ValueError("invalid repository name")
-    if not (
-        len(old) == len(new)
-        and len(old) in (40, 64)
-        and re.fullmatch(r"[0-9a-f]+", old)
-        and re.fullmatch(r"[0-9a-f]+", new)
-    ):
-        raise ValueError("invalid Git object IDs")
-    data = f"{{ {repository} {reference} {old} {new} }}\n".encode("ascii")
-    if len(data) > 256:
-        raise ValueError("publication exceeds its wire budget")
-    return data
+WIRE_BUDGET = 256
 
 
-def publication_parts(configuration, data):
+@dataclass(frozen=True)
+class PublicationStream:
+    repository_name: str
+    reference_name: str
+
+
+@dataclass(frozen=True)
+class ObjectId:
+    text: str
+
+    def __post_init__(self):
+        if len(self.text) not in (40, 64) or re.fullmatch(r"[0-9a-f]+", self.text) is None:
+            raise ValueError("invalid Git object ID")
+
+
+@dataclass(frozen=True)
+class Publication:
+    stream: PublicationStream
+    old: ObjectId
+    new: ObjectId
+
+    def wire(self):
+        if len(self.old.text) != len(self.new.text):
+            raise ValueError("Git object IDs have different widths")
+        stream = self.stream
+        data = (
+            f"{{ {stream.repository_name} {stream.reference_name} "
+            f"{self.old.text} {self.new.text} }}\n"
+        ).encode("ascii")
+        if len(data) > WIRE_BUDGET:
+            raise ValueError("publication exceeds its wire budget")
+        return data
+
+    def announcement(self):
+        stream = self.stream
+        return (
+            f"PublicationReceived.{{ {{ {stream.repository_name} {stream.reference_name} }} "
+            f"{self.old.text} {self.new.text} }}\n"
+        ).encode("ascii")
+
+    def digest(self):
+        return hashlib.sha256(self.wire()).hexdigest()
+
+
+def configured_streams(configuration):
+    return {
+        PublicationStream(stream["repositoryName"], stream["referenceName"])
+        for stream in configuration["streams"]
+    }
+
+
+def read_publication(data, streams):
     begin, repository, reference, old, new, end = data.decode("ascii").split()
-    if begin != "{" or end != "}" or event(configuration, repository, reference, old, new) != data:
+    stream = PublicationStream(repository, reference)
+    if begin != "{" or end != "}" or stream not in streams:
+        raise ValueError("publication is not on a configured stream")
+    publication = Publication(stream, ObjectId(old), ObjectId(new))
+    if publication.wire() != data:
         raise ValueError("publication must use canonical Datom")
-    return repository, reference, old, new
-
-
-def checked_event(configuration, data):
-    publication_parts(configuration, data)
-    return hashlib.sha256(data).hexdigest()
+    return publication
 
 
 REFUSALS = (b"Refused.Untrusted\n", b"Refused.Invalid\n", b"Refused.Unavailable\n")
@@ -79,24 +115,24 @@ def wake(configuration):
 
 
 def enqueue(configuration, repository):
-    if repository not in configuration["repositories"]:
-        return
+    streams = configured_streams(configuration)
     outbox = Path(configuration["outbox"])
     for update in sys.stdin:
         old, new, reference = update.split()
-        if reference != "refs/heads/main":
+        stream = PublicationStream(repository, reference)
+        if stream not in streams:
             continue
-        data = event(configuration, repository, reference, old, new)
-        store(outbox, checked_event(configuration, data) + ".datom", data)
+        publication = Publication(stream, ObjectId(old), ObjectId(new))
+        store(outbox, publication.digest() + ".datom", publication.wire())
         wake(configuration)
 
 
 def receive(configuration):
     try:
-        data = sys.stdin.buffer.read(257)
-        if len(data) > 256:
+        data = sys.stdin.buffer.read(WIRE_BUDGET + 1)
+        if len(data) > WIRE_BUDGET:
             raise ValueError("publication exceeds its wire budget")
-        publication = publication_parts(configuration, data)
+        publication = read_publication(data, configured_streams(configuration))
     except ValueError:
         reply = b"Refused.Invalid\n"
     else:
@@ -106,15 +142,11 @@ def receive(configuration):
 
 
 def announce(configuration, publication):
-    repository, reference, old, new = publication
-    announcement = (
-        f"PublicationReceived.{{ {{ {repository} {reference} }} {old} {new} }}\n"
-    ).encode("ascii")
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as consumer:
             consumer.settimeout(configuration["admissionTimeout"])
             consumer.connect(configuration["curriculumEndpoint"])
-            consumer.sendall(announcement)
+            consumer.sendall(publication.announcement())
             consumer.shutdown(socket.SHUT_WR)
             with consumer.makefile("rb") as reply_stream:
                 reply = reply_stream.readline(128)
@@ -141,9 +173,10 @@ def deliver(configuration):
     signal = Path(configuration["wake"])
     signal.unlink(missing_ok=True)
     outbox = Path(configuration["outbox"])
+    streams = configured_streams(configuration)
     for record in sorted(pending_records(outbox)):
         data = record.read_bytes()
-        identity = checked_event(configuration, data)
+        identity = read_publication(data, streams).digest()
         if record.name != identity + ".datom":
             raise ValueError("outbox name does not match publication")
         reply = call(configuration, data)

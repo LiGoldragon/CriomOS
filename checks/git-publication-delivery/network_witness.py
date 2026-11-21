@@ -67,7 +67,7 @@ def running_sender_observer(configuration, marker):
 def sender_start_contract():
     with tempfile.TemporaryDirectory(prefix="sender-start-") as temporary:
         root = Path(temporary)
-        outbox = root / "outbox"
+        outbox = root / "nondefault-spool"
         outbox.mkdir()
         marker = root / "sender"
         configuration = dict(outbox=str(outbox), wake=str(marker))
@@ -75,7 +75,7 @@ def sender_start_contract():
         config_file = root / "delivery.json"
         sender = [sys.executable, "-B", str(source / "delivery.py"), str(config_file)]
         config_file.write_text(json.dumps(dict(
-            configuration, repositories=["sample/belief"], timeout=5,
+            configuration, streams=[dict(repositoryName="sample/belief", referenceName="refs/heads/main")], timeout=5,
             admissionTimeout=5, curriculumEndpoint=str(consumer.address),
             peerCommand=sender + ["receive"],
         )))
@@ -132,7 +132,7 @@ command("link", "set", "sink", "up")
 
 with tempfile.TemporaryDirectory(prefix="network-return-") as temporary:
     root = Path(temporary)
-    outbox = root / "outbox"
+    outbox = root / "nondefault-spool"
     outbox.mkdir()
     sender_marker = root / "sender"
     receiver_marker = root / "receiver"
@@ -141,11 +141,11 @@ with tempfile.TemporaryDirectory(prefix="network-return-") as temporary:
     sender = [sys.executable, str(source / "delivery.py"), str(sender_config)]
     receiver = [sys.executable, str(source / "delivery.py"), str(receiver_config)]
     sender_config.write_text(json.dumps(dict(
-        repositories=["sample/belief"], outbox=str(outbox), wake=str(sender_marker),
+        streams=[dict(repositoryName="sample/belief", referenceName="refs/heads/main")], outbox=str(outbox), wake=str(sender_marker),
         timeout=5, peerCommand=receiver + ["receive"],
     )))
     receiver_config.write_text(json.dumps(dict(
-        repositories=["sample/belief"], wake=str(receiver_marker),
+        streams=[dict(repositoryName="sample/belief", referenceName="refs/heads/main")], wake=str(receiver_marker),
         admissionTimeout=5, curriculumEndpoint=str(consumer.address),
         timeout=5, peerCommand=sender + ["wake"],
     )))

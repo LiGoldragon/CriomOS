@@ -39,10 +39,10 @@ def listener(binary, socket, admissions, uid, ready_marker):
         ready_marker.unlink(missing_ok=True)
 
 
-receiver, binary = map(lambda path: Path(path).resolve(), sys.argv[1:])
+receiver, binary, legacy = map(lambda path: Path(path).resolve(), sys.argv[1:])
 with tempfile.TemporaryDirectory(prefix="admit-proof-") as temporary:
     root = Path(temporary)
-    outbox, admissions, runtime = (root / name for name in ("out", "admitted", "run"))
+    outbox, admissions, runtime = (root / name for name in ("nondefault-spool", "admitted", "run"))
     for directory in (outbox, admissions, runtime):
         directory.mkdir()
     socket = runtime / "admit.sock"
@@ -53,7 +53,10 @@ with tempfile.TemporaryDirectory(prefix="admit-proof-") as temporary:
     config = root / "delivery.json"
     invoke = [sys.executable, str(receiver), str(config)]
     config.write_text(json.dumps(dict(
-        repositories=["test/belief"], outbox=str(outbox), wake=str(marker),
+        streams=[
+            dict(repositoryName="test/belief", referenceName="refs/heads/main"),
+            dict(repositoryName="test/belief", referenceName="refs/heads/release/v1"),
+        ], outbox=str(outbox), wake=str(marker),
         timeout=5, admissionTimeout=3, curriculumEndpoint=str(socket),
         peerCommand=invoke + ["receive"],
     )))
@@ -61,7 +64,11 @@ with tempfile.TemporaryDirectory(prefix="admit-proof-") as temporary:
     flat = f"{{ test/belief refs/heads/main {old} {new} }}\n".encode()
     identity = hashlib.sha256(flat).hexdigest()
     name = identity + ".datom"
-    subprocess.run(invoke + ["enqueue", "test/belief"],
+    legacy_config = root / "legacy.json"
+    legacy_config.write_text(json.dumps(dict(
+        repositories=["test/belief"], outbox=str(outbox), wake=str(marker),
+    )))
+    subprocess.run([sys.executable, str(legacy), str(legacy_config), "enqueue", "test/belief"],
                    input=f"{old} {new} refs/heads/main\n".encode(), check=True)
 
     def run(*args, data=b""):
@@ -98,4 +105,21 @@ with tempfile.TemporaryDirectory(prefix="admit-proof-") as temporary:
         assert not list(outbox.iterdir())
         assert admitted.read_bytes() == original
         assert len(list(admissions.iterdir())) == 1
+        ref = "refs/heads/release/v1"
+        old256, new256 = "0" * 64, "b" * 64
+        release = f"{{ test/belief {ref} {old256} {new256} }}\n".encode()
+        release_id = hashlib.sha256(release).hexdigest()
+        result = run("enqueue", "test/belief", data=f"{old256} {new256} {ref}\n".encode())
+        assert result.returncode == 0, result.stderr
+        queued, = outbox.iterdir()
+        assert queued.name == f"{release_id}.datom" and queued.read_bytes() == release
+        assert marker.exists()
+        assert run("receive", data=release.replace(ref.encode(), b"refs/heads/unlisted")).stdout == b"Refused.Invalid\n"
+        replay = run("deliver")
+        assert replay.returncode == 0, replay.stderr
+        assert not list(outbox.iterdir())
+        assert (admissions / f"{release_id}.datom").is_file()
+        assert len(list(admissions.iterdir())) == 2
+    print("Real Curriculum admitted an exact non-main publication with SHA-256 object IDs.")
+    print("A main record created by the pre-change sender survived its upgrade.")
     print("Real Curriculum: refusals retained the outbox; a lost admission reply survived consumer restart; its readiness woke replay, retired the sender record and kept one admission.")

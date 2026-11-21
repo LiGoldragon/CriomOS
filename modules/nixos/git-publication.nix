@@ -8,7 +8,29 @@ let
   receiverWakeDirectory = "/run/git-publication-reconnect";
   receiverWake = "${receiverWakeDirectory}/ready";
   wakeDirectory = "/var/lib/git-publication-wake";
-  outbox = "/var/lib/git-publication-outbox";
+  outbox = cfg.sender.outboxDirectory;
+  validRef = reference:
+    lib.hasPrefix "refs/" reference
+    && !(lib.hasSuffix "." reference || lib.hasInfix ".." reference)
+    && lib.all (segment:
+      builtins.match "[a-zA-Z0-9._-]+" segment != null
+      && !(lib.hasPrefix "." segment || lib.hasSuffix ".lock" segment)
+    ) (lib.splitString "/" reference);
+  streamType = types.submodule {
+    options = {
+      repositoryName = mkOption {
+        type = types.strMatching "[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+";
+        description = "Git repository name in owner/repository form.";
+      };
+      referenceName = mkOption {
+        type = types.addCheck types.str validRef;
+        description = "Full Git ref in the publication wire's bare ASCII representation.";
+      };
+    };
+  };
+  widestObjectId = lib.concatStrings (lib.replicate 64 "0");
+  fitsWireBudget = stream:
+    builtins.stringLength "{ ${stream.repositoryName} ${stream.referenceName} ${widestObjectId} ${widestObjectId} }\n" <= 256;
   wake = "${wakeDirectory}/ready";
   sshOptions = {
     peer = mkOption {
@@ -73,18 +95,18 @@ let
   authenticated = command: map (key: ''restrict,command="${command}" ${key}'');
   configuration = name: value: pkgs.writeText "git-publication-${name}.json" (builtins.toJSON value);
   enqueue = commandFor (configuration "outbox" {
-    inherit (cfg) repositories;
+    inherit (cfg) streams;
     inherit outbox wake;
   }) "enqueue";
   drain = commandFor (configuration "sender" {
-    inherit (cfg) repositories;
+    inherit (cfg) streams;
     inherit (cfg.sender) timeout;
     inherit outbox wake;
     peerCommand = peer receiverName cfg.sender;
   }) "deliver";
   kick = commandFor (configuration "wake" { inherit wake; }) "wake";
   receive = commandFor (configuration "receive" {
-    inherit (cfg) repositories;
+    inherit (cfg) streams;
     inherit (cfg.receiver) curriculumEndpoint admissionTimeout;
   }) "receive";
   reconnect = commandFor (configuration "receiver" {
@@ -153,10 +175,10 @@ in
         description = "Regular expression selecting a new direct-peer Connected journal message.";
       };
     };
-    repositories = mkOption {
-      type = types.listOf (types.strMatching "[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+");
+    streams = mkOption {
+      type = types.listOf streamType;
       default = [];
-      description = "Authenticated Git repositories whose accepted main updates ride this route.";
+      description = "Exact repository and reference pairs carried by this route.";
     };
     enqueueCommand = mkOption {
       type = types.nullOr types.path;
@@ -164,7 +186,14 @@ in
       internal = true;
       description = "Sender command invoked by the primary Git post-receive hook.";
     };
-    sender = sshOptions // { enable = mkEnableOption "the Git publication outbox and replay endpoint"; };
+    sender = sshOptions // {
+      enable = mkEnableOption "the Git publication outbox and replay endpoint";
+      outboxDirectory = mkOption {
+        type = types.addCheck (types.strMatching "/[a-zA-Z0-9._-]+(/[a-zA-Z0-9._-]+)*")
+          (directory: lib.all (segment: segment != "." && segment != "..") (lib.splitString "/" directory));
+        description = "Absolute durable directory for the sender's pending publications.";
+      };
+    };
     receiver = sshOptions // {
       enable = mkEnableOption "the Git publication receiver and reconnect signal";
       curriculumEndpoint = mkOption {
@@ -189,8 +218,16 @@ in
     (mkIf (cfg.sender.enable || cfg.receiver.enable) {
       assertions = [
         {
-          assertion = cfg.repositories != [];
-          message = "Git publication requires at least one configured repository.";
+          assertion = cfg.streams != [];
+          message = "Git publication requires at least one configured stream.";
+        }
+        {
+          assertion = lib.length cfg.streams == lib.length (lib.unique cfg.streams);
+          message = "Git publication streams must be unique.";
+        }
+        {
+          assertion = lib.all fitsWireBudget cfg.streams;
+          message = "Each Git publication stream must fit the wire budget with SHA-256 object IDs.";
         }
         {
           assertion = config.services.openssh.enable;

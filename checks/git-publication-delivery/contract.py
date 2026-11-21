@@ -14,15 +14,19 @@ from admission_fixture import AdmissionFixture
 protocol = Path(sys.argv[1])
 python = sys.executable
 root = Path.cwd()
-outbox, signal = (root / name for name in ("outbox", "signal"))
+outbox, signal = (root / name for name in ("nondefault-spool", "signal"))
 for directory in (outbox, signal):
     directory.mkdir()
 marker = signal / "ready"
 consumer = AdmissionFixture(root)
-repositories = ["sample/psyche", "sample/mind", "sample/field"]
+streams = [
+    dict(repositoryName="sample/psyche", referenceName="refs/heads/main"),
+    dict(repositoryName="sample/psyche", referenceName="refs/heads/release/v1"),
+    dict(repositoryName="sample/mind", referenceName="refs/heads/main"),
+]
 configuration = root / "route.json"
 configuration.write_text(json.dumps(dict(
-    repositories=repositories, wake=str(marker), outbox=str(outbox),
+    streams=streams, wake=str(marker), outbox=str(outbox),
     admissionTimeout=5, curriculumEndpoint=str(consumer.address),
     timeout=5, peerCommand=[python, str(root / "peer.py")],
 )))
@@ -63,7 +67,7 @@ for directory in (sender, remote):
 git(sender, "init", "-b", "main")
 git(remote, "init", "--bare")
 hook = remote / "hooks" / "post-receive"
-hook.write_text("#!" + shutil.which("sh") + "\nexec " + shlex.join(route + ["enqueue", repositories[0]]) + "\n")
+hook.write_text("#!" + shutil.which("sh") + "\nexec " + shlex.join(route + ["enqueue", streams[0]["repositoryName"]]) + "\n")
 hook.chmod(0o700)
 git(sender, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
     "commit", "--allow-empty", "-m", "previous main")
@@ -104,9 +108,24 @@ run("deliver")
 assert not list(outbox.iterdir()) and not marker.exists()
 assert run("receive", data=data) == f"Accepted.{identity}\n".encode()
 assert run("receive", data=data.replace(b"sample/psyche", b"sample/unconfigured")) == b"Refused.Invalid\n"
+assert run("receive", data=data.replace(b"refs/heads/main", b"refs/heads/topic")) == b"Refused.Invalid\n"
 assert run("receive", data=b"invalid") == b"Refused.Invalid\n"
 assert not run("wake", data=b"invalid", ok=False)
 assert run("wake") == b""
 marker.unlink()
 assert not marker.exists()
-print("Git main fast-forward, filtering, retained outbox, lost acknowledgement, reconnect and deduplication passed.")
+release_ref = b"refs/heads/release/v1"
+git(sender, "push", str(remote), f"HEAD:{release_ref.decode()}")
+assert git(remote, "rev-parse", release_ref.decode()) == new
+release = b"{ sample/psyche " + release_ref + b" " + b"0" * len(new) + b" " + new + b" }\n"
+release_id = hashlib.sha256(release).hexdigest()
+queued, = outbox.iterdir()
+assert queued.name == release_id + ".datom" and queued.read_bytes() == release and marker.exists()
+run("enqueue", "sample/mind", data=old + b" " + new + b" " + release_ref + b"\n")
+run("enqueue", "sample/psyche", data=old + b" " + new + b" refs/heads/unlisted\n")
+assert list(outbox.iterdir()) == [queued]
+assert run("receive", data=release.replace(b"sample/psyche", b"sample/mind")) == b"Refused.Invalid\n"
+run("deliver")
+assert consumer.observed[-1] == release_id.encode()
+assert not list(outbox.iterdir()) and not marker.exists()
+print("Exact main and non-main Git stream delivery, pair filtering, retained outbox, reconnect and deduplication passed.")
