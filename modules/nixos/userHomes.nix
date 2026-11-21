@@ -27,7 +27,7 @@ let
     # What a user runs on this node is the capability vector of its key here.
     criomosHome.curriculum.enable = builtins.elem "AgentStack" user.capabilities;
     criomosHome.codexNextCandidate.enable = builtins.elem "CodexCandidate" user.capabilities;
-    # A real Cargo for iteration where this host carries one (rust-iteration.nix).
+    # A Home on the builder uses the system toolchain.
     criomosHome.rustIteration.enable = osConfig.criomos.rustIteration.enable;
   };
 
@@ -45,9 +45,6 @@ let
 
 in
 {
-  # Whether this host's Homes carry a real Cargo for iteration.
-  imports = [ ./rust-iteration.nix ];
-
   # A Home profile installation on a slow disk runs past the upstream
   # five-minute activation deadline; the allowance is bounded.  Its own /tmp
   # holds the profile tree `nix profile` builds and leaves behind there, about
