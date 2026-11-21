@@ -39,6 +39,7 @@ in
     ./llm.nix
     ./testing/opencode.nix
     ./users.nix
+    ./unison.nix
     ./hardware-adjustments
     ./network
     # aggregator — pulls in dnsmasq, yggdrasil, tailscale,
