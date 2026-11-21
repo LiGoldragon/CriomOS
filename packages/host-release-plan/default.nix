@@ -23,7 +23,7 @@ pkgs.writeShellApplication {
       *) usage ;;
     esac
 
-    if [[ $proposal != /*/horizon-definition.datom || ! -f $proposal || -L $proposal ]]; then
+    if [[ $proposal != /* || ''${proposal##*/} != horizon-definition.datom || ! -f $proposal || -L $proposal ]]; then
       printf '%s\n' 'Supply an absolute path to a regular, non-symlink horizon-definition.datom.' >&2
       exit 2
     fi

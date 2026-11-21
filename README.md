@@ -68,9 +68,9 @@ rows in the release result.
 
 ## Network-neutral by construction
 
-CriomOS does NOT enumerate hosts. Cluster + node identity live in the
-horizon (the projected per-deploy view). The same CriomOS source builds
-any node of any cluster — only the horizon override differs.
+Horizon owns the host inventory and supplies cluster and node identity.
+The same CriomOS source builds any node of any cluster with that node's
+Horizon override.
 
 Blueprint's `hosts/<name>/` convention is deliberately **not** used: it
 bakes host identity into the platform repo, contradicting

@@ -38,6 +38,7 @@ pkgs.runCommand "host-release-plan-check" {
   refuse "$proposal" online Explicit
   refuse "$proposal" online All offline
   refuse "$proposal" unknown All
+  refuse horizon-definition.datom online All
   mkdir linked
   ln -s "$proposal" linked/horizon-definition.datom
   refuse "$PWD/linked/horizon-definition.datom" online All
