@@ -115,7 +115,8 @@ pkgs.runCommand "git-publication-delivery" { nativeBuildInputs = [ pkgs.git pkgs
   import sys
 
   def settings(wrapper):
-      _, _, _, settings_path, _, _ = shlex.split(Path(wrapper).read_text().splitlines()[-1])
+      command, = [line for line in Path(wrapper).read_text().splitlines() if line.startswith("exec ")]
+      _, _, _, settings_path, _, _ = shlex.split(command)
       return json.loads(Path(settings_path).read_bytes())
 
   enqueue, drain, receiver = map(settings, sys.argv[1:])
