@@ -9,7 +9,7 @@ import struct
 import subprocess
 import sys
 
-from delivery import wake
+from delivery import pending_records, wake
 
 
 # Linux rtnetlink multicast groups for links, addresses and routes.
@@ -75,8 +75,10 @@ def returned(previous, current):
 
 
 def observe(configuration, events, read_state, mark):
-    next(events)  # subscribe before reading local state; never wake on the initial snapshot
+    next(events)  # subscribe before reading local state
     previous = read_state()
+    if "outbox" in configuration and next(pending_records(Path(configuration["outbox"])), None):
+        mark(configuration)
     for _ in events:
         current = read_state()
         if returned(previous, current):

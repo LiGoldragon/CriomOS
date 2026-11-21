@@ -34,9 +34,49 @@ def state_machine_contract():
     assert not returned((False, set()), (False, {"underlay"}))
 
 
+def sender_start_contract():
+    with tempfile.TemporaryDirectory(prefix="sender-start-") as temporary:
+        root = Path(temporary)
+        outbox = root / "outbox"
+        outbox.mkdir()
+        marker = root / "sender"
+        configuration = dict(outbox=str(outbox), wake=str(marker))
+        consumer = AdmissionFixture(root)
+        config_file = root / "delivery.json"
+        sender = [sys.executable, "-B", str(source / "delivery.py"), str(config_file)]
+        config_file.write_text(json.dumps(dict(
+            configuration, repositories=["sample/belief"], timeout=5,
+            admissionTimeout=5, curriculumEndpoint=str(consumer.address),
+            peerCommand=sender + ["receive"],
+        )))
+
+        def start_observer(settings):
+            observe(settings, iter([None]), lambda: (False, set()), wake)
+
+        (outbox / "unfinished").touch()
+        start_observer(configuration)
+        assert not marker.exists()
+        (outbox / "unfinished").unlink()
+
+        old, new = "1" * 40, "2" * 40
+        subprocess.run(sender + ["enqueue", "sample/belief"],
+                       input=f"{old} {new} refs/heads/main\n".encode(), check=True)
+        marker.unlink()
+
+        start_observer(dict(wake=str(marker)))
+        assert not marker.exists()
+        start_observer(configuration)
+        assert marker.exists()
+        subprocess.run(sender + ["deliver"], check=True)
+        assert not marker.exists() and not list(outbox.iterdir())
+        assert len(consumer.observed) == 1
+
+
 state_machine_contract()
+sender_start_contract()
 if len(sys.argv) == 2:
-    print("Network event contract: initial and unrelated states are quiet; route and configured link returns wake once.")
+    print("Network event contract: unrelated states are quiet; route and configured link returns wake once.")
+    print("Sender start: a queued publication drained without a push or network event; empty and receiver startup stayed quiet.")
     sys.exit(0)
 
 command("link", "set", "lo", "up")

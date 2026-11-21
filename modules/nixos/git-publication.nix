@@ -93,13 +93,13 @@ let
     peerCommand = peer senderName cfg.receiver;
   }) "reconnect";
   receiverKick = commandFor (configuration "ready" { wake = receiverWake; }) "wake";
-  watchNetwork = role: marker: endpoint: user:
+  watchNetwork = role: marker: endpoint: user: startup:
     let
-      settings = configuration "${role}-network" {
+      settings = configuration "${role}-network" ({
         wake = marker;
         inherit (endpoint) network;
         ip = "${pkgs.iproute2}/bin/ip";
-      };
+      } // startup);
     in {
       wantedBy = [ "multi-user.target" ];
       after = [ "systemd-tmpfiles-setup.service" ];
@@ -185,14 +185,14 @@ in
         "d ${outbox} 0700 git git -"
         "d ${wakeDirectory} 2770 ${senderName} ${senderName} -"
       ];
-      systemd.services.git-publication-sender-network = watchNetwork "sender" wake cfg.sender "git";
+      systemd.services.git-publication-sender-network =
+        watchNetwork "sender" wake cfg.sender "git" { inherit outbox; };
       systemd.services.git-publication-sender-return = listenForReturn cfg.sender kick "git";
       systemd.paths.git-publication-deliver = {
         wantedBy = [ "multi-user.target" ];
         pathConfig.PathExists = wake;
       };
       systemd.services.git-publication-deliver = {
-        wantedBy = [ "multi-user.target" ];
         wants = [ "network-online.target" ];
         after = [ "network-online.target" "systemd-tmpfiles-setup.service" ];
         serviceConfig = credentials cfg.sender // {
@@ -219,7 +219,7 @@ in
       };
       systemd.tmpfiles.rules = [ "d ${receiverWakeDirectory} 0770 ${receiverName} ${receiverName} -" ];
       systemd.services.git-publication-receiver-network =
-        watchNetwork "receiver" receiverWake cfg.receiver receiverName;
+        watchNetwork "receiver" receiverWake cfg.receiver receiverName {};
       systemd.services.git-publication-receiver-return =
         listenForReturn cfg.receiver receiverKick receiverName;
       systemd.services.sshd.postStart = lib.mkAfter ''${receiverKick} </dev/null'';

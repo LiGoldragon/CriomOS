@@ -133,11 +133,15 @@ def call(configuration, data):
     ).stdout
 
 
+def pending_records(outbox):
+    return outbox.glob("*.datom")
+
+
 def deliver(configuration):
     signal = Path(configuration["wake"])
     signal.unlink(missing_ok=True)
     outbox = Path(configuration["outbox"])
-    for record in sorted(outbox.glob("*.datom")):
+    for record in sorted(pending_records(outbox)):
         data = record.read_bytes()
         identity = checked_event(configuration, data)
         if record.name != identity + ".datom":

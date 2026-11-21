@@ -32,11 +32,16 @@ let
     };
   };
   value = lib.escapeShellArg;
+  networkSettings = role: lib.last (lib.splitString " "
+    enabled.systemd.services."git-publication-${role}-network".serviceConfig.ExecStart);
   keys = user: builtins.head enabled.users.users.${user}.openssh.authorizedKeys.keys;
 in
 assert disabled.criomos.gitPublication.enqueueCommand == null;
 assert !(disabled.systemd.paths ? git-publication-deliver);
 assert enabled.criomos.gitPublication.enqueueCommand != null;
+assert enabled.systemd.services.git-publication-sender-network.wantedBy == [ "multi-user.target" ];
+assert enabled.systemd.paths.git-publication-deliver.wantedBy == [ "multi-user.target" ];
+assert enabled.systemd.services.git-publication-deliver.wantedBy == [];
 assert !(disabled.systemd.paths ? git-publication-reconnect);
 assert builtins.elem enabled.systemd.services.sshd.serviceConfig.Type [ "notify" "notify-reload" ];
 assert enabled.systemd.paths.git-publication-reconnect.pathConfig.PathExists == enabled.criomos.gitPublication.receiver.readinessMarker;
@@ -46,6 +51,16 @@ pkgs.runCommand "git-publication-delivery" { nativeBuildInputs = [ pkgs.git pkgs
   test ${value enabled.systemd.paths.git-publication-deliver.pathConfig.PathExists} = /var/lib/git-publication-wake/ready
   printf '%s\n' ${value (keys "git-publication-wake")} | grep -E '^restrict,command="[^"]+git-publication-wake" ssh-ed25519 '
   printf '%s\n' ${value (keys "git-publication-receiver")} | grep -E '^restrict,command="[^"]+git-publication-receive" ssh-ed25519 '
+  python3 -B - ${value (networkSettings "sender")} ${value (networkSettings "receiver")} <<'PYTHON'
+  import json
+  from pathlib import Path
+  import sys
+
+  sender, receiver = (json.loads(Path(path).read_bytes()) for path in sys.argv[1:])
+  assert sender["outbox"] == "/var/lib/git-publication-outbox"
+  assert sender["wake"] == "${enabled.systemd.paths.git-publication-deliver.pathConfig.PathExists}"
+  assert "outbox" not in receiver
+  PYTHON
   {
     python3 -B ${./.}/contract.py ${../../modules/nixos/git-publication/delivery.py}
     python3 -B ${./.}/network_witness.py ${../../modules/nixos/git-publication}
