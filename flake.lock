@@ -784,12 +784,13 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1795223296,
+        "__final": true,
+        "lastModified": 1795225725,
+        "narHash": "sha256-gW3JJgQmGrhcWK6lO/iavZffcZfJ2kJBMjd4j0qGyk4=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "df0d4825d42cf5da2525d9965e2ed42cd052823f",
-        "type": "github",
-        "narHash": "sha256-eQyI1Rs5ERm87lldBQcwxdg5Bpu7Ihi+tzU3o09Wo0E="
+        "rev": "4483736c86ceb943b8d455969acf3fff6175b1f6",
+        "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
