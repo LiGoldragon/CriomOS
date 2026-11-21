@@ -5,6 +5,10 @@ let
     system = pkgs.stdenv.hostPlatform.system;
     specialArgs = {
       constants = { };
+      horizon.node = {
+        isRemoteNixBuilder = false;
+        behavesAs.center = false;
+      };
       horizon.users = {
         first = {
           hasPublicKey = true;
@@ -26,6 +30,7 @@ let
             options.criomosHome = {
               curriculum.enable = lib.mkEnableOption "fixture curriculum";
               codexNextCandidate.enable = lib.mkEnableOption "fixture candidate";
+              rustIteration.enable = lib.mkEnableOption "fixture iteration Cargo";
             };
           };
         };
