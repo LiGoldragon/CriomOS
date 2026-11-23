@@ -868,7 +868,6 @@
           "criomos-lib"
         ],
         "curriculum-source": "curriculum-source",
-        "deployed-codex-source": "deployed-codex-source",
         "energy-nexus": "energy-nexus",
         "field-clj": "field-clj",
         "field-luna-research-source": "field-luna-research-source",
@@ -894,14 +893,12 @@
           "nixpkgs"
         ],
         "noctalia": "noctalia",
-        "orca-ide": "orca-ide",
         "orchestrate": [
           "orchestrate"
         ],
         "pi-continue-src": "pi-continue-src",
         "pi-linkup-src": "pi-linkup-src",
         "pi-session-namer": "pi-session-namer",
-        "pi-src": "pi-src",
         "pi-subagents-src": "pi-subagents-src",
         "pi-ultra-subagents-src": "pi-ultra-subagents-src",
         "pi-ultra-subagents-typebox-src": "pi-ultra-subagents-typebox-src",
@@ -951,11 +948,11 @@
         "yt-dlp": "yt-dlp"
       },
       "locked": {
-        "lastModified": 1795414604,
-        "narHash": "sha256-XlckVhCHYG5efh5j43vQh7ChvG2Pryv4mZfY63HOZP8=",
+        "lastModified": 1795476462,
+        "narHash": "sha256-YwggGRSmkJMSo3lTobmMjFEgm1RexSypf873drV/JHM=",
         "owner": "LiGoldragon",
         "repo": "CriomOS-home",
-        "rev": "4f428305af9e7f3fce22a0eb76ffef10a370e0cb",
+        "rev": "9cdfd82c98c9df9c22b0f5a5441ca2e18c675247",
         "type": "github"
       },
       "original": {
@@ -1076,22 +1073,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "datom-codec",
-        "type": "github"
-      }
-    },
-    "deployed-codex-source": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1794510250,
-        "narHash": "sha256-/QQqaRKd8MKF0s8eD40arcYz/CdQ2vX4IcPV0cUdjro=",
-        "owner": "LiGoldragon",
-        "repo": "CriomOS-home",
-        "rev": "0b430341a594f1b1ee31e986c4dbd0d537e6ffe7",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LiGoldragon",
-        "repo": "CriomOS-home",
         "type": "github"
       }
     },
@@ -2378,11 +2359,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1787161794,
-        "narHash": "sha256-sEGIN3dLZasaHob3EHscWBCIQHflMQVchYmzgsETDk4=",
+        "lastModified": 1791993401,
+        "narHash": "sha256-N7e7oCKxeCoxek6UT8Lweq16rSsQQi34QMb7C2iNpm8=",
         "owner": "herdrdev",
         "repo": "herdr",
-        "rev": "9eb521456ac0d19d3ab3d9d7cea3cca10baa8a4c",
+        "rev": "2ecf19a92fc3a7fff75b6ce3655ef04f4625ec01",
         "type": "github"
       },
       "original": {
@@ -2889,22 +2870,6 @@
     },
     "nixpkgs_10": {
       "locked": {
-        "lastModified": 1783776592,
-        "narHash": "sha256-UgCQzxeWI75XM8G+hPrPh+MKzEPjG3SpAj7dtqSbksA=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "e7a3ca8092b61ff85b6a45bf863ea2b2d6a661b3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_11": {
-      "locked": {
         "lastModified": 1794042290,
         "narHash": "sha256-ziZn2PvCJE5JEEpqTdxXwJpPB+L3YqoCpTAMCzyaP3U=",
         "owner": "LiGoldragon",
@@ -3013,11 +2978,11 @@
     },
     "nixpkgs_8": {
       "locked": {
-        "lastModified": 1779357205,
-        "narHash": "sha256-cCO8aTqss5x9Ky8GWkpY0Hy5fyTZEbtifSUV8QjSzic=",
+        "lastModified": 1779911860,
+        "narHash": "sha256-ubcLAcKBDCZjhxw/kH5DL5GdBZQdzLqpkTe7HonvJVs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f83fc3c307e74bc5fd5adb7eb6b8b13ffd2a36e1",
+        "rev": "c0a89c379b4ac67c7b13b051ddbd4e0dbc9b0eaf",
         "type": "github"
       },
       "original": {
@@ -3122,24 +3087,6 @@
         "type": "github"
       }
     },
-    "orca-ide": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_10"
-      },
-      "locked": {
-        "lastModified": 1787381882,
-        "narHash": "sha256-UIEsDym/+wiukBh4YBvCPrOIjFeJRTjY3U+DhZdfCsc=",
-        "owner": "Samuka007",
-        "repo": "nix-orca",
-        "rev": "249a8d3c1bb2842ddec882ef2c1afd28c426b19e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Samuka007",
-        "repo": "nix-orca",
-        "type": "github"
-      }
-    },
     "orchestrate": {
       "inputs": {
         "flake-utils": "flake-utils_12",
@@ -3204,22 +3151,6 @@
       "original": {
         "owner": "LiGoldragon",
         "repo": "pi-session-namer",
-        "type": "github"
-      }
-    },
-    "pi-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786081693,
-        "narHash": "sha256-lg+I4S/aAjazjhGZU567ow+rksoNiqOqjHl//TjAMes=",
-        "owner": "earendil-works",
-        "repo": "pi",
-        "rev": "53fa77ccd8a279eb87e92294ef3687b03ff80112",
-        "type": "github"
-      },
-      "original": {
-        "owner": "earendil-works",
-        "repo": "pi",
         "type": "github"
       }
     },
@@ -3741,7 +3672,7 @@
         "messenger-clj": "messenger-clj",
         "microvm": "microvm",
         "mirror": "mirror",
-        "nixpkgs": "nixpkgs_11",
+        "nixpkgs": "nixpkgs_10",
         "orchestrate": "orchestrate",
         "pkgs": "pkgs",
         "repository-ledger": "repository-ledger",
