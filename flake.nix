@@ -195,10 +195,11 @@
       );
       # Project checks share one flake context; keep that wiring in one place.
       callCheck = path: pkgs.callPackage path { inherit inputs; };
+      routerUsbParentPowerCheck = callCheck ./checks/router-usb-parent-power;
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
           unison-replica = callCheck ./checks/unison-replica;
-          router-usb-parent-power = callCheck ./checks/router-usb-parent-power;
+          router-usb-parent-power = routerUsbParentPowerCheck;
           home-manager-unit-lifetime = callCheck ./checks/home-manager-unit-lifetime;
           tailnet-declaration = callCheck ./checks/tailnet-declaration;
           tailnet-enrollment = callCheck ./checks/tailnet-enrollment;
@@ -309,6 +310,9 @@
     blueprintOutputs
     // {
       checks = projectChecks;
+
+      # This hardware-scoped gate can run without forcing unrelated Blueprint checks.
+      inherit routerUsbParentPowerCheck;
 
       # Exact maintained bootstrap re-export.  This is a flake-owned app, not
       # a service wrapper: every authority-bearing bootstrap value stays in
