@@ -198,6 +198,7 @@
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
           unison-replica = callCheck ./checks/unison-replica;
+          router-usb-parent-power = callCheck ./checks/router-usb-parent-power;
           home-manager-unit-lifetime = callCheck ./checks/home-manager-unit-lifetime;
           tailnet-declaration = callCheck ./checks/tailnet-declaration;
           tailnet-enrollment = callCheck ./checks/tailnet-enrollment;
