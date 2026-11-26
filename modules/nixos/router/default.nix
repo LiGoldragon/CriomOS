@@ -97,6 +97,7 @@ let
 in
 {
   imports = [
+    ./usb-parent-power.nix
     ./wifi-pki.nix
     ./yggdrasil.nix
   ];
