@@ -80,6 +80,7 @@ in
     ./networkd.nix
     ./wireguard.nix
     ./resolver.nix
+    ./preferred-wired-internet.nix
     ./usb-ethernet-role-rule.nix
     ./usb-downlink.nix
     ./usb-downlink-observer.nix
