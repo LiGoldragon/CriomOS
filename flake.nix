@@ -195,6 +195,7 @@
       );
       # Project checks share one flake context; keep that wiring in one place.
       callCheck = path: pkgs.callPackage path { inherit inputs; };
+      preferredWiredInternetCheck = callCheck ./checks/preferred-wired-internet;
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
           unison-replica = callCheck ./checks/unison-replica;
@@ -305,6 +306,7 @@
     blueprintOutputs
     // {
       checks = projectChecks;
+      inherit preferredWiredInternetCheck;
 
       # Exact maintained bootstrap re-export.  This is a flake-owned app, not
       # a service wrapper: every authority-bearing bootstrap value stays in
