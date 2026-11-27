@@ -88,7 +88,7 @@ pkgs.testers.runNixOSTest {
     start_all()
     router.wait_for_unit("dnsmasq.service")
     client.wait_for_unit("NetworkManager.service")
-    client.wait_for_unit("NetworkManager-ensure-profiles.service")
+    client.wait_until_succeeds("nmcli -t -f NAME connection show | grep -Fx criomos-preferred-wired")
     client.wait_for_unit("systemd-resolved.service")
 
     client.succeed("nmcli --wait 20 connection up id fixture-other-link ifname eth2")
