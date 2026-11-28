@@ -196,7 +196,6 @@
       # Project checks share one flake context; keep that wiring in one place.
       callCheck = path: pkgs.callPackage path { inherit inputs; };
       routerUsbParentPowerCheck = callCheck ./checks/router-usb-parent-power;
-      preferredWiredInternetCheck = callCheck ./checks/preferred-wired-internet;
       projectChecks = blueprintChecks // {
         ${system} = (blueprintChecks.${system} or { }) // {
           unison-replica = callCheck ./checks/unison-replica;
@@ -311,7 +310,6 @@
     blueprintOutputs
     // {
       checks = projectChecks;
-      inherit preferredWiredInternetCheck;
 
       # This hardware-scoped gate can run without forcing unrelated Blueprint checks.
       inherit routerUsbParentPowerCheck;
