@@ -77,6 +77,15 @@ let
 
   lanBridgeInterface = "br-lan";
   lanBridgeDeviceUnit = "sys-subsystem-net-devices-${utils.escapeSystemdPath lanBridgeInterface}.device";
+  # If the bridge is missing, nl80211 hostapd can create and later remove
+  # it itself. Start either AP only after networkd's bridge device appears.
+  # The device is the readiness/lifetime gate, not wait-online or the
+  # networkd process lifetime: the bridge need not have a carrier yet.
+  apBridgeDependencies = {
+    after = [ "systemd-networkd.service" lanBridgeDeviceUnit ];
+    bindsTo = [ lanBridgeDeviceUnit ];
+    wants = [ "systemd-networkd.service" ];
+  };
   lanSubnetPrefix = constants.network.lan.subnetPrefix;
   lanAddress = constants.network.lan.gateway;
   lanFullAddress = "${lanAddress}/24";
@@ -307,8 +316,10 @@ in
       # changed network policy after the new generation is known-good.
       systemd-networkd.restartIfChanged = false;
       systemd-networkd.stopIfChanged = false;
-      hostapd.restartIfChanged = false;
-      hostapd.stopIfChanged = false;
+      hostapd = apBridgeDependencies // {
+        restartIfChanged = false;
+        stopIfChanged = false;
+      };
       dnsmasq.restartIfChanged = false;
       dnsmasq.stopIfChanged = false;
 
@@ -322,7 +333,7 @@ in
       kea-dhcp4-server = {
         # Kea raw sockets retain the bridge's kernel interface identity.
         # A recreated bridge must start a fresh socket; an AP restart also
-        # restarts DHCP after hostapd has finished recreating its LAN links.
+        # restarts DHCP after hostapd has finished attaching its radio.
         after = [ "systemd-networkd.service" "hostapd.service" lanBridgeDeviceUnit ];
         bindsTo = [ lanBridgeDeviceUnit ];
         partOf = [ "hostapd.service" ];
@@ -350,13 +361,10 @@ in
       };
     }
     // optionalAttrs hasBackupWireless {
-      hostapd-backup-wireless = {
+      hostapd-backup-wireless = apBridgeDependencies // {
         description = "Backup Wi-Fi access point for router emergency access";
-        after = [
-          backupWirelessDeviceUnit
-          "systemd-networkd.service"
-        ];
-        bindsTo = [ backupWirelessDeviceUnit ];
+        after = apBridgeDependencies.after ++ [ backupWirelessDeviceUnit ];
+        bindsTo = apBridgeDependencies.bindsTo ++ [ backupWirelessDeviceUnit ];
         wantedBy = [ backupWirelessDeviceUnit ];
         path = [
           pkgs.coreutils
